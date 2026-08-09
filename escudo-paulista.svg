@@ -1,44 +1,67 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 570" width="440" height="570" role="img" aria-label="Escudo do Paulista - A.E.P.F - fundado em 1938">
-  <title>A.E.P.F - Paulista - 1938</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 560" width="440" height="560" role="img" aria-label="Escudo do A. E. F. Paulista - fundado em 1938">
+  <title>A. E. F. Paulista - 1938</title>
 
   <defs>
     <!-- Contorno do escudo, reaproveitado como recorte das listras -->
     <path id="escudo"
-          d="M 50,112 H 390 A 16 16 0 0 1 406,128 V 320
-             C 406,420 336,486 220,536
-             C 104,486 34,420 34,320
-             V 128 A 16 16 0 0 1 50,112 Z"/>
+          d="M 46,24 H 394 A 16 16 0 0 1 410,40 V 300
+             C 410,406 336,484 220,536
+             C 104,484 30,406 30,300
+             V 40 A 16 16 0 0 1 46,24 Z"/>
     <clipPath id="recorte">
       <use href="#escudo"/>
     </clipPath>
-  </defs>
 
-  <!-- Estrela (1 título) acima do escudo -->
-  <polygon points="220,10 231,39 262,40 238,60 246,90 220,73 194,90 202,60 178,40 209,39"
-           fill="#111111" stroke="#111111" stroke-width="6" stroke-linejoin="round"/>
+    <!-- Monograma cursivo "aepf", letras ligadas em traço contínuo -->
+    <g id="monograma">
+      <path d="M 56,66 C 40,54 16,60 14,84 C 12,106 36,116 56,102"/>
+      <path d="M 56,62 C 56,80 54,96 58,106 C 62,114 70,112 76,104"/>
+      <path d="M 76,104 C 82,90 90,72 102,66 C 112,61 120,66 115,75
+               C 110,84 96,88 87,89 C 80,90 79,99 85,105 C 93,112 106,110 118,100"/>
+      <path d="M 118,100 C 126,92 131,80 133,70 C 134,64 131,63 129,71
+               C 124,91 118,122 116,142 C 115,152 120,154 124,146"/>
+      <path d="M 130,74 C 144,62 162,66 160,82 C 158,98 139,106 126,100"/>
+      <path d="M 126,100 C 134,108 146,108 156,100"/>
+      <path d="M 156,100 C 168,88 178,70 186,46 C 192,28 190,16 182,20
+               C 174,24 174,44 176,62 C 178,84 174,116 168,136
+               C 164,150 156,152 154,142 C 152,132 160,126 172,124
+               C 188,122 202,116 214,106"/>
+    </g>
+  </defs>
 
   <!-- Corpo do escudo: miolo branco com listras verticais pretas -->
   <g clip-path="url(#recorte)">
-    <rect x="24" y="102" width="392" height="444" fill="#ffffff"/>
+    <rect x="24" y="16" width="392" height="530" fill="#ffffff"/>
 
-    <rect x="24"  y="102" width="51" height="444" fill="#111111"/>
-    <rect x="105" y="102" width="40" height="444" fill="#111111"/>
-    <rect x="295" y="102" width="40" height="444" fill="#111111"/>
-    <rect x="365" y="102" width="51" height="444" fill="#111111"/>
+    <rect x="24"  y="16" width="32" height="530" fill="#111111"/>
+    <rect x="98"  y="16" width="42" height="530" fill="#111111"/>
+    <rect x="300" y="16" width="42" height="530" fill="#111111"/>
+    <rect x="384" y="16" width="32" height="530" fill="#111111"/>
 
-    <!-- Faixa da sigla -->
-    <rect x="24" y="163" width="392" height="5"  fill="#ffffff"/>
-    <rect x="24" y="168" width="392" height="62" fill="#111111"/>
-    <rect x="24" y="230" width="392" height="5"  fill="#ffffff"/>
+    <!-- Faixa com o nome do clube -->
+    <rect x="24" y="67"  width="392" height="5"  fill="#ffffff"/>
+    <rect x="24" y="72"  width="392" height="56" fill="#111111"/>
+    <rect x="24" y="128" width="392" height="5"  fill="#ffffff"/>
 
-    <text x="220" y="213" text-anchor="middle"
+    <text x="220" y="111" text-anchor="middle"
           font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
-          font-size="42" font-weight="700" letter-spacing="2" fill="#ffffff">A.E.P.F</text>
+          font-size="30" font-weight="700" letter-spacing="1.5" fill="#ffffff">A. E. F. PAULISTA</text>
 
-    <!-- Ano de fundação, no centro do miolo branco -->
-    <text x="220" y="378" text-anchor="middle"
+    <!-- Estrela amarela, centralizada -->
+    <polygon points="220,154 228,175 251,176 233,190 239,212 220,199 201,212 207,190 189,176 212,175"
+             fill="#F5C518" stroke="#111111" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Monograma: halo branco por baixo para destacar sobre as listras -->
+    <g transform="translate(220,300) scale(0.88) translate(-118,-85)"
+       fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <use href="#monograma" stroke="#ffffff" stroke-width="22"/>
+      <use href="#monograma" stroke="#111111" stroke-width="11"/>
+    </g>
+
+    <!-- Ano de fundação -->
+    <text x="220" y="468" text-anchor="middle"
           font-family="Georgia, 'Times New Roman', serif"
-          font-size="62" font-weight="700" letter-spacing="1" fill="#111111">1938</text>
+          font-size="56" font-weight="700" letter-spacing="1" fill="#111111">1938</text>
   </g>
 
   <!-- Borda: preto / filete branco / preto -->
