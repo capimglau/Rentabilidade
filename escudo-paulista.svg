@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 570" width="440" height="570" role="img" aria-label="Escudo do Paulista - A.E.P.F - fundado em 1938">
+  <title>A.E.P.F - Paulista - 1938</title>
+
+  <defs>
+    <!-- Contorno do escudo, reaproveitado como recorte das listras -->
+    <path id="escudo"
+          d="M 50,112 H 390 A 16 16 0 0 1 406,128 V 320
+             C 406,420 336,486 220,536
+             C 104,486 34,420 34,320
+             V 128 A 16 16 0 0 1 50,112 Z"/>
+    <clipPath id="recorte">
+      <use href="#escudo"/>
+    </clipPath>
+  </defs>
+
+  <!-- Estrela (1 título) acima do escudo -->
+  <polygon points="220,10 231,39 262,40 238,60 246,90 220,73 194,90 202,60 178,40 209,39"
+           fill="#111111" stroke="#111111" stroke-width="6" stroke-linejoin="round"/>
+
+  <!-- Corpo do escudo: miolo branco com listras verticais pretas -->
+  <g clip-path="url(#recorte)">
+    <rect x="24" y="102" width="392" height="444" fill="#ffffff"/>
+
+    <rect x="24"  y="102" width="51" height="444" fill="#111111"/>
+    <rect x="105" y="102" width="40" height="444" fill="#111111"/>
+    <rect x="295" y="102" width="40" height="444" fill="#111111"/>
+    <rect x="365" y="102" width="51" height="444" fill="#111111"/>
+
+    <!-- Faixa da sigla -->
+    <rect x="24" y="163" width="392" height="5"  fill="#ffffff"/>
+    <rect x="24" y="168" width="392" height="62" fill="#111111"/>
+    <rect x="24" y="230" width="392" height="5"  fill="#ffffff"/>
+
+    <text x="220" y="213" text-anchor="middle"
+          font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+          font-size="42" font-weight="700" letter-spacing="2" fill="#ffffff">A.E.P.F</text>
+
+    <!-- Ano de fundação, no centro do miolo branco -->
+    <text x="220" y="378" text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="62" font-weight="700" letter-spacing="1" fill="#111111">1938</text>
+  </g>
+
+  <!-- Borda: preto / filete branco / preto -->
+  <use href="#escudo" fill="none" stroke="#111111" stroke-width="22" stroke-linejoin="round"/>
+  <use href="#escudo" fill="none" stroke="#ffffff" stroke-width="5"  stroke-linejoin="round"/>
+</svg>
