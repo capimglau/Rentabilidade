@@ -3770,7 +3770,7 @@ async function dedupLancamentos(){
     removidos+=chunk.length;
   }
   DATA=DATA.filter(r=>!toDelete.includes(r.id));
-  renderAll();
+  popSel();renderAll();
   alert(`✓ ${removidos} registro(s) removido(s). Recarregue o app.`);
 }
 async function limparEReimportar(){
@@ -3794,7 +3794,7 @@ async function limparEReimportar(){
     }
     const restante=await dbCount();
     DATA=[];NOVOS=[];
-    renderAll();
+    popSel();renderAll();
     if(restante){
       alert(`⚠ ${removidos} removidos de ${total}, mas ainda restam ${restante} no banco.\nVerifique as permissões (RLS) da tabela no Supabase.`);
       return;
@@ -6538,6 +6538,10 @@ function saveEdit(){
   r.saldo=parseFloat(document.getElementById('e-sl').value)||0;
   r.obs=document.getElementById('e-obs').value||null;
   dbUpdate(r);
+  // popSel(): a edição pode ter mudado placa, cliente, dono, tipo ou forma —
+  // sem reindexar aqui, o autocomplete/datalist ficava um passo atrás do que
+  // acabou de ser digitado até a próxima ação em outro lugar do app.
+  popSel();
   closeEdit();renderAll();
 }
 // Exclusão de verdade, sem desfazer (diferente das outras ações do swipe):
@@ -6551,7 +6555,7 @@ function excluirLancamento(idx){
   dbDelete(r.id);
   const di=DATA.indexOf(r),ni=NOVOS.indexOf(r);
   if(di>=0)DATA.splice(di,1);if(ni>=0)NOVOS.splice(ni,1);
-  renderAll();
+  popSel();renderAll();
   return true;
 }
 function deleteRow(){
@@ -6666,7 +6670,19 @@ function openSearch(){
   const i=document.getElementById('searchInput');i.style.display='';i.value='';runSearch();
   setTimeout(()=>i.focus(),120);
 }
-function closeSearch(){document.getElementById('mSearch').classList.remove('on');}
+function closeSearch(){document.getElementById('mSearch').classList.remove('on');ULTIMO_MSEARCH=null;}
+// #mSearch é reaproveitado por 4 telas diferentes (busca, dia da projeção,
+// dia do fluxo, categoria do faturamento) — cada uma guarda aqui como se
+// repopular, pra qualquer render() geral também atualizar o que estiver
+// aberto nele. Sem isso, uma alteração feita em outro dispositivo (chegada
+// pela sincronização automática) deixava esse modal aberto mostrando dado
+// velho até o usuário fechar e abrir de novo.
+let ULTIMO_MSEARCH=null;
+function refreshMSearch(){
+  if(!ULTIMO_MSEARCH)return;
+  if(!document.getElementById('mSearch')?.classList.contains('on'))return;
+  ULTIMO_MSEARCH();
+}
 function showMais(){if(window.innerWidth<761){document.getElementById('dock-main').style.display='none';document.getElementById('dock-mais').style.display='flex';}}
 function hideMais(){if(window.innerWidth<761){document.getElementById('dock-mais').style.display='none';document.getElementById('dock-main').style.display='flex';}}
 // Busca global: um único texto por lançamento com todos os campos que podem
@@ -6707,6 +6723,7 @@ function ordenaBuscaPorVencimento(res){
   return res;
 }
 function runSearch(){
+  ULTIMO_MSEARCH=runSearch;
   const qRaw=document.getElementById('searchInput').value.trim();
   const q=xlsNorm(qRaw);
   const box=document.getElementById('searchResults');
@@ -6820,6 +6837,7 @@ function lancListHtml(items,fecharBusca){
 // lançamentos pendentes que vencem naquele dia (ou os vencidos, se for a
 // primeira barra) — reaproveita o modal da busca global.
 function mostrarLancDia(dia){
+  ULTIMO_MSEARCH=()=>mostrarLancDia(dia);
   const venc=dia==='vencidos';
   const hoje=td();
   const all=allD();
@@ -6847,8 +6865,16 @@ function mostrarLancDia(dia){
 // está na tela (mesmos filtros). Abaixo do resumo vêm os lançamentos do dia,
 // pra dar pra baixar/editar sem sair dali.
 function resumoFormasDia(dia,origem){
+  ULTIMO_MSEARCH=()=>resumoFormasDia(dia,origem);
   const rows=(DIA_ROWS[origem]||{})[dia]||[];
-  if(!rows.length)return;
+  const jaAberto=document.getElementById('mSearch')?.classList.contains('on');
+  if(!rows.length){
+    // Só sai sem abrir nada na 1ª chamada (clique num dia que não existe
+    // mais); se já estava aberto (refresh depois de uma alteração em outro
+    // lugar), avisa em vez de deixar a lista velha na tela.
+    if(jaAberto)document.getElementById('searchResults').innerHTML='<div class="srow-empty">Nada encontrado.</div>';
+    return;
+  }
   const porForma={};
   rows.forEach(r=>{
     const k=fFormaLabel(r.forma)||'—';
@@ -6894,13 +6920,21 @@ function resumoFormasDia(dia,origem){
 // mostrarLancDia) — mesmo modal/cartões da busca global, com
 // baixar/parcial/reverter/editar/excluir via swipe.
 function mostrarLancDiaFluxo(dia){
+  ULTIMO_MSEARCH=()=>mostrarLancDiaFluxo(dia);
   const all=allD();
   const items=[];
   all.forEach((r,i)=>{
     if(selDono&&r.dono!==selDono)return;
     if((r.prev_pgto||'').slice(0,10)===dia)items.push({r,i});
   });
-  if(!items.length)return;
+  if(!items.length){
+    // Só sai sem abrir nada na 1ª chamada; se já estava aberto (refresh
+    // depois de uma alteração em outro lugar), avisa em vez de deixar a
+    // lista velha na tela.
+    if(document.getElementById('mSearch')?.classList.contains('on'))
+      document.getElementById('searchResults').innerHTML='<div class="srow-empty">Nada encontrado.</div>';
+    return;
+  }
   items.sort((a,b)=>(a.r.prev_pgto||'').localeCompare(b.r.prev_pgto||'')||fN(b.r.saldo)-fN(a.r.saldo));
   document.getElementById('mSearch').classList.add('on');
   const input=document.getElementById('searchInput'); if(input)input.style.display='none';
@@ -6920,8 +6954,16 @@ function mostrarLancDiaFluxo(dia){
 // categoria no mês, já respeitando o cross-filter de Proprietário —
 // mesmo modal/cartões da busca global usado em mostrarLancDia(Fluxo).
 function mostrarLancCategoria(dim,key){
+  ULTIMO_MSEARCH=()=>mostrarLancCategoria(dim,key);
   const rows=frRowsForRing(dim).filter(r=>((r[dim]||'').trim()||'—')===key);
-  if(!rows.length)return;
+  if(!rows.length){
+    // Só sai sem abrir nada na 1ª chamada; se já estava aberto (refresh
+    // depois de uma alteração em outro lugar), avisa em vez de deixar a
+    // lista velha na tela.
+    if(document.getElementById('mSearch')?.classList.contains('on'))
+      document.getElementById('searchResults').innerHTML='<div class="srow-empty">Nada encontrado.</div>';
+    return;
+  }
   const all=allD();
   const items=rows.map(r=>({r,i:all.indexOf(r)}));
   items.sort((a,b)=>(a.r.prev_pgto||'').localeCompare(b.r.prev_pgto||'')||fN(b.r.saldo)-fN(a.r.saldo));
@@ -7564,13 +7606,21 @@ async function addN(){
   rNovos();popSel();renderAll();
 }
 function rNovos(){
+  // O "✕" precisa apagar de verdade: quando o lançamento aparece aqui, ele
+  // JÁ foi gravado no Supabase (addN/confirmAI/addItensContrato inserem e só
+  // então empurram pra NOVOS). Um NOVOS.splice() sozinho só escondia a linha
+  // desta tabela — o registro continuava no banco, inflando previsto,
+  // recebido, boletos e tudo o mais, sem aparecer em lugar nenhum da tela.
+  // excluirLancamento() é o delete de verdade (confirma, apaga no banco,
+  // tira de DATA/NOVOS e atualiza os painéis) — o índice em allD() de um
+  // item de NOVOS é sempre DATA.length + a posição dele em NOVOS.
   document.getElementById('novosBody').innerHTML=NOVOS.map((r,i)=>`<tr>
     <td><span class="placa">${r.placa}</span></td><td>${r.dono}</td><td>${r.cliente}</td>
     <td style="font-size:12px">${r.tipo||'—'}</td>
     <td style="font-size:12px">${r.saida||'—'}</td>
     <td class="nr">${fR(r.valor)}</td><td><span class="tag tag-forma">${fFormaLabel(r.forma)}</span></td>
     <td style="font-size:12px">${r.prev_pgto||'—'}</td>
-    <td><button class="btn btn-xs" style="color:var(--red)" onclick="NOVOS.splice(${i},1);rNovos();renderAll()">✕</button></td>
+    <td><button class="btn btn-xs" style="color:var(--red)" onclick="if(excluirLancamento(DATA.length+${i}))rNovos()">✕</button></td>
   </tr>`).join('');
 }
 
@@ -7964,6 +8014,10 @@ async function importXls(){
     if(meses.length)curMes=meses[meses.length-1];
     updateMesLabel();
     closeXls();
+    // Importação em massa é o caso mais provável de trazer placa/cliente/
+    // dono/tipo NOVOS — sem popSel() eles ficavam de fora do autocomplete
+    // até alguma outra ação do app disparar a reindexação.
+    popSel();
     go('lancamentos');
     setTimeout(()=>alert(`✓ ${importados} importados, ${freshRows.length} no banco.\nMês: ${curMes||'(sem data)'}`),200);
   }catch(err){
@@ -8135,6 +8189,12 @@ function paginaSalva(){
   // Só aceita id que existe de fato — chave antiga/estragada volta ao Resumo.
   return (id&&document.getElementById('page-'+id))?id:'resumo';
 }
+// Ponto único de repintura depois de QUALQUER alteração em lançamentos —
+// local (baixa, edição, exclusão, novo item) ou remota (sincronização
+// automática de outro aparelho). Toda ação que muda um lançamento deve
+// terminar passando por aqui (ou por popSel(), quando também mexe em
+// placa/cliente/dono/tipo/forma), pra nenhum painel, gráfico ou modal
+// aberto ficar mostrando dado desatualizado.
 function renderAll(){
   updateHeader();buildOwnerPills();buildMiniSummary();
   if(curPage==='baixas')renderBaixas();
@@ -8144,6 +8204,7 @@ function renderAll(){
   else if(curPage==='premissas')renderPremissas();
   else if(curPage==='fluxo')renderFluxo();
   else if(curPage==='auditoria')renderAuditoria();
+  refreshMSearch();
 }
 function go(id){
   const alvo=document.getElementById('page-'+id);
