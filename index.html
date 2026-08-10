@@ -1229,6 +1229,10 @@ body.tip-pinned::before {
 .bol-nome { font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.25; overflow-wrap: break-word; }
 .rb-bol-leg { color: var(--ink3); font-weight: 500; font-size: 10.5px; }
 .bol-meta { font-size: 13px; color: var(--ink3); }
+/* Composição do valor quando o boleto junta mais de um lançamento (mesma
+   placa+vencimento) — ex.: "Locação R$ 1.000,00 + Avarias R$ 250,00". */
+.bol-composto { font-size: 11.5px; color: var(--ink3); opacity: .85; overflow-wrap: break-word; }
+.bol-feito .bol-composto { text-decoration: line-through; }
 .bol-venc { font-size: 13px; font-weight: 700; color: var(--red); opacity: .55; }
 /* Vencimento a 20 dias ou menos (e ainda não emitido): pisca em vermelho pra
    chamar atenção — animação simples de opacidade, sem exagerar no efeito. */
@@ -5538,25 +5542,54 @@ function diasAteVenc(d){
 }
 function ddmm(d){ if(!d)return null; const[,mm,dd]=d.split('-'); return dd+'/'+mm; }
 function ddmmyyyy(d){ if(!d)return null; const[yy,mm,dd]=d.split('-'); return dd+'/'+mm+'/'+yy; }
+// Um boleto físico é emitido por PLACA + VENCIMENTO, não por lançamento: um
+// contrato com Locação + Avarias no mesmo carro, vencendo no mesmo dia, é UM
+// boleto só, de valor somado — não dois. Cada lançamento continua separado
+// no banco (tipo, forma e baixa próprios); só aqui, na hora de decidir
+// quantos boletos emitir, eles se juntam num grupo. Sem isso, a lista
+// mostrava duas linhas para o mesmo boleto físico e confundia na emissão.
+function agruparBoletos(bol){
+  const map=new Map();
+  bol.forEach(r=>{
+    const k=_plKey(r.placa)+'|'+(r.prev_pgto||'');
+    let g=map.get(k);
+    if(!g){
+      g={placa:(r.placa||'').toUpperCase(),prev_pgto:r.prev_pgto||'',saida:r.saida,retorno:r.retorno,
+         clientes:new Set(),itens:[],totalPago:0,totalSaldo:0,feito:true};
+      map.set(k,g);
+    }
+    g.itens.push(r);
+    if(r.cliente)g.clientes.add(r.cliente);
+    g.totalPago+=fN(r.valor_pago);
+    g.totalSaldo+=fN(r.saldo);
+    if(!r.boleto_feito)g.feito=false;
+  });
+  return[...map.values()].sort((a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||'')||a.placa.localeCompare(b.placa));
+}
+// Grupos do último render — a lista clica de volta neles pelo índice, mesmo
+// esquema já usado em allD().indexOf(r) noutras listas do app.
+let BOL_GRUPOS=[];
 function renderBoletosPainel(rows){
   const el=document.getElementById('resBoletos');
   if(!el)return;
-  const bol=rows.filter(r=>(r.forma||'').toLowerCase()==='boleto')
-    .sort((a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||'')||(a.cliente||'').localeCompare(b.cliente||''));
+  const bol=rows.filter(r=>(r.forma||'').toLowerCase()==='boleto');
   const hd=document.getElementById('hdBoletos');
   if(!bol.length){
     if(hd)hd.textContent='Boletos do mês';
     el.innerHTML='<div style="color:var(--ink3);font-size:12.5px;padding:8px 0">Nenhum boleto no mês.</div>';
+    BOL_GRUPOS=[];
     return;
   }
-  const feitosRows=bol.filter(r=>r.boleto_feito), afazerRows=bol.filter(r=>!r.boleto_feito);
-  const feitos=feitosRows.length, afazer=afazerRows.length;
-  const totFeitos=feitosRows.reduce((a,r)=>a+liq(r),0), totFazer=afazerRows.reduce((a,r)=>a+liq(r),0);
-  if(hd)hd.textContent=`Boletos do mês — ${feitos} de ${bol.length} emitidos`;
+  const grupos=agruparBoletos(bol);
+  BOL_GRUPOS=grupos;
+  const feitosG=grupos.filter(g=>g.feito), afazerG=grupos.filter(g=>!g.feito);
+  const feitos=feitosG.length, afazer=afazerG.length;
+  const totFeitos=feitosG.reduce((a,g)=>a+g.totalPago+g.totalSaldo,0), totFazer=afazerG.reduce((a,g)=>a+g.totalPago+g.totalSaldo,0);
+  if(hd)hd.textContent=`Boletos do mês — ${feitos} de ${grupos.length} emitidos`;
 
   // Boleto a emitir vencendo em 20 dias ou menos (ou já vencido): abre a
   // lista sozinho na primeira vez que aparece, pra não passar batido.
-  const temUrgente=afazerRows.some(r=>diasAteVenc(r.prev_pgto)<=20);
+  const temUrgente=afazerG.some(g=>diasAteVenc(g.prev_pgto)<=20);
   if(!bolAutoInit&&temUrgente){bolExpandido=true;bolFiltro='afazer';bolAutoInit=true;}
 
   const resumo=`<div class="bol-resumo" role="button" tabindex="0">
@@ -5575,31 +5608,38 @@ function renderBoletosPainel(rows){
 
   if(!bolExpandido){ el.innerHTML=resumo; return; }
 
-  const mostraTodos=bolFiltro==='feitos'?feitosRows:bolFiltro==='todos'?bol:afazerRows;
+  const mostraTodos=bolFiltro==='feitos'?feitosG:bolFiltro==='todos'?grupos:afazerG;
   const mostra=bolVerMais?mostraTodos:mostraTodos.slice(0,5);
   const alterna=bolFiltro!=='todos'
-    ? `<button class="bol-toggle" onclick="event.stopPropagation();bolFiltro='todos';bolVerMais=false;renderResumo()">Ver todos (${bol.length})</button>`
+    ? `<button class="bol-toggle" onclick="event.stopPropagation();bolFiltro='todos';bolVerMais=false;renderResumo()">Ver todos (${grupos.length})</button>`
     : '';
   const leg=`<div class="rb rb-cab" style="display:flex;align-items:center;gap:6px">
     <span class="bol-ck" style="visibility:hidden"></span>
     <span class="rb-bol-leg" style="flex:1">clique para marcar como emitido</span>
   </div>`;
-  const linhas=mostra.map(r=>{
-    const i=allD().indexOf(r);
-    const pago=isPago(r), venc=isVenc(r);
+  const linhas=mostra.map(g=>{
+    const idx=grupos.indexOf(g);
+    const pago=g.totalSaldo<=0.005, venc=!pago&&g.prev_pgto&&g.prev_pgto<td();
     const situacao=pago?'recebido':venc?'vencido':'a vencer';
-    const vencTxt=ddmmyyyy(r.prev_pgto)||'—';
-    const periodo=r.saida?`${ddmmyyyy(r.saida)} → ${ddmmyyyy(r.retorno)||'?'}`:'—';
-    const urgente=!r.boleto_feito&&diasAteVenc(r.prev_pgto)<=20;
-    return`<div class="rb rb-bol${r.boleto_feito?' bol-feito':''}" onclick="toggleBoletoFeito(${i})"
-        title="${esc(r.cliente||'—')} · ${esc(r.placa||'')} · locação ${periodo} · vence ${vencTxt} · ${situacao}${r.boleto_feito?' · boleto emitido':' · boleto a emitir'}">
-      <span class="bol-ck">${r.boleto_feito?'✓':''}</span>
+    const vencTxt=ddmmyyyy(g.prev_pgto)||'—';
+    const periodo=g.saida?`${ddmmyyyy(g.saida)} → ${ddmmyyyy(g.retorno)||'?'}`:'—';
+    const urgente=!g.feito&&diasAteVenc(g.prev_pgto)<=20;
+    const nomes=[...g.clientes].join(' + ')||'—';
+    // Um item só: nada a detalhar. Mais de um: mostra a composição do valor
+    // (o que foi somado) — no título (hover) e como legenda discreta abaixo.
+    const composto=g.itens.length>1
+      ?g.itens.map(r=>`${esc(r.tipo||'—')} ${fR(r.valor)}`).join(' + ')
+      :'';
+    return`<div class="rb rb-bol${g.feito?' bol-feito':''}" onclick="toggleBoletoFeitoGrupo(${idx})"
+        title="${esc(nomes)} · ${esc(g.placa)} · locação ${periodo} · vence ${vencTxt} · ${situacao}${g.feito?' · boleto emitido':' · boleto a emitir'}${composto?' · '+esc(composto):''}">
+      <span class="bol-ck">${g.feito?'✓':''}</span>
       <div class="bol-info">
-        <div class="bol-nome">${esc(r.cliente||'—')}</div>
-        <div class="bol-meta">${esc(r.placa||'')} · ${periodo}</div>
+        <div class="bol-nome">${esc(nomes)}</div>
+        <div class="bol-meta">${esc(g.placa)} · ${periodo}${g.itens.length>1?` · ${g.itens.length} itens`:''}</div>
+        ${composto?`<div class="bol-composto">${esc(composto)}</div>`:''}
         <div class="bol-venc${urgente?' bol-venc-blink':''}">Venc: ${vencTxt}</div>
       </div>
-      <div class="bol-valor">${fR(pago?r.valor_pago:r.saldo)}</div>
+      <div class="bol-valor">${fR(pago?g.totalPago:g.totalSaldo)}</div>
     </div>`;
   }).join('');
   const vermais=(!bolVerMais&&mostraTodos.length>5)
@@ -7058,11 +7098,13 @@ let _todosOn=false;
 
 // ── BOLETOS ──
 
-function toggleBoletoFeito(idx){
-  const r = allD()[idx];
-  if(!r) return;
-  r.boleto_feito = !r.boleto_feito;
-  persistBoletoFeito(r);
+// Marca/desmarca TODOS os lançamentos do grupo (mesma placa+vencimento) de
+// uma vez — é um boleto físico só, então "emitido" vale pro grupo inteiro.
+function toggleBoletoFeitoGrupo(idx){
+  const g = BOL_GRUPOS[idx];
+  if(!g || !g.itens.length) return;
+  const novo = !g.feito;
+  g.itens.forEach(r=>{ r.boleto_feito = novo; persistBoletoFeito(r); });
   renderResumo();
 }
 // Persiste apenas o flag "boleto_feito". Isolado e tolerante a erro: se a coluna
