@@ -7306,11 +7306,13 @@ function itemSet(it,k,v){const e=it.querySelector(`[data-k="${k}"]`);if(e)e.valu
 // pela metade (essa vira erro, em vez de sumir calada).
 function itemVazio(it){return !itemGet(it,'valor')&&!itemGet(it,'obs')&&!itemGet(it,'dpago');}
 
-// Previsão de pagamento do item. Cartão: SEMPRE a partir da Data de pagamento
-// (dp). Boleto: a partir do Retorno.
+// Previsão de pagamento do item. Cartão: SEMPRE a partir da Data de
+// pagamento (dp). Boleto: a Data de pagamento lançada é o próprio
+// vencimento e SEMPRE prevalece — sem nenhum deslocamento de dias. Só cai
+// no retorno + prazo (sugestão) quando ainda não foi digitada nenhuma data.
 function itemPrev(forma,retorno,dp){
   const fl=(forma||'').toLowerCase();
-  if(fl.includes('boleto')&&retorno) return addDUtil(retorno,PREM.prazoBoleto);
+  if(fl.includes('boleto')) return dp ? proxUtil(dp) : (retorno?addDUtil(retorno,PREM.prazoBoleto):'');
   if((fl.includes('90')||fl.includes('3x'))&&dp) return addDUtil(dp,90);
   if((fl.includes('60')||fl.includes('2x'))&&dp) return addDUtil(dp,60);
   if((fl.includes('crédito')||fl.includes('credito'))&&dp) return addDUtil(dp,PREM.prazoCredito);
@@ -7325,7 +7327,12 @@ function calcItems(pref){
     const num=it.querySelector('[data-num]');if(num)num.textContent=i+1;
     const del=it.querySelector('.item-del');if(del)del.disabled=its.length<2;
     const forma=itemGet(it,'forma');
-    itemSet(it,'prev',itemPrev(forma,r,itemGet(it,'dpago')));
+    // Se o usuário já editou a Prev. Pgto NA MÃO (marcado no listener do
+    // box), ela prevalece: não recalcula por cima enquanto ele não limpar o
+    // campo. Sem essa guarda, digitar aqui não "pegava" — o próprio evento
+    // de editar este campo disparava calcItems, que reescrevia o valor
+    // automático em cima do que acabou de ser digitado.
+    if(it.dataset.prevManual!=='1') itemSet(it,'prev',itemPrev(forma,r,itemGet(it,'dpago')));
     const v=parseFloat(itemGet(it,'valor'))||0;
     const vl=v*(1-getTaxaForma(forma));
     itemSet(it,'liq',v?vl.toFixed(2):'');
@@ -7361,7 +7368,16 @@ function initItens(pref){
   const box=document.getElementById(pref+'-itens');if(!box)return;
   if(!box.dataset.init){   // boot() roda de novo a cada desbloqueio
     box.dataset.init='1';
-    ['input','change'].forEach(ev=>box.addEventListener(ev,e=>{if(e.target.closest('[data-item]'))calcItems(pref);}));
+    ['input','change'].forEach(ev=>box.addEventListener(ev,e=>{
+      const it=e.target.closest('[data-item]');
+      if(!it)return;
+      if(e.target.dataset.k==='prev'){
+        // Editar a previsão na mão marca o item como "travado": fica sob
+        // controle do usuário até ele apagar a data, que volta ao automático.
+        it.dataset.prevManual=e.target.value?'1':'';
+      }
+      calcItems(pref);
+    }));
   }
   resetItems(pref);
 }
