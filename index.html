@@ -7858,6 +7858,16 @@ function exportCSV(){
 
 // ── ROUTING ──
 let curPage='resumo';
+// A aba aberta sobrevive ao F5: recarregar não pode jogar o usuário de volta
+// no Resumo, ainda mais quando ele estava no meio de um lançamento.
+const PAGINA_KEY='agi-pagina';
+function salvarPagina(id){try{localStorage.setItem(PAGINA_KEY,id);}catch(e){}}
+function paginaSalva(){
+  let id='';
+  try{id=localStorage.getItem(PAGINA_KEY)||'';}catch(e){}
+  // Só aceita id que existe de fato — chave antiga/estragada volta ao Resumo.
+  return (id&&document.getElementById('page-'+id))?id:'resumo';
+}
 function renderAll(){
   updateHeader();buildOwnerPills();buildMiniSummary();
   if(curPage==='baixas')renderBaixas();
@@ -7869,9 +7879,12 @@ function renderAll(){
   else if(curPage==='auditoria')renderAuditoria();
 }
 function go(id){
+  const alvo=document.getElementById('page-'+id);
+  if(!alvo)return;
   curPage=id;
+  salvarPagina(id);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.getElementById('page-'+id).classList.add('on');
+  alvo.classList.add('on');
 
   // No desktop (sidebar): dock-main sempre visível, dock-mais sempre oculto
   // No mobile: alterna entre grupo principal e grupo "Mais"
@@ -7955,7 +7968,7 @@ async function boot(){
   updateMesLabel();
   buildResumoFilters();
   buildBaixasFilters();
-  renderAll();
+  go(paginaSalva());   // volta para a aba onde o usuário estava (já renderiza)
   initMobileFilters();
   autoCompletePlaca('nf-p');
   autoCompletePlaca('e-p');
