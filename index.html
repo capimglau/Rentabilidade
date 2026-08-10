@@ -2750,6 +2750,17 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
 
 .fr-bargroup-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); margin-bottom: 10px; }
 
+/* Modo Boletos (ver MODO_BOLETOS/compartilharLinkBoletos): link que abre
+   direto no painel de Boletos do mês, sem o resto do app na tela. Não é
+   uma barreira de segurança — mesma senha/chave de sempre — só uma tela
+   simplificada pra quem só precisa emitir/marcar boletos. */
+body.modo-boletos { padding-left: 0 !important; padding-bottom: 0 !important; }
+body.modo-boletos #mainDock { display: none !important; }
+body.modo-boletos .header-right { display: none; }
+body.modo-boletos #page-resumo > * { display: none; }
+body.modo-boletos #page-resumo > #cardBoletos { display: block; }
+body.modo-boletos #btnLinkBoletos { display: none; }
+
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css">
 <script id="ds" type="application/json">
@@ -2888,8 +2899,11 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
 <div class="page on" id="page-resumo">
   <div class="mrow" id="res-m"></div>
   <div id="recebHoje"></div>
-  <div class="card">
-    <div class="card-hd" id="hdBoletos">Boletos do mês</div>
+  <div class="card" id="cardBoletos">
+    <div class="card-hd" id="hdBoletos">
+      <span id="hdBoletosTxt" style="flex:1">Boletos do mês</span>
+      <button class="btn btn-xs" id="btnLinkBoletos" onclick="compartilharLinkBoletos()" title="Copiar um link de acesso só a este painel (mesma senha do app)" style="font-weight:600">🔗 Link p/ compartilhar</button>
+    </div>
     <div id="resBoletos"></div>
   </div>
   <div class="card card-donut">
@@ -3630,6 +3644,27 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 window.scrollTo(0,0);
 const DS = JSON.parse(document.getElementById("ds").textContent);
+
+// ─── MODO BOLETOS (link restrito ao painel de Boletos do mês) ───
+// Tela simplificada, não uma barreira de segurança de verdade: quem abre
+// esse link ainda entra com a MESMA senha/chave do app inteiro (não existe
+// hoje um login com permissão diferenciada no Supabase — a RLS libera
+// leitura/escrita geral pra chave anônima, então restringir de verdade
+// exigiria mudar isso no banco). O que este modo faz é esconder o resto do
+// app da tela: só aparece o painel de Boletos, sem menu, sem outras telas.
+const MODO_BOLETOS = new URLSearchParams(location.search).get('painel')==='boletos';
+function linkBoletos(){
+  return location.origin+location.pathname+'?painel=boletos';
+}
+async function compartilharLinkBoletos(){
+  const link=linkBoletos();
+  try{
+    await navigator.clipboard.writeText(link);
+    showToast('🔗 Link copiado — quem abrir só vê o painel de Boletos (mesma senha do app)');
+  }catch(e){
+    prompt('Copie o link de acesso só ao painel de Boletos:',link);
+  }
+}
 
 // ─── SUPABASE (camada de dados) ───
 const _cfg = (window.AUTOGEST_CONFIG || {});
@@ -5586,7 +5621,7 @@ function renderBoletosPainel(rows){
   const el=document.getElementById('resBoletos');
   if(!el)return;
   const bol=rows.filter(r=>(r.forma||'').toLowerCase()==='boleto');
-  const hd=document.getElementById('hdBoletos');
+  const hd=document.getElementById('hdBoletosTxt');
   if(!bol.length){
     if(hd)hd.textContent='Boletos do mês';
     el.innerHTML='<div style="color:var(--ink3);font-size:12.5px;padding:8px 0">Nenhum boleto no mês.</div>';
@@ -8268,6 +8303,10 @@ function renderAll(){
   refreshMSearch();
 }
 function go(id){
+  // Modo Boletos: só existe "resumo" nessa tela. Reforço, não a proteção em
+  // si (essa é o CSS escondendo o menu) — pra nenhum onclick perdido por aí
+  // conseguir trocar de aba nesse link.
+  if(MODO_BOLETOS)id='resumo';
   const alvo=document.getElementById('page-'+id);
   if(!alvo)return;
   curPage=id;
@@ -8357,7 +8396,15 @@ async function boot(){
   updateMesLabel();
   buildResumoFilters();
   buildBaixasFilters();
-  go(paginaSalva());   // volta para a aba onde o usuário estava (já renderiza)
+  if(MODO_BOLETOS){
+    // Link restrito: sempre Resumo, painel já aberto, sem lembrar a última
+    // aba visitada (isso é sobre o app inteiro; aqui só existe uma tela).
+    document.body.classList.add('modo-boletos');
+    bolExpandido=true;
+    go('resumo');
+  } else {
+    go(paginaSalva());   // volta para a aba onde o usuário estava (já renderiza)
+  }
   initMobileFilters();
   initSync();
   autoCompletePlaca('nf-p');
