@@ -3364,7 +3364,7 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
     <div id="aiSt" style="display:none" class="ai-st"></div>
     <div id="aiForm" style="display:none;margin-top:12px">
       <div class="fg">
-        <div class="fp"><label>Placa</label><input type="text" id="ai-p"></div>
+        <div class="fp"><label>Placa</label><input type="text" id="ai-p" placeholder="Ex: UFR2H17" list="placaDL" autocomplete="off"></div>
         <div class="fp"><label>Proprietário</label><select id="ai-d"><option value="">Selecione</option></select></div>
         <div class="fp s2"><label>Cliente</label><input type="text" id="ai-c"></div>
         <div class="fp"><label>Saída</label><input type="date" id="ai-s" onchange="calcItems('ai')"></div>
@@ -4446,6 +4446,31 @@ const PLACA_DONO = {
 // selecionado pra sumir na próxima tecla. Se casar com mais de um, não força
 // nada — o <datalist> já mostra as opções pra escolher. Não completa ao
 // apagar (backspace/delete), senão vira briga entre o usuário e o campo.
+// A frota e os lançamentos guardam a placa sem hífen ("UFR2H17"), mas o OCR
+// devolve "UFR-2H17" e o usuário às vezes digita com hífen ou espaço. Sem
+// achatar isso, o mesmo carro vira dois no resumo, o proprietário não é
+// reconhecido e a checagem de duplicidade não acha nada.
+const _plKey = p => String(p||'').toUpperCase().replace(/[\s\-]/g,'');
+// Devolve a placa exatamente como está cadastrada na frota; se não houver
+// cadastro, ao menos sem hífen/espaço.
+function normPlaca(p){
+  const k = _plKey(p);
+  const v = VEICULOS.find(x => _plKey(x.placa) === k);
+  return v ? (v.placa||'').toUpperCase() : k;
+}
+function donoDaPlaca(p){
+  const k = _plKey(p);
+  let dono = PLACA_DONO[k] || PLACA_DONO[String(p||'').trim()];
+  if (!dono) { const v = VEICULOS.find(x => _plKey(x.placa) === k); if (v) dono = v.dono; }
+  return dono || '';
+}
+// (nome distinto do setDono das pílulas de proprietário na aba Donos)
+function preencheDono(donoSelectId, dono){
+  const sel = document.getElementById(donoSelectId);
+  if (!sel || !dono) return false;
+  for (let o of sel.options) { if (o.value === dono) { sel.value = dono; return true; } }
+  return false;
+}
 function autoCompletePlaca(placaId) {
   const placa = document.getElementById(placaId);
   if (!placa) return;
@@ -4453,11 +4478,14 @@ function autoCompletePlaca(placaId) {
     if (e.inputType && e.inputType.startsWith('delete')) return;
     const digitado = this.value.trim();
     if (!digitado) return;
-    const p = digitado.toUpperCase();
-    const candidatas = [...new Set(VEICULOS.map(v => (v.placa||'').toUpperCase()).filter(pl => pl.startsWith(p)))];
+    const p = _plKey(digitado);
+    const candidatas = [...new Set(VEICULOS.map(v => _plKey(v.placa)).filter(pl => pl.startsWith(p)))];
     if (candidatas.length === 1 && candidatas[0].length > p.length) {
       this.value = candidatas[0];
-      this.setSelectionRange(digitado.length, candidatas[0].length);
+      // Seleciona a partir de p.length (o que foi digitado JÁ SEM hífen): com
+      // digitado.length, "CSJ-" deixava a seleção deslocada e a próxima tecla
+      // escrevia por cima do lugar errado ("CSJ-0H31" virava "CSJ00H31").
+      this.setSelectionRange(p.length, candidatas[0].length);
     }
   });
 }
@@ -4465,14 +4493,7 @@ function autoFillDono(placaId, donoSelectId) {
   const placa = document.getElementById(placaId);
   const donoSel = document.getElementById(donoSelectId);
   if (!placa || !donoSel) return;
-  placa.addEventListener('input', function() {
-    const p = this.value.trim().toUpperCase();
-    let dono = PLACA_DONO[p] || PLACA_DONO[this.value.trim()];
-    if (!dono) { const v = VEICULOS.find(x => (x.placa||'').toUpperCase() === p); if (v) dono = v.dono; }
-    if (dono) {
-      for (let o of donoSel.options) { if (o.value === dono) { donoSel.value = dono; break; } }
-    }
-  });
+  placa.addEventListener('input', function() { preencheDono(donoSelectId, donoDaPlaca(this.value)); });
 }
 const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Bruno':'tax'};
 const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -7229,8 +7250,8 @@ function coletaItens(pref,base){
   return{recs};
 }
 async function addN(){
-  const p=document.getElementById('nf-p').value.trim().toUpperCase();
-  const d=document.getElementById('nf-d').value;
+  const p=normPlaca(document.getElementById('nf-p').value);
+  const d=document.getElementById('nf-d').value||donoDaPlaca(p);
   const c=document.getElementById('nf-c').value.trim();
   const s=document.getElementById('nf-s').value||null;
   const rr=document.getElementById('nf-r').value||null;
@@ -7266,7 +7287,14 @@ function rNovos(){
 // ── CÂMERA ──
 function openCam(){document.getElementById('mCam').classList.add('on');}
 function closeCam(){document.getElementById('mCam').classList.remove('on');}
-function clearAI(){['aiForm','aiSt','prevImg','aiRawWrap'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('fi').value='';resetItems('ai');}
+// Zera o formulário do OCR. Cada foto tem que começar limpa: se a leitura
+// seguinte não identificar nada, o que sobrou da anterior (placa, cliente,
+// datas) não pode ficar na tela esperando um "Confirmar" distraído.
+function resetAI(){
+  ['ai-p','ai-c','ai-s','ai-r','ai-d'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  resetItems('ai');
+}
+function clearAI(){['aiForm','aiSt','prevImg','aiRawWrap'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('fi').value='';resetAI();}
 function handleImg(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
@@ -7277,7 +7305,7 @@ function handleImg(input){
     const st=document.getElementById('aiSt');
     st.style.display='block';st.className='ai-st load';st.textContent='⏳ Carregando OCR...';
     document.getElementById('aiForm').style.display='none';
-    resetItems('ai');   // cada foto começa com um item limpo
+    resetAI();   // cada foto começa com o formulário limpo
     if(typeof Tesseract==='undefined'){
       st.className='ai-st err';st.textContent='⚠ OCR não carregou (verifique a internet). Preencha manualmente.';
       document.getElementById('aiForm').style.display='block';return;
@@ -7293,7 +7321,7 @@ function handleImg(input){
       const p=parseContrato(result.data.text);
       if(p.placa||p.cliente){
         st.className='ai-st ok';st.textContent='✓ Dados extraídos! Confira antes de confirmar.';
-        document.getElementById('ai-p').value=p.placa||'';
+        document.getElementById('ai-p').value=p.placa?normPlaca(p.placa):'';
         document.getElementById('ai-c').value=p.cliente||'';
         document.getElementById('ai-s').value=p.saida||'';
         document.getElementById('ai-r').value=p.retorno||'';
@@ -7307,7 +7335,7 @@ function handleImg(input){
           if(p.forma&&LANC_FORMAS.includes(p.forma))itemSet(it0,'forma',p.forma);
         }
         calcItems('ai');
-        if(p.placa){const norm=p.placa.replace(/[\s\-]/g,'').toUpperCase();const veic=VEICULOS.find(v=>(v.placa||'').replace(/[\s\-]/g,'').toUpperCase()===norm);if(veic&&veic.dono){const sd=document.getElementById('ai-d');[...sd.options].forEach(o=>{if(o.value===veic.dono)sd.value=o.value;});}}
+        if(p.placa)preencheDono('ai-d',donoDaPlaca(p.placa));
       } else {
         st.className='ai-st err';st.textContent='⚠ Não identificado. Preencha manualmente.';
       }
@@ -7667,8 +7695,8 @@ async function importXls(){
 })();
 
 async function confirmAI(){
-  const p=document.getElementById('ai-p').value.trim().toUpperCase();
-  const d=document.getElementById('ai-d').value;
+  const p=normPlaca(document.getElementById('ai-p').value);
+  const d=document.getElementById('ai-d').value||donoDaPlaca(p);
   const c=document.getElementById('ai-c').value.trim();
   const s=document.getElementById('ai-s').value||null;
   const r=document.getElementById('ai-r').value||null;
@@ -7824,8 +7852,10 @@ async function boot(){
   initMobileFilters();
   autoCompletePlaca('nf-p');
   autoCompletePlaca('e-p');
+  autoCompletePlaca('ai-p');
   autoFillDono('nf-p','nf-d');
   autoFillDono('e-p','e-d');
+  autoFillDono('ai-p','ai-d');
   setTimeout(renderPremissas, 100);
   // ONLINE só diz que existe config — SB_OFF diz se o banco respondeu de fato.
   if(ONLINE&&!SB_OFF) console.log('AGI Locadora · Supabase ONLINE ·', DATA.length, 'lançamentos');
