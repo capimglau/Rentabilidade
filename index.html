@@ -4493,18 +4493,39 @@ const PLACA_DONO = {
 // achatar isso, o mesmo carro vira dois no resumo, o proprietário não é
 // reconhecido e a checagem de duplicidade não acha nada.
 const _plKey = p => String(p||'').toUpperCase().replace(/[\s\-]/g,'');
-// Devolve a placa exatamente como está cadastrada na frota; se não houver
-// cadastro, ao menos sem hífen/espaço.
+// Índice de TODAS as placas já vistas pelo app, não só as cadastradas em
+// "Premissas > Frota de Veículos" — a maioria dos carros só existe porque
+// alguém já lançou algo com aquela placa, e nunca passou por lá. Sem incluir
+// os lançamentos aqui, autocompletar e achar o dono só funcionava para quem
+// tinha sido formalmente cadastrado, que é a minoria — daí "às vezes não
+// funciona". Prioridade quando a mesma placa aparece em mais de um lugar
+// com dono diferente: Veículos (cadastro mantido à mão) > lançamentos mais
+// recentes > mapa histórico PLACA_DONO (o mais antigo, nunca muda).
+// Recalculado em popSel(), chamada sempre que os dados mudam.
+let PLACAS_IDX = new Map();
+function reindexarPlacas(){
+  const idx = new Map();
+  const upsert = (placa,dono) => {
+    const k = _plKey(placa);
+    if (!k) return;
+    const atual = idx.get(k) || {};
+    idx.set(k, { placa: (placa||atual.placa||'').toUpperCase(), dono: dono||atual.dono||'' });
+  };
+  Object.keys(PLACA_DONO).forEach(p => upsert(p, PLACA_DONO[p]));
+  allD().forEach(r => upsert(r.placa, r.dono));
+  VEICULOS.forEach(v => upsert(v.placa, v.dono));
+  PLACAS_IDX = idx;
+}
+// Devolve a placa no formato já conhecido pelo app; se for inédita, ao menos
+// sem hífen/espaço.
 function normPlaca(p){
   const k = _plKey(p);
-  const v = VEICULOS.find(x => _plKey(x.placa) === k);
-  return v ? (v.placa||'').toUpperCase() : k;
+  const v = PLACAS_IDX.get(k);
+  return v ? v.placa : k;
 }
 function donoDaPlaca(p){
-  const k = _plKey(p);
-  let dono = PLACA_DONO[k] || PLACA_DONO[String(p||'').trim()];
-  if (!dono) { const v = VEICULOS.find(x => _plKey(x.placa) === k); if (v) dono = v.dono; }
-  return dono || '';
+  const v = PLACAS_IDX.get(_plKey(p));
+  return (v && v.dono) || '';
 }
 // (nome distinto do setDono das pílulas de proprietário na aba Donos)
 function preencheDono(donoSelectId, dono){
@@ -4521,7 +4542,7 @@ function autoCompletePlaca(placaId) {
     const digitado = this.value.trim();
     if (!digitado) return;
     const p = _plKey(digitado);
-    const candidatas = [...new Set(VEICULOS.map(v => _plKey(v.placa)).filter(pl => pl.startsWith(p)))];
+    const candidatas = [...PLACAS_IDX.keys()].filter(pl => pl.startsWith(p));
     if (candidatas.length === 1 && candidatas[0].length > p.length) {
       this.value = candidatas[0];
       // Seleciona a partir de p.length (o que foi digitado JÁ SEM hífen): com
@@ -7849,15 +7870,14 @@ function popSel(){
   {const el=document.getElementById('e-t');if(el){const cv=el.value;el.innerHTML=EDIT_TIPOS.map(t=>`<option>${t}</option>`).join('');selVal('e-t',cv);}}
   ['lf-tipo'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os tipos</option>';tipos.forEach(t=>el.innerHTML+=`<option>${t}</option>`);el.value=cv;});
   ['lf-forma'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todas as formas</option>';formas.forEach(f=>el.innerHTML+=`<option>${f}</option>`);el.value=cv;});
-  // Placas cadastradas em Premissas (Veículos) — alimenta o autocomplete da
-  // placa em Novo lançamento e Editar, pra sugerir conforme digita e já
-  // reconhecer o proprietário assim que a placa bater com um veículo.
+  reindexarPlacas();
+  // Todas as placas conhecidas (cadastradas em Veículos ou só lançadas) —
+  // alimenta o autocomplete da placa em Novo lançamento, OCR e Editar, pra
+  // sugerir conforme digita e já reconhecer o proprietário.
   const placaDL=document.getElementById('placaDL');
   if(placaDL){
-    const vistas=new Set();
-    placaDL.innerHTML=[...VEICULOS].sort((a,b)=>(a.placa||'').localeCompare(b.placa||''))
-      .filter(v=>{const p=(v.placa||'').toUpperCase();if(!p||vistas.has(p))return false;vistas.add(p);return true;})
-      .map(v=>`<option value="${v.placa}" label="${v.dono||''}${v.modelo?' · '+v.modelo:''}">`).join('');
+    placaDL.innerHTML=[...PLACAS_IDX.values()].sort((a,b)=>a.placa.localeCompare(b.placa))
+      .map(v=>`<option value="${v.placa}" label="${v.dono||''}">`).join('');
   }
 }
 
