@@ -803,7 +803,9 @@ button.day-total:active { opacity: .45; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .pcard-meta { font-size: 11.5px; color: var(--ink3); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.pcard-meta > span { display: inline-flex; align-items: center; }
+/* gap em vez de confiar no espaço do HTML: como o span é inline-flex, o
+   espaço entre "Vencimento" e a data era descartado e os dois colavam. */
+.pcard-meta > span { display: inline-flex; align-items: center; gap: 4px; }
 .pcard-right {
   display: flex;
   flex-direction: column;
@@ -1372,6 +1374,31 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
 .search-total .st-pend { color: var(--amber); }
 .search-total .st-month { margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--line); }
 .srow-empty { color: var(--ink3); font-size: 13px; padding: 14px 4px; text-align: center; }
+
+/* Histórico de lançamentos por dia: régua de dias + cartão só de consulta */
+.hist-dias {
+  display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 9px;
+  scrollbar-width: thin; -webkit-overflow-scrolling: touch;
+}
+.hist-chip {
+  flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1px;
+  min-width: 52px; padding: 6px 9px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; color: var(--ink2); cursor: pointer;
+  transition: border-color .1s, background .1s;
+}
+.hist-chip:hover { border-color: var(--blue); }
+.hist-chip b { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.hist-chip em { font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--ink3); }
+.hist-chip.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+.hist-chip.on em { color: rgba(255,255,255,.85); }
+.lc-ro { margin-bottom: 7px; }
+.lc-ro .pcard { cursor: default; }
+.lc-ro-hora {
+  margin-left: auto; font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 600; color: var(--ink3); white-space: nowrap;
+}
+.rh-link-hist { margin-right: auto; }
 /* Divisor de mês entre os resultados da busca — agrupa os lançamentos do
    item pesquisado por competência (prev_pgto), do mais recente pro mais antigo. */
 .srow-mes { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink3); padding: 12px 4px 4px; }
@@ -3751,15 +3778,19 @@ async function dbSeed(){
   }
   return true;
 }
+// created_at é preenchido pelo default do banco e nunca é enviado por _clean
+// (não está em COLS). No modo demo/offline não existe banco para preencher,
+// então carimba aqui — é dele que sai o histórico de lançamentos por dia.
+const carimbaCriacao=r=>(r&&!r.created_at)?{...r,created_at:new Date().toISOString()}:r;
 async function dbInsert(rec){
-  if(!SB) return rec;
+  if(!SB) return carimbaCriacao(rec);
   const {data,error}=await SB.from('lancamentos').insert(_clean(rec)).select().single();
   if(error){console.error(error);alert('Erro ao salvar no Supabase: '+error.message);return rec;}
   logAuditoria('criação','lancamentos',data.id,data);
   return data;
 }
 async function dbInsertMany(recs){
-  if(!SB) return recs;
+  if(!SB) return recs.map(carimbaCriacao);
   const {data,error}=await SB.from('lancamentos').insert(recs.map(_clean)).select();
   if(error) throw new Error(error.message||'Falha na conexão com Supabase');
   return data||[];
@@ -5422,6 +5453,14 @@ function renderRecebHoje(){
   }
 
   // ── Direita: o que vence hoje ──
+  // O atalho do histórico fica nos dois estados do card: é consulta do que foi
+  // LANÇADO hoje (não do que vence hoje), e some se ficasse só no card vazio.
+  const nFeitos=lancFeitosHoje();
+  const atalhoHist=`<span class="rh-link rh-link-hist" role="button" tabindex="0"
+      onclick="event.stopPropagation();mostrarLancFeitosDia()"
+      onkeydown="if(event.key==='Enter'){event.stopPropagation();mostrarLancFeitosDia();}"
+      title="Ver os lançamentos cadastrados hoje e o histórico por dia (só consulta)"
+    >🧾 Lançados hoje${nFeitos?` (${nFeitos})`:''} ›</span>`;
   let cardHoje;
   if(itemsHoje.length){
     const totHoje=itemsHoje.reduce((a,r)=>a+fN(r.saldo),0);
@@ -5430,12 +5469,14 @@ function renderRecebHoje(){
       <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">${itemsHoje.length} · ${fR(totHoje)}</span></div>
       <div class="rh-list" onclick="event.stopPropagation()">${preview.map(r=>rhItemHtml(r,'hoje-card')).join('')}</div>
       <div class="rh-foot">${itemsHoje.length>preview.length?`+${itemsHoje.length-preview.length} • `:''}Ver todos os recebimentos ›</div>
+      <div class="rh-links">${atalhoHist}</div>
     </div>`;
   } else {
     cardHoje=`<div class="receb-hoje rh-vazio">
       <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">—</span></div>
       <div class="rh-nada">Nada vencendo hoje</div>
       <div class="rh-links">
+        ${atalhoHist}
         <span class="rh-link" role="button" tabindex="0" onclick="irFuturos()">Ver recebimentos futuros ›</span>
         <span class="rh-link" role="button" tabindex="0" onclick="irRecebimentosTodos()">Exibir todos ›</span>
       </div>
@@ -6946,6 +6987,109 @@ function buscaGroupedHtml(grupos,fecharBusca){
     </div>`;
   }).join('');
 }
+// ── HISTÓRICO: LANÇAMENTOS FEITOS EM CADA DIA (só consulta) ──
+// "Feito em" é a data em que o lançamento ENTROU no sistema (created_at do
+// banco), não a saída, o retorno nem o vencimento. Serve para conferir o que
+// foi cadastrado no dia — por isso a lista é só de leitura: nada de baixar,
+// editar ou excluir por aqui (isso continua em Recebimentos/Lançamentos).
+function diaDoLancamento(r){
+  const c=r&&r.created_at;
+  if(!c)return '';
+  const d=new Date(c);
+  if(isNaN(d))return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+const horaDoLancamento=r=>{
+  const c=r&&r.created_at; if(!c)return '';
+  const d=new Date(c); if(isNaN(d))return '';
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
+// Agrupa TODOS os lançamentos pelo dia em que foram feitos. Lê allD() a cada
+// chamada — nada de estado próprio para ficar desatualizado.
+function lancPorDiaFeito(){
+  const porDia={};
+  allD().forEach((r,i)=>{
+    const d=diaDoLancamento(r); if(!d)return;
+    const o=porDia[d]||(porDia[d]={itens:[],bruto:0,liq:0});
+    o.itens.push({r,i}); o.bruto+=fN(r.valor); o.liq+=liq(r);
+  });
+  // Dentro do dia, o mais recente primeiro (é o que se acabou de lançar).
+  Object.values(porDia).forEach(o=>o.itens.sort((a,b)=>
+    String(b.r.created_at||'').localeCompare(String(a.r.created_at||''))));
+  return porDia;
+}
+// Declarada como function: renderRecebHoje() a chama e fica ANTES daqui no
+// arquivo — com const/arrow cairia na zona morta se algo renderizasse cedo.
+function lancFeitosHoje(){ return (lancPorDiaFeito()[td()]||{itens:[]}).itens.length; }
+
+// Cartão de consulta: os mesmos dados do lançamento, sem as ações de swipe
+// (sem o wrapper .swipe o gesto nem chega a engatar — ver swStart).
+function lcCardConsultaHtml(r){
+  const col=DC[r.dono]||'#888', pago=isPago(r), venc=isVenc(r), parcial=isParcial(r);
+  const hora=horaDoLancamento(r);
+  return `<div class="lc-ro">
+    <div class="pcard lc-card${pago?' done':''}${parcial?' parcial':''}${venc&&!pago?' venc':''}">
+      <div class="pcard-body">
+        <div class="pcard-top">
+          <span class="placa">${r.placa}</span>
+          <span class="pcard-name">${esc(r.cliente||'—')}</span>
+          ${hora?`<span class="lc-ro-hora">${hora}</span>`:''}
+        </div>
+        <div class="pcard-tags">
+          <span class="ddot" style="background:${col}"></span>
+          <span style="font-size:11.5px;color:var(--ink3)">${esc(r.dono||'—')}</span>
+          ${tipTag(r.tipo)}
+          <span class="tag tag-forma">${fFormaLabel(r.forma)}</span>
+        </div>
+        ${r.obs?`<div class="pcard-info-row"><span class="pcard-obs" title="${esc(r.obs)}">📝 ${esc(r.obs)}</span></div>`:''}
+        <div class="pcard-meta">
+          <span>🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
+          <span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r.prev_pgto)}</b></span>
+        </div>
+      </div>
+      <div class="pcard-right">
+        <span class="pcard-value">${fR(liq(r))}</span>
+        <span class="pcard-parcial-sub">${pago?'✓ baixado':`bruto ${fR(r.valor)}`}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Abre o histórico no dia pedido (padrão: hoje). As pastilhas em cima são os
+// outros dias que têm lançamento — é por elas que se navega no histórico.
+function mostrarLancFeitosDia(dia){
+  const alvo=dia||td();
+  ULTIMO_MSEARCH=()=>mostrarLancFeitosDia(alvo);
+  const porDia=lancPorDiaFeito();
+  const doDia=porDia[alvo]||{itens:[],bruto:0,liq:0};
+  // Hoje sempre aparece na régua, mesmo sem nada lançado ainda, para não
+  // parecer que o dia sumiu do histórico.
+  const dias=[...new Set([td(),alvo,...Object.keys(porDia)])].sort((a,b)=>b.localeCompare(a)).slice(0,60);
+
+  document.getElementById('mSearch').classList.add('on');
+  const input=document.getElementById('searchInput'); if(input)input.style.display='none';
+  const tit=document.getElementById('searchModalTit');
+  if(tit) tit.textContent=`🧾 Lançamentos feitos em ${fD(alvo)}`;
+
+  const chips=`<div class="hist-dias">${dias.map(d=>{
+    const o=porDia[d]||{itens:[]};
+    return `<button type="button" class="hist-chip${d===alvo?' on':''}" onclick="mostrarLancFeitosDia('${d}')" title="${o.itens.length} lançamento(s) feito(s) em ${fD(d)}">
+      <b>${d===td()?'Hoje':fDM(d).slice(0,5)}</b><em>${o.itens.length}</em>
+    </button>`;
+  }).join('')}</div>`;
+
+  const total=`<div class="search-total"><div class="st-blk">
+    <div class="st-main"><span>${doDia.itens.length} lançamento${doDia.itens.length===1?'':'s'} no dia</span><span class="st-val">${fR(doDia.liq)}</span></div>
+    <div class="st-sub"><span class="st-pago">Bruto ${fR(doDia.bruto)}</span><span class="st-pend">🔒 só consulta</span></div>
+  </div></div>`;
+
+  const lista=doDia.itens.length
+    ? doDia.itens.map(({r})=>lcCardConsultaHtml(r)).join('')
+    : `<div class="srow-empty">Nenhum lançamento feito ${alvo===td()?'hoje':'em '+fD(alvo)}.</div>`;
+
+  document.getElementById('searchResults').innerHTML=chips+total+lista;
+}
+
 // Clique numa barra da Projeção de recebimentos (90 dias): mostra só os
 // lançamentos pendentes que vencem naquele dia (ou os vencidos, se for a
 // primeira barra) — reaproveita o modal da busca global.
