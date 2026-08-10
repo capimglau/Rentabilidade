@@ -901,6 +901,7 @@ button.day-total:active { opacity: .45; }
 .tag-mul { background: var(--amber-soft); color: var(--amber); }
 .tag-out { background: var(--surface); color: var(--ink3); }
 .tag-tax { background: var(--purple-soft); color: var(--purple); }
+.tag-ped { background: var(--teal-soft); color: var(--teal); }
 .tag-forma { background: var(--surface); color: var(--ink2); font-size: 11px; }
 
 /* PLACA */
@@ -2562,6 +2563,8 @@ html[data-theme="dark"] {
   --bar-rec: #f7c948;
   --purple: #b18bf0;
   --purple-soft: rgba(177,139,240,.18);
+  --teal: #3ec9d6;
+  --teal-soft: rgba(62,201,214,.16);
   --shadow-sm: 0 1px 3px rgba(0,0,0,.45);
   --shadow-md: 0 4px 16px rgba(0,0,0,.55);
   --shadow-lg: 0 12px 40px rgba(0,0,0,.6);
@@ -4525,7 +4528,8 @@ function autoFillDono(placaId, donoSelectId) {
   if (!placa || !donoSel) return;
   placa.addEventListener('input', function() { preencheDono(donoSelectId, donoDaPlaca(this.value)); });
 }
-const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Bruno':'tax'};
+// Cor da etiqueta de cada tipo de lançamento.
+const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Bruno':'tax'};
 const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -4592,8 +4596,7 @@ const isParcial = r => isPend(r) && fN(r.valor_pago) > 0;
 const liq = r => fN(r.valor_pago) + fN(r.saldo);
 
 function tipTag(t){
-  const m={Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Bruno':'tax'};
-  return`<span class="tag tag-${m[t]||'out'}">${t}</span>`;
+  return`<span class="tag tag-${TC[t]||'out'}">${t}</span>`;
 }
 function stTag(r){
   if(isPago(r)) return`<span class="st-baixado">✓ Baixado</span>`;
@@ -7215,7 +7218,7 @@ function getTaxaForma(forma){
 // uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
 // contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
 // de itens é livre.
-const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Outros'];
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Taxa Mario','Taxa Alfredo','Outros'];
 const LANC_FORMAS=['Crédito','Crédito 3x','Crédito 2x','Débito','Boleto','Depósito','Dinheiro'];
 // Os três lugares que lançam itens: 'nf' (Novo lançamento), 'ai' (modal do
 // OCR) e 'ed' (acrescentar itens a um contrato já existente, pela edição).
