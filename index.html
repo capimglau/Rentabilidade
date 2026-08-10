@@ -4457,7 +4457,11 @@ function donoSaldoFinal(dono,mes,guard){ return donoSaldoAbertura(dono,mes,guard
 
 let DATA = DS.map(r => ({...r}));
 let NOVOS = [];
-let editIdx = null;
+// A referência do registro aberto, não só o índice: com atualização
+// automática ligada, uma exclusão vinda de fora desloca os índices de allD()
+// e o "Salvar" acabaria gravando em cima do lançamento errado.
+let editRec = null;
+function lancEditado(){ return (editRec && allD().includes(editRec)) ? editRec : null; }
 let loteSel = [];
 let selDono = '';
 
@@ -4574,6 +4578,20 @@ async function fixWeekendVencimentos(){
   console.log(`AGI Locadora · ${alvos.length} vencimento(s) em fim de semana corrigido(s) para segunda-feira.`);
 }
 function allD(){return[...DATA,...NOVOS];}
+// Registra um lançamento recém-gravado na lista "Adicionados nesta sessão".
+// Com atualização automática ligada, o evento do realtime pode chegar antes
+// do retorno do insert e já ter posto o registro em DATA — sem esta checagem
+// o mesmo lançamento apareceria duas vezes e dobraria os totais.
+function registrarNovo(rec){
+  if(!rec)return;
+  if(rec.id!=null){
+    const id=String(rec.id);
+    const i=DATA.findIndex(r=>String(r.id)===id);
+    if(i>=0)DATA.splice(i,1);
+    if(NOVOS.some(r=>String(r.id)===id))return;
+  }
+  NOVOS.push(rec);
+}
 
 // Baseado no SALDO, não no valor_pago: um recebimento parcial tem valor_pago>0
 // e saldo>0 ao mesmo tempo — continua pendente (e pode estar vencido) até o
@@ -6319,8 +6337,9 @@ function escHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 
 // ── MODAL EDIT/BAIXA ──
 function openEdit(idx){
-  editIdx=idx;
-  const r=allD()[idx];
+  editRec=allD()[idx];
+  const r=editRec;
+  if(!r)return;
   const pend=isPend(r);
   const col=DC[r.dono]||'#888';
   document.getElementById('mTitle').textContent=pend?`Receber — ${r.cliente}`:`${r.cliente}`;
@@ -6369,12 +6388,12 @@ function openEdit(idx){
 }
 
 function confirmarBaixa(){
-  if(editIdx===null)return;
+  if(!lancEditado())return;
   const data=document.getElementById('b-data').value;
   const val=parseFloat(document.getElementById('b-val').value)||0;
   const obs=document.getElementById('b-obs').value;
   if(!data){alert('Informe a data de pagamento.');return;}
-  const r=allD()[editIdx];
+  const r=lancEditado();
   // Recebe 'val' (líquido); abate do saldo (líquido a receber) e mantém a
   // competência (prev_pgto). A data do pagamento vai pro campo próprio
   // (data_pagamento) — o obs NUNCA é tocado automaticamente pela baixa, só
@@ -6397,8 +6416,7 @@ function itensDoContrato(r){
 function renderIrmaos(){
   const box=document.getElementById('mIrmaos');if(!box)return;
   box.innerHTML='';
-  if(editIdx===null)return;
-  const r=allD()[editIdx];if(!r)return;
+  const r=lancEditado();if(!r)return;
   const todos=itensDoContrato(r);
   if(todos.length<2)return;   // contrato de um item só: não há o que listar
   box.innerHTML=`<div class="itens-hd" style="margin-top:0">
@@ -6416,7 +6434,7 @@ function renderIrmaos(){
 // lançamento que está sendo editado — cada item vira um registro próprio,
 // com a sua baixa.
 async function addItensContrato(){
-  if(editIdx===null)return;
+  if(!lancEditado())return;
   const p=normPlaca(document.getElementById('e-p').value);
   const d=document.getElementById('e-d').value||donoDaPlaca(p);
   const c=document.getElementById('e-c').value.trim();
@@ -6428,7 +6446,7 @@ async function addItensContrato(){
   if(erro){msg.innerHTML=`<span style="color:var(--red)">${erro}</span>`;return;}
   const btn=document.getElementById('ed-submit');
   if(btn)btn.disabled=true;
-  try{ for(const rec of recs){const saved=await dbInsert(rec);NOVOS.push(saved);} }
+  try{ for(const rec of recs){const saved=await dbInsert(rec);registrarNovo(saved);} }
   finally{ if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados'} ao contrato!</span>`;
   resetItems('ed');
@@ -6437,8 +6455,8 @@ async function addItensContrato(){
   rNovos();popSel();renderAll();
 }
 function saveEdit(){
-  if(editIdx===null)return;
-  const r=allD()[editIdx];
+  const r=lancEditado();
+  if(!r)return;
   r.placa=normPlaca(document.getElementById('e-p').value);
   r.dono=document.getElementById('e-d').value;
   r.cliente=document.getElementById('e-c').value.trim();
@@ -6471,10 +6489,11 @@ function excluirLancamento(idx){
   return true;
 }
 function deleteRow(){
-  if(editIdx===null)return;
-  if(excluirLancamento(editIdx))closeEdit();
+  const r=lancEditado();
+  if(!r)return;
+  if(excluirLancamento(allD().indexOf(r)))closeEdit();
 }
-function closeEdit(){document.getElementById('mEdit').classList.remove('on');editIdx=null;}
+function closeEdit(){document.getElementById('mEdit').classList.remove('on');editRec=null;}
 
 // ── TOAST (confirmação com desfazer) ──
 let toastTimer=null;
@@ -7367,7 +7386,7 @@ async function addN(){
   const btn=document.getElementById('nf-submit');
   if(btn)btn.disabled=true;
   try{
-    for(const rec of recs){const saved=await dbInsert(rec);NOVOS.push(saved);}
+    for(const rec of recs){const saved=await dbInsert(rec);registrarNovo(saved);}
   } finally { if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Adicionado':recs.length+' lançamentos adicionados'}!</span>`;
   document.getElementById('novosCard').style.display='block';
@@ -7809,7 +7828,7 @@ async function confirmAI(){
   if(s){const dup=allD().find(x=>x.placa===p&&x.saida===s);if(dup&&!confirm(`Já existe um lançamento para ${p} com saída ${s}.\nLançar mesmo assim?`))return;}
   closeCam();go('novo');
   document.getElementById('novosCard').style.display='block';
-  for(const rec of recs){const saved=await dbInsert(rec);NOVOS.push(saved);}
+  for(const rec of recs){const saved=await dbInsert(rec);registrarNovo(saved);}
   rNovos();popSel();renderAll();
 }
 const dz=document.getElementById('dz');
@@ -7856,8 +7875,91 @@ function exportCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));a.download=`autogest_${curMes}.csv`;a.click();
 }
 
+// ── ATUALIZAÇÃO AUTOMÁTICA ──
+// Qualquer alteração em 'lancamentos' — feita aqui, em outro aparelho ou por
+// outra pessoa — chega pelo realtime do Supabase e os números se refazem
+// sozinhos, sem F5. Depende de a tabela estar publicada (supabase/realtime.sql);
+// sem isso, a tela ainda se atualiza ao voltar para a aba.
+let RT_CANAL=null, RECARREGANDO=false;
+function initSync(){
+  if(!SB)return;
+  if(!RT_CANAL){
+    RT_CANAL=SB.channel('agi-lancamentos')
+      .on('postgres_changes',{event:'*',schema:'public',table:'lancamentos'},aplicarMudancaRemota)
+      .subscribe(st=>{
+        if(st==='SUBSCRIBED')console.log('AGI · atualização automática ativa');
+        else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT')
+          console.warn('AGI · atualização automática indisponível ('+st+'). Rode supabase/realtime.sql no Supabase. A tela continua se atualizando ao voltar para a aba.');
+      });
+  }
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)recarregarLancamentos();});
+  window.addEventListener('focus',recarregarLancamentos);
+}
+// Aplica UM evento do banco na memória. Object.assign em vez de trocar o
+// objeto: assim a edição aberta continua apontando para o mesmo registro.
+function aplicarMudancaRemota(payload){
+  const novo=(payload.new&&payload.new.id!=null)?payload.new:null;
+  const velho=(payload.old&&payload.old.id!=null)?payload.old:null;
+  const id=String((novo||velho||{}).id||'');
+  if(!id)return;
+  const acha=arr=>arr.findIndex(r=>String(r.id)===id);
+  if(payload.eventType==='DELETE'){
+    [DATA,NOVOS].forEach(arr=>{const i=acha(arr);if(i>=0)arr.splice(i,1);});
+  }else if(novo){
+    const i=acha(DATA),j=acha(NOVOS);
+    if(i>=0)Object.assign(DATA[i],novo);
+    else if(j>=0)Object.assign(NOVOS[j],novo);
+    else DATA.push({...novo});
+  }else return;
+  aposMudancaExterna();
+}
+// Re-lê a tabela inteira. Cobre o tempo em que a página ficou em segundo
+// plano e o caso de o realtime não estar habilitado no projeto.
+async function recarregarLancamentos(){
+  if(!SB||RECARREGANDO)return;
+  // No meio de uma edição não puxa o tapete: a modal está segurando um
+  // registro e o usuário pode estar digitando nele.
+  if(document.getElementById('mEdit')?.classList.contains('on'))return;
+  RECARREGANDO=true;
+  try{
+    let rows;
+    // Falha aqui é silenciosa de propósito: é atualização de fundo, e o que
+    // já está na tela continua valendo (dbLoad cairia nos dados de exemplo).
+    try{ rows=await sbFetchAll(()=>SB.from('lancamentos').select('*').order('prev_pgto',{ascending:true})); }
+    catch(err){ return; }
+    if(!Array.isArray(rows))return;
+    const atuais=new Map(allD().filter(r=>r.id!=null).map(r=>[String(r.id),r]));
+    const vistos=new Set();
+    rows.forEach(row=>{
+      const k=String(row.id);vistos.add(k);
+      const r=atuais.get(k);
+      if(r)Object.assign(r,row); else DATA.push({...row});
+    });
+    // Some o que foi excluído em outro lugar (registros sem id são locais).
+    [DATA,NOVOS].forEach(arr=>{for(let i=arr.length-1;i>=0;i--){if(arr[i].id!=null&&!vistos.has(String(arr[i].id)))arr.splice(i,1);}});
+    aposMudancaExterna();
+  }finally{RECARREGANDO=false;}
+}
+// Ponto único de "os dados mudaram por fora": refaz a tela e cuida da modal
+// aberta, cujo registro pode ter sumido.
+function aposMudancaExterna(){
+  if(editRec&&!lancEditado()){closeEdit();showToast('O lançamento aberto foi excluído em outro dispositivo.');}
+  else if(editRec)renderIrmaos();
+  rNovos();popSel();renderAll();
+}
+
 // ── ROUTING ──
 let curPage='resumo';
+// A aba aberta sobrevive ao F5: recarregar não pode jogar o usuário de volta
+// no Resumo, ainda mais quando ele estava no meio de um lançamento.
+const PAGINA_KEY='agi-pagina';
+function salvarPagina(id){try{localStorage.setItem(PAGINA_KEY,id);}catch(e){}}
+function paginaSalva(){
+  let id='';
+  try{id=localStorage.getItem(PAGINA_KEY)||'';}catch(e){}
+  // Só aceita id que existe de fato — chave antiga/estragada volta ao Resumo.
+  return (id&&document.getElementById('page-'+id))?id:'resumo';
+}
 function renderAll(){
   updateHeader();buildOwnerPills();buildMiniSummary();
   if(curPage==='baixas')renderBaixas();
@@ -7869,9 +7971,12 @@ function renderAll(){
   else if(curPage==='auditoria')renderAuditoria();
 }
 function go(id){
+  const alvo=document.getElementById('page-'+id);
+  if(!alvo)return;
   curPage=id;
+  salvarPagina(id);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.getElementById('page-'+id).classList.add('on');
+  alvo.classList.add('on');
 
   // No desktop (sidebar): dock-main sempre visível, dock-mais sempre oculto
   // No mobile: alterna entre grupo principal e grupo "Mais"
@@ -7955,8 +8060,9 @@ async function boot(){
   updateMesLabel();
   buildResumoFilters();
   buildBaixasFilters();
-  renderAll();
+  go(paginaSalva());   // volta para a aba onde o usuário estava (já renderiza)
   initMobileFilters();
+  initSync();
   autoCompletePlaca('nf-p');
   autoCompletePlaca('e-p');
   autoCompletePlaca('ai-p');
