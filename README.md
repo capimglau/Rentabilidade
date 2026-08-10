@@ -4,6 +4,23 @@ Sistema de gestão de locação de veículos (controle de lançamentos, baixas,
 proprietários, resumos e premissas de taxas). App web de página única, com os
 dados persistidos no **Supabase** e publicado no **GitHub Pages**.
 
+Na aba **Premissas**, as taxas do cartão são uma matriz **bandeira × transação**
+— cada bandeira cobra uma taxa diferente em cada tipo de transação, e cada tipo
+tem seu prazo de recebimento:
+
+| Transação        | Mastercard | Visa   | Elo    | Amex   | Prazo                       |
+|------------------|-----------:|-------:|-------:|-------:|-----------------------------|
+| Débito           |     1,08 % | 1,08 % | 1,88 % | não aceita | 1 dia útil              |
+| Crédito à vista  |     2,14 % | 2,14 % | 2,94 % | 2,94 % | 31 dias                     |
+| 2 vezes          |     2,62 % | 2,62 % | 3,42 % | 3,42 % | 31 dias a cada parcela      |
+| 3 vezes          |     2,62 % | 2,62 % | 3,42 % | 3,42 % | 31 dias a cada parcela      |
+
+Por isso o lançamento pergunta a **bandeira** junto da forma de pagamento
+(só quando é cartão) e a grava junto dela — ex.: `Crédito 2x Visa`. É dela que
+saem o valor líquido e a previsão de pagamento. Lançamento antigo, sem bandeira
+escrita, é calculado pela **bandeira padrão** configurada nas Premissas. As
+premissas editadas ficam salvas no aparelho (`localStorage`).
+
 Na aba **Proprietários**, ao clicar em um dono abre-se o **extrato financeiro**:
 receitas previstas do mês (automáticas, a partir dos lançamentos) e despesas
 operacionais lado a lado — com seletor de categorias (lavagem, óleo, pneus,
