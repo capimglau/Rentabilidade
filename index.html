@@ -1871,6 +1871,9 @@ html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165d
 }
 .itens-total { margin-top: 10px; font-size: 12.5px; color: var(--ink3); text-align: right; min-height: 18px; }
 .itens-total strong { color: var(--ink); font-weight: 700; }
+/* Aviso de que este item vai virar mais de um lançamento (cartão parcelado
+   2x/3x) — mostra as datas e valores de cada parcela antes de salvar. */
+.item-parcelas { grid-column: 1/-1; font-size: 12px; color: var(--blue); background: var(--blue-soft); border-radius: 8px; padding: 8px 10px; line-height: 1.5; }
 /* Os outros lançamentos do mesmo contrato, listados na edição — clicar abre
    aquele lançamento no lugar deste. */
 .irmaos { display: flex; flex-direction: column; gap: 6px; }
@@ -7355,7 +7358,8 @@ function itemHTML(pref,full){
       <div class="fp"><label>Data de pagamento</label><input type="date" data-k="dpago"></div>
       <div class="fp"><label>Valor (R$)</label><input type="number" step="0.01" data-k="valor"></div>
       ${full?`<div class="fp"><label>Prev. Pgto (auto)</label><input type="date" data-k="prev"></div>
-      <div class="fp"><label>Valor líquido</label><input type="number" data-k="liq" readonly></div>`:''}
+      <div class="fp"><label>Valor líquido</label><input type="number" data-k="liq" readonly></div>
+      <div class="item-parcelas" data-parcelas style="display:none"></div>`:''}
       <div class="fp s2"><label>Obs / Referência</label><input type="text" data-k="obs" placeholder="ex: ref. 4018"></div>
     </div>
   </div>`;
@@ -7372,40 +7376,84 @@ function itemVazio(it){return !itemGet(it,'valor')&&!itemGet(it,'obs')&&!itemGet
 // pagamento (dp). Boleto: a Data de pagamento lançada é o próprio
 // vencimento e SEMPRE prevalece — sem nenhum deslocamento de dias. Só cai
 // no retorno + prazo (sugestão) quando ainda não foi digitada nenhuma data.
+// Cartão parcelado (2x/3x) devolve a data da 1ª parcela — as demais saem
+// de parcelasForma()/coletaItens(), que divide em vários lançamentos.
 function itemPrev(forma,retorno,dp){
   const fl=(forma||'').toLowerCase();
   if(fl.includes('boleto')) return dp ? proxUtil(dp) : (retorno?addDUtil(retorno,PREM.prazoBoleto):'');
-  if((fl.includes('90')||fl.includes('3x'))&&dp) return addDUtil(dp,90);
-  if((fl.includes('60')||fl.includes('2x'))&&dp) return addDUtil(dp,60);
+  if((fl.includes('90')||fl.includes('3x'))&&dp) return addDUtil(dp,30);
+  if((fl.includes('60')||fl.includes('2x'))&&dp) return addDUtil(dp,30);
   if((fl.includes('crédito')||fl.includes('credito'))&&dp) return addDUtil(dp,PREM.prazoCredito);
   if((fl.includes('débito')||fl.includes('debito'))&&dp) return addDUtil(dp,PREM.prazoDebito);
   return '';
 }
+// Quantas parcelas essa forma representa. Regra documentada em Premissas >
+// Cartão parcelado: cada parcela é reconhecida 30 dias após a anterior —
+// "Crédito 60 dias"/"Crédito 2x" = 2 parcelas (30 e 60 dias); "Crédito 90
+// dias"/"Crédito 3x" = 3 parcelas (30, 60 e 90). As demais formas são 1.
+function parcelasForma(forma){
+  const fl=(forma||'').toLowerCase();
+  if(fl.includes('90')||fl.includes('3x'))return 3;
+  if(fl.includes('60')||fl.includes('2x'))return 2;
+  return 1;
+}
+// Divide um valor em N parcelas de centavos o mais iguais possível, sem
+// perder nem sobrar centavo — a diferença do arredondamento fica na última.
+function dividirCentavos(valor,n){
+  const total=Math.round(valor*100);
+  const base=Math.floor(total/n);
+  const resto=total-base*n;
+  const partes=[];
+  for(let k=0;k<n;k++)partes.push((base+(k===n-1?resto:0))/100);
+  return partes;
+}
+// Este item vai virar mais de um lançamento? Só quando a forma é
+// parcelada, a Data de pagamento foi informada (é a base do cálculo) e a
+// Prev. Pgto não foi travada na mão — travar significa "quero UM
+// lançamento só, nesta data", e essa escolha prevalece.
+function itemVaiParcelar(it,forma,dp){
+  return parcelasForma(forma)>1 && !!dp && it.dataset.prevManual!=='1';
+}
 function calcItems(pref){
   const its=itemEls(pref);
   const r=document.getElementById(ITENS_CFG[pref].retorno)?.value||'';
-  let bruto=0,liq=0,preenchidos=0;
+  let bruto=0,liq=0,preenchidos=0,totalRecs=0;
   its.forEach((it,i)=>{
     const num=it.querySelector('[data-num]');if(num)num.textContent=i+1;
     const del=it.querySelector('.item-del');if(del)del.disabled=its.length<2;
     const forma=itemGet(it,'forma');
+    const dp=itemGet(it,'dpago');
     // Se o usuário já editou a Prev. Pgto NA MÃO (marcado no listener do
     // box), ela prevalece: não recalcula por cima enquanto ele não limpar o
     // campo. Sem essa guarda, digitar aqui não "pegava" — o próprio evento
     // de editar este campo disparava calcItems, que reescrevia o valor
     // automático em cima do que acabou de ser digitado.
-    if(it.dataset.prevManual!=='1') itemSet(it,'prev',itemPrev(forma,r,itemGet(it,'dpago')));
+    if(it.dataset.prevManual!=='1') itemSet(it,'prev',itemPrev(forma,r,dp));
     const v=parseFloat(itemGet(it,'valor'))||0;
-    const vl=v*(1-getTaxaForma(forma));
+    const taxa=getTaxaForma(forma);
+    const vl=v*(1-taxa);
     itemSet(it,'liq',v?vl.toFixed(2):'');
-    if(v){bruto+=v;liq+=vl;preenchidos++;}
+    const parcela=itemVaiParcelar(it,forma,dp);
+    const n=parcelasForma(forma);
+    const parcelasEl=it.querySelector('[data-parcelas]');
+    if(parcelasEl){
+      if(v&&parcela){
+        const brutos=dividirCentavos(v,n);
+        const linhas=brutos.map((b,k)=>`${fR(b)} em ${fD(addDUtil(dp,30*(k+1)))}`).join(' · ');
+        parcelasEl.innerHTML=`💳 Vira ${n} lançamentos — ${linhas}`;
+        parcelasEl.style.display='';
+      } else {
+        parcelasEl.innerHTML='';parcelasEl.style.display='none';
+      }
+    }
+    if(v){bruto+=v;liq+=vl;preenchidos++;totalRecs+=parcela?n:1;}
   });
   const cnt=document.getElementById(pref+'-cnt');
   if(cnt)cnt.textContent=its.length===1?'1 item':its.length+' itens';
   const tot=document.getElementById(pref+'-total');
   if(tot)tot.innerHTML=preenchidos?`Total: <strong>${fR(bruto)}</strong> · líquido <strong>${fR(liq)}</strong>`:'';
   const btn=document.getElementById(pref+'-submit');
-  if(btn)btn.textContent=preenchidos>1?`✓ Adicionar ${preenchidos} lançamentos`:'✓ Adicionar lançamento';
+  if(btn)btn.textContent=totalRecs>1?`✓ Adicionar ${totalRecs} lançamentos`:'✓ Adicionar lançamento';
 }
 function addItem(pref,focar){
   const box=document.getElementById(pref+'-itens');if(!box)return null;
@@ -7445,7 +7493,12 @@ function initItens(pref){
 }
 function calcN(){calcItems('nf');}
 
-// Lê os itens do formulário e devolve {recs} ou {erro}.
+// Lê os itens do formulário e devolve {recs} ou {erro}. Cartão parcelado
+// (2x/3x) explode UM item em VÁRIOS registros — um por parcela, 30 dias um
+// do outro — pra cada parcela ter sua própria baixa: sem isso, o boleto e
+// o cartão à vista batiam na data certa, mas o parcelado jogava o valor
+// inteiro pro vencimento da ÚLTIMA parcela, sumindo com o previsto dos
+// meses anteriores.
 function coletaItens(pref,base){
   const its=itemEls(pref);
   const recs=[];
@@ -7455,17 +7508,33 @@ function coletaItens(pref,base){
     const v=parseFloat(itemGet(it,'valor'))||0;
     if(v<=0)return{erro:`Informe o valor do lançamento ${i+1}.`};
     const forma=itemGet(it,'forma');
+    const tipo=itemGet(it,'tipo');
+    const dp=itemGet(it,'dpago');
+    const obsBase=itemGet(it,'obs')||'';
+    const taxa=getTaxaForma(forma);
+    if(itemVaiParcelar(it,forma,dp)){
+      const n=parcelasForma(forma);
+      dividirCentavos(v,n).forEach((bruto,k)=>{
+        recs.push({...base,
+          tipo,forma,
+          valor:bruto,
+          prev_pgto:addDUtil(dp,30*(k+1)),
+          valor_pago:0,
+          saldo:Math.round(bruto*(1-taxa)*100)/100,
+          obs:obsBase?`${obsBase} · Parcela ${k+1}/${n}`:`Parcela ${k+1}/${n}`});
+      });
+      continue;
+    }
     // Respeita a Prev. Pgto ajustada à mão; só recalcula quando o campo não
     // existe (modal do OCR) ou está vazio.
-    const ppRaw=itemGet(it,'prev')||itemPrev(forma,base.retorno||'',itemGet(it,'dpago'));
+    const ppRaw=itemGet(it,'prev')||itemPrev(forma,base.retorno||'',dp);
     recs.push({...base,
-      tipo:itemGet(it,'tipo'),
-      forma:forma,
+      tipo,forma,
       valor:v,
       prev_pgto:ppRaw?proxUtil(ppRaw):null,
       valor_pago:0,
-      saldo:v*(1-getTaxaForma(forma)),
-      obs:itemGet(it,'obs')||null});
+      saldo:v*(1-taxa),
+      obs:obsBase||null});
   }
   if(!recs.length)return{erro:'Informe o valor de pelo menos um lançamento.'};
   return{recs};
