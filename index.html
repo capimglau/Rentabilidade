@@ -1781,6 +1781,49 @@ html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165d
   font-size: 12.5px;
 }
 
+/* Matriz de taxas: uma coluna por bandeira, uma linha por tipo de transação.
+   Espelha a tabela da operadora — a taxa e o prazo ficam na mesma célula. */
+.prem-taxas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  min-width: 520px;
+}
+.prem-taxas-table th {
+  background: var(--surface);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 10px;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--line);
+}
+.prem-taxas-table th:first-child { text-align: left; }
+.prem-taxas-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.prem-taxas-table tr:last-child td { border-bottom: none; }
+.prem-taxas-table .tx-lin {
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.prem-taxas-table .prem-input { width: 74px; text-align: right; }
+.tx-prazo {
+  display: block;
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: var(--ink3);
+  white-space: nowrap;
+}
+.tx-na { color: var(--ink3); font-weight: 700; }
+.tx-band { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.tx-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
 /* info box */
 .prem-info {
   background: var(--blue-soft);
@@ -3076,117 +3119,71 @@ body.modo-boletos #btnLinkBoletos { display: none; }
 
     <div class="prem-grid">
 
-      <!-- Crédito à vista -->
-      <div class="prem-card">
+      <!-- Taxas do cartão: uma taxa por bandeira, por tipo de transação -->
+      <div class="prem-card" style="grid-column: 1 / -1">
         <div class="prem-card-head">
           <div class="prem-card-icon" style="background:var(--blue-soft)">💳</div>
           <div>
-            <div class="prem-card-title">Crédito à Vista</div>
-            <div class="prem-card-sub">Cobrança única — liquidação em 30 dias</div>
+            <div class="prem-card-title">Taxas do cartão por bandeira</div>
+            <div class="prem-card-sub">Cada bandeira cobra uma taxa diferente em cada tipo de transação</div>
           </div>
         </div>
         <div class="prem-card-body">
-          <div class="prem-row">
-            <span class="prem-label">Taxa da operadora</span>
-            <div class="prem-input-wrap">
-              <input class="prem-input" type="number" id="taxa-credito" step="0.01" min="0" max="10" value="2.40">
-              <span class="prem-unit">%</span>
-            </div>
-          </div>
-          <div class="prem-row">
-            <span class="prem-label">Prazo de recebimento</span>
-            <div class="prem-input-wrap">
-              <input class="prem-input" type="number" id="prazo-credito" step="1" min="1" max="90" value="31">
-              <span class="prem-unit">dias</span>
-            </div>
+          <div class="tw">
+            <table class="prem-taxas-table">
+              <thead><tr id="taxas-head"></tr></thead>
+              <tbody id="taxas-body"></tbody>
+            </table>
           </div>
           <div class="prem-divider"></div>
-          <div class="prem-info">
-            Prev. Pgto = data da saída + <strong id="inf-prazo-cr">30</strong> dias<br>
-            Valor líquido = valor bruto × (1 − <strong id="inf-taxa-cr">2,40</strong>%)
-          </div>
-        </div>
-      </div>
-
-      <!-- Débito -->
-      <div class="prem-card">
-        <div class="prem-card-head">
-          <div class="prem-card-icon" style="background:var(--green-soft)">🏦</div>
-          <div>
-            <div class="prem-card-title">Débito</div>
-            <div class="prem-card-sub">Liquidação imediata no caixa</div>
-          </div>
-        </div>
-        <div class="prem-card-body">
-          <div class="prem-row">
-            <span class="prem-label">Taxa da operadora</span>
-            <div class="prem-input-wrap">
-              <input class="prem-input" type="number" id="taxa-debito" step="0.01" min="0" max="10" value="1.50">
-              <span class="prem-unit">%</span>
-            </div>
-          </div>
-          <div class="prem-divider"></div>
-          <div class="prem-info">
-            Liquidação no próprio dia da passagem do cartão<br>
-            Valor líquido = valor bruto × (1 − <strong id="inf-taxa-deb">1,50</strong>%)
-          </div>
-        </div>
-      </div>
-
-      <!-- Crédito Parcelado -->
-      <div class="prem-card" style="grid-column: 1 / -1">
-        <div class="prem-card-head">
-          <div class="prem-card-icon" style="background:var(--purple-soft)">🔢</div>
-          <div>
-            <div class="prem-card-title">Crédito Parcelado</div>
-            <div class="prem-card-sub">Cada parcela entra na competência 30 dias após a passagem do cartão</div>
-          </div>
-        </div>
-        <div class="prem-card-body">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
-            <div>
-              <div class="prem-row">
-                <span class="prem-label">Taxa 2× (60 dias)</span>
-                <div class="prem-input-wrap">
-                  <input class="prem-input" type="number" id="taxa-parc2" step="0.01" min="0" max="20" value="2.99">
-                  <span class="prem-unit">%</span>
-                </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
+            <div class="prem-row">
+              <span class="prem-label">Prazo do débito</span>
+              <div class="prem-input-wrap">
+                <input class="prem-input" type="number" id="prazo-debito" step="1" min="0" max="90" value="1">
+                <span class="prem-unit">dias</span>
               </div>
             </div>
-            <div>
-              <div class="prem-row">
-                <span class="prem-label">Taxa 3× (90 dias)</span>
-                <div class="prem-input-wrap">
-                  <input class="prem-input" type="number" id="taxa-parc3" step="0.01" min="0" max="20" value="3.50">
-                  <span class="prem-unit">%</span>
-                </div>
+            <div class="prem-row">
+              <span class="prem-label">Prazo do crédito à vista</span>
+              <div class="prem-input-wrap">
+                <input class="prem-input" type="number" id="prazo-credito" step="1" min="1" max="90" value="31">
+                <span class="prem-unit">dias</span>
               </div>
             </div>
-            <div>
-              <div class="prem-row">
-                <span class="prem-label">Taxa 4–12× (parcelado)</span>
-                <div class="prem-input-wrap">
-                  <input class="prem-input" type="number" id="taxa-parc12" step="0.01" min="0" max="20" value="4.20">
-                  <span class="prem-unit">%</span>
-                </div>
+            <div class="prem-row">
+              <span class="prem-label">Prazo de cada parcela</span>
+              <div class="prem-input-wrap">
+                <input class="prem-input" type="number" id="prazo-parcela" step="1" min="1" max="90" value="31">
+                <span class="prem-unit">dias</span>
+              </div>
+            </div>
+            <div class="prem-row">
+              <span class="prem-label">Bandeira padrão</span>
+              <div class="prem-input-wrap">
+                <select class="prem-input" id="bandeira-padrao" style="width:auto;text-align:left"></select>
               </div>
             </div>
           </div>
           <div class="prem-divider"></div>
           <div class="prem-info">
-            <strong>Regra de competência:</strong> cada parcela é reconhecida <strong>30 dias após a data de passagem do cartão</strong>.<br>
-            Ex: cartão passado em <strong>05/jan</strong> em 3×: parcela 1 → <strong>05/fev</strong> · parcela 2 → <strong>05/mar</strong> · parcela 3 → <strong>05/abr</strong>
+            <strong>Débito</strong> → Prev. Pgto = data de pagamento + <strong id="inf-prazo-deb">1</strong> dia útil<br>
+            <strong>Crédito à vista</strong> → Prev. Pgto = data de pagamento + <strong id="inf-prazo-cr">31</strong> dias<br>
+            <strong>Parcelado (2× e 3×)</strong> → uma parcela a cada <strong id="inf-prazo-parc">31</strong> dias, cada uma virando um lançamento com baixa própria<br>
+            Lançamento antigo (ou importado) sem bandeira informada é calculado pela bandeira padrão: <strong id="inf-bandeira">Mastercard</strong>
           </div>
           <div>
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:8px">Prévia de reconhecimento por parcela</div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:8px">Valor líquido de R$ 1.000 por bandeira</div>
             <div class="tw">
-              <table class="prem-parcela-table">
-                <thead><tr>
-                  <th>Forma</th><th>Taxa configurada</th><th>Parcela 1</th><th>Parcela 2</th><th>Parcela 3</th><th>Valor líquido (ex. R$1.000)</th>
-                </tr></thead>
-                <tbody id="parcela-preview-body"></tbody>
+              <table class="prem-taxas-table">
+                <thead><tr id="liq-head"></tr></thead>
+                <tbody id="liq-body"></tbody>
               </table>
             </div>
+          </div>
+          <div class="prem-info">
+            <strong>Regra de competência do parcelado:</strong> cada parcela é reconhecida <span id="inf-parc-regra">31 dias</span> depois da anterior, contados da data de pagamento.<br>
+            <span id="inf-parc-ex">—</span>
           </div>
         </div>
       </div>
@@ -3356,7 +3353,9 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <div class="fp"><label>Tipo</label>
           <select id="e-t"></select></div>
         <div class="fp"><label>Forma</label>
-          <select id="e-f"><option>Crédito</option><option>Crédito 3x</option><option>Crédito 2x</option><option>Débito</option><option>Boleto</option><option>Depósito</option><option>Dinheiro</option></select></div>
+          <select id="e-f" onchange="syncBandeiraEdit()"><option>Crédito</option><option>Crédito 3x</option><option>Crédito 2x</option><option>Débito</option><option>Boleto</option><option>Depósito</option><option>Dinheiro</option></select></div>
+        <div class="fp" id="e-bd-wrap"><label>Bandeira</label>
+          <select id="e-bd"></select></div>
         <div class="fp"><label>Saída</label><input type="date" id="e-s"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="e-r"></div>
         <div class="fp"><label>Valor</label><input type="number" id="e-v" step="0.01"></div>
@@ -4621,12 +4620,18 @@ const fN = v => parseFloat(v)||0;
 // 21h de Brasília: o que vencia amanhã aparecia como "de hoje" e o que vencia
 // hoje já contava como vencido.
 const td = () => {const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+// Rótulo da forma. A bandeira viaja dentro da forma ("Crédito 2x Visa") e
+// aparece separada por "·" — cada bandeira tem taxa própria, então ela
+// também é o que distingue as fatias do painel "Por forma de recebimento".
 const fFormaLabel = f => {
   if(!f) return '—';
-  const fl = f.toLowerCase().replace(/\s+/g,' ').trim();
-  if(fl==='crédito 2x'||fl==='credito 2x'||fl==='crédito 60 dias'||fl==='credito 60 dias'||fl==='crédito 2×'||fl==='crédito parcelado 2x') return 'Crédito 2x';
-  if(fl==='crédito 3x'||fl==='credito 3x'||fl==='crédito 90 dias'||fl==='credito 90 dias'||fl==='crédito 3×'||fl==='crédito parcelado 3x') return 'Crédito 3x';
-  return f;
+  const band = bandeiraDaForma(f);
+  const base = band ? formaSemBandeira(f) : f;
+  const fl = base.toLowerCase().replace(/\s+/g,' ').trim();
+  let rot = base;
+  if(fl==='crédito 2x'||fl==='credito 2x'||fl==='crédito 60 dias'||fl==='credito 60 dias'||fl==='crédito 2×'||fl==='crédito parcelado 2x') rot = 'Crédito 2x';
+  if(fl==='crédito 3x'||fl==='credito 3x'||fl==='crédito 90 dias'||fl==='credito 90 dias'||fl==='crédito 3×'||fl==='crédito parcelado 3x') rot = 'Crédito 3x';
+  return band ? `${rot} · ${band}` : rot;
 };
 // Formata 'YYYY-MM-DD' -> 'DD/MM/AA'
 const fD  = d => (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) ? d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(2,4) : '—';
@@ -6481,7 +6486,10 @@ function openEdit(idx){
   document.getElementById('e-d').value=r.dono||'';
   document.getElementById('e-c').value=r.cliente||'';
   selVal('e-t',r.tipo||'Locação');
-  selVal('e-f',r.forma||'Crédito');
+  // Forma e bandeira são gravadas juntas ("Crédito 2x Visa"); na edição
+  // aparecem separadas para poder trocar só a bandeira.
+  selVal('e-f',formaSemBandeira(r.forma)||'Crédito');
+  syncBandeiraEdit(bandeiraDaForma(r.forma));
   document.getElementById('e-s').value=r.saida||'';
   document.getElementById('e-r').value=r.retorno||'';
   document.getElementById('e-pp').value=r.prev_pgto||'';
@@ -6570,11 +6578,12 @@ async function addItensContrato(){
 function saveEdit(){
   const r=lancEditado();
   if(!r)return;
+  const formaAnt=r.forma||'', valorAnt=fN(r.valor);
   r.placa=normPlaca(document.getElementById('e-p').value);
   r.dono=document.getElementById('e-d').value;
   r.cliente=document.getElementById('e-c').value.trim();
   r.tipo=document.getElementById('e-t').value;
-  r.forma=document.getElementById('e-f').value;
+  r.forma=formaComBandeira(document.getElementById('e-f').value,document.getElementById('e-bd').value);
   r.saida=document.getElementById('e-s').value||null;
   r.retorno=document.getElementById('e-r').value||null;
   const _pp=document.getElementById('e-pp').value||null;
@@ -6583,6 +6592,14 @@ function saveEdit(){
   r.valor_pago=parseFloat(document.getElementById('e-vp').value)||null;
   r.data_pagamento=document.getElementById('e-dtpag').value||null;
   r.saldo=parseFloat(document.getElementById('e-sl').value)||0;
+  // Trocar a forma ou a bandeira muda a taxa — e o saldo é o valor JÁ com a
+  // taxa descontada. Sem isso o lançamento ficava com o líquido da bandeira
+  // antiga. Só recalcula quando nada foi recebido ainda e o saldo estava no
+  // valor automático: saldo digitado à mão é escolha do usuário e prevalece.
+  const saldoAuto=Math.abs(r.saldo-valorAnt*(1-getTaxaForma(formaAnt)))<=0.011;
+  if(r.forma!==formaAnt && saldoAuto && fN(r.valor_pago)===0){
+    r.saldo=Math.round(r.valor*(1-getTaxaForma(r.forma))*100)/100;
+  }
   r.obs=document.getElementById('e-obs').value||null;
   dbUpdate(r);
   // popSel(): a edição pode ter mudado placa, cliente, dono, tipo ou forma —
@@ -7316,81 +7333,174 @@ function confirmarLote(){
 }
 
 // ── PREMISSAS ──
-let PREM = {
-  taxaCredito: 2.40,
-  prazoCredito: 31,
-  taxaDebito: 1.50,
+// A maquininha cobra uma taxa DIFERENTE por bandeira e por tipo de transação
+// (débito, crédito à vista, 2× e 3×), e cada tipo tem seu próprio prazo de
+// recebimento. Por isso a premissa não é um número por forma, e sim a matriz
+// bandeira × transação abaixo — a mesma tabela da operadora.
+const BANDEIRAS = ['Mastercard','Visa','Elo','Amex'];
+// Cor só para identificar a bandeira na tabela de premissas.
+const BANDEIRA_COR = {Mastercard:'#eb001b', Visa:'#1a1f71', Elo:'#00a4e0', Amex:'#006fcf'};
+// Linhas da matriz: chave usada em PREM.taxas e rótulo da transação.
+const TAXA_LINHAS = [
+  {k:'debito',  rot:'Débito'},
+  {k:'credito', rot:'Crédito à vista'},
+  {k:'parc2',   rot:'2 vezes'},
+  {k:'parc3',   rot:'3 vezes'},
+];
+// `null` = a bandeira não opera esse tipo de transação (Amex não faz débito).
+const PREM_PADRAO = {
+  bandeiraPadrao: 'Mastercard',
+  taxas: {
+    Mastercard: {debito:1.08, credito:2.14, parc2:2.62, parc3:2.62},
+    Visa:       {debito:1.08, credito:2.14, parc2:2.62, parc3:2.62},
+    Elo:        {debito:1.88, credito:2.94, parc2:3.42, parc3:3.42},
+    Amex:       {debito:null, credito:2.94, parc2:3.42, parc3:3.42},
+  },
   prazoDebito: 1,
-  taxaParc2: 2.99,
-  taxaParc3: 3.50,
-  taxaParc12: 4.20,
+  prazoCredito: 31,
+  prazoParcela: 31,
   prazoBoleto: 5
 };
+// Combinação que a operadora não oferece — a célula fica travada em "—" e o
+// formulário de lançamento nem chega a oferecer a bandeira.
+const semTransacao = (b,k) => PREM_PADRAO.taxas[b] && PREM_PADRAO.taxas[b][k]===null;
+const clonePrem = o => JSON.parse(JSON.stringify(o));
+let PREM = clonePrem(PREM_PADRAO);
+
+// As premissas eram só de memória: qualquer recarga da página devolvia as
+// taxas de fábrica sem avisar, e os lançamentos passavam a ser calculados
+// por uma tabela que o usuário achava que tinha trocado. Agora "Salvar"
+// grava de verdade (por aparelho, no localStorage).
+const PREM_LS = 'agi_premissas';
+function carregarPremissas(){
+  let j=null;
+  try{ j=JSON.parse(localStorage.getItem(PREM_LS)||'null'); }catch(e){ j=null; }
+  if(!j||typeof j!=='object')return;
+  const num=(v,pad)=>{const n=parseFloat(v);return isFinite(n)&&n>=0?n:pad;};
+  ['prazoDebito','prazoCredito','prazoParcela','prazoBoleto'].forEach(k=>{
+    PREM[k]=Math.round(num(j[k],PREM_PADRAO[k]));
+  });
+  if(BANDEIRAS.includes(j.bandeiraPadrao))PREM.bandeiraPadrao=j.bandeiraPadrao;
+  BANDEIRAS.forEach(b=>TAXA_LINHAS.forEach(({k})=>{
+    if(semTransacao(b,k)){PREM.taxas[b][k]=null;return;}
+    PREM.taxas[b][k]=num(j.taxas&&j.taxas[b]&&j.taxas[b][k],PREM_PADRAO.taxas[b][k]);
+  }));
+}
+carregarPremissas();
 
 function salvarPremissas(){
-  PREM.taxaCredito = parseFloat(document.getElementById('taxa-credito').value)||2.40;
-  PREM.prazoCredito = parseInt(document.getElementById('prazo-credito').value)||31;
-  PREM.taxaDebito = parseFloat(document.getElementById('taxa-debito').value)||1.50;
-  PREM.taxaParc2 = parseFloat(document.getElementById('taxa-parc2').value)||2.99;
-  PREM.taxaParc3 = parseFloat(document.getElementById('taxa-parc3').value)||3.50;
-  PREM.taxaParc12 = parseFloat(document.getElementById('taxa-parc12').value)||4.20;
-  PREM.prazoBoleto = parseInt(document.getElementById('prazo-boleto').value)||5;
+  const el=id=>document.getElementById(id);
+  const num=(id,pad)=>{const n=parseFloat(el(id)&&el(id).value);return isFinite(n)&&n>=0?n:pad;};
+  PREM.prazoDebito  = Math.round(num('prazo-debito',  PREM_PADRAO.prazoDebito));
+  PREM.prazoCredito = Math.round(num('prazo-credito', PREM_PADRAO.prazoCredito))||PREM_PADRAO.prazoCredito;
+  PREM.prazoParcela = Math.round(num('prazo-parcela', PREM_PADRAO.prazoParcela))||PREM_PADRAO.prazoParcela;
+  PREM.prazoBoleto  = Math.round(num('prazo-boleto',  PREM_PADRAO.prazoBoleto));
+  const bp=el('bandeira-padrao')&&el('bandeira-padrao').value;
+  if(BANDEIRAS.includes(bp))PREM.bandeiraPadrao=bp;
+  BANDEIRAS.forEach(b=>TAXA_LINHAS.forEach(({k})=>{
+    if(semTransacao(b,k))return;
+    PREM.taxas[b][k]=num(`tx-${b}-${k}`,PREM_PADRAO.taxas[b][k]);
+  }));
+  try{ localStorage.setItem(PREM_LS,JSON.stringify(PREM)); }catch(e){ console.warn('Não foi possível guardar as premissas neste aparelho.',e); }
   const ok = document.getElementById('prem-ok');
   ok.style.display='inline';
   setTimeout(()=>ok.style.display='none',3000);
   renderPremissas();
+  // Taxa e prazo alimentam previsão e valor líquido em toda a tela: repinta
+  // tudo para nenhum painel ficar com a premissa antiga.
+  renderAll();
+}
+
+const fPct = v => (v==null||!isFinite(v)) ? '—' : Number(v).toFixed(2).replace('.',',')+'%';
+
+// Monta a matriz bandeira × transação uma única vez. Depois disso só os
+// valores são reescritos — reconstruir a cada tecla tiraria o foco do campo
+// que o usuário está digitando.
+function buildTaxasTable(){
+  const head=document.getElementById('taxas-head'), body=document.getElementById('taxas-body');
+  if(!head||!body||head.dataset.built)return;
+  const th=b=>`<th><span class="tx-band"><span class="tx-dot" style="background:${BANDEIRA_COR[b]||'#888'}"></span>${b}</span></th>`;
+  head.innerHTML='<th>Transação</th>'+BANDEIRAS.map(th).join('');
+  body.innerHTML=TAXA_LINHAS.map(({k,rot})=>`<tr>
+    <td class="tx-lin">${rot}</td>
+    ${BANDEIRAS.map(b=>semTransacao(b,k)
+      ? `<td><span class="tx-na">—</span><span class="tx-prazo">não aceita</span></td>`
+      : `<td>
+          <span class="prem-input-wrap" style="justify-content:center">
+            <input class="prem-input" type="number" id="tx-${b}-${k}" step="0.01" min="0" max="30" value="${PREM.taxas[b][k]}">
+            <span class="prem-unit" style="width:14px">%</span>
+          </span>
+          <span class="tx-prazo" data-prazo="${k}"></span>
+        </td>`).join('')}
+  </tr>`).join('');
+  const liqHead=document.getElementById('liq-head');
+  if(liqHead)liqHead.innerHTML='<th>Transação</th>'+BANDEIRAS.map(th).join('');
+  const sel=document.getElementById('bandeira-padrao');
+  if(sel)sel.innerHTML=BANDEIRAS.map(b=>`<option${b===PREM.bandeiraPadrao?' selected':''}>${b}</option>`).join('');
+  head.dataset.built='1';
 }
 
 function renderPremissas(){
-  // Update info texts
   const el = id => document.getElementById(id);
-  if(el('inf-prazo-cr')) el('inf-prazo-cr').textContent = PREM.prazoCredito;
-  if(el('inf-taxa-cr')) el('inf-taxa-cr').textContent = PREM.taxaCredito.toFixed(2).replace('.',',');
-  if(el('inf-taxa-deb')) el('inf-taxa-deb').textContent = PREM.taxaDebito.toFixed(2).replace('.',',');
-  if(el('inf-prazo-bol')) el('inf-prazo-bol').textContent = PREM.prazoBoleto;
+  buildTaxasTable();
 
-  // Parcela preview
-  const today = td();
-  const [y,m,d] = today.split('-').map(Number);
-  const fmt = fD;
-  const p1 = addD(today, 30);
-  const p2 = addD(today, 60);
-  const p3 = addD(today, 90);
+  // Prévia ao vivo: enquanto não salva, o que vale para os textos e para a
+  // tabela de líquidos é o que está digitado nos campos.
+  const numDe=(id,pad)=>{const n=parseFloat(el(id)&&el(id).value);return isFinite(n)&&n>=0?n:pad;};
+  const prazos={
+    debito:  Math.round(numDe('prazo-debito', PREM.prazoDebito)),
+    credito: Math.round(numDe('prazo-credito',PREM.prazoCredito))||PREM.prazoCredito,
+    parcela: Math.round(numDe('prazo-parcela',PREM.prazoParcela))||PREM.prazoParcela,
+    boleto:  Math.round(numDe('prazo-boleto', PREM.prazoBoleto)),
+  };
+  const bandPad = (el('bandeira-padrao')&&el('bandeira-padrao').value) || PREM.bandeiraPadrao;
+  const taxaDe=(b,k)=>semTransacao(b,k)?null:numDe(`tx-${b}-${k}`,PREM.taxas[b][k]);
 
-  const rows = [
-    ['Crédito 2x (2×)', PREM.taxaParc2, fmt(p1), fmt(p2), '—', `R$ ${(1000*(1-PREM.taxaParc2/100)).toFixed(2)}`],
-    ['Crédito 3x (3×)', PREM.taxaParc3, fmt(p1), fmt(p2), fmt(p3), `R$ ${(1000*(1-PREM.taxaParc3/100)).toFixed(2)}`],
-    ['Crédito parcelado (4-12×)', PREM.taxaParc12, fmt(p1), fmt(p2), fmt(p3)+'+', `R$ ${(1000*(1-PREM.taxaParc12/100)).toFixed(2)}`],
-  ];
+  const prazoTxt={
+    debito:  `${prazos.debito} dia${prazos.debito===1?'':'s'} útil${prazos.debito===1?'':'eis'}`,
+    credito: `${prazos.credito} dias`,
+    parc2:   `${prazos.parcela} dias a cada parcela`,
+    parc3:   `${prazos.parcela} dias a cada parcela`,
+  };
+  document.querySelectorAll('#taxas-body [data-prazo]').forEach(s=>{
+    s.textContent=prazoTxt[s.dataset.prazo]||'';
+  });
 
-  if(el('parcela-preview-body')) {
-    el('parcela-preview-body').innerHTML = rows.map(([forma,taxa,p1,p2,p3,liq])=>
-      `<tr>
-        <td><span class="tag tag-forma">${forma}</span></td>
-        <td style="color:var(--red);font-weight:700">${taxa.toFixed(2).replace('.',',')}%</td>
-        <td style="font-size:12px;color:var(--ink3)">${p1}</td>
-        <td style="font-size:12px;color:var(--ink3)">${p2}</td>
-        <td style="font-size:12px;color:var(--ink3)">${p3}</td>
-        <td style="font-weight:700;color:var(--green)">${liq}</td>
-      </tr>`
-    ).join('');
+  if(el('inf-prazo-deb'))  el('inf-prazo-deb').textContent  = prazos.debito;
+  if(el('inf-prazo-cr'))   el('inf-prazo-cr').textContent   = prazos.credito;
+  if(el('inf-prazo-parc')) el('inf-prazo-parc').textContent = prazos.parcela;
+  if(el('inf-prazo-bol'))  el('inf-prazo-bol').textContent  = prazos.boleto;
+  if(el('inf-bandeira'))   el('inf-bandeira').textContent   = bandPad;
+  if(el('inf-parc-regra')) el('inf-parc-regra').textContent = `${prazos.parcela} dias`;
+
+  // Exemplo com a data de hoje: onde cai cada parcela de um 3× passado hoje.
+  const hoje=td();
+  if(el('inf-parc-ex')){
+    const ps=[1,2,3].map(k=>fD(addDUtil(hoje,prazos.parcela*k)));
+    el('inf-parc-ex').innerHTML=`Ex.: cartão passado em <strong>${fD(hoje)}</strong> em 3× → parcela 1 <strong>${ps[0]}</strong> · parcela 2 <strong>${ps[1]}</strong> · parcela 3 <strong>${ps[2]}</strong>`;
   }
 
-  // Live input listeners
-  ['taxa-credito','prazo-credito','taxa-debito','taxa-parc2','taxa-parc3','taxa-parc12','prazo-boleto'].forEach(id=>{
+  // Líquido de R$ 1.000 por bandeira/transação.
+  const liqBody=el('liq-body');
+  if(liqBody){
+    liqBody.innerHTML=TAXA_LINHAS.map(({k,rot})=>`<tr>
+      <td class="tx-lin">${rot}</td>
+      ${BANDEIRAS.map(b=>{
+        const t=taxaDe(b,k);
+        return t==null
+          ? `<td><span class="tx-na">—</span></td>`
+          : `<td><strong style="color:var(--green)">${fR(1000*(1-t/100))}</strong><span class="tx-prazo">taxa ${fPct(t)}</span></td>`;
+      }).join('')}
+    </tr>`).join('');
+  }
+
+  // Atualiza os textos a cada tecla, sem precisar salvar.
+  const ids=['prazo-debito','prazo-credito','prazo-parcela','prazo-boleto','bandeira-padrao']
+    .concat(...BANDEIRAS.map(b=>TAXA_LINHAS.filter(({k})=>!semTransacao(b,k)).map(({k})=>`tx-${b}-${k}`)));
+  ids.forEach(id=>{
     const inp = el(id);
     if(inp && !inp._bound){ inp.addEventListener('input', renderPremissas); inp._bound=true; }
   });
-
-  // live update from inputs without saving
-  const tc = parseFloat(el('taxa-credito')?.value)||PREM.taxaCredito;
-  const pc = parseInt(el('prazo-credito')?.value)||PREM.prazoCredito;
-  const td2 = parseFloat(el('taxa-debito')?.value)||PREM.taxaDebito;
-  const pb = parseInt(el('prazo-boleto')?.value)||PREM.prazoBoleto;
-  if(el('inf-prazo-cr')) el('inf-prazo-cr').textContent = pc;
-  if(el('inf-taxa-cr')) el('inf-taxa-cr').textContent = tc.toFixed(2).replace('.',',');
-  if(el('inf-taxa-deb')) el('inf-taxa-deb').textContent = td2.toFixed(2).replace('.',',');
-  if(el('inf-prazo-bol')) el('inf-prazo-bol').textContent = pb;
 
   renderVeiculos();
 }
@@ -7452,13 +7562,52 @@ async function delVeiculo(id){
   renderVeiculos(); popSel();
 }
 
+// ── FORMA + BANDEIRA ──
+// A bandeira viaja dentro da própria forma de pagamento ("Crédito 2x Visa"),
+// que já é texto livre no banco. Assim filtros, busca, CSV, agrupamentos e
+// importação continuam funcionando sem coluna nova — e lançamento antigo,
+// sem bandeira escrita, cai na bandeira padrão das premissas.
+const semAcento = s => String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const formaEhCartao = f => /credito|debito/.test(semAcento(f));
+// "Crédito 2x Visa" → "Visa". Sem bandeira reconhecida, devolve ''.
+function bandeiraDaForma(forma){
+  const f=semAcento(forma);
+  if(/\bamex\b|american\s*express/.test(f)) return 'Amex';
+  if(/\bvisa\b/.test(f)) return 'Visa';
+  if(/\bmaster(card)?\b|\bmc\b/.test(f)) return 'Mastercard';
+  if(/\belo\b/.test(f)) return 'Elo';
+  return '';
+}
+// "Crédito 2x Visa" → "Crédito 2x" (a forma sem a bandeira).
+function formaSemBandeira(forma){
+  const b=bandeiraDaForma(forma);
+  if(!b) return String(forma||'');
+  return String(forma).replace(/\s*(amex|american\s*express|visa|master\s*card|mastercard|master|mc|elo)\s*$/i,'').trim()||String(forma||'');
+}
+// Junta de volta para gravar. Só cartão carrega bandeira.
+function formaComBandeira(base,bandeira){
+  base=String(base||'').trim();
+  return (formaEhCartao(base)&&bandeira) ? `${base} ${bandeira}` : base;
+}
+// Qual linha da matriz de taxas essa forma usa.
+function transacaoDaForma(forma){
+  const fl=semAcento(forma);
+  if(fl.includes('debito')) return 'debito';
+  if(fl.includes('60')||fl.includes('2x')) return 'parc2';
+  if(fl.includes('90')||fl.includes('3x')) return 'parc3';
+  if(fl.includes('credito')) return 'credito';
+  return '';
+}
+// Taxa da operadora para a forma, já considerando a bandeira. Combinação que
+// a bandeira não opera (Amex no débito, em lançamento antigo) usa a taxa da
+// bandeira padrão em vez de zerar a taxa e inflar o líquido.
 function getTaxaForma(forma){
-  const fl = forma.toLowerCase();
-  if(fl.includes('débito')||fl.includes('debito')) return PREM.taxaDebito/100;
-  if(fl.includes('crédito 60')||fl.includes('credito 60')||fl.includes('crédito 2x')||fl.includes('credito 2x')) return PREM.taxaParc2/100;
-  if(fl.includes('crédito 90')||fl.includes('credito 90')||fl.includes('crédito 3x')||fl.includes('credito 3x')) return PREM.taxaParc3/100;
-  if(fl.includes('crédito')||fl.includes('credito')) return PREM.taxaCredito/100;
-  return 0;
+  const k=transacaoDaForma(forma);
+  if(!k) return 0;
+  const pad=PREM.taxas[PREM.bandeiraPadrao]||PREM_PADRAO.taxas[PREM_PADRAO.bandeiraPadrao];
+  const t=PREM.taxas[bandeiraDaForma(forma)]||pad;
+  const v=(t[k]==null?pad[k]:t[k]);
+  return (isFinite(v)?v:0)/100;
 }
 
 // ── NOVO ──
@@ -7493,6 +7642,7 @@ function itemHTML(pref,full){
     <div class="fg">
       <div class="fp"><label>Tipo</label><select data-k="tipo">${ops(LANC_TIPOS)}</select></div>
       <div class="fp"><label>Forma</label><select data-k="forma">${ops(LANC_FORMAS)}</select></div>
+      <div class="fp" data-fp="bandeira"><label>Bandeira</label><select data-k="bandeira"></select></div>
       <div class="fp"><label>Data de pagamento</label><input type="date" data-k="dpago"></div>
       <div class="fp"><label>Valor (R$)</label><input type="number" step="0.01" data-k="valor"></div>
       ${full?`<div class="fp"><label>Prev. Pgto (auto)</label><input type="date" data-k="prev"></div>
@@ -7517,23 +7667,56 @@ function itemVazio(it){return !itemGet(it,'valor')&&!itemGet(it,'obs')&&!itemGet
 // Cartão parcelado (2x/3x) devolve a data da 1ª parcela — as demais saem
 // de parcelasForma()/coletaItens(), que divide em vários lançamentos.
 function itemPrev(forma,retorno,dp){
-  const fl=(forma||'').toLowerCase();
+  const fl=semAcento(forma);
   if(fl.includes('boleto')) return dp ? proxUtil(dp) : (retorno?addDUtil(retorno,PREM.prazoBoleto):'');
-  if((fl.includes('90')||fl.includes('3x'))&&dp) return addDUtil(dp,30);
-  if((fl.includes('60')||fl.includes('2x'))&&dp) return addDUtil(dp,30);
-  if((fl.includes('crédito')||fl.includes('credito'))&&dp) return addDUtil(dp,PREM.prazoCredito);
-  if((fl.includes('débito')||fl.includes('debito'))&&dp) return addDUtil(dp,PREM.prazoDebito);
+  if(!dp) return '';
+  const k=transacaoDaForma(forma);
+  if(k==='parc2'||k==='parc3') return addDUtil(dp,PREM.prazoParcela);
+  if(k==='credito') return addDUtil(dp,PREM.prazoCredito);
+  if(k==='debito') return addDUtil(dp,PREM.prazoDebito);
   return '';
 }
 // Quantas parcelas essa forma representa. Regra documentada em Premissas >
-// Cartão parcelado: cada parcela é reconhecida 30 dias após a anterior —
-// "Crédito 60 dias"/"Crédito 2x" = 2 parcelas (30 e 60 dias); "Crédito 90
-// dias"/"Crédito 3x" = 3 parcelas (30, 60 e 90). As demais formas são 1.
+// Taxas do cartão por bandeira: cada parcela é reconhecida um prazo depois da
+// anterior (PREM.prazoParcela) — "Crédito 60 dias"/"Crédito 2x" = 2 parcelas;
+// "Crédito 90 dias"/"Crédito 3x" = 3 parcelas. As demais formas são 1.
 function parcelasForma(forma){
-  const fl=(forma||'').toLowerCase();
-  if(fl.includes('90')||fl.includes('3x'))return 3;
-  if(fl.includes('60')||fl.includes('2x'))return 2;
+  const k=transacaoDaForma(forma);
+  if(k==='parc3')return 3;
+  if(k==='parc2')return 2;
   return 1;
+}
+// Popula o <select> de bandeira conforme a forma escolhida: só cartão tem
+// bandeira, e cada transação só lista as bandeiras que a operadora opera
+// (Amex não faz débito). Devolve true quando o campo deve aparecer.
+// `permiteVazio` só na edição: lançamento antigo não tem bandeira registrada
+// e ninguém sabe qual foi — deixar em branco mantém o que está no banco
+// (calculado pela bandeira padrão) em vez de inventar uma bandeira ao salvar.
+function syncBandeiraSel(sel,forma,atual,permiteVazio){
+  if(!sel)return false;
+  const k=transacaoDaForma(forma);
+  if(!k){ sel.innerHTML=''; return false; }
+  const ops=BANDEIRAS.filter(b=>!semTransacao(b,k));
+  const alvo=(atual===undefined?sel.value:atual)||'';
+  const val=ops.includes(alvo)?alvo
+    :(permiteVazio?'':(ops.includes(PREM.bandeiraPadrao)?PREM.bandeiraPadrao:ops[0]));
+  const lista=(permiteVazio?[['','— não informada']]:[]).concat(ops.map(b=>[b,b]));
+  const novo=lista.map(([v,t])=>`<option value="${v}"${v===val?' selected':''}>${t}</option>`).join('');
+  if(sel.innerHTML!==novo)sel.innerHTML=novo;
+  sel.value=val;
+  return true;
+}
+// Forma como vai para o banco: a escolhida no item, com a bandeira junto.
+function itemForma(it){
+  return formaComBandeira(itemGet(it,'forma'),itemGet(it,'bandeira'));
+}
+// Mesma regra no modal de edição: o campo Bandeira só aparece quando a forma
+// é cartão, e a lista se ajusta ao que a operadora aceita naquela transação.
+function syncBandeiraEdit(atual){
+  const f=document.getElementById('e-f'), sel=document.getElementById('e-bd'), wrap=document.getElementById('e-bd-wrap');
+  if(!f||!sel)return;
+  const mostra=syncBandeiraSel(sel,f.value,atual,true);
+  if(wrap)wrap.style.display=mostra?'':'none';
 }
 // Divide um valor em N parcelas de centavos o mais iguais possível, sem
 // perder nem sobrar centavo — a diferença do arredondamento fica na última.
@@ -7559,7 +7742,12 @@ function calcItems(pref){
   its.forEach((it,i)=>{
     const num=it.querySelector('[data-num]');if(num)num.textContent=i+1;
     const del=it.querySelector('.item-del');if(del)del.disabled=its.length<2;
-    const forma=itemGet(it,'forma');
+    // A bandeira só existe (e só é perguntada) quando a forma é cartão — e
+    // ela é parte da forma gravada, porque a taxa e o prazo saem dela.
+    const bandWrap=it.querySelector('[data-fp="bandeira"]');
+    const temBand=syncBandeiraSel(it.querySelector('[data-k="bandeira"]'),itemGet(it,'forma'));
+    if(bandWrap)bandWrap.style.display=temBand?'':'none';
+    const forma=itemForma(it);
     const dp=itemGet(it,'dpago');
     // Se o usuário já editou a Prev. Pgto NA MÃO (marcado no listener do
     // box), ela prevalece: não recalcula por cima enquanto ele não limpar o
@@ -7577,7 +7765,7 @@ function calcItems(pref){
     if(parcelasEl){
       if(v&&parcela){
         const brutos=dividirCentavos(v,n);
-        const linhas=brutos.map((b,k)=>`${fR(b)} em ${fD(addDUtil(dp,30*(k+1)))}`).join(' · ');
+        const linhas=brutos.map((b,k)=>`${fR(b)} em ${fD(addDUtil(dp,PREM.prazoParcela*(k+1)))}`).join(' · ');
         parcelasEl.innerHTML=`💳 Vira ${n} lançamentos — ${linhas}`;
         parcelasEl.style.display='';
       } else {
@@ -7645,7 +7833,7 @@ function coletaItens(pref,base){
     if(itemVazio(it))continue;
     const v=parseFloat(itemGet(it,'valor'))||0;
     if(v<=0)return{erro:`Informe o valor do lançamento ${i+1}.`};
-    const forma=itemGet(it,'forma');
+    const forma=itemForma(it);   // já com a bandeira: é dela que sai a taxa
     const tipo=itemGet(it,'tipo');
     const dp=itemGet(it,'dpago');
     const obsBase=itemGet(it,'obs')||'';
@@ -7656,7 +7844,7 @@ function coletaItens(pref,base){
         recs.push({...base,
           tipo,forma,
           valor:bruto,
-          prev_pgto:addDUtil(dp,30*(k+1)),
+          prev_pgto:addDUtil(dp,PREM.prazoParcela*(k+1)),
           valor_pago:0,
           saldo:Math.round(bruto*(1-taxa)*100)/100,
           obs:obsBase?`${obsBase} · Parcela ${k+1}/${n}`:`Parcela ${k+1}/${n}`});
@@ -7769,6 +7957,9 @@ function handleImg(input){
           itemSet(it0,'valor',p.valor||'');
           itemSet(it0,'obs',p.obs||'');
           if(p.forma&&LANC_FORMAS.includes(p.forma))itemSet(it0,'forma',p.forma);
+          // A bandeira só entra depois da forma: a lista de bandeiras válidas
+          // depende dela (Amex não faz débito).
+          syncBandeiraSel(it0.querySelector('[data-k="bandeira"]'),itemGet(it0,'forma'),p.bandeira||undefined);
         }
         calcItems('ai');
         if(p.placa)preencheDono('ai-d',donoDaPlaca(p.placa));
@@ -7887,6 +8078,13 @@ function parseContrato(text){
   else if(/2\s*X|CR[EÉ]DITO\s+2/.test(t))forma='Crédito 2x';
   else if(/3\s*X|CR[EÉ]DITO\s+3/.test(t))forma='Crédito 3x';
   else if(/CR[EÉ]DITO/.test(t))forma='Crédito';
+  // Bandeira: o comprovante costuma trazê-la escrita. É ela que define a taxa,
+  // então vale ler junto — o usuário confere/troca antes de confirmar.
+  let bandeira='';
+  if(/\bAMEX\b|AMERICAN\s*EXPRESS/.test(t))bandeira='Amex';
+  else if(/\bVISA\b/.test(t))bandeira='Visa';
+  else if(/\bMASTER\s*CARD\b|\bMASTERCARD\b|\bMASTER\b/.test(t))bandeira='Mastercard';
+  else if(/\bELO\b/.test(t))bandeira='Elo';
   // OBS: número do cartão — "CRÉDITO/DÉBITO À VISTA NÚMERO 3974", ignorando pré-autorização
   let obs='',cardNum='';
   for(const ln of lines){
@@ -7908,7 +8106,7 @@ function parseContrato(text){
     if(mk)cardNum=mk[1];
   }
   if(cardNum)obs='Cartão final '+cardNum;
-  return {placa,cliente,saida,retorno,valor,forma,obs,dpago};
+  return {placa,cliente,saida,retorno,valor,forma,bandeira,obs,dpago};
 }
 // ── EXCEL IMPORT ──
 let XLS_PARSED=[];
