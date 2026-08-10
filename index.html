@@ -38,6 +38,8 @@
   --purple-soft: #ede9ff;
   --teal: #076b72;
   --teal-soft: #e0f6f8;
+  --rose: #a1207a;
+  --rose-soft: #fbe6f4;
   --r: 14px;
   --rl: 22px;
   --shadow-sm: 0 1px 1px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06);
@@ -902,6 +904,7 @@ button.day-total:active { opacity: .45; }
 .tag-out { background: var(--surface); color: var(--ink3); }
 .tag-tax { background: var(--purple-soft); color: var(--purple); }
 .tag-ped { background: var(--teal-soft); color: var(--teal); }
+.tag-fra { background: var(--rose-soft); color: var(--rose); }
 .tag-forma { background: var(--surface); color: var(--ink2); font-size: 11px; }
 
 /* PLACA */
@@ -2565,6 +2568,8 @@ html[data-theme="dark"] {
   --purple-soft: rgba(177,139,240,.18);
   --teal: #3ec9d6;
   --teal-soft: rgba(62,201,214,.16);
+  --rose: #ef94ce;
+  --rose-soft: rgba(239,148,206,.18);
   --shadow-sm: 0 1px 3px rgba(0,0,0,.45);
   --shadow-md: 0 4px 16px rgba(0,0,0,.55);
   --shadow-lg: 0 12px 40px rgba(0,0,0,.6);
@@ -3318,7 +3323,7 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
         <div class="fp"><label>Proprietário</label><select id="e-d"></select></div>
         <div class="fp s2"><label>Cliente</label><input type="text" id="e-c"></div>
         <div class="fp"><label>Tipo</label>
-          <select id="e-t"><option>Locação</option><option>Avarias</option><option>Lavagem</option><option>Multas</option><option>Pedágio</option><option>Franquia</option><option>Taxa Mario</option><option>Taxa Alfredo</option><option>Taxa Bruno</option><option>Outros</option></select></div>
+          <select id="e-t"></select></div>
         <div class="fp"><label>Forma</label>
           <select id="e-f"><option>Crédito</option><option>Crédito 3x</option><option>Crédito 2x</option><option>Débito</option><option>Boleto</option><option>Depósito</option><option>Dinheiro</option></select></div>
         <div class="fp"><label>Saída</label><input type="date" id="e-s"></div>
@@ -4529,7 +4534,7 @@ function autoFillDono(placaId, donoSelectId) {
   placa.addEventListener('input', function() { preencheDono(donoSelectId, donoDaPlaca(this.value)); });
 }
 // Cor da etiqueta de cada tipo de lançamento.
-const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Bruno':'tax'};
+const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax'};
 const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -7218,7 +7223,12 @@ function getTaxaForma(forma){
 // uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
 // contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
 // de itens é livre.
-const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Taxa Mario','Taxa Alfredo','Outros'];
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Outros'];
+// Só aparece em lançamentos antigos. Não entra na lista de criar, mas precisa
+// existir na edição para continuar selecionável em quem já tem esse tipo.
+const LANC_TIPOS_LEGADO=['Taxa Bruno'];
+// Lista da edição = os tipos de criação + os legados, com "Outros" no fim.
+const EDIT_TIPOS=[...LANC_TIPOS.filter(t=>t!=='Outros'),...LANC_TIPOS_LEGADO,'Outros'];
 const LANC_FORMAS=['Crédito','Crédito 3x','Crédito 2x','Débito','Boleto','Depósito','Dinheiro'];
 // Os três lugares que lançam itens: 'nf' (Novo lançamento), 'ai' (modal do
 // OCR) e 'ed' (acrescentar itens a um contrato já existente, pela edição).
@@ -7815,6 +7825,9 @@ function popSel(){
   const formas=[...new Set(all.map(r=>r.forma).filter(Boolean))].sort();
   ['nf-d','e-d','ai-d'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Selecione</option>';donos.forEach(d=>el.innerHTML+=`<option>${d}</option>`);el.value=cv;});
   ['lf-dono'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os proprietários</option>';donos.forEach(d=>el.innerHTML+=`<option>${d}</option>`);el.value=cv;});
+  // Tipo na edição: mesma lista de LANC_TIPOS (+ legados), pra não existir
+  // tipo que dá pra criar mas não dá pra escolher ao editar.
+  {const el=document.getElementById('e-t');if(el){const cv=el.value;el.innerHTML=EDIT_TIPOS.map(t=>`<option>${t}</option>`).join('');selVal('e-t',cv);}}
   ['lf-tipo'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os tipos</option>';tipos.forEach(t=>el.innerHTML+=`<option>${t}</option>`);el.value=cv;});
   ['lf-forma'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todas as formas</option>';formas.forEach(f=>el.innerHTML+=`<option>${f}</option>`);el.value=cv;});
   // Placas cadastradas em Premissas (Veículos) — alimenta o autocomplete da
