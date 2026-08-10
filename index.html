@@ -3013,7 +3013,8 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
         <div class="fp"><label>Placa</label><input type="text" id="nf-p" placeholder="Ex: UFR2H17" list="placaDL" autocomplete="off"></div>
         <datalist id="placaDL"></datalist>
         <div class="fp"><label>Proprietário</label><select id="nf-d"><option value="">Selecione</option></select></div>
-        <div class="fp s2"><label>Cliente</label><input type="text" id="nf-c"></div>
+        <div class="fp s2"><label>Cliente</label><input type="text" id="nf-c" list="clienteDL" autocomplete="off"></div>
+        <datalist id="clienteDL"></datalist>
         <div class="fp"><label>Saída</label><input type="date" id="nf-s" onchange="calcN()"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="nf-r" onchange="calcN()"></div>
       </div>
@@ -3319,13 +3320,14 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
       <button class="btn btn-blue" style="width:100%;justify-content:center;padding:10px;margin-top:10px" onclick="confirmarBaixa()">✓ Confirmar baixa</button>
     </div>
 
-    <!-- Edição -->
-    <details>
+    <!-- Edição — aberta por padrão: placa, cliente e todo o resto do
+         lançamento precisam estar à mão sem precisar achar o "+" antes. -->
+    <details open>
       <summary>✏ Editar campos</summary>
       <div class="fg" style="margin-top:12px">
         <div class="fp"><label>Placa</label><input type="text" id="e-p" list="placaDL" autocomplete="off"></div>
         <div class="fp"><label>Proprietário</label><select id="e-d"></select></div>
-        <div class="fp s2"><label>Cliente</label><input type="text" id="e-c"></div>
+        <div class="fp s2"><label>Cliente</label><input type="text" id="e-c" list="clienteDL" autocomplete="off"></div>
         <div class="fp"><label>Tipo</label>
           <select id="e-t"></select></div>
         <div class="fp"><label>Forma</label>
@@ -3408,7 +3410,7 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
       <div class="fg">
         <div class="fp"><label>Placa</label><input type="text" id="ai-p" placeholder="Ex: UFR2H17" list="placaDL" autocomplete="off"></div>
         <div class="fp"><label>Proprietário</label><select id="ai-d"><option value="">Selecione</option></select></div>
-        <div class="fp s2"><label>Cliente</label><input type="text" id="ai-c"></div>
+        <div class="fp s2"><label>Cliente</label><input type="text" id="ai-c" list="clienteDL" autocomplete="off"></div>
         <div class="fp"><label>Saída</label><input type="date" id="ai-s" onchange="calcItems('ai')"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="ai-r" onchange="calcItems('ai')"></div>
       </div>
@@ -7954,6 +7956,14 @@ function popSel(){
   if(placaDL){
     placaDL.innerHTML=[...PLACAS_IDX.values()].sort((a,b)=>a.placa.localeCompare(b.placa))
       .map(v=>`<option value="${v.placa}" label="${v.dono||''}">`).join('');
+  }
+  // Clientes já lançados antes — sugere ao digitar o nome em Novo lançamento,
+  // OCR e Editar, pra não recadastrar "JOÃO SILVA" como "Joao da Silva" por
+  // engano e espalhar o mesmo cliente em nomes diferentes.
+  const clienteDL=document.getElementById('clienteDL');
+  if(clienteDL){
+    const clientes=[...new Set(all.map(r=>(r.cliente||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    clienteDL.innerHTML=clientes.map(c=>`<option value="${esc(c)}">`).join('');
   }
 }
 
