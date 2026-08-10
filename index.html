@@ -1863,6 +1863,20 @@ html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165d
 }
 .itens-total { margin-top: 10px; font-size: 12.5px; color: var(--ink3); text-align: right; min-height: 18px; }
 .itens-total strong { color: var(--ink); font-weight: 700; }
+/* Os outros lançamentos do mesmo contrato, listados na edição — clicar abre
+   aquele lançamento no lugar deste. */
+.irmaos { display: flex; flex-direction: column; gap: 6px; }
+.irmao {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; padding: 9px 12px; cursor: pointer; text-align: left;
+  border: 1.5px solid var(--line); border-radius: 10px; background: var(--surface);
+  font-family: inherit; font-size: 13px; color: var(--ink);
+}
+.irmao:hover { border-color: var(--blue-mid); }
+.irmao-on { border-color: var(--blue); background: var(--blue-soft); cursor: default; }
+.irmao-t { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.irmao-v { font-weight: 700; white-space: nowrap; }
+.irmao-atual { font-size: 10.5px; font-weight: 700; color: var(--blue); text-transform: uppercase; letter-spacing: .05em; }
 
 /* BAIXA PANEL */
 .baixa-panel {
@@ -3317,6 +3331,22 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
         <button class="btn btn-blue" style="flex:1;justify-content:center" onclick="saveEdit()">✓ Salvar</button>
         <button class="btn btn-red" onclick="deleteRow()">🗑 Excluir</button>
       </div>
+    </details>
+
+    <!-- Acrescentar mais lançamentos ao MESMO contrato (mesma placa, cliente
+         e datas). Cada um vira um registro próprio, com sua baixa. -->
+    <details id="mAddItens">
+      <summary>＋ Adicionar lançamentos a este contrato</summary>
+      <div id="mIrmaos" style="margin-top:12px"></div>
+      <div class="itens-hd">
+        <span class="itens-tt">Novos lançamentos</span>
+        <span class="itens-cnt" id="ed-cnt"></span>
+      </div>
+      <div class="itens" id="ed-itens"></div>
+      <button class="btn add-item" type="button" onclick="addItem('ed')" title="Adicionar mais um lançamento a este contrato">＋ Adicionar lançamento</button>
+      <div class="itens-total" id="ed-total"></div>
+      <button class="btn btn-blue" id="ed-submit" style="width:100%;justify-content:center;padding:10px;margin-top:12px" onclick="addItensContrato()">✓ Adicionar lançamento</button>
+      <div id="edMsg" style="margin-top:8px;font-size:13px"></div>
     </details>
   </div>
 </div>
@@ -6324,6 +6354,9 @@ function openEdit(idx){
   document.getElementById('e-dtpag').value=r.data_pagamento||'';
   document.getElementById('e-sl').value=r.saldo||'';
   document.getElementById('e-obs').value=r.obs||'';
+  resetItems('ed');
+  document.getElementById('edMsg').innerHTML='';
+  renderIrmaos();
   document.getElementById('mEdit').classList.add('on');
 }
 
@@ -6345,10 +6378,60 @@ function confirmarBaixa(){
   dbUpdate(r);
   closeEdit();renderAll();
 }
+// Lançamentos que dividem o mesmo contrato: mesma placa, mesmo cliente e
+// mesma saída — a chave que o "Novo lançamento" usa ao gravar vários itens.
+function itensDoContrato(r){
+  const k=_plKey(r.placa), cli=(r.cliente||'').trim().toUpperCase();
+  return allD().map((x,i)=>({x,i})).filter(({x})=>
+    _plKey(x.placa)===k && (x.saida||'')===(r.saida||'') &&
+    (x.cliente||'').trim().toUpperCase()===cli);
+}
+function renderIrmaos(){
+  const box=document.getElementById('mIrmaos');if(!box)return;
+  box.innerHTML='';
+  if(editIdx===null)return;
+  const r=allD()[editIdx];if(!r)return;
+  const todos=itensDoContrato(r);
+  if(todos.length<2)return;   // contrato de um item só: não há o que listar
+  box.innerHTML=`<div class="itens-hd" style="margin-top:0">
+      <span class="itens-tt">Já neste contrato</span>
+      <span class="itens-cnt">${todos.length} itens</span>
+    </div>
+    <div class="irmaos">${todos.map(({x,i})=>{
+      const atual = x===r;
+      return `<button type="button" class="irmao${atual?' irmao-on':''}" ${atual?'disabled':`onclick="openEdit(${i})"`} title="${atual?'Lançamento aberto':'Abrir este lançamento'}">
+        <span class="irmao-t">${tipTag(x.tipo)} <span class="tag tag-forma">${fFormaLabel(x.forma)}</span>${atual?'<span class="irmao-atual">editando</span>':''}</span>
+        <span class="irmao-v">${fR(x.valor)}</span>
+      </button>`;}).join('')}</div>`;
+}
+// Acrescenta lançamentos NOVOS ao contrato aberto na edição. Não mexe no
+// lançamento que está sendo editado — cada item vira um registro próprio,
+// com a sua baixa.
+async function addItensContrato(){
+  if(editIdx===null)return;
+  const p=normPlaca(document.getElementById('e-p').value);
+  const d=document.getElementById('e-d').value||donoDaPlaca(p);
+  const c=document.getElementById('e-c').value.trim();
+  const s=document.getElementById('e-s').value||null;
+  const rr=document.getElementById('e-r').value||null;
+  const msg=document.getElementById('edMsg');
+  if(!p||!c){msg.innerHTML='<span style="color:var(--red)">O contrato precisa de placa e cliente.</span>';return;}
+  const {recs,erro}=coletaItens('ed',{placa:p,dono:d,saida:s,retorno:rr,cliente:c});
+  if(erro){msg.innerHTML=`<span style="color:var(--red)">${erro}</span>`;return;}
+  const btn=document.getElementById('ed-submit');
+  if(btn)btn.disabled=true;
+  try{ for(const rec of recs){const saved=await dbInsert(rec);NOVOS.push(saved);} }
+  finally{ if(btn)btn.disabled=false; }
+  msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados'} ao contrato!</span>`;
+  resetItems('ed');
+  renderIrmaos();
+  document.getElementById('novosCard').style.display='block';
+  rNovos();popSel();renderAll();
+}
 function saveEdit(){
   if(editIdx===null)return;
   const r=allD()[editIdx];
-  r.placa=document.getElementById('e-p').value.trim().toUpperCase();
+  r.placa=normPlaca(document.getElementById('e-p').value);
   r.dono=document.getElementById('e-d').value;
   r.cliente=document.getElementById('e-c').value.trim();
   r.tipo=document.getElementById('e-t').value;
@@ -7134,9 +7217,16 @@ function getTaxaForma(forma){
 // de itens é livre.
 const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Outros'];
 const LANC_FORMAS=['Crédito','Crédito 3x','Crédito 2x','Débito','Boleto','Depósito','Dinheiro'];
+// Os três lugares que lançam itens: 'nf' (Novo lançamento), 'ai' (modal do
+// OCR) e 'ed' (acrescentar itens a um contrato já existente, pela edição).
+// `retorno` = de onde sai a data de retorno do contrato (base da previsão do
+// boleto); `full` = mostra Prev. Pgto e Valor líquido calculados.
+const ITENS_CFG={
+  nf:{retorno:'nf-r', full:true},
+  ai:{retorno:'ai-r', full:false},
+  ed:{retorno:'e-r',  full:true},
+};
 
-// `full` = formulário completo (mostra Prev. Pgto e Valor líquido calculados);
-// no modal do OCR esses dois campos são só derivados, então ficam de fora.
 function itemHTML(pref,full){
   const ops=arr=>arr.map(o=>`<option>${o}</option>`).join('');
   return `<div class="item-card" data-item>
@@ -7176,7 +7266,7 @@ function itemPrev(forma,retorno,dp){
 }
 function calcItems(pref){
   const its=itemEls(pref);
-  const r=document.getElementById(pref+'-r')?.value||'';
+  const r=document.getElementById(ITENS_CFG[pref].retorno)?.value||'';
   let bruto=0,liq=0,preenchidos=0;
   its.forEach((it,i)=>{
     const num=it.querySelector('[data-num]');if(num)num.textContent=i+1;
@@ -7197,7 +7287,7 @@ function calcItems(pref){
 }
 function addItem(pref,focar){
   const box=document.getElementById(pref+'-itens');if(!box)return null;
-  box.insertAdjacentHTML('beforeend',itemHTML(pref,pref==='nf'));
+  box.insertAdjacentHTML('beforeend',itemHTML(pref,ITENS_CFG[pref].full));
   const it=box.lastElementChild;
   calcItems(pref);
   if(focar!==false)it.querySelector('[data-k="valor"]')?.focus();
@@ -7211,7 +7301,7 @@ function delItem(pref,btn){
 }
 function resetItems(pref){
   const box=document.getElementById(pref+'-itens');if(!box)return;
-  box.innerHTML=itemHTML(pref,pref==='nf');
+  box.innerHTML=itemHTML(pref,ITENS_CFG[pref].full);
   calcItems(pref);
 }
 function initItens(pref){
@@ -7822,6 +7912,7 @@ async function boot(){
   // primeiro item na tela assim que a página aparece.
   initItens('nf');
   initItens('ai');
+  initItens('ed');
   renderPerfilBtn();
   syncSystemTheme();
   initSwipe('baixasContainer');
