@@ -1841,6 +1841,29 @@ html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165d
 .fp input:focus, .fp select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,95,168,.08); }
 .fp input[readonly] { background: var(--surface); color: var(--ink3); }
 
+/* ITENS DO CONTRATO — um contrato pode ter N lançamentos (locação, lavagem,
+   avarias...), cada um com sua forma de pagamento, valor e previsão. */
+.itens-hd { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; }
+.itens-tt { font-size: 11px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .05em; }
+.itens-cnt { font-size: 11px; font-weight: 600; color: var(--blue); background: var(--blue-soft); padding: 2px 8px; border-radius: 20px; }
+.itens { display: flex; flex-direction: column; gap: 10px; }
+.item-card { border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; background: var(--surface); }
+.item-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+.item-tt { font-size: 11px; font-weight: 700; color: var(--ink2); text-transform: uppercase; letter-spacing: .05em; }
+.item-del {
+  border: none; background: none; cursor: pointer; color: var(--red);
+  font-size: 13px; font-weight: 700; line-height: 1; padding: 4px 8px; border-radius: 7px;
+}
+.item-del:hover { background: var(--red-soft); }
+.item-del[disabled] { opacity: .25; cursor: not-allowed; }
+.item-del[disabled]:hover { background: none; }
+.add-item {
+  width: 100%; justify-content: center; padding: 10px; margin-top: 10px;
+  border: 1.5px dashed var(--blue-mid); color: var(--blue); font-weight: 600;
+}
+.itens-total { margin-top: 10px; font-size: 12.5px; color: var(--ink3); text-align: right; min-height: 18px; }
+.itens-total strong { color: var(--ink); font-weight: 700; }
+
 /* BAIXA PANEL */
 .baixa-panel {
   background: linear-gradient(135deg, #fffdf5 0%, #fff9ec 100%);
@@ -2965,19 +2988,17 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
         <datalist id="placaDL"></datalist>
         <div class="fp"><label>Proprietário</label><select id="nf-d"><option value="">Selecione</option></select></div>
         <div class="fp s2"><label>Cliente</label><input type="text" id="nf-c"></div>
-        <div class="fp"><label>Tipo</label>
-          <select id="nf-t"><option>Locação</option><option>Avarias</option><option>Lavagem</option><option>Multas</option><option>Outros</option></select></div>
-        <div class="fp"><label>Forma</label>
-          <select id="nf-f" onchange="calcN()"><option>Crédito</option><option>Crédito 3x</option><option>Crédito 2x</option><option>Débito</option><option>Boleto</option><option>Depósito</option><option>Dinheiro</option></select></div>
         <div class="fp"><label>Saída</label><input type="date" id="nf-s" onchange="calcN()"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="nf-r" onchange="calcN()"></div>
-        <div class="fp"><label>Data de pagamento</label><input type="date" id="nf-dp" onchange="calcN()"></div>
-        <div class="fp"><label>Valor (R$)</label><input type="number" id="nf-v" step="0.01" onchange="calcN()"></div>
-        <div class="fp"><label>Prev. Pgto (auto)</label><input type="date" id="nf-pp"></div>
-        <div class="fp"><label>Valor líquido</label><input type="number" id="nf-vp" readonly></div>
-        <div class="fp s2"><label>Obs / Referência</label><input type="text" id="nf-obs" placeholder="ex: ref. 4018"></div>
-        <div class="fp s2"><button class="btn btn-blue" style="width:100%;justify-content:center;padding:10px" onclick="addN()">✓ Adicionar lançamento</button></div>
       </div>
+      <div class="itens-hd">
+        <span class="itens-tt">Lançamentos do contrato</span>
+        <span class="itens-cnt" id="nf-cnt"></span>
+      </div>
+      <div class="itens" id="nf-itens"></div>
+      <button class="btn add-item" type="button" onclick="addItem('nf')" title="Adicionar mais um lançamento a este contrato">＋ Adicionar lançamento</button>
+      <div class="itens-total" id="nf-total"></div>
+      <button class="btn btn-blue" id="nf-submit" style="width:100%;justify-content:center;padding:10px;margin-top:12px" onclick="addN()">✓ Adicionar lançamento</button>
       <div id="nMsg" style="margin-top:8px;font-size:13px"></div>
     </div>
   </div>
@@ -2985,7 +3006,7 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
     <div class="card-hd">Adicionados nesta sessão</div>
     <div class="tw">
       <table><thead><tr>
-        <th>Placa</th><th>Dono</th><th>Cliente</th><th>Saída</th>
+        <th>Placa</th><th>Dono</th><th>Cliente</th><th>Tipo</th><th>Saída</th>
         <th class="nr">Valor</th><th>Forma</th><th>Prev. Pgto</th><th></th>
       </tr></thead><tbody id="novosBody"></tbody></table>
     </div>
@@ -3341,20 +3362,22 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
     </div>
     <img id="prevImg" style="display:none;width:100%;border-radius:10px;margin:10px 0">
     <div id="aiSt" style="display:none" class="ai-st"></div>
-    <div class="fg" id="aiForm" style="display:none;margin-top:12px">
-      <div class="fp"><label>Placa</label><input type="text" id="ai-p"></div>
-      <div class="fp"><label>Proprietário</label><select id="ai-d"><option value="">Selecione</option></select></div>
-      <div class="fp s2"><label>Cliente</label><input type="text" id="ai-c"></div>
-      <div class="fp"><label>Tipo</label>
-        <select id="ai-t"><option>Locação</option><option>Avarias</option><option>Lavagem</option><option>Multas</option><option>Outros</option></select></div>
-      <div class="fp"><label>Forma</label>
-        <select id="ai-f"><option>Crédito</option><option>Crédito 3x</option><option>Crédito 2x</option><option>Débito</option><option>Boleto</option><option>Depósito</option><option>Dinheiro</option></select></div>
-      <div class="fp"><label>Saída</label><input type="date" id="ai-s"></div>
-      <div class="fp"><label>Retorno</label><input type="date" id="ai-r"></div>
-      <div class="fp"><label>Data de pagamento</label><input type="date" id="ai-dp"></div>
-      <div class="fp"><label>Valor</label><input type="number" id="ai-v" step="0.01"></div>
-      <div class="fp s2"><label>Obs / Referência</label><input type="text" id="ai-obs" placeholder="ex: cartão final 9974"></div>
-      <div class="fp s2" style="display:flex;gap:8px;margin-top:4px">
+    <div id="aiForm" style="display:none;margin-top:12px">
+      <div class="fg">
+        <div class="fp"><label>Placa</label><input type="text" id="ai-p"></div>
+        <div class="fp"><label>Proprietário</label><select id="ai-d"><option value="">Selecione</option></select></div>
+        <div class="fp s2"><label>Cliente</label><input type="text" id="ai-c"></div>
+        <div class="fp"><label>Saída</label><input type="date" id="ai-s" onchange="calcItems('ai')"></div>
+        <div class="fp"><label>Retorno</label><input type="date" id="ai-r" onchange="calcItems('ai')"></div>
+      </div>
+      <div class="itens-hd">
+        <span class="itens-tt">Lançamentos do contrato</span>
+        <span class="itens-cnt" id="ai-cnt"></span>
+      </div>
+      <div class="itens" id="ai-itens"></div>
+      <button class="btn add-item" type="button" onclick="addItem('ai')" title="Adicionar mais um lançamento a este contrato">＋ Adicionar lançamento</button>
+      <div class="itens-total" id="ai-total"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn btn-blue" style="flex:1;justify-content:center" onclick="confirmAI()">✓ Confirmar</button>
         <button class="btn" onclick="clearAI()">Limpar</button>
       </div>
@@ -7084,51 +7107,155 @@ function getTaxaForma(forma){
 }
 
 // ── NOVO ──
-function calcN(){
-  const s=document.getElementById('nf-s').value;
-  const r=document.getElementById('nf-r').value;
-  const dp=document.getElementById('nf-dp').value;   // data de pagamento (cartão): referência da previsão
-  const f=document.getElementById('nf-f').value;
-  const fl=f.toLowerCase();
-  let pp='';
-  // Cartão: SEMPRE a partir da Data de pagamento (dp). Boleto: a partir do Retorno.
-  if(fl.includes('boleto')&&r) pp=addDUtil(r,PREM.prazoBoleto);
-  else if((fl.includes('90')||fl.includes('3x'))&&dp) pp=addDUtil(dp,90);
-  else if((fl.includes('60')||fl.includes('2x'))&&dp) pp=addDUtil(dp,60);
-  else if((fl.includes('crédito')||fl.includes('credito'))&&dp) pp=addDUtil(dp,PREM.prazoCredito);
-  else if((fl.includes('débito')||fl.includes('debito'))&&dp) pp=addDUtil(dp,PREM.prazoDebito);
-  document.getElementById('nf-pp').value=pp;
-  const v=parseFloat(document.getElementById('nf-v').value)||0;
-  const taxa=getTaxaForma(f);
-  document.getElementById('nf-vp').value=(v*(1-taxa)).toFixed(2);
+// Um contrato costuma ter mais de uma cobrança (a locação em si, a lavagem,
+// uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
+// contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
+// de itens é livre.
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Outros'];
+const LANC_FORMAS=['Crédito','Crédito 3x','Crédito 2x','Débito','Boleto','Depósito','Dinheiro'];
+
+// `full` = formulário completo (mostra Prev. Pgto e Valor líquido calculados);
+// no modal do OCR esses dois campos são só derivados, então ficam de fora.
+function itemHTML(pref,full){
+  const ops=arr=>arr.map(o=>`<option>${o}</option>`).join('');
+  return `<div class="item-card" data-item>
+    <div class="item-hd">
+      <span class="item-tt">Lançamento <span data-num>1</span></span>
+      <button type="button" class="item-del" title="Remover este lançamento" onclick="delItem('${pref}',this)">✕ Remover</button>
+    </div>
+    <div class="fg">
+      <div class="fp"><label>Tipo</label><select data-k="tipo">${ops(LANC_TIPOS)}</select></div>
+      <div class="fp"><label>Forma</label><select data-k="forma">${ops(LANC_FORMAS)}</select></div>
+      <div class="fp"><label>Data de pagamento</label><input type="date" data-k="dpago"></div>
+      <div class="fp"><label>Valor (R$)</label><input type="number" step="0.01" data-k="valor"></div>
+      ${full?`<div class="fp"><label>Prev. Pgto (auto)</label><input type="date" data-k="prev"></div>
+      <div class="fp"><label>Valor líquido</label><input type="number" data-k="liq" readonly></div>`:''}
+      <div class="fp s2"><label>Obs / Referência</label><input type="text" data-k="obs" placeholder="ex: ref. 4018"></div>
+    </div>
+  </div>`;
 }
-function addN(){
+function itemEls(pref){const box=document.getElementById(pref+'-itens');return box?[...box.querySelectorAll('[data-item]')]:[];}
+function itemGet(it,k){const e=it.querySelector(`[data-k="${k}"]`);return e?e.value:'';}
+function itemSet(it,k,v){const e=it.querySelector(`[data-k="${k}"]`);if(e)e.value=v;}
+// Item "em branco" = nunca tocado. Serve para ignorar a linha extra que o
+// usuário abriu com o + e acabou não usando, sem engolir uma linha preenchida
+// pela metade (essa vira erro, em vez de sumir calada).
+function itemVazio(it){return !itemGet(it,'valor')&&!itemGet(it,'obs')&&!itemGet(it,'dpago');}
+
+// Previsão de pagamento do item. Cartão: SEMPRE a partir da Data de pagamento
+// (dp). Boleto: a partir do Retorno.
+function itemPrev(forma,retorno,dp){
+  const fl=(forma||'').toLowerCase();
+  if(fl.includes('boleto')&&retorno) return addDUtil(retorno,PREM.prazoBoleto);
+  if((fl.includes('90')||fl.includes('3x'))&&dp) return addDUtil(dp,90);
+  if((fl.includes('60')||fl.includes('2x'))&&dp) return addDUtil(dp,60);
+  if((fl.includes('crédito')||fl.includes('credito'))&&dp) return addDUtil(dp,PREM.prazoCredito);
+  if((fl.includes('débito')||fl.includes('debito'))&&dp) return addDUtil(dp,PREM.prazoDebito);
+  return '';
+}
+function calcItems(pref){
+  const its=itemEls(pref);
+  const r=document.getElementById(pref+'-r')?.value||'';
+  let bruto=0,liq=0,preenchidos=0;
+  its.forEach((it,i)=>{
+    const num=it.querySelector('[data-num]');if(num)num.textContent=i+1;
+    const del=it.querySelector('.item-del');if(del)del.disabled=its.length<2;
+    const forma=itemGet(it,'forma');
+    itemSet(it,'prev',itemPrev(forma,r,itemGet(it,'dpago')));
+    const v=parseFloat(itemGet(it,'valor'))||0;
+    const vl=v*(1-getTaxaForma(forma));
+    itemSet(it,'liq',v?vl.toFixed(2):'');
+    if(v){bruto+=v;liq+=vl;preenchidos++;}
+  });
+  const cnt=document.getElementById(pref+'-cnt');
+  if(cnt)cnt.textContent=its.length===1?'1 item':its.length+' itens';
+  const tot=document.getElementById(pref+'-total');
+  if(tot)tot.innerHTML=preenchidos?`Total: <strong>${fR(bruto)}</strong> · líquido <strong>${fR(liq)}</strong>`:'';
+  const btn=document.getElementById(pref+'-submit');
+  if(btn)btn.textContent=preenchidos>1?`✓ Adicionar ${preenchidos} lançamentos`:'✓ Adicionar lançamento';
+}
+function addItem(pref,focar){
+  const box=document.getElementById(pref+'-itens');if(!box)return null;
+  box.insertAdjacentHTML('beforeend',itemHTML(pref,pref==='nf'));
+  const it=box.lastElementChild;
+  calcItems(pref);
+  if(focar!==false)it.querySelector('[data-k="valor"]')?.focus();
+  return it;
+}
+function delItem(pref,btn){
+  const it=btn.closest('[data-item]');if(!it)return;
+  if(itemEls(pref).length<2)return;   // sempre resta pelo menos um
+  it.remove();
+  calcItems(pref);
+}
+function resetItems(pref){
+  const box=document.getElementById(pref+'-itens');if(!box)return;
+  box.innerHTML=itemHTML(pref,pref==='nf');
+  calcItems(pref);
+}
+function initItens(pref){
+  const box=document.getElementById(pref+'-itens');if(!box)return;
+  if(!box.dataset.init){   // boot() roda de novo a cada desbloqueio
+    box.dataset.init='1';
+    ['input','change'].forEach(ev=>box.addEventListener(ev,e=>{if(e.target.closest('[data-item]'))calcItems(pref);}));
+  }
+  resetItems(pref);
+}
+function calcN(){calcItems('nf');}
+
+// Lê os itens do formulário e devolve {recs} ou {erro}.
+function coletaItens(pref,base){
+  const its=itemEls(pref);
+  const recs=[];
+  for(let i=0;i<its.length;i++){
+    const it=its[i];
+    if(itemVazio(it))continue;
+    const v=parseFloat(itemGet(it,'valor'))||0;
+    if(v<=0)return{erro:`Informe o valor do lançamento ${i+1}.`};
+    const forma=itemGet(it,'forma');
+    // Respeita a Prev. Pgto ajustada à mão; só recalcula quando o campo não
+    // existe (modal do OCR) ou está vazio.
+    const ppRaw=itemGet(it,'prev')||itemPrev(forma,base.retorno||'',itemGet(it,'dpago'));
+    recs.push({...base,
+      tipo:itemGet(it,'tipo'),
+      forma:forma,
+      valor:v,
+      prev_pgto:ppRaw?proxUtil(ppRaw):null,
+      valor_pago:0,
+      saldo:v*(1-getTaxaForma(forma)),
+      obs:itemGet(it,'obs')||null});
+  }
+  if(!recs.length)return{erro:'Informe o valor de pelo menos um lançamento.'};
+  return{recs};
+}
+async function addN(){
   const p=document.getElementById('nf-p').value.trim().toUpperCase();
   const d=document.getElementById('nf-d').value;
   const c=document.getElementById('nf-c').value.trim();
-  const t=document.getElementById('nf-t').value;
-  const f=document.getElementById('nf-f').value;
   const s=document.getElementById('nf-s').value||null;
   const rr=document.getElementById('nf-r').value||null;
-  const v=parseFloat(document.getElementById('nf-v').value)||0;
-  const _ppRaw=document.getElementById('nf-pp').value||null;
-  const pp=_ppRaw?proxUtil(_ppRaw):null;
-  const vp=parseFloat(document.getElementById('nf-vp').value)||0;
-  const obs=document.getElementById('nf-obs').value||null;
-  if(!p||!d||!c||!v){document.getElementById('nMsg').innerHTML='<span style="color:var(--red)">Preencha placa, proprietário, cliente e valor.</span>';return;}
+  const msg=document.getElementById('nMsg');
+  const erro=t=>{msg.innerHTML=`<span style="color:var(--red)">${t}</span>`;};
+  if(!p||!d||!c){erro('Preencha placa, proprietário e cliente.');return;}
+  const {recs,erro:e}=coletaItens('nf',{placa:p,dono:d,saida:s,retorno:rr,cliente:c});
+  if(e){erro(e);return;}
   if(s){const dup=allD().find(r=>r.placa===p&&r.saida===s);if(dup&&!confirm(`Já existe um lançamento para ${p} com saída ${s}.\nLançar mesmo assim?`))return;}
-  const _rec={placa:p,dono:d,saida:s,retorno:rr,cliente:c,tipo:t,valor:v,forma:f,prev_pgto:pp,valor_pago:0,saldo:vp,obs:obs};
-  dbInsert(_rec).then(saved=>{NOVOS.push(saved);rNovos();popSel();renderAll();});
-  document.getElementById('nMsg').innerHTML='<span style="color:var(--green)">✓ Adicionado!</span>';
+  const btn=document.getElementById('nf-submit');
+  if(btn)btn.disabled=true;
+  try{
+    for(const rec of recs){const saved=await dbInsert(rec);NOVOS.push(saved);}
+  } finally { if(btn)btn.disabled=false; }
+  msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Adicionado':recs.length+' lançamentos adicionados'}!</span>`;
   document.getElementById('novosCard').style.display='block';
   // Reset form
-  ['nf-p','nf-c','nf-obs'].forEach(id=>document.getElementById(id).value='');
-  ['nf-v','nf-vp','nf-pp'].forEach(id=>document.getElementById(id).value='');
+  ['nf-p','nf-c'].forEach(id=>document.getElementById(id).value='');
+  resetItems('nf');
   rNovos();popSel();renderAll();
 }
 function rNovos(){
   document.getElementById('novosBody').innerHTML=NOVOS.map((r,i)=>`<tr>
     <td><span class="placa">${r.placa}</span></td><td>${r.dono}</td><td>${r.cliente}</td>
+    <td style="font-size:12px">${r.tipo||'—'}</td>
     <td style="font-size:12px">${r.saida||'—'}</td>
     <td class="nr">${fR(r.valor)}</td><td><span class="tag tag-forma">${fFormaLabel(r.forma)}</span></td>
     <td style="font-size:12px">${r.prev_pgto||'—'}</td>
@@ -7139,7 +7266,7 @@ function rNovos(){
 // ── CÂMERA ──
 function openCam(){document.getElementById('mCam').classList.add('on');}
 function closeCam(){document.getElementById('mCam').classList.remove('on');}
-function clearAI(){['aiForm','aiSt','prevImg','aiRawWrap'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('fi').value='';}
+function clearAI(){['aiForm','aiSt','prevImg','aiRawWrap'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('fi').value='';resetItems('ai');}
 function handleImg(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
@@ -7150,9 +7277,10 @@ function handleImg(input){
     const st=document.getElementById('aiSt');
     st.style.display='block';st.className='ai-st load';st.textContent='⏳ Carregando OCR...';
     document.getElementById('aiForm').style.display='none';
+    resetItems('ai');   // cada foto começa com um item limpo
     if(typeof Tesseract==='undefined'){
       st.className='ai-st err';st.textContent='⚠ OCR não carregou (verifique a internet). Preencha manualmente.';
-      document.getElementById('aiForm').style.display='grid';return;
+      document.getElementById('aiForm').style.display='block';return;
     }
     try{
       const result=await Tesseract.recognize(src,'por',{logger:m=>{
@@ -7169,10 +7297,16 @@ function handleImg(input){
         document.getElementById('ai-c').value=p.cliente||'';
         document.getElementById('ai-s').value=p.saida||'';
         document.getElementById('ai-r').value=p.retorno||'';
-        document.getElementById('ai-dp').value=p.dpago||p.saida||'';   // ticket do cartão; senão saída
-        document.getElementById('ai-v').value=p.valor||'';
-        document.getElementById('ai-obs').value=p.obs||'';
-        if(p.forma){const s=document.getElementById('ai-f');[...s.options].forEach(o=>{if(o.value===p.forma)s.value=o.value;});}
+        // O OCR lê um contrato = 1 lançamento; os demais itens (lavagem,
+        // avaria...) o usuário acrescenta com o + antes de confirmar.
+        const it0=itemEls('ai')[0];
+        if(it0){
+          itemSet(it0,'dpago',p.dpago||p.saida||'');   // ticket do cartão; senão saída
+          itemSet(it0,'valor',p.valor||'');
+          itemSet(it0,'obs',p.obs||'');
+          if(p.forma&&LANC_FORMAS.includes(p.forma))itemSet(it0,'forma',p.forma);
+        }
+        calcItems('ai');
         if(p.placa){const norm=p.placa.replace(/[\s\-]/g,'').toUpperCase();const veic=VEICULOS.find(v=>(v.placa||'').replace(/[\s\-]/g,'').toUpperCase()===norm);if(veic&&veic.dono){const sd=document.getElementById('ai-d');[...sd.options].forEach(o=>{if(o.value===veic.dono)sd.value=o.value;});}}
       } else {
         st.className='ai-st err';st.textContent='⚠ Não identificado. Preencha manualmente.';
@@ -7180,7 +7314,7 @@ function handleImg(input){
     }catch(e){
       st.className='ai-st err';st.textContent='⚠ Erro no OCR: '+((e&&e.message)||e||'desconhecido')+'. Preencha manualmente.';
     }
-    document.getElementById('aiForm').style.display='grid';
+    document.getElementById('aiForm').style.display='block';
   };
   reader.readAsDataURL(file);
 }
@@ -7532,32 +7666,20 @@ async function importXls(){
   });
 })();
 
-function confirmAI(){
+async function confirmAI(){
   const p=document.getElementById('ai-p').value.trim().toUpperCase();
   const d=document.getElementById('ai-d').value;
   const c=document.getElementById('ai-c').value.trim();
-  const t=document.getElementById('ai-t').value;
-  const f=document.getElementById('ai-f').value;
   const s=document.getElementById('ai-s').value||null;
   const r=document.getElementById('ai-r').value||null;
-  const dp=document.getElementById('ai-dp').value||null;
-  const v=parseFloat(document.getElementById('ai-v').value)||0;
-  const obs=document.getElementById('ai-obs').value||null;
-  if(!p||!c||!v){alert('Placa, cliente e valor obrigatórios.');return;}
-  if(s){const dup=allD().find(r=>r.placa===p&&r.saida===s);if(dup&&!confirm(`Já existe um lançamento para ${p} com saída ${s}.\nLançar mesmo assim?`))return;}
-  const fl=f.toLowerCase();
-  let pp=null;
-  // Cartão: a partir da Data de pagamento. Boleto: a partir do Retorno. (igual ao formulário completo)
-  if(fl.includes('boleto')&&r)pp=addDUtil(r,PREM.prazoBoleto);
-  else if((fl.includes('90')||fl.includes('3x'))&&dp)pp=addDUtil(dp,90);
-  else if((fl.includes('60')||fl.includes('2x'))&&dp)pp=addDUtil(dp,60);
-  else if((fl.includes('crédito')||fl.includes('credito'))&&dp)pp=addDUtil(dp,PREM.prazoCredito);
-  else if((fl.includes('débito')||fl.includes('debito'))&&dp)pp=addDUtil(dp,PREM.prazoDebito);
-  if(pp)pp=proxUtil(pp);
-  const taxa=getTaxaForma(f);
-  const _rec={placa:p,dono:d||'Indefinido',saida:s,retorno:r,cliente:c,tipo:t,valor:v,forma:f,prev_pgto:pp,valor_pago:0,saldo:v*(1-taxa),obs:obs};
-  dbInsert(_rec).then(saved=>{NOVOS.push(saved);rNovos();popSel();renderAll();});
+  if(!p||!c){alert('Placa e cliente obrigatórios.');return;}
+  const {recs,erro}=coletaItens('ai',{placa:p,dono:d||'Indefinido',saida:s,retorno:r,cliente:c});
+  if(erro){alert(erro);return;}
+  if(s){const dup=allD().find(x=>x.placa===p&&x.saida===s);if(dup&&!confirm(`Já existe um lançamento para ${p} com saída ${s}.\nLançar mesmo assim?`))return;}
   closeCam();go('novo');
+  document.getElementById('novosCard').style.display='block';
+  for(const rec of recs){const saved=await dbInsert(rec);NOVOS.push(saved);}
+  rNovos();popSel();renderAll();
 }
 const dz=document.getElementById('dz');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dov');});
@@ -7668,6 +7790,10 @@ function scrollLancParaHoje(){ scrollListaParaHoje('lancBody','.day-group[data-d
 // ── BOOT ──
 async function boot(){
   applyThemeChrome();
+  // Antes de qualquer await: o formulário de novo lançamento precisa ter o
+  // primeiro item na tela assim que a página aparece.
+  initItens('nf');
+  initItens('ai');
   renderPerfilBtn();
   syncSystemTheme();
   initSwipe('baixasContainer');
