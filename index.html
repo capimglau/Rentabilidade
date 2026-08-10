@@ -1377,6 +1377,14 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
 .srow-mes { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink3); padding: 12px 4px 4px; }
 .srow-mes:first-child { padding-top: 2px; }
 
+/* Grupo de resultados da busca que são o mesmo contrato (placa+cliente+
+   período) — cartão parcelado em N vezes, ou N tipos lançados juntos.
+   Molduras os cartões individuais sem tirar o swipe de cada um. */
+.busca-grupo { border: 1.5px dashed var(--blue-mid); border-radius: 14px; padding: 10px 10px 2px; margin: 6px 0 14px; }
+.busca-grupo-hd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 0 4px 10px; }
+.busca-grupo-cli { flex: 1; min-width: 0; font-weight: 700; font-size: 13px; color: var(--ink); overflow-wrap: break-word; }
+.busca-grupo-v { font-weight: 800; font-size: 14px; color: var(--blue); white-space: nowrap; }
+
 /* Resumo por forma de pagamento de um dia (clique no somatório do dia) */
 .rfd { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
 .rfd-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
@@ -6471,13 +6479,17 @@ function confirmarBaixa(){
   dbUpdate(r);
   closeEdit();renderAll();
 }
-// Lançamentos que dividem o mesmo contrato: mesma placa, mesmo cliente e
-// mesma saída — a chave que o "Novo lançamento" usa ao gravar vários itens.
+// Identifica "mesmo contrato": mesma placa, mesmo cliente e mesmo período
+// (saída) — a mesma combinação que "Novo lançamento" usa ao gravar vários
+// itens juntos (e que o parcelamento de cartão herda ao explodir um item em
+// várias parcelas). Fonte única dessa regra: usada tanto pela lista "Já
+// neste contrato" da edição quanto pelo agrupamento da busca.
+function chaveContrato(r){
+  return _plKey(r.placa)+'|'+(r.cliente||'').trim().toUpperCase()+'|'+(r.saida||'');
+}
 function itensDoContrato(r){
-  const k=_plKey(r.placa), cli=(r.cliente||'').trim().toUpperCase();
-  return allD().map((x,i)=>({x,i})).filter(({x})=>
-    _plKey(x.placa)===k && (x.saida||'')===(r.saida||'') &&
-    (x.cliente||'').trim().toUpperCase()===cli);
+  const k=chaveContrato(r);
+  return allD().map((x,i)=>({x,i})).filter(({x})=>chaveContrato(x)===k);
 }
 function renderIrmaos(){
   const box=document.getElementById('mIrmaos');if(!box)return;
@@ -6703,24 +6715,39 @@ function matchBusca(r,q){
   const hay=buscaHay(r);
   return termos.every(t=>hay.includes(t));
 }
-// Prioriza o que ainda vai vencer: primeiro os contratos futuros (o mais
-// próximo primeiro), depois — rolando a lista — hoje e o passado (o mais
-// recente primeiro, indo para trás no tempo). Sem data de vencimento vai
-// para o fim, por último — não há "quando" para competir com os demais.
-// Muda `res` no lugar (mesmo array, reordenado), como um .sort() comum.
-function ordenaBuscaPorVencimento(res){
+// Agrupa os resultados da busca por contrato (mesma placa+cliente+período —
+// chaveContrato()). Um cartão parcelado em 3x, ou um contrato com Locação +
+// Lavagem + Avaria, aparecia como N linhas soltas e repetidas; agrupado, vira
+// UM bloco com o total e as N parcelas/itens dentro — mais fácil de achar o
+// que se procura sem perder o acesso a cada lançamento individualmente.
+// Prioriza o que ainda vai vencer, por GRUPO: primeiro os contratos com
+// algo no futuro (o mais próximo primeiro), depois — rolando a lista — os
+// que só têm hoje/passado (o mais recente primeiro, indo para trás no
+// tempo). Sem nenhuma data vai para o fim, por último.
+function agruparResultadosBusca(res){
   const hoje=td();
-  const futuros=[],atuaisEAntigos=[],semData=[];
+  const mapa=new Map();
   res.forEach(item=>{
-    const d=item.r.prev_pgto;
-    if(!d)semData.push(item);
-    else if(d>hoje)futuros.push(item);
-    else atuaisEAntigos.push(item);
+    const k=chaveContrato(item.r);
+    if(!mapa.has(k))mapa.set(k,{key:k,itens:[]});
+    mapa.get(k).itens.push(item);
   });
-  futuros.sort((a,b)=>a.r.prev_pgto.localeCompare(b.r.prev_pgto));
-  atuaisEAntigos.sort((a,b)=>b.r.prev_pgto.localeCompare(a.r.prev_pgto));
-  res.splice(0,res.length,...futuros,...atuaisEAntigos,...semData);
-  return res;
+  const grupos=[...mapa.values()];
+  grupos.forEach(g=>{
+    g.itens.sort((a,b)=>(a.r.prev_pgto||'').localeCompare(b.r.prev_pgto||''));
+    const futuros=g.itens.filter(({r})=>r.prev_pgto&&r.prev_pgto>hoje);
+    const comData=g.itens.filter(({r})=>r.prev_pgto);
+    g.futuro=futuros.length>0;
+    g.ref=futuros.length?futuros[0].r.prev_pgto:(comData.length?comData[comData.length-1].r.prev_pgto:'');
+  });
+  grupos.sort((a,b)=>{
+    if(!a.ref&&!b.ref)return 0;
+    if(!a.ref)return 1;
+    if(!b.ref)return -1;
+    if(a.futuro!==b.futuro)return a.futuro?-1:1;
+    return a.futuro?a.ref.localeCompare(b.ref):b.ref.localeCompare(a.ref);
+  });
+  return grupos;
 }
 function runSearch(){
   ULTIMO_MSEARCH=runSearch;
@@ -6731,7 +6758,6 @@ function runSearch(){
   const all=allD();
   const res=[];
   for(let i=0;i<all.length;i++){const r=all[i];if(matchBusca(r,qRaw))res.push({r,i});}
-  ordenaBuscaPorVencimento(res);
   if(!res.length){box.innerHTML='<div class="srow-empty">Nada encontrado.</div>';return;}
   const totPago=res.reduce((a,{r})=>a+(isPago(r)?fN(r.valor_pago):0),0);      // recebido (líquido)
   const totPend=res.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);           // a receber (líquido)
@@ -6769,9 +6795,10 @@ function runSearch(){
       <div class="st-sub"><span class="st-pago">Pago ${fR(mPago)}</span><span class="st-pend">Pendente ${fR(mPend)}</span></div>
     </div>
   </div>`;
-  const shown=res.slice(0,40);
-  const moreHtml=res.length>shown.length?`<div class="srow-empty">+${res.length-shown.length} não exibidos — refine a busca</div>`:'';
-  box.innerHTML=ownerHtml+totHtml+lancListHtml(shown,true);
+  const grupos=agruparResultadosBusca(res);
+  const shown=grupos.slice(0,40);
+  const moreHtml=grupos.length>shown.length?`<div class="srow-empty">+${grupos.length-shown.length} contrato(s) não exibido(s) — refine a busca</div>`:'';
+  box.innerHTML=ownerHtml+totHtml+buscaGroupedHtml(shown,true)+moreHtml;
 }
 // Cartão de lançamento com swipe (arrastar revela Baixar/Parcial/Reverter/
 // Editar) — mesma marcação usada em Recebimentos, reaproveitada aqui pra ter
@@ -6831,6 +6858,40 @@ function lancListHtml(items,fecharBusca){
       mesHtml=`<div class="srow-mes">${lbl}</div>`;
     }
     return mesHtml+lcCardHtml(r,i,fecharBusca);
+  }).join('');
+}
+// Mesma ideia de lancListHtml (divide por mês), mas para os grupos de
+// agruparResultadosBusca(): contrato com 1 item só continua um cartão
+// solto, igual sempre foi; com mais de um, ganha uma moldura com placa,
+// cliente, quantidade e o total (líquido) do conjunto, e os cartões de
+// cada item — cada um continua com seu próprio swipe (baixar/editar/
+// excluir individualmente não muda).
+function buscaGroupedHtml(grupos,fecharBusca){
+  let mesCorrente=undefined;
+  return grupos.map(g=>{
+    const mesKey=(g.ref||'').slice(0,7);
+    let mesHtml='';
+    if(mesKey!==mesCorrente){
+      mesCorrente=mesKey;
+      const lbl=mesKey?MN[parseInt(mesKey.slice(5,7),10)-1]+'/'+mesKey.slice(2,4):'Sem vencimento';
+      mesHtml=`<div class="srow-mes">${lbl}</div>`;
+    }
+    if(g.itens.length<2){
+      const{r,i}=g.itens[0];
+      return mesHtml+lcCardHtml(r,i,fecharBusca);
+    }
+    const first=g.itens[0].r;
+    const totLiq=g.itens.reduce((a,{r})=>a+liq(r),0);
+    const cards=g.itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
+    return mesHtml+`<div class="busca-grupo">
+      <div class="busca-grupo-hd">
+        <span class="placa">${esc(first.placa)}</span>
+        <span class="busca-grupo-cli">${esc(first.cliente||'—')}</span>
+        <span class="itens-cnt">${g.itens.length} itens</span>
+        <span class="busca-grupo-v">${fR(totLiq)}</span>
+      </div>
+      ${cards}
+    </div>`;
   }).join('');
 }
 // Clique numa barra da Projeção de recebimentos (90 dias): mostra só os
