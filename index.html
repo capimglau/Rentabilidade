@@ -6682,6 +6682,25 @@ function matchBusca(r,q){
   const hay=buscaHay(r);
   return termos.every(t=>hay.includes(t));
 }
+// Prioriza o que ainda vai vencer: primeiro os contratos futuros (o mais
+// próximo primeiro), depois — rolando a lista — hoje e o passado (o mais
+// recente primeiro, indo para trás no tempo). Sem data de vencimento vai
+// para o fim, por último — não há "quando" para competir com os demais.
+// Muda `res` no lugar (mesmo array, reordenado), como um .sort() comum.
+function ordenaBuscaPorVencimento(res){
+  const hoje=td();
+  const futuros=[],atuaisEAntigos=[],semData=[];
+  res.forEach(item=>{
+    const d=item.r.prev_pgto;
+    if(!d)semData.push(item);
+    else if(d>hoje)futuros.push(item);
+    else atuaisEAntigos.push(item);
+  });
+  futuros.sort((a,b)=>a.r.prev_pgto.localeCompare(b.r.prev_pgto));
+  atuaisEAntigos.sort((a,b)=>b.r.prev_pgto.localeCompare(a.r.prev_pgto));
+  res.splice(0,res.length,...futuros,...atuaisEAntigos,...semData);
+  return res;
+}
 function runSearch(){
   const qRaw=document.getElementById('searchInput').value.trim();
   const q=xlsNorm(qRaw);
@@ -6690,8 +6709,7 @@ function runSearch(){
   const all=allD();
   const res=[];
   for(let i=0;i<all.length;i++){const r=all[i];if(matchBusca(r,qRaw))res.push({r,i});}
-  // Ordem crescente por data de vencimento/baixa (mais antigos primeiro)
-  res.sort((a,b)=>(a.r.prev_pgto||'').localeCompare(b.r.prev_pgto||''));
+  ordenaBuscaPorVencimento(res);
   if(!res.length){box.innerHTML='<div class="srow-empty">Nada encontrado.</div>';return;}
   const totPago=res.reduce((a,{r})=>a+(isPago(r)?fN(r.valor_pago):0),0);      // recebido (líquido)
   const totPend=res.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);           // a receber (líquido)
