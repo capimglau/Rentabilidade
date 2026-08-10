@@ -55,7 +55,7 @@ Edite o arquivo `config.js` na raiz do repositório:
 window.AUTOGEST_CONFIG = {
   url: "https://SEU-PROJETO.supabase.co",
   key: "SUA_CHAVE_ANON_PUBLIC",
-  aiProxy: ""   // opcional, ver Passo 4
+  aiProxy: ""   // opcional, ver Passo 5
 };
 ```
 
@@ -74,7 +74,20 @@ Basta habilitar o Pages uma vez:
 (Alternativa sem Actions: em **Settings → Pages → Source**, escolher
 "Deploy from a branch" e apontar para a branch/raiz que contém o `index.html`.)
 
-## Passo 4 — Leitura de contrato por foto (opcional)
+## Passo 4 — Atualização automática (opcional, recomendado)
+
+Rode **`supabase/realtime.sql`** uma vez no SQL Editor. Ele publica a tabela
+`lancamentos` no canal de tempo real, e aí qualquer inclusão, alteração ou
+exclusão — feita neste aparelho, em outro, ou por outra pessoa — aparece no
+app aberto na hora, sem recarregar a página.
+
+Sem rodar, o app continua funcionando: ele se atualiza sozinho toda vez que
+você volta para a aba/janela. O que muda é a atualização ser imediata.
+
+Para conferir se pegou, abra o console do navegador: com o canal no ar sai
+`AGI · atualização automática ativa`.
+
+## Passo 5 — Leitura de contrato por foto (opcional)
 
 A função "📷 Ler contrato com IA" usa a API da Anthropic. Para funcionar no
 navegador sem expor a chave, faça deploy da Edge Function:
@@ -109,6 +122,7 @@ supabase/schema.sql                 Cria as 4 tabelas e as políticas
 supabase/seed.sql                   Carrega os 753 lançamentos iniciais
 supabase/veiculos.sql               Carrega a frota (185 veículos)
 supabase/boleto_feito.sql           Coluna boleto_feito nos lançamentos
+supabase/realtime.sql               Publica lancamentos no Realtime (atualização automática)
 supabase/README-import.md           Como a planilha vira SQL (o que foi tratado)
 supabase/functions/ai-contrato/     Edge Function opcional (IA por foto)
 .github/workflows/deploy.yml        Publicação automática no GitHub Pages
