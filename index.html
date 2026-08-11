@@ -2812,6 +2812,7 @@ html[data-theme="dark"] .swipe.open .pcard { background: var(--card); }
 .fr-basistoggle button { border: none; background: none; padding: 6px 14px; border-radius: 999px; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink3); cursor: pointer; transition: background .15s, color .15s; }
 .fr-basistoggle button.on { background: var(--blue); color: #fff; }
 .fr-basistoggle button.on.rec { background: var(--green); }
+.fr-basistoggle button.on.pend { background: var(--amber); }
 
 .fr-total { text-align: center; margin: 4px 0 20px; }
 .fr-total-label { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); }
@@ -3003,9 +3004,10 @@ body.modo-boletos #btnLinkBoletos { display: none; }
   </div>
   <div class="res-ctrls" id="resCtrls">
     <div class="rf-bar" id="resumoFilters"></div>
-    <select class="rc-sel" id="rc-base" onchange="setResBase(this.value)" title="Previsto ou recebido">
+    <select class="rc-sel" id="rc-base" onchange="setResBase(this.value)" title="Previsto, recebido ou a receber">
       <option value="comp" selected>Previsto</option>
       <option value="caixa">Recebido</option>
+      <option value="pend">A receber</option>
     </select>
     <select class="rc-sel" id="rc-ano" onchange="setResAno(this.value)" title="Ano dos gráficos mensais"></select>
     <select class="rc-sel" id="rc-acum" onchange="setResAcum(this.value)">
@@ -5367,7 +5369,7 @@ function resMonths(){
   return arr;
 }
 // Valor de um lançamento conforme a base selecionada.
-function valBase(r){ return resBase==='caixa' ? (isPago(r)?fN(r.valor_pago):0) : fN(r.valor); }
+function valBase(r){ return resBase==='caixa' ? (isPago(r)?fN(r.valor_pago):0) : resBase==='pend' ? fN(r.saldo) : fN(r.valor); }
 function cumArr(arr){ let s=0; return arr.map(v=>s+=v); }
 function mLabel(k){ const[y,m]=k.split('-'); return MN[parseInt(m)-1]+'/'+y.slice(2); }
 // Posiciona a rolagem das séries temporais com o mês vigente centralizado.
@@ -5792,7 +5794,7 @@ function frFilteredRows(){return frBaseRows().filter(r=>filterMatch(FRT,r));}
 function frRowsForRing(dim){
   return frBaseRows().filter(r=>FR_ORDER.every(d=>d===dim||!FRT[d].size||FRT[d].has(r[d])));
 }
-function frValBase(r){return frBasis==='caixa'?(isPago(r)?fN(r.valor_pago):0):liq(r);}
+function frValBase(r){return frBasis==='caixa'?(isPago(r)?fN(r.valor_pago):0):frBasis==='pend'?fN(r.saldo):liq(r);}
 function frSum(rows){return rows.reduce((s,r)=>s+frValBase(r),0);}
 
 // Top 10 categorias reais + "Outros" só se sobrar alguma além dessas —
@@ -6015,7 +6017,7 @@ function frUpdateTotal(){
   const grand=frSum(rows);
   const activeCount=FR_ORDER.reduce((s,d)=>s+(FRT[d].size?1:0),0);
   const lbl=document.getElementById('frTotalLabel'), val=document.getElementById('frTotalValue'), sub=document.getElementById('frTotalSub');
-  if(lbl)lbl.textContent=frBasis==='comp'?'Total previsto':'Total recebido';
+  if(lbl)lbl.textContent=frBasis==='comp'?'Total previsto':frBasis==='pend'?'Total a receber':'Total recebido';
   if(val)val.textContent=fR(grand);
   if(sub)sub.textContent=rows.length+' lançamento'+(rows.length===1?'':'s')+
     (activeCount?' · '+activeCount+' filtro'+(activeCount===1?'':'s')+' ativo'+(activeCount===1?'':'s'):'');
@@ -6045,15 +6047,18 @@ function buildFatRingFilters(){
   if(bt){
     bt.innerHTML=
       '<button type="button" data-b="comp">Previsto</button>'+
-      '<button type="button" data-b="caixa">Recebido</button>';
+      '<button type="button" data-b="caixa">Recebido</button>'+
+      '<button type="button" data-b="pend">A receber</button>';
     bt.querySelectorAll('button').forEach(b=>{
       b.classList.toggle('on', b.dataset.b===frBasis);
       b.classList.toggle('rec', b.dataset.b==='caixa');
+      b.classList.toggle('pend', b.dataset.b==='pend');
       b.addEventListener('click', ()=>{
         frBasis=b.dataset.b;
         bt.querySelectorAll('button').forEach(x=>{
           x.classList.toggle('on', x===b);
           x.classList.toggle('rec', x.dataset.b==='caixa');
+          x.classList.toggle('pend', x.dataset.b==='pend');
         });
         frRenderData();
       });
@@ -6124,6 +6129,9 @@ function renderResumo(){
   const segGapBorder={borderColor:cardBgCol(),borderWidth:{top:2,left:0,right:0,bottom:0}};
   const dsMes = resBase==='caixa'
     ? [{label:'Recebido',data:recA,backgroundColor:'#34c759',borderRadius:6,borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92}]
+    : resBase==='pend'
+    ? [...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:'#bf2518',stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
+       {label:'A vencer',data:pendA,backgroundColor:'#f0b429',stack:'s',borderRadius:temAtrsMes?{topLeft:6,topRight:6}:6,borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...(temAtrsMes?segGapBorder:{})}]
     : [{label:'Recebido',data:recA,backgroundColor:'#34c759',stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder},
        ...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:'#bf2518',stack:'s',borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
        {label:'A vencer',data:pendA,backgroundColor:'#f0b429',stack:'s',borderRadius:{topLeft:6,topRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}];
@@ -6152,11 +6160,19 @@ function renderResumo(){
   if(resAcum){fatA=cumArr(fatA);rcvA=cumArr(rcvA);atrA=cumArr(atrA);}
   const dsAtraso={label:'Atrasado',data:atrA,borderColor:c=>vGrad(c,'#bf2518','#ff6b6b'),backgroundColor:'rgba(191,37,24,.08)',fill:true,borderWidth:3,tension:.35,pointRadius:2.5,pointHoverRadius:5,pointBackgroundColor:'#bf2518',pointBorderColor:'#fff',pointBorderWidth:1.5};
   const hdAcum=document.getElementById('hdAcum');
-  // No modo "caixa" (Recebido), mostra só recebido; no modo "comp" (Previsto), mostra faturado vs recebido
+  // No modo "caixa" (Recebido), mostra só recebido; no modo "pend" (A receber),
+  // mostra o saldo a receber vs atrasado; no modo "comp" (Previsto), mostra faturado vs recebido
   if(resBase==='caixa'){
     if(hdAcum) hdAcum.textContent='Recebido × atrasado'+(resAcum?' — acumulado':' — mensal');
     mkC('cAcum',{type:'line',data:{labels:labelsT,datasets:[
       {label:'Recebido',data:rcvA,borderColor:c=>vGrad(c,'#0d6e3e','#52c98c'),backgroundColor:'rgba(13,110,62,.10)',fill:true,borderWidth:3,tension:.35,pointRadius:2.5,pointHoverRadius:5,pointBackgroundColor:'#0d6e3e',pointBorderColor:'#fff',pointBorderWidth:1.5},
+      dsAtraso
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'DM Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
+  } else if(resBase==='pend'){
+    const aRecA=fatA.map((v,i)=>Math.max(0,v-rcvA[i]));
+    if(hdAcum) hdAcum.textContent='A receber × atrasado'+(resAcum?' — acumulado':' — mensal');
+    mkC('cAcum',{type:'line',data:{labels:labelsT,datasets:[
+      {label:'A receber',data:aRecA,borderColor:c=>vGrad(c,'#d99a0b','#f7c948'),backgroundColor:'rgba(242,176,30,.12)',fill:true,borderWidth:3,tension:.35,pointRadius:2.5,pointHoverRadius:5,pointBackgroundColor:'#d99a0b',pointBorderColor:'#fff',pointBorderWidth:1.5},
       dsAtraso
     ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'DM Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   } else {
