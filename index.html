@@ -5485,8 +5485,7 @@ function renderRecebHoje(){
     cardHoje=`<div class="receb-hoje" role="button" tabindex="0" onclick="irHoje()" title="Ver só os recebimentos de hoje">
       <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">${itemsHoje.length} · ${fR(totHoje)}</span></div>
       <div class="rh-list" onclick="event.stopPropagation()">${preview.map(r=>rhItemHtml(r,'hoje-card')).join('')}</div>
-      <div class="rh-foot">${itemsHoje.length>preview.length?`+${itemsHoje.length-preview.length} • `:''}Ver todos os recebimentos ›</div>
-      <div class="rh-links">${atalhoHist}</div>
+      <div class="rh-links">${atalhoHist}<span class="rh-link">${itemsHoje.length>preview.length?`+${itemsHoje.length-preview.length} • `:''}Ver todos os recebimentos ›</span></div>
     </div>`;
   } else {
     cardHoje=`<div class="receb-hoje rh-vazio">
