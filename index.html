@@ -8732,7 +8732,23 @@ function scrollListaParaHoje(containerId,seletor){
 function scrollBaixasParaHoje(){ scrollListaParaHoje('baixasContainer','.day-group[data-dia]'); }
 function scrollLancParaHoje(){ scrollListaParaHoje('lancBody','.day-group[data-dia]'); }
 
-['mEdit','mLote','mParcial','mCam','mSearch','mDono','mAlterarSenha','mXls','mPerfil'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('on');}));
+// Fecha ao clicar fora do conteúdo (no fundo/backdrop do modal). Só usar
+// 'click' não basta: ao selecionar um texto dentro do modal e soltar o
+// mouse/dedo fora do conteúdo (ainda dentro do backdrop), o 'click'
+// resultante também tem e.target===currentTarget e fechava a janela no
+// meio de um gesto de seleção, sem nenhum clique real no fundo. Por isso
+// só fecha quando o mousedown/touchstart QUE INICIOU o gesto também foi
+// no backdrop — um clique de verdade, não o fim de um arrasto de seleção.
+['mEdit','mLote','mParcial','mCam','mSearch','mDono','mAlterarSenha','mXls','mPerfil'].forEach(id=>{
+  const m=document.getElementById(id);
+  let iniciouNoFundo=false;
+  m.addEventListener('mousedown',e=>{iniciouNoFundo=(e.target===e.currentTarget);});
+  m.addEventListener('touchstart',e=>{iniciouNoFundo=(e.target===e.currentTarget);},{passive:true});
+  m.addEventListener('click',e=>{
+    if(e.target===e.currentTarget&&iniciouNoFundo)e.currentTarget.classList.remove('on');
+    iniciouNoFundo=false;
+  });
+});
 
 // ── BOOT ──
 async function boot(){
