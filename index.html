@@ -557,22 +557,31 @@ body::before {
    (sem altura fixa sobrando vazio embaixo); só um teto de 92vh, com scroll
    próprio, pra meses de 6 semanas não estourarem a tela. */
 .modal.cal-modal { width: min(760px, 100%); max-height: 92vh; overflow-y: auto; overscroll-behavior: contain; }
-.cal-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+/* Título + legenda (canto superior direito, antes do ✕) + fechar, tudo numa
+   linha só; o mês fica na linha logo abaixo, colado — sobra o máximo de
+   altura possível pro grid, pra caber o mês inteiro sem cortar semana. */
+.cal-mhd { flex-wrap: wrap; gap: 6px 14px; margin-bottom: 8px; }
+.cal-mhd > span:first-child { flex: 1 0 auto; }
+.cal-legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 10.5px; color: var(--ink3); order: 2; }
+.cal-legend span { display: flex; align-items: center; gap: 4px; }
+.cal-legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex: 0 0 auto; }
+.cal-mhd .mcl { order: 3; }
+.cal-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .cal-nav button.icon-btn { flex: 0 0 auto; }
 .cal-nav .cal-mlbl { font-weight: 700; font-size: 14px; flex: 1; text-align: center; }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr) minmax(52px, .85fr); gap: 5px; }
 .cal-grid .cal-hd { text-align: center; font-size: 10px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
 .cal-cell {
-  height: 64px;
+  height: 62px;
   border: 1.5px solid var(--line);
   border-radius: 10px;
-  padding: 6px 4px;
+  padding: 5px 4px;
   display: flex; flex-direction: column; gap: 2px;
   overflow: hidden;
   background: var(--card);
 }
 .cal-cell.cal-blank { border: none; background: transparent; }
-.cal-cell .cal-num { font-size: 11.5px; color: var(--ink3); font-weight: 600; line-height: 1; }
+.cal-cell .cal-num { font-size: 11px; color: var(--ink3); font-weight: 600; line-height: 1; }
 .cal-cell.cal-today .cal-num { color: var(--blue); }
 .cal-cell.cal-today { border-color: var(--blue); border-width: 2px; }
 .cal-cell.cal-ok { background: var(--green-soft); border-color: transparent; }
@@ -582,7 +591,7 @@ body::before {
 .cal-cell.cal-mix { background: var(--purple-soft); border-color: transparent; }
 .cal-cell.cal-mix .cal-num { color: var(--purple); }
 .cal-cell .cal-val {
-  font-size: 11.5px; font-weight: 800; cursor: pointer;
+  font-size: 11px; font-weight: 800; cursor: pointer;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
 }
 .cal-cell.cal-ok .cal-val { color: var(--green); }
@@ -590,24 +599,26 @@ body::before {
 .cal-cell.cal-pend .cal-val { color: var(--amber); }
 .cal-cell .cal-val:hover { text-decoration: underline; }
 .cal-cell .cal-mix-item {
-  font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 3px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.3;
+  font-size: 9.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.25;
 }
 .cal-cell .cal-mix-item::before { content: '●'; font-size: 5px; flex: 0 0 auto; }
 .cal-cell .cal-mix-item.rec { color: var(--green); }
 .cal-cell .cal-mix-item.pend { color: var(--amber); }
-.cal-week { height: 64px; border: 1.5px dashed var(--line); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--ink3); text-align: center; padding: 0 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.cal-week { height: 62px; border: 1.5px dashed var(--line); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700; color: var(--ink3); text-align: center; padding: 0 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .cal-week.cal-has { border-color: var(--green); color: var(--green); background: var(--green-soft); }
-.cal-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; font-size: 11px; color: var(--ink3); }
-.cal-legend span { display: flex; align-items: center; gap: 5px; }
-.cal-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: 0 0 auto; }
 @media(max-width:760px){
-  .cal-grid { grid-template-columns: repeat(7, 1fr) minmax(40px, .8fr); gap: 3px; }
-  .cal-cell { height: 52px; padding: 4px 3px; }
-  .cal-cell .cal-num { font-size: 10px; }
-  .cal-cell .cal-val { font-size: 9.5px; }
-  .cal-cell .cal-mix-item { font-size: 8px; }
-  .cal-week { height: 52px; font-size: 9px; }
+  /* Nesse tamanho a legenda por extenso não cabe no topo — some o texto e
+     fica só a bolinha colorida (o title/tooltip explica ao tocar/segurar). */
+  .cal-legend .legend-txt { display: none; }
+  .cal-legend { gap: 7px; }
+  .cal-legend i { width: 11px; height: 11px; }
+  .cal-grid { grid-template-columns: repeat(7, 1fr) minmax(38px, .8fr); gap: 3px; }
+  .cal-cell { height: 46px; padding: 3px 3px; }
+  .cal-cell .cal-num { font-size: 9.5px; }
+  .cal-cell .cal-val { font-size: 9px; }
+  .cal-cell .cal-mix-item { font-size: 7.5px; }
+  .cal-week { height: 46px; font-size: 8.5px; }
 }
 
 .filt-panel select {
@@ -3609,17 +3620,20 @@ body.modo-boletos #btnLinkBoletos { display: none; }
 <!-- CALENDÁRIO DO TOTAL PREVISTO -->
 <div class="overlay" id="mCalPrev">
   <div class="modal cal-modal">
-    <div class="mhd"><span>📅 Previsto do mês — por dia</span> <button class="mcl" onclick="closeCalPrevisto()">✕</button></div>
+    <div class="mhd cal-mhd">
+      <span>📅 Previsto do mês — por dia</span>
+      <div class="cal-legend">
+        <span title="Recebido"><i style="background:var(--green-soft);border:1.5px solid var(--green)"></i><b class="legend-txt">Recebido</b></span>
+        <span title="A receber"><i style="background:var(--amber-soft);border:1.5px solid var(--amber)"></i><b class="legend-txt">A receber</b></span>
+        <span title="Vencido"><i style="background:var(--red-soft);border:1.5px solid var(--red)"></i><b class="legend-txt">Vencido</b></span>
+        <span title="Recebido + a receber"><i style="background:var(--purple-soft);border:1.5px solid var(--purple)"></i><b class="legend-txt">Recebido + a receber</b></span>
+      </div>
+      <button class="mcl" onclick="closeCalPrevisto()">✕</button>
+    </div>
     <div class="cal-nav">
       <button class="icon-btn" onclick="calPrevistoNav(-1)" title="Mês anterior">‹</button>
       <span class="cal-mlbl" id="calMesLbl"></span>
       <button class="icon-btn" onclick="calPrevistoNav(1)" title="Próximo mês">›</button>
-    </div>
-    <div class="cal-legend">
-      <span><i style="background:var(--green-soft);border:1.5px solid var(--green)"></i>Recebido</span>
-      <span><i style="background:var(--amber-soft);border:1.5px solid var(--amber)"></i>A receber</span>
-      <span><i style="background:var(--red-soft);border:1.5px solid var(--red)"></i>Vencido</span>
-      <span><i style="background:var(--purple-soft);border:1.5px solid var(--purple)"></i>Recebido + a receber</span>
     </div>
     <div class="cal-body"><div class="cal-grid" id="calGrid"></div></div>
   </div>
