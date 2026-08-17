@@ -3129,6 +3129,7 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <datalist id="clienteDL"></datalist>
         <div class="fp"><label>Saída</label><input type="date" id="nf-s" onchange="calcN()"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="nf-r" onchange="calcN()"></div>
+        <div class="fp"><label>Comissão (%)</label><input type="number" id="nf-com" step="0.01" min="0" max="100" placeholder="0" oninput="calcItems('nf')" title="Abatida só do valor dos itens de Locação deste contrato"></div>
       </div>
       <div class="itens-hd">
         <span class="itens-tt">Lançamentos do contrato</span>
@@ -3420,6 +3421,9 @@ body.modo-boletos #btnLinkBoletos { display: none; }
     <details id="mAddItens">
       <summary>＋ Adicionar lançamentos a este contrato</summary>
       <div id="mIrmaos" style="margin-top:12px"></div>
+      <div class="fg" style="margin-top:12px">
+        <div class="fp"><label>Comissão (%)</label><input type="number" id="ed-com" step="0.01" min="0" max="100" placeholder="0" oninput="calcItems('ed')" title="Abatida só do valor dos itens de Locação adicionados aqui"></div>
+      </div>
       <div class="itens-hd">
         <span class="itens-tt">Novos lançamentos</span>
         <span class="itens-cnt" id="ed-cnt"></span>
@@ -3481,6 +3485,7 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <div class="fp s2"><label>Cliente</label><input type="text" id="ai-c" list="clienteDL" autocomplete="off"></div>
         <div class="fp"><label>Saída</label><input type="date" id="ai-s" onchange="calcItems('ai')"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="ai-r" onchange="calcItems('ai')"></div>
+        <div class="fp"><label>Comissão (%)</label><input type="number" id="ai-com" step="0.01" min="0" max="100" placeholder="0" oninput="calcItems('ai')" title="Abatida só do valor dos itens de Locação deste contrato"></div>
       </div>
       <div class="itens-hd">
         <span class="itens-tt">Lançamentos do contrato</span>
@@ -6570,6 +6575,7 @@ function openEdit(idx){
   document.getElementById('e-sl').value=r.saldo||'';
   document.getElementById('e-obs').value=r.obs||'';
   resetItems('ed');
+  document.getElementById('ed-com').value='';
   document.getElementById('edMsg').innerHTML='';
   renderIrmaos();
   document.getElementById('mEdit').classList.add('on');
@@ -6642,6 +6648,7 @@ async function addItensContrato(){
   finally{ if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados'} ao contrato!</span>`;
   resetItems('ed');
+  document.getElementById('ed-com').value='';
   renderIrmaos();
   document.getElementById('novosCard').style.display='block';
   rNovos();popSel();renderAll();
@@ -7806,6 +7813,19 @@ const ITENS_CFG={
   ed:{retorno:'e-r',  full:true},
 };
 
+// Comissão de agenciamento (opcional, por contrato): um % informado em
+// nf-com/ai-com/ed-com, abatido SÓ do valor dos itens de tipo Locação — as
+// demais cobranças do mesmo contrato (lavagem, avarias...) não são tocadas.
+function comissaoPct(pref){
+  const el=document.getElementById(pref+'-com');
+  const v=el?parseFloat(el.value):NaN;
+  return v>0?v:0;
+}
+function valorComComissao(pref,tipo,v){
+  if(tipo!=='Locação')return v;
+  const pct=comissaoPct(pref);
+  return pct?Math.round(v*(1-pct/100)*100)/100:v;
+}
 function itemHTML(pref,full){
   const ops=arr=>arr.map(o=>`<option>${o}</option>`).join('');
   return `<div class="item-card" data-item>
@@ -7912,7 +7932,7 @@ function itemVaiParcelar(it,forma,dp){
 function calcItems(pref){
   const its=itemEls(pref);
   const r=document.getElementById(ITENS_CFG[pref].retorno)?.value||'';
-  let bruto=0,liq=0,preenchidos=0,totalRecs=0;
+  let bruto=0,liq=0,preenchidos=0,totalRecs=0,comissao=0;
   its.forEach((it,i)=>{
     const num=it.querySelector('[data-num]');if(num)num.textContent=i+1;
     const del=it.querySelector('.item-del');if(del)del.disabled=its.length<2;
@@ -7930,15 +7950,16 @@ function calcItems(pref){
     // automático em cima do que acabou de ser digitado.
     if(it.dataset.prevManual!=='1') itemSet(it,'prev',itemPrev(forma,r,dp));
     const v=parseFloat(itemGet(it,'valor'))||0;
+    const vEf=valorComComissao(pref,itemGet(it,'tipo'),v);
     const taxa=getTaxaForma(forma);
-    const vl=v*(1-taxa);
+    const vl=vEf*(1-taxa);
     itemSet(it,'liq',v?vl.toFixed(2):'');
     const parcela=itemVaiParcelar(it,forma,dp);
     const n=parcelasForma(forma);
     const parcelasEl=it.querySelector('[data-parcelas]');
     if(parcelasEl){
       if(v&&parcela){
-        const brutos=dividirCentavos(v,n);
+        const brutos=dividirCentavos(vEf,n);
         const linhas=brutos.map((b,k)=>`${fR(b)} em ${fD(addDUtil(dp,PREM.prazoParcela*(k+1)))}`).join(' · ');
         parcelasEl.innerHTML=`💳 Vira ${n} lançamentos — ${linhas}`;
         parcelasEl.style.display='';
@@ -7946,12 +7967,12 @@ function calcItems(pref){
         parcelasEl.innerHTML='';parcelasEl.style.display='none';
       }
     }
-    if(v){bruto+=v;liq+=vl;preenchidos++;totalRecs+=parcela?n:1;}
+    if(v){bruto+=vEf;liq+=vl;preenchidos++;totalRecs+=parcela?n:1;comissao+=(v-vEf);}
   });
   const cnt=document.getElementById(pref+'-cnt');
   if(cnt)cnt.textContent=its.length===1?'1 item':its.length+' itens';
   const tot=document.getElementById(pref+'-total');
-  if(tot)tot.innerHTML=preenchidos?`Total: <strong>${fR(bruto)}</strong> · líquido <strong>${fR(liq)}</strong>`:'';
+  if(tot)tot.innerHTML=preenchidos?`Total: <strong>${fR(bruto)}</strong> · líquido <strong>${fR(liq)}</strong>${comissao?` · comissão -<strong>${fR(comissao)}</strong>`:''}`:'';
   const btn=document.getElementById(pref+'-submit');
   if(btn)btn.textContent=totalRecs>1?`✓ Adicionar ${totalRecs} lançamentos`:'✓ Adicionar lançamento';
 }
@@ -8012,16 +8033,22 @@ function coletaItens(pref,base){
     const dp=itemGet(it,'dpago');
     const obsBase=itemGet(it,'obs')||'';
     const taxa=getTaxaForma(forma);
+    // Comissão: abatida só do valor de Locação, antes de qualquer outro
+    // cálculo — o que entra como 'valor' do lançamento já é o líquido de
+    // comissão, então todo painel que soma 'valor' já reflete o desconto.
+    const pctCom=comissaoPct(pref);
+    const vEf=valorComComissao(pref,tipo,v);
+    const comNota=(tipo==='Locação'&&pctCom)?` · Comissão ${pctCom}% (-${fR(v-vEf)})`:'';
     if(itemVaiParcelar(it,forma,dp)){
       const n=parcelasForma(forma);
-      dividirCentavos(v,n).forEach((bruto,k)=>{
+      dividirCentavos(vEf,n).forEach((bruto,k)=>{
         recs.push({...base,
           tipo,forma,
           valor:bruto,
           prev_pgto:addDUtil(dp,PREM.prazoParcela*(k+1)),
           valor_pago:0,
           saldo:Math.round(bruto*(1-taxa)*100)/100,
-          obs:obsBase?`${obsBase} · Parcela ${k+1}/${n}`:`Parcela ${k+1}/${n}`});
+          obs:(obsBase?`${obsBase} · Parcela ${k+1}/${n}`:`Parcela ${k+1}/${n}`)+comNota});
       });
       continue;
     }
@@ -8030,11 +8057,11 @@ function coletaItens(pref,base){
     const ppRaw=itemGet(it,'prev')||itemPrev(forma,base.retorno||'',dp);
     recs.push({...base,
       tipo,forma,
-      valor:v,
+      valor:vEf,
       prev_pgto:ppRaw?proxUtil(ppRaw):null,
       valor_pago:0,
-      saldo:v*(1-taxa),
-      obs:obsBase||null});
+      saldo:vEf*(1-taxa),
+      obs:(obsBase||comNota)?`${obsBase}${comNota}`.replace(/^ · /,''):null});
   }
   if(!recs.length)return{erro:'Informe o valor de pelo menos um lançamento.'};
   return{recs};
@@ -8059,7 +8086,7 @@ async function addN(){
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Adicionado':recs.length+' lançamentos adicionados'}!</span>`;
   document.getElementById('novosCard').style.display='block';
   // Reset form
-  ['nf-p','nf-c'].forEach(id=>document.getElementById(id).value='');
+  ['nf-p','nf-c','nf-com'].forEach(id=>document.getElementById(id).value='');
   resetItems('nf');
   rNovos();popSel();renderAll();
 }
@@ -8089,7 +8116,7 @@ function closeCam(){document.getElementById('mCam').classList.remove('on');}
 // seguinte não identificar nada, o que sobrou da anterior (placa, cliente,
 // datas) não pode ficar na tela esperando um "Confirmar" distraído.
 function resetAI(){
-  ['ai-p','ai-c','ai-s','ai-r','ai-d'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['ai-p','ai-c','ai-s','ai-r','ai-d','ai-com'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   resetItems('ai');
 }
 function clearAI(){['aiForm','aiSt','prevImg','aiRawWrap'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('fi').value='';resetAI();}
