@@ -553,24 +553,26 @@ body::before {
 .fc-week-sep td { padding-top: 12px; }
 .fc-sum-row td { font-weight: 700; border-top: 2px solid var(--line); padding-top: 10px; color: var(--ink); }
 
-/* Calendário do "Total previsto" (quase tela cheia) */
-.modal.cal-modal { width: min(1100px, 100%); max-width: 100%; height: 92vh; max-height: 92vh; display: flex; flex-direction: column; }
-.cal-modal .searchResults, .cal-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+/* Calendário do "Total previsto" — a janela acompanha o tamanho do grid
+   (sem altura fixa sobrando vazio embaixo); só um teto de 92vh, com scroll
+   próprio, pra meses de 6 semanas não estourarem a tela. */
+.modal.cal-modal { width: min(760px, 100%); max-height: 92vh; overflow-y: auto; overscroll-behavior: contain; }
 .cal-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .cal-nav button.icon-btn { flex: 0 0 auto; }
 .cal-nav .cal-mlbl { font-weight: 700; font-size: 14px; flex: 1; text-align: center; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr) minmax(64px, .9fr); gap: 6px; }
-.cal-grid .cal-hd { text-align: center; font-size: 11px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr) minmax(52px, .85fr); gap: 5px; }
+.cal-grid .cal-hd { text-align: center; font-size: 10px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
 .cal-cell {
-  min-height: 84px;
+  height: 64px;
   border: 1.5px solid var(--line);
-  border-radius: 12px;
-  padding: 8px 6px;
-  display: flex; flex-direction: column; gap: 4px;
+  border-radius: 10px;
+  padding: 6px 4px;
+  display: flex; flex-direction: column; gap: 2px;
+  overflow: hidden;
   background: var(--card);
 }
 .cal-cell.cal-blank { border: none; background: transparent; }
-.cal-cell .cal-num { font-size: 13px; color: var(--ink3); font-weight: 600; }
+.cal-cell .cal-num { font-size: 11.5px; color: var(--ink3); font-weight: 600; line-height: 1; }
 .cal-cell.cal-today .cal-num { color: var(--blue); }
 .cal-cell.cal-today { border-color: var(--blue); border-width: 2px; }
 .cal-cell.cal-ok { background: var(--green-soft); border-color: transparent; }
@@ -579,27 +581,33 @@ body::before {
 .cal-cell.cal-venc .cal-num { color: var(--red); }
 .cal-cell.cal-mix { background: var(--purple-soft); border-color: transparent; }
 .cal-cell.cal-mix .cal-num { color: var(--purple); }
-.cal-cell .cal-val { font-size: 13.5px; font-weight: 800; cursor: pointer; }
+.cal-cell .cal-val {
+  font-size: 11.5px; font-weight: 800; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
 .cal-cell.cal-ok .cal-val { color: var(--green); }
 .cal-cell.cal-venc .cal-val { color: var(--red); }
 .cal-cell.cal-pend .cal-val { color: var(--amber); }
 .cal-cell .cal-val:hover { text-decoration: underline; }
-.cal-cell .cal-mix-item { font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 3px; }
-.cal-cell .cal-mix-item::before { content: '●'; font-size: 6px; }
+.cal-cell .cal-mix-item {
+  font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.3;
+}
+.cal-cell .cal-mix-item::before { content: '●'; font-size: 5px; flex: 0 0 auto; }
 .cal-cell .cal-mix-item.rec { color: var(--green); }
 .cal-cell .cal-mix-item.pend { color: var(--amber); }
-.cal-week { min-height: 84px; border: 1.5px dashed var(--line); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; color: var(--ink3); text-align: center; }
+.cal-week { height: 64px; border: 1.5px dashed var(--line); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--ink3); text-align: center; padding: 0 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .cal-week.cal-has { border-color: var(--green); color: var(--green); background: var(--green-soft); }
-.cal-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; font-size: 11.5px; color: var(--ink3); }
+.cal-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; font-size: 11px; color: var(--ink3); }
 .cal-legend span { display: flex; align-items: center; gap: 5px; }
-.cal-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.cal-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; flex: 0 0 auto; }
 @media(max-width:760px){
-  .modal.cal-modal { height: 100vh; max-height: 100vh; border-radius: 0; }
-  .cal-grid { grid-template-columns: repeat(7, 1fr) minmax(46px, .8fr); gap: 4px; }
-  .cal-cell { min-height: 58px; padding: 5px 3px; }
-  .cal-cell .cal-val { font-size: 11px; }
-  .cal-cell .cal-mix-item { font-size: 9.5px; }
-  .cal-week { min-height: 58px; font-size: 10.5px; }
+  .cal-grid { grid-template-columns: repeat(7, 1fr) minmax(40px, .8fr); gap: 3px; }
+  .cal-cell { height: 52px; padding: 4px 3px; }
+  .cal-cell .cal-num { font-size: 10px; }
+  .cal-cell .cal-val { font-size: 9.5px; }
+  .cal-cell .cal-mix-item { font-size: 8px; }
+  .cal-week { height: 52px; font-size: 9px; }
 }
 
 .filt-panel select {
@@ -6460,6 +6468,10 @@ function refreshCalPrevisto(){
   if(!document.getElementById('mCalPrev')?.classList.contains('on'))return;
   renderCalPrevisto();
 }
+// Sem "R$" (só o número + "k") — a célula do calendário é estreita demais
+// pro prefixo; a cor (verde/âmbar/vermelho) já deixa claro que é dinheiro,
+// e o valor cheio continua no title (tooltip).
+const calFRk = v => fRk(v).replace('R$ ','');
 function renderCalPrevisto(){
   const DIAS_PT = ['D','S','T','Q','Q','S','S'];
   const mes = calMesAtual;
@@ -6486,7 +6498,7 @@ function renderCalPrevisto(){
   let weekHas = false;
   const flushWeek = ()=>{
     cell += weekHas
-      ? `<div class="cal-week cal-has">${fR(weekTot)}</div>`
+      ? `<div class="cal-week cal-has" title="${fR(weekTot)}">${calFRk(weekTot)}</div>`
       : `<div class="cal-week">—</div>`;
     weekTot = 0; weekHas = false;
   };
@@ -6501,20 +6513,22 @@ function renderCalPrevisto(){
     const hasMov = entry.rec>0 || entry.pend>0;
     if(hasMov){ weekTot += entry.rec+entry.pend; weekHas = true; }
 
+    // Valor abreviado e sem "R$" (calFRk, ex.: "3,1k") pra nunca quebrar
+    // linha dentro da célula — o valor cheio fica só no title (tooltip).
     let cls = 'cal-cell', valHtml = '';
     if(entry.rec>0 && entry.pend>0){
       cls += ' cal-mix';
-      valHtml = `<span class="cal-mix-item rec" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.rec)}</span>`+
-                `<span class="cal-mix-item pend" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.pend)}</span>`;
+      valHtml = `<span class="cal-mix-item rec" onclick="calAbrirDia('${dia}')" title="Recebido ${fR(entry.rec)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.rec)}</span>`+
+                `<span class="cal-mix-item pend" onclick="calAbrirDia('${dia}')" title="A receber ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
     } else if(entry.rec>0){
       cls += ' cal-ok';
-      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.rec)}</span>`;
+      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Recebido ${fR(entry.rec)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.rec)}</span>`;
     } else if(entry.pend>0 && dia<today){
       cls += ' cal-venc';
-      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.pend)}</span>`;
+      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Vencido ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
     } else if(entry.pend>0){
       cls += ' cal-pend';
-      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.pend)}</span>`;
+      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="A receber ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
     }
     if(isToday) cls += ' cal-today';
 
