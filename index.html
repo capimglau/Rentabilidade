@@ -3129,7 +3129,6 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <datalist id="clienteDL"></datalist>
         <div class="fp"><label>Saída</label><input type="date" id="nf-s" onchange="calcN()"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="nf-r" onchange="calcN()"></div>
-        <div class="fp"><label>Comissão (%)</label><input type="number" id="nf-com" step="0.01" min="0" max="100" placeholder="0" oninput="calcItems('nf')" title="Abatida só do valor dos itens de Locação deste contrato"></div>
       </div>
       <div class="itens-hd">
         <span class="itens-tt">Lançamentos do contrato</span>
@@ -3404,7 +3403,12 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <div class="fp"><label>Saída</label><input type="date" id="e-s"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="e-r"></div>
         <div class="fp"><label>Valor</label><input type="number" id="e-v" step="0.01"></div>
-        <div class="fp"><label>Comissão a abater (%)</label><input type="number" id="e-com" step="0.01" min="0" max="100" placeholder="0" title="Só se aplica se Tipo = Locação. Abate do Valor acima uma única vez, ao clicar em Salvar."></div>
+        <div class="fp">
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap">
+            <input type="checkbox" id="e-com-on" onchange="document.getElementById('e-com').disabled=!this.checked;if(!this.checked)document.getElementById('e-com').value=''" style="width:14px;height:14px;flex:none">Comissão a abater (%)
+          </label>
+          <input type="number" id="e-com" step="0.01" min="0" max="100" placeholder="0" disabled title="Abate do Valor acima uma única vez, ao clicar em Salvar.">
+        </div>
         <div class="fp"><label>Prev. Pgto</label><input type="date" id="e-pp"></div>
         <div class="fp"><label>Valor pago</label><input type="number" id="e-vp" step="0.01"></div>
         <div class="fp"><label>Data pagamento</label><input type="date" id="e-dtpag"></div>
@@ -3422,9 +3426,6 @@ body.modo-boletos #btnLinkBoletos { display: none; }
     <details id="mAddItens">
       <summary>＋ Adicionar lançamentos a este contrato</summary>
       <div id="mIrmaos" style="margin-top:12px"></div>
-      <div class="fg" style="margin-top:12px">
-        <div class="fp"><label>Comissão (%)</label><input type="number" id="ed-com" step="0.01" min="0" max="100" placeholder="0" oninput="calcItems('ed')" title="Abatida só do valor dos itens de Locação adicionados aqui"></div>
-      </div>
       <div class="itens-hd">
         <span class="itens-tt">Novos lançamentos</span>
         <span class="itens-cnt" id="ed-cnt"></span>
@@ -3486,7 +3487,6 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <div class="fp s2"><label>Cliente</label><input type="text" id="ai-c" list="clienteDL" autocomplete="off"></div>
         <div class="fp"><label>Saída</label><input type="date" id="ai-s" onchange="calcItems('ai')"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="ai-r" onchange="calcItems('ai')"></div>
-        <div class="fp"><label>Comissão (%)</label><input type="number" id="ai-com" step="0.01" min="0" max="100" placeholder="0" oninput="calcItems('ai')" title="Abatida só do valor dos itens de Locação deste contrato"></div>
       </div>
       <div class="itens-hd">
         <span class="itens-tt">Lançamentos do contrato</span>
@@ -6571,13 +6571,14 @@ function openEdit(idx){
   document.getElementById('e-r').value=r.retorno||'';
   document.getElementById('e-pp').value=r.prev_pgto||'';
   document.getElementById('e-v').value=r.valor||'';
+  document.getElementById('e-com-on').checked=false;
   document.getElementById('e-com').value='';
+  document.getElementById('e-com').disabled=true;
   document.getElementById('e-vp').value=r.valor_pago||'';
   document.getElementById('e-dtpag').value=r.data_pagamento||'';
   document.getElementById('e-sl').value=r.saldo||'';
   document.getElementById('e-obs').value=r.obs||'';
   resetItems('ed');
-  document.getElementById('ed-com').value='';
   document.getElementById('edMsg').innerHTML='';
   renderIrmaos();
   document.getElementById('mEdit').classList.add('on');
@@ -6650,7 +6651,6 @@ async function addItensContrato(){
   finally{ if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados'} ao contrato!</span>`;
   resetItems('ed');
-  document.getElementById('ed-com').value='';
   renderIrmaos();
   document.getElementById('novosCard').style.display='block';
   rNovos();popSel();renderAll();
@@ -6669,13 +6669,13 @@ function saveEdit(){
   const _pp=document.getElementById('e-pp').value||null;
   r.prev_pgto=_pp?proxUtil(_pp):null;
   r.valor=parseFloat(document.getElementById('e-v').value)||0;
-  // Comissão a abater: só em Locação, e só uma vez — abate do Valor que
-  // acabou de ser digitado/confirmado acima e vira nota no Obs. Não fica
-  // guardada em campo próprio (não existe coluna pra isso), por isso o
-  // campo volta a zero a cada vez que a edição é reaberta.
-  const pctCom=parseFloat(document.getElementById('e-com').value)||0;
+  // Comissão a abater: só quando a caixinha está ticada, e só uma vez —
+  // abate do Valor que acabou de ser digitado/confirmado acima e vira nota
+  // no Obs. Não fica guardada em campo próprio (não existe coluna pra
+  // isso), por isso a caixinha volta desmarcada a cada edição reaberta.
+  const pctCom=document.getElementById('e-com-on').checked?(parseFloat(document.getElementById('e-com').value)||0):0;
   let comNota='';
-  if(r.tipo==='Locação'&&pctCom>0){
+  if(pctCom>0){
     const bruto=r.valor;
     r.valor=Math.round(bruto*(1-pctCom/100)*100)/100;
     comNota=` · Comissão ${pctCom}% (-${fR(bruto-r.valor)})`;
@@ -6693,7 +6693,9 @@ function saveEdit(){
   }
   const obsDigitado=document.getElementById('e-obs').value||'';
   r.obs=(obsDigitado||comNota)?`${obsDigitado}${comNota}`:null;
+  document.getElementById('e-com-on').checked=false;
   document.getElementById('e-com').value='';
+  document.getElementById('e-com').disabled=true;
   dbUpdate(r);
   // popSel(): a edição pode ter mudado placa, cliente, dono, tipo ou forma —
   // sem reindexar aqui, o autocomplete/datalist ficava um passo atrás do que
@@ -7828,17 +7830,18 @@ const ITENS_CFG={
   ed:{retorno:'e-r',  full:true},
 };
 
-// Comissão de agenciamento (opcional, por contrato): um % informado em
-// nf-com/ai-com/ed-com, abatido SÓ do valor dos itens de tipo Locação — as
-// demais cobranças do mesmo contrato (lavagem, avarias...) não são tocadas.
-function comissaoPct(pref){
-  const el=document.getElementById(pref+'-com');
-  const v=el?parseFloat(el.value):NaN;
+// Comissão de agenciamento (opcional, por lançamento): a caixinha "Comissão"
+// ao lado do Valor de cada item, ticada e com o % preenchido, abate esse %
+// SÓ do valor daquele item — os outros itens do mesmo contrato não são
+// tocados, sejam eles quais tipos forem.
+function itemComPct(it){
+  const on=it.querySelector('[data-k="comOn"]')?.checked;
+  if(!on)return 0;
+  const v=parseFloat(itemGet(it,'comPct'))||0;
   return v>0?v:0;
 }
-function valorComComissao(pref,tipo,v){
-  if(tipo!=='Locação')return v;
-  const pct=comissaoPct(pref);
+function itemValorComComissao(it,v){
+  const pct=itemComPct(it);
   return pct?Math.round(v*(1-pct/100)*100)/100:v;
 }
 function itemHTML(pref,full){
@@ -7854,6 +7857,12 @@ function itemHTML(pref,full){
       <div class="fp" data-fp="bandeira"><label>Bandeira</label><select data-k="bandeira"></select></div>
       <div class="fp"><label>Data de pagamento</label><input type="date" data-k="dpago"></div>
       <div class="fp"><label>Valor (R$)</label><input type="number" step="0.01" data-k="valor"></div>
+      <div class="fp" data-fp="comissao">
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap">
+          <input type="checkbox" data-k="comOn" style="width:14px;height:14px;flex:none">Comissão (%)
+        </label>
+        <input type="number" step="0.01" min="0" max="100" data-k="comPct" placeholder="0" disabled>
+      </div>
       ${full?`<div class="fp"><label>Prev. Pgto (auto)</label><input type="date" data-k="prev"></div>
       <div class="fp"><label>Valor líquido</label><input type="number" data-k="liq" readonly></div>
       <div class="item-parcelas" data-parcelas style="display:none"></div>`:''}
@@ -7965,7 +7974,7 @@ function calcItems(pref){
     // automático em cima do que acabou de ser digitado.
     if(it.dataset.prevManual!=='1') itemSet(it,'prev',itemPrev(forma,r,dp));
     const v=parseFloat(itemGet(it,'valor'))||0;
-    const vEf=valorComComissao(pref,itemGet(it,'tipo'),v);
+    const vEf=itemValorComComissao(it,v);
     const taxa=getTaxaForma(forma);
     const vl=vEf*(1-taxa);
     itemSet(it,'liq',v?vl.toFixed(2):'');
@@ -8022,6 +8031,12 @@ function initItens(pref){
         // controle do usuário até ele apagar a data, que volta ao automático.
         it.dataset.prevManual=e.target.value?'1':'';
       }
+      if(e.target.dataset.k==='comOn'){
+        // Destrava/trava o % junto — sem a caixinha marcada o campo de %
+        // fica desabilitado e é zerado, pra não sobrar um valor esquecido.
+        const pctInput=it.querySelector('[data-k="comPct"]');
+        if(pctInput){pctInput.disabled=!e.target.checked;if(!e.target.checked)pctInput.value='';}
+      }
       calcItems(pref);
     }));
   }
@@ -8048,12 +8063,13 @@ function coletaItens(pref,base){
     const dp=itemGet(it,'dpago');
     const obsBase=itemGet(it,'obs')||'';
     const taxa=getTaxaForma(forma);
-    // Comissão: abatida só do valor de Locação, antes de qualquer outro
-    // cálculo — o que entra como 'valor' do lançamento já é o líquido de
-    // comissão, então todo painel que soma 'valor' já reflete o desconto.
-    const pctCom=comissaoPct(pref);
-    const vEf=valorComComissao(pref,tipo,v);
-    const comNota=(tipo==='Locação'&&pctCom)?` · Comissão ${pctCom}% (-${fR(v-vEf)})`:'';
+    // Comissão: só abate quando a caixinha do item foi ticada, antes de
+    // qualquer outro cálculo — o que entra como 'valor' do lançamento já é
+    // o líquido de comissão, então todo painel que soma 'valor' já reflete
+    // o desconto.
+    const pctCom=itemComPct(it);
+    const vEf=itemValorComComissao(it,v);
+    const comNota=pctCom?` · Comissão ${pctCom}% (-${fR(v-vEf)})`:'';
     if(itemVaiParcelar(it,forma,dp)){
       const n=parcelasForma(forma);
       dividirCentavos(vEf,n).forEach((bruto,k)=>{
@@ -8101,7 +8117,7 @@ async function addN(){
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Adicionado':recs.length+' lançamentos adicionados'}!</span>`;
   document.getElementById('novosCard').style.display='block';
   // Reset form
-  ['nf-p','nf-c','nf-com'].forEach(id=>document.getElementById(id).value='');
+  ['nf-p','nf-c'].forEach(id=>document.getElementById(id).value='');
   resetItems('nf');
   rNovos();popSel();renderAll();
 }
@@ -8131,7 +8147,7 @@ function closeCam(){document.getElementById('mCam').classList.remove('on');}
 // seguinte não identificar nada, o que sobrou da anterior (placa, cliente,
 // datas) não pode ficar na tela esperando um "Confirmar" distraído.
 function resetAI(){
-  ['ai-p','ai-c','ai-s','ai-r','ai-d','ai-com'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['ai-p','ai-c','ai-s','ai-r','ai-d'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   resetItems('ai');
 }
 function clearAI(){['aiForm','aiSt','prevImg','aiRawWrap'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('fi').value='';resetAI();}
