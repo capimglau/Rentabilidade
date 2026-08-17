@@ -3404,6 +3404,7 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <div class="fp"><label>Saída</label><input type="date" id="e-s"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="e-r"></div>
         <div class="fp"><label>Valor</label><input type="number" id="e-v" step="0.01"></div>
+        <div class="fp"><label>Comissão a abater (%)</label><input type="number" id="e-com" step="0.01" min="0" max="100" placeholder="0" title="Só se aplica se Tipo = Locação. Abate do Valor acima uma única vez, ao clicar em Salvar."></div>
         <div class="fp"><label>Prev. Pgto</label><input type="date" id="e-pp"></div>
         <div class="fp"><label>Valor pago</label><input type="number" id="e-vp" step="0.01"></div>
         <div class="fp"><label>Data pagamento</label><input type="date" id="e-dtpag"></div>
@@ -6570,6 +6571,7 @@ function openEdit(idx){
   document.getElementById('e-r').value=r.retorno||'';
   document.getElementById('e-pp').value=r.prev_pgto||'';
   document.getElementById('e-v').value=r.valor||'';
+  document.getElementById('e-com').value='';
   document.getElementById('e-vp').value=r.valor_pago||'';
   document.getElementById('e-dtpag').value=r.data_pagamento||'';
   document.getElementById('e-sl').value=r.saldo||'';
@@ -6667,6 +6669,17 @@ function saveEdit(){
   const _pp=document.getElementById('e-pp').value||null;
   r.prev_pgto=_pp?proxUtil(_pp):null;
   r.valor=parseFloat(document.getElementById('e-v').value)||0;
+  // Comissão a abater: só em Locação, e só uma vez — abate do Valor que
+  // acabou de ser digitado/confirmado acima e vira nota no Obs. Não fica
+  // guardada em campo próprio (não existe coluna pra isso), por isso o
+  // campo volta a zero a cada vez que a edição é reaberta.
+  const pctCom=parseFloat(document.getElementById('e-com').value)||0;
+  let comNota='';
+  if(r.tipo==='Locação'&&pctCom>0){
+    const bruto=r.valor;
+    r.valor=Math.round(bruto*(1-pctCom/100)*100)/100;
+    comNota=` · Comissão ${pctCom}% (-${fR(bruto-r.valor)})`;
+  }
   r.valor_pago=parseFloat(document.getElementById('e-vp').value)||null;
   r.data_pagamento=document.getElementById('e-dtpag').value||null;
   r.saldo=parseFloat(document.getElementById('e-sl').value)||0;
@@ -6678,7 +6691,9 @@ function saveEdit(){
   if(r.forma!==formaAnt && saldoAuto && fN(r.valor_pago)===0){
     r.saldo=Math.round(r.valor*(1-getTaxaForma(r.forma))*100)/100;
   }
-  r.obs=document.getElementById('e-obs').value||null;
+  const obsDigitado=document.getElementById('e-obs').value||'';
+  r.obs=(obsDigitado||comNota)?`${obsDigitado}${comNota}`:null;
+  document.getElementById('e-com').value='';
   dbUpdate(r);
   // popSel(): a edição pode ter mudado placa, cliente, dono, tipo ou forma —
   // sem reindexar aqui, o autocomplete/datalist ficava um passo atrás do que
