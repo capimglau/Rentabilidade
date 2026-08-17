@@ -3782,6 +3782,14 @@ body.modo-boletos #btnLinkBoletos { display: none; }
 // restauração automática e força o topo assim que a página carrega.
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
 window.scrollTo(0,0);
+// O scrollTo acima só cobre o carregamento inicial. Ao reabrir uma aba que
+// o Safari mobile deixou suspensa em segundo plano (voltar pro app depois
+// de um tempo fora), o WebKit não recarrega a página do zero — ele só
+// reexibe o mesmo documento, com o scroll de onde o usuário tinha parado.
+// 'pageshow' dispara nos dois casos (carregamento normal e essa restauração
+// do bfcache), então é o gancho certo pra garantir o topo sempre que a
+// página reaparece.
+window.addEventListener('pageshow', ()=>window.scrollTo(0,0));
 const DS = JSON.parse(document.getElementById("ds").textContent);
 
 // ─── MODO BOLETOS (link restrito ao painel de Boletos do mês) ───
@@ -8907,6 +8915,16 @@ function aposMudancaExterna(){
 
 // ── ROUTING ──
 let curPage='resumo';
+// A aba aberta sobrevive ao F5: recarregar não pode jogar o usuário de volta
+// no Resumo, ainda mais quando ele estava no meio de um lançamento.
+const PAGINA_KEY='agi-pagina';
+function salvarPagina(id){try{localStorage.setItem(PAGINA_KEY,id);}catch(e){}}
+function paginaSalva(){
+  let id='';
+  try{id=localStorage.getItem(PAGINA_KEY)||'';}catch(e){}
+  // Só aceita id que existe de fato — chave antiga/estragada volta ao Resumo.
+  return (id&&document.getElementById('page-'+id))?id:'resumo';
+}
 // Ponto único de repintura depois de QUALQUER alteração em lançamentos —
 // local (baixa, edição, exclusão, novo item) ou remota (sincronização
 // automática de outro aparelho). Toda ação que muda um lançamento deve
@@ -8933,6 +8951,7 @@ function go(id){
   const alvo=document.getElementById('page-'+id);
   if(!alvo)return;
   curPage=id;
+  salvarPagina(id);
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   alvo.classList.add('on');
 
@@ -9041,7 +9060,7 @@ async function boot(){
     bolExpandido=true;
     go('resumo');
   } else {
-    go('resumo');   // o app sempre abre no Início (Resumo), no topo
+    go(paginaSalva());   // volta para a aba onde o usuário estava (já renderiza)
   }
   initMobileFilters();
   initSync();
