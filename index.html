@@ -553,6 +553,55 @@ body::before {
 .fc-week-sep td { padding-top: 12px; }
 .fc-sum-row td { font-weight: 700; border-top: 2px solid var(--line); padding-top: 10px; color: var(--ink); }
 
+/* Calendário do "Total previsto" (quase tela cheia) */
+.modal.cal-modal { width: min(1100px, 100%); max-width: 100%; height: 92vh; max-height: 92vh; display: flex; flex-direction: column; }
+.cal-modal .searchResults, .cal-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+.cal-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cal-nav button.icon-btn { flex: 0 0 auto; }
+.cal-nav .cal-mlbl { font-weight: 700; font-size: 14px; flex: 1; text-align: center; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr) minmax(64px, .9fr); gap: 6px; }
+.cal-grid .cal-hd { text-align: center; font-size: 11px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
+.cal-cell {
+  min-height: 84px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 6px;
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--card);
+}
+.cal-cell.cal-blank { border: none; background: transparent; }
+.cal-cell .cal-num { font-size: 13px; color: var(--ink3); font-weight: 600; }
+.cal-cell.cal-today .cal-num { color: var(--blue); }
+.cal-cell.cal-today { border-color: var(--blue); border-width: 2px; }
+.cal-cell.cal-ok { background: var(--green-soft); border-color: transparent; }
+.cal-cell.cal-ok .cal-num { color: var(--green); }
+.cal-cell.cal-venc { background: var(--red-soft); border-color: transparent; }
+.cal-cell.cal-venc .cal-num { color: var(--red); }
+.cal-cell.cal-mix { background: var(--purple-soft); border-color: transparent; }
+.cal-cell.cal-mix .cal-num { color: var(--purple); }
+.cal-cell .cal-val { font-size: 13.5px; font-weight: 800; cursor: pointer; }
+.cal-cell.cal-ok .cal-val { color: var(--green); }
+.cal-cell.cal-venc .cal-val { color: var(--red); }
+.cal-cell.cal-pend .cal-val { color: var(--amber); }
+.cal-cell .cal-val:hover { text-decoration: underline; }
+.cal-cell .cal-mix-item { font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 3px; }
+.cal-cell .cal-mix-item::before { content: '●'; font-size: 6px; }
+.cal-cell .cal-mix-item.rec { color: var(--green); }
+.cal-cell .cal-mix-item.pend { color: var(--amber); }
+.cal-week { min-height: 84px; border: 1.5px dashed var(--line); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; color: var(--ink3); text-align: center; }
+.cal-week.cal-has { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+.cal-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; font-size: 11.5px; color: var(--ink3); }
+.cal-legend span { display: flex; align-items: center; gap: 5px; }
+.cal-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+@media(max-width:760px){
+  .modal.cal-modal { height: 100vh; max-height: 100vh; border-radius: 0; }
+  .cal-grid { grid-template-columns: repeat(7, 1fr) minmax(46px, .8fr); gap: 4px; }
+  .cal-cell { min-height: 58px; padding: 5px 3px; }
+  .cal-cell .cal-val { font-size: 11px; }
+  .cal-cell .cal-mix-item { font-size: 9.5px; }
+  .cal-week { min-height: 58px; font-size: 10.5px; }
+}
+
 .filt-panel select {
   width: 100%;
   padding: 10px 14px;
@@ -3549,6 +3598,25 @@ body.modo-boletos #btnLinkBoletos { display: none; }
   </div>
 </div>
 
+<!-- CALENDÁRIO DO TOTAL PREVISTO -->
+<div class="overlay" id="mCalPrev">
+  <div class="modal cal-modal">
+    <div class="mhd"><span>📅 Previsto do mês — por dia</span> <button class="mcl" onclick="closeCalPrevisto()">✕</button></div>
+    <div class="cal-nav">
+      <button class="icon-btn" onclick="calPrevistoNav(-1)" title="Mês anterior">‹</button>
+      <span class="cal-mlbl" id="calMesLbl"></span>
+      <button class="icon-btn" onclick="calPrevistoNav(1)" title="Próximo mês">›</button>
+    </div>
+    <div class="cal-legend">
+      <span><i style="background:var(--green-soft);border:1.5px solid var(--green)"></i>Recebido</span>
+      <span><i style="background:var(--amber-soft);border:1.5px solid var(--amber)"></i>A receber</span>
+      <span><i style="background:var(--red-soft);border:1.5px solid var(--red)"></i>Vencido</span>
+      <span><i style="background:var(--purple-soft);border:1.5px solid var(--purple)"></i>Recebido + a receber</span>
+    </div>
+    <div class="cal-body"><div class="cal-grid" id="calGrid"></div></div>
+  </div>
+</div>
+
 <!-- ─── MODAL LOGIN / CRIAR CONTA ─── -->
 <div class="overlay" id="mLogin">
   <div class="modal" style="max-width:380px">
@@ -6112,7 +6180,7 @@ function renderResumo(){
   let deltaBadge='';
   if(prevV>0){const dp=(prevLiq-prevV)/prevV*100;const up=dp>=0;deltaBadge=` · <span class="mc-delta ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(dp).toFixed(0)}%</span>`;}
   document.getElementById('res-m').innerHTML=`
-    <div class="mc blue" role="button" tabindex="0" onclick="irLancMetric('')" title="Ver todos os lançamentos do mês"><div class="mc-label">Total previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
+    <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Total previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Total recebido · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
     <div class="mc amber" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>
     <div class="mc red" role="button" tabindex="0" onclick="irLancMetric('venc')" title="Ver só os vencidos"><div class="mc-label">Inadimplência</div><div class="mc-value">${inad.toFixed(1)}%</div><div class="mc-sub">${fR(vencVal)} vencido</div></div>
@@ -6354,6 +6422,112 @@ function renderFluxo(){
   </tr>`;
 
   document.getElementById('fc-body').innerHTML = html;
+}
+
+// ── CALENDÁRIO DO "TOTAL PREVISTO" ──
+// Aberto pelo card "Total previsto" do Resumo: mostra o previsto de CADA dia
+// do mês (recebido em verde, a receber em âmbar, vencido em vermelho, dias
+// com os dois em roxo), com uma coluna de total por semana. Clicar no valor
+// de um dia abre os lançamentos daquele dia — reaproveita mostrarLancDiaFluxo,
+// que já respeita o filtro de proprietário (selDono) e lista tudo (pago e
+// pendente) que vence naquela data.
+let calMesAtual = null;
+function abrirCalendarioPrevisto(){
+  calMesAtual = curMes;
+  document.getElementById('mCalPrev').classList.add('on');
+  renderCalPrevisto();
+}
+function closeCalPrevisto(){
+  document.getElementById('mCalPrev').classList.remove('on');
+}
+// Clique no valor de um dia do calendário: fecha o calendário (ambos usam o
+// mesmo z-index de overlay, então ficariam empilhados) e abre os lançamentos
+// daquele dia no modal de busca.
+function calAbrirDia(dia){
+  closeCalPrevisto();
+  mostrarLancDiaFluxo(dia);
+}
+function calPrevistoNav(delta){
+  const [y,m] = calMesAtual.split('-').map(Number);
+  const dt = new Date(y, m-1+delta, 1);
+  calMesAtual = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+  renderCalPrevisto();
+}
+// Repinta o calendário se estiver aberto — chamado de renderAll(), no mesmo
+// espírito de refreshMSearch(), pra uma alteração (local ou de outro
+// aparelho) não deixar o modal aberto mostrando dado velho.
+function refreshCalPrevisto(){
+  if(!document.getElementById('mCalPrev')?.classList.contains('on'))return;
+  renderCalPrevisto();
+}
+function renderCalPrevisto(){
+  const DIAS_PT = ['D','S','T','Q','Q','S','S'];
+  const mes = calMesAtual;
+  const [y,m] = mes.split('-').map(Number);
+  document.getElementById('calMesLbl').textContent = `${MF[m-1]} ${y}`;
+
+  const rows = allD().filter(r=>(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(mes));
+  const dmap = {};
+  rows.forEach(r=>{
+    const dia = (r.prev_pgto||'').slice(0,10); if(!dia) return;
+    if(!dmap[dia]) dmap[dia]={rec:0,pend:0};
+    if(isPago(r)) dmap[dia].rec+=fN(r.valor_pago);
+    else dmap[dia].pend+=fN(r.saldo);
+  });
+
+  const lastDay = new Date(y, m, 0).getDate();
+  const firstDow = new Date(y, m-1, 1).getDay();
+  const today = td();
+
+  let html = DIAS_PT.map(d=>`<div class="cal-hd">${d}</div>`).join('') + '<div class="cal-hd">Sem.</div>';
+
+  let cell = '';
+  let weekTot = 0;
+  let weekHas = false;
+  const flushWeek = ()=>{
+    cell += weekHas
+      ? `<div class="cal-week cal-has">${fR(weekTot)}</div>`
+      : `<div class="cal-week">—</div>`;
+    weekTot = 0; weekHas = false;
+  };
+
+  for(let i=0;i<firstDow;i++) cell += '<div class="cal-cell cal-blank"></div>';
+
+  for(let d=1; d<=lastDay; d++){
+    const dia = `${mes}-${String(d).padStart(2,'0')}`;
+    const dow = new Date(y, m-1, d).getDay();
+    const entry = dmap[dia] || {rec:0,pend:0};
+    const isToday = dia === today;
+    const hasMov = entry.rec>0 || entry.pend>0;
+    if(hasMov){ weekTot += entry.rec+entry.pend; weekHas = true; }
+
+    let cls = 'cal-cell', valHtml = '';
+    if(entry.rec>0 && entry.pend>0){
+      cls += ' cal-mix';
+      valHtml = `<span class="cal-mix-item rec" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.rec)}</span>`+
+                `<span class="cal-mix-item pend" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.pend)}</span>`;
+    } else if(entry.rec>0){
+      cls += ' cal-ok';
+      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.rec)}</span>`;
+    } else if(entry.pend>0 && dia<today){
+      cls += ' cal-venc';
+      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.pend)}</span>`;
+    } else if(entry.pend>0){
+      cls += ' cal-pend';
+      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Ver lançamentos de ${fDM(dia)}">${fR(entry.pend)}</span>`;
+    }
+    if(isToday) cls += ' cal-today';
+
+    cell += `<div class="${cls}"><div class="cal-num">${d}</div>${valHtml}</div>`;
+
+    if(dow===6){ flushWeek(); }
+    if(d===lastDay && dow!==6){
+      for(let i=dow+1;i<7;i++) cell += '<div class="cal-cell cal-blank"></div>';
+      flushWeek();
+    }
+  }
+
+  document.getElementById('calGrid').innerHTML = html + cell;
 }
 
 // ── PROPRIETÁRIOS ──
@@ -8731,6 +8905,7 @@ function renderAll(){
   else if(curPage==='fluxo')renderFluxo();
   else if(curPage==='auditoria')renderAuditoria();
   refreshMSearch();
+  refreshCalPrevisto();
 }
 function go(id){
   // Modo Boletos: só existe "resumo" nessa tela. Reforço, não a proteção em
@@ -8797,7 +8972,7 @@ function scrollLancParaHoje(){ scrollListaParaHoje('lancBody','.day-group[data-d
 // meio de um gesto de seleção, sem nenhum clique real no fundo. Por isso
 // só fecha quando o mousedown/touchstart QUE INICIOU o gesto também foi
 // no backdrop — um clique de verdade, não o fim de um arrasto de seleção.
-['mEdit','mLote','mParcial','mCam','mSearch','mDono','mAlterarSenha','mXls','mPerfil'].forEach(id=>{
+['mEdit','mLote','mParcial','mCam','mSearch','mDono','mAlterarSenha','mXls','mPerfil','mCalPrev'].forEach(id=>{
   const m=document.getElementById(id);
   let iniciouNoFundo=false;
   m.addEventListener('mousedown',e=>{iniciouNoFundo=(e.target===e.currentTarget);});
