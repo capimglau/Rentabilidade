@@ -135,7 +135,8 @@ body::before {
 .logo em { color: var(--blue); font-style: normal; }
 .logo-img { height: 28px; width: auto; display: block; }
 
-/* Month nav — the MAIN filter */
+/* Month nav — the MAIN filter. Fica encostado no canto direito do header,
+   depois dos chips de Previsto/Pendente/Recebido. */
 .month-nav {
   display: flex;
   align-items: center;
@@ -144,6 +145,7 @@ body::before {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 2px;
+  margin-left: 14px;
 }
 .mn-btn {
   width: 24px; height: 24px;
@@ -277,7 +279,6 @@ body::before {
 }
 .icon-btn:hover, .icon-btn:active { background: rgba(118,118,128,.22); }
 .icon-btn svg { width: 19px; height: 19px; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.theme-toggle { width: 40px; height: 40px; margin-left: 12px; }
 
 /* Selec.Todos/Baixar viram botões redondos (mesmo vidro branco do resto
    da fileira, ao lado do seletor de proprietário). */
@@ -298,8 +299,6 @@ body::before {
 .icon-btn.round-action-green:hover, .icon-btn.round-action-green:active { background: rgba(52,199,89,.26); }
 
 /* ─── LOGIN / PERFIL / BIOMETRIA ─── */
-.perfil-btn { margin-left: 6px; overflow: hidden; background: var(--blue-soft, rgba(31,95,168,.08)); color: var(--blue); }
-.perfil-btn svg { width: 20px; height: 20px; }
 .login-logo { display: flex; justify-content: center; margin-bottom: 6px; }
 .login-logo img { height: 40px; }
 .login-sub { text-align: center; color: var(--ink3); font-size: 12.5px; margin-bottom: 16px; }
@@ -2180,8 +2179,6 @@ details[open] summary::before { transform: rotate(90deg); }
   .header { left: 0 !important; width: 100% !important; }
   .page { margin-left: 0 !important; }
   body { padding-left: 0 !important; }
-  .theme-toggle { margin-left: auto; }
-  .perfil-btn { margin-left: 6px; }
   .header-right {
     display: flex; flex-basis: 100%; margin-left: 0; justify-content: center;
     align-items: center; gap: 6px; order: 5;
@@ -2194,18 +2191,16 @@ details[open] summary::before { transform: rotate(90deg); }
   .header-right .stat-pill .val { font-size: 11.5px; line-height: 1; }
   .mn-label { min-width: 50px; font-size: 11.5px; }
 
-  /* Ao rolar para baixo, o header entra em modo compacto: mês, tema e
-     sair somem (saem do fluxo — não só encolhem, senão sobra troco de
-     borda/padding suficiente pra estourar a linha e empurrar os valores
-     pra 2ª linha de novo) e os valores (Previsto/Pendente/Recebido) sobem
-     pra 1ª linha, ao lado da logo, no lugar deles. Volta ao normal ao
-     rolar pra cima (mesmo gatilho de scroll que esconde/mostra o dock). */
-  .header .month-nav, .header .theme-toggle, .header .perfil-btn {
+  /* Ao rolar para baixo, o header entra em modo compacto: o mês some (sai
+     do fluxo — não só encolhe, senão sobra troco de borda/padding
+     suficiente pra estourar a linha e empurrar os valores pra 2ª linha de
+     novo) e os valores (Previsto/Pendente/Recebido) sobem pra 1ª linha, ao
+     lado da logo, no lugar dele. Volta ao normal ao rolar pra cima (mesmo
+     gatilho de scroll que esconde/mostra o dock). */
+  .header .month-nav {
     transition: opacity .15s ease;
   }
-  .header.hdr-compact .month-nav,
-  .header.hdr-compact .theme-toggle,
-  .header.hdr-compact .perfil-btn {
+  .header.hdr-compact .month-nav {
     position: absolute;
     opacity: 0;
     pointer-events: none;
@@ -2936,11 +2931,6 @@ body.modo-boletos #btnLinkBoletos { display: none; }
   <div class="logo" onclick="go('resumo')" style="cursor:pointer" title="Ir para o início">
     <img class="logo-img" src="logo-agi.png" alt="AGI Locadora">
   </div>
-  <div class="month-nav">
-    <button class="mn-btn" onclick="navMes(-1)" title="Mês anterior">‹</button>
-    <div class="mn-label" id="mnLabel">—</div>
-    <button class="mn-btn" onclick="navMes(1)" title="Próximo mês">›</button>
-  </div>
 
   <div class="header-right">
     <div class="stat-pill">
@@ -2957,8 +2947,11 @@ body.modo-boletos #btnLinkBoletos { display: none; }
     </div>
 
   </div>
-  <button class="icon-btn theme-toggle" onclick="toggleTheme()" title="Alterar tema" aria-label="Alterar tema" id="themeBtnHdr"></button>
-  <button class="icon-btn perfil-btn" onclick="perfilBtnClick()" title="Sair da conta" aria-label="Sair da conta" id="perfilBtn"></button>
+  <div class="month-nav">
+    <button class="mn-btn" onclick="navMes(-1)" title="Mês anterior">‹</button>
+    <div class="mn-label" id="mnLabel">—</div>
+    <button class="mn-btn" onclick="navMes(1)" title="Próximo mês">›</button>
+  </div>
 </div>
 
 <!-- ─── PAGES ─── -->
@@ -3406,6 +3399,15 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <div style="font-size:12px;color:var(--ink3)">Alterna entre tema claro e escuro</div>
       </div>
       <button class="icon-btn" onclick="toggleTheme()" title="Tema" aria-label="Tema" id="themeBtn" style="width:40px;height:24px;border-radius:12px;padding:0;position:relative;flex-shrink:0"></button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface);border-radius:14px;margin-bottom:24px">
+      <span style="font-size:18px">🚪</span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;color:var(--ink)">Sair da conta</div>
+        <div style="font-size:12px;color:var(--ink3)">Desconecta deste aparelho e volta pra tela de login</div>
+      </div>
+      <button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="sairDaConta()">Sair</button>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface);border-radius:14px;margin-bottom:24px">
