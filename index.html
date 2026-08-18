@@ -8655,6 +8655,7 @@ function handleXls(input){
         // BR: dd/mm/yyyy ou dd-mm-yyyy ou dd.mm.yyyy
         m=t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
         if(!m)return null;
+        if(m[3].length!==2&&m[3].length!==4)return null; // ano truncado (ex: "202") não é uma data válida
         const y=m[3].length===2?'20'+m[3]:m[3];
         return`${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
       };
