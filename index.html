@@ -5548,7 +5548,10 @@ function renderRecebHoje(){
   // vez de o painel inteiro sumir, senão passa a impressão de que a tela
   // não carregou.
   const dias=d=>Math.round((new Date(hoje+'T12:00:00')-new Date(d+'T12:00:00'))/86400000);
-  const fmtD=d=>{const[,m,dd]=d.split('-');return`${dd}/${m}`;};
+  // Só omite o ano quando é o ano corrente — um vencimento com ano errado
+  // (dado corrompido) precisa aparecer completo, senão "13/09" parece um
+  // vencimento futuro normal quando na verdade é de um ano muito antigo.
+  const fmtD=d=>{const[y,m,dd]=d.split('-');return y===hoje.slice(0,4)?`${dd}/${m}`:`${dd}/${m}/${y}`;};
 
   // ── Esquerda: vencidos, em resumo (quem, quanto, de quando) ──
   let cardVenc;
@@ -5660,7 +5663,7 @@ function tipAtraso(o){
     const lista=[...rows].sort((a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||''));
     const tot=lista.reduce((a,r)=>a+fN(valorDe(r)),0);
     const linhas=lista.map((r,idx)=>{
-      const dt=r.prev_pgto?`${r.prev_pgto.split('-')[2]}/${r.prev_pgto.split('-')[1]}`:'—';
+      const dt=r.prev_pgto?(r.prev_pgto.slice(0,4)===hoje.slice(0,4)?`${r.prev_pgto.split('-')[2]}/${r.prev_pgto.split('-')[1]}`:`${r.prev_pgto.split('-')[2]}/${r.prev_pgto.split('-')[1]}/${r.prev_pgto.split('-')[0]}`):'—';
       const i=allD().indexOf(r);
       const pago=isPago(r),temPago=fN(r.valor_pago)>0;
       const extra=idx>=MAX;
@@ -6880,6 +6883,17 @@ function saveEdit(){
   r.saida=document.getElementById('e-s').value||null;
   r.retorno=document.getElementById('e-r').value||null;
   const _pp=document.getElementById('e-pp').value||null;
+  // Trava contra ano absurdo (ex: campo de data nativo salvando um ano
+  // truncado tipo "0002" em vez de "2026") — sem isso o lançamento vira um
+  // "vencido" fantasma com milhares de dias de atraso, sem dar pra saber o
+  // porquê só olhando o card de vencidos.
+  if(_pp){
+    const anoPP=+_pp.slice(0,4), anoAtual=new Date().getFullYear();
+    if(anoPP<anoAtual-10||anoPP>anoAtual+10){
+      document.getElementById('edMsg').innerHTML=`<span style="color:var(--red)">Prev. Pgto com ano inválido (${_pp}) — confira a data antes de salvar.</span>`;
+      return;
+    }
+  }
   r.prev_pgto=_pp?proxUtil(_pp):null;
   r.valor=parseFloat(document.getElementById('e-v').value)||0;
   // Comissão a abater: só quando a caixinha está ticada, e só uma vez —
@@ -8299,6 +8313,13 @@ function coletaItens(pref,base){
     // Respeita a Prev. Pgto ajustada à mão; só recalcula quando o campo não
     // existe (modal do OCR) ou está vazio.
     const ppRaw=itemGet(it,'prev')||itemPrev(forma,base.retorno||'',dp);
+    // Mesma trava do saveEdit: um ano absurdo aqui (campo de data nativo
+    // truncando o ano digitado, por ex.) cria um "vencido" fantasma com
+    // milhares de dias de atraso.
+    if(ppRaw){
+      const anoPP=+ppRaw.slice(0,4), anoAtual=new Date().getFullYear();
+      if(anoPP<anoAtual-10||anoPP>anoAtual+10)return{erro:`Prev. Pgto do lançamento ${i+1} com ano inválido (${ppRaw}) — confira a data.`};
+    }
     recs.push({...base,
       tipo,forma,
       valor:vEf,
