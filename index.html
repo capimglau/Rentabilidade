@@ -1752,10 +1752,12 @@ html[data-theme="dark"] .res-ctrls .rc-sel:hover {
 }
 
 /* ─── RECEBIMENTOS DE HOJE (janela no Resumo) ─── */
-.receb-hoje { background: linear-gradient(165deg, rgba(31,95,168,.06) 0%, #ffffff 70%); border: 1px solid var(--blue-mid); border-radius: var(--rl); padding: 14px 16px; margin-bottom: 27px; box-shadow: var(--card-shadow); cursor: pointer; transition: box-shadow .15s, transform .15s, border-color .15s; }   /* 16px + 70% */
-.receb-hoje:hover { box-shadow: 0 6px 24px rgba(31,95,168,.16); transform: translateY(-1px); border-color: var(--blue); }
+/* Mesmo fundo neutro dos 4 painéis do topo (.mc) — só o texto (rh-sub,
+   rh-foot) leva a cor azul/vermelha, o cartão em si não fica tingido. */
+.receb-hoje { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); border: 1px solid rgba(255,255,255,.65); border-radius: var(--rl); padding: 14px 16px; margin-bottom: 27px; box-shadow: var(--card-shadow); cursor: pointer; transition: box-shadow .15s, transform .15s, border-color .15s; }   /* 16px + 70% */
+.receb-hoje:hover { box-shadow: 0 4px 22px rgba(0,0,0,.12); transform: translateY(-1px); }
 .receb-hoje:active { transform: translateY(0); }
-html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(91,155,213,.16) 0%, var(--card) 70%); border-color: rgba(91,155,213,.30); }
+html[data-theme="dark"] .receb-hoje { background: rgba(30,39,56,.85); border-color: rgba(255,255,255,.08); }
 .rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 11px; letter-spacing: -.01em; }
 .rh-sub { font-size: 12px; color: var(--blue); font-weight: 700; }
 .rh-list { display: flex; flex-direction: column; gap: 6px; }
@@ -1777,8 +1779,8 @@ html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(9
 .rh-venc-chip:hover { background: rgba(191,37,24,.16); border-color: var(--red); }
 html[data-theme="dark"] .rh-venc-chip { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
 /* Modo "vencidos" (quando não há recebimentos hoje) */
-.receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(191,37,24,.06) 0%, #ffffff 70%); border-color: rgba(191,37,24,.35); }
-html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(255,107,107,.16) 0%, var(--card) 70%); border-color: rgba(255,107,107,.30); }
+.receb-hoje.modo-venc { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); border-color: rgba(255,255,255,.65); }
+html[data-theme="dark"] .receb-hoje.modo-venc { background: rgba(30,39,56,.85); border-color: rgba(255,255,255,.08); }
 .receb-hoje.modo-venc .rh-sub, .receb-hoje.modo-venc .rh-foot { color: var(--red); }
 @media (max-width: 680px) {
   .rh-item { grid-template-columns: auto 1fr auto; gap: 9px; }
@@ -5539,6 +5541,37 @@ function rhItemHtml(r,cls){
     <span class="rh-val">${fR(r.saldo)}</span>
   </div></div>`;
 }
+// Agrupa por cliente (empresa), preservando a ordem de chegada (mesma ordem
+// de vencimento já aplicada antes de chamar). Uma empresa com mais de um
+// lançamento vira uma linha só, somada — nos cards de vencidos/hoje, ver
+// "quem" pesa mais que "qual placa".
+function agruparPorCliente(recs){
+  const g={};
+  const ordem=[];
+  recs.forEach(r=>{
+    const k=r.cliente||'—';
+    if(!g[k]){g[k]={cliente:k,recs:[],total:0};ordem.push(k);}
+    g[k].recs.push(r);
+    g[k].total+=fN(r.saldo);
+  });
+  return ordem.map(k=>g[k]);
+}
+// Uma linha de preview: item único usa o rhItemHtml normal (com swipe pra
+// Baixar/Reverter/Editar/Excluir); mais de um lançamento da mesma empresa
+// vira uma linha resumida (sem swipe — não dá pra agir num lançamento só a
+// partir de uma linha somada).
+function rhGroupHtml(grp,cls){
+  if(grp.recs.length===1) return rhItemHtml(grp.recs[0],cls);
+  const donos=[...new Set(grp.recs.map(r=>r.dono||''))];
+  const dono=donos.length===1?donos[0]:'';
+  const col=DC[dono]||'#888';
+  return `<div class="pcard rh-item rh-item-merged ${cls}">
+    <span class="placa">${grp.recs.length}×</span>
+    <span class="rh-cli">${esc(grp.cliente||'—')}</span>
+    <span class="rh-dono">${dono?`<span class="ddot" style="background:${col}"></span>${esc(dono)}`:''}</span>
+    <span class="rh-val">${fR(grp.total)}</span>
+  </div>`;
+}
 function renderRecebHoje(){
   const el=document.getElementById('recebHoje'); if(!el) return;
   const hoje=td();
@@ -5573,23 +5606,25 @@ function renderRecebHoje(){
     // dos lançamentos daquele dia, nunca um lançamento solto aparecendo em
     // cima sem o total que dá contexto a ele.
     const CAP=4;
-    let shown=0;
+    let shownRows=0, shownRecs=0;
     const gruposHtml=[];
     for(const [d,o] of listaDias){
-      if(shown>=CAP)break;
-      const itensDia=o.itens.slice(0,CAP-shown);
-      shown+=itensDia.length;
+      if(shownRows>=CAP)break;
+      // Empresa com mais de um lançamento no dia vira uma linha só, somada.
+      const gruposCliente=agruparPorCliente(o.itens).slice(0,CAP-shownRows);
+      shownRows+=gruposCliente.length;
+      shownRecs+=gruposCliente.reduce((a,g)=>a+g.recs.length,0);
       gruposHtml.push(`<div class="vc-day-group">
         <div class="vc-day-total" title="${o.n} lançamento(s) vencido(s) em ${d==='—'?'sem data':fmtD(d)}">
           <b>${d==='—'?'sem data':fmtD(d)}</b>${d==='—'?'':`<small>${dias(d)}d</small>`}<em>${fR(o.v)}</em>
         </div>
-        <div class="rh-list">${itensDia.map(r=>rhItemHtml(r,'venc')).join('')}</div>
+        <div class="rh-list">${gruposCliente.map(g=>rhGroupHtml(g,'venc')).join('')}</div>
       </div>`);
     }
     cardVenc=`<div class="receb-hoje modo-venc vc-resumo" role="button" tabindex="0" onclick="irVencidos()" title="Ver todos os vencidos">
       <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">${vencidos.length} · ${fR(totVenc)}</span></div>
       <div class="vc-dias-grupos" onclick="event.stopPropagation()">${gruposHtml.join('')}</div>
-      <div class="rh-foot">${vencidos.length>shown?`+${vencidos.length-shown} • `:''}Ver todos os vencidos ›</div>
+      <div class="rh-foot">${vencidos.length>shownRecs?`+${vencidos.length-shownRecs} • `:''}Ver todos os vencidos ›</div>
     </div>`;
   } else {
     cardVenc=`<div class="receb-hoje modo-venc rh-vazio">
@@ -5610,11 +5645,13 @@ function renderRecebHoje(){
   let cardHoje;
   if(itemsHoje.length){
     const totHoje=itemsHoje.reduce((a,r)=>a+fN(r.saldo),0);
-    const preview=itemsHoje.slice(0,4);
+    // Empresa com mais de um lançamento hoje vira uma linha só, somada.
+    const preview=agruparPorCliente(itemsHoje).slice(0,4);
+    const previewRecs=preview.reduce((a,g)=>a+g.recs.length,0);
     cardHoje=`<div class="receb-hoje" role="button" tabindex="0" onclick="irHoje()" title="Ver só os recebimentos de hoje">
       <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">${itemsHoje.length} · ${fR(totHoje)}</span></div>
-      <div class="rh-list" onclick="event.stopPropagation()">${preview.map(r=>rhItemHtml(r,'hoje-card')).join('')}</div>
-      <div class="rh-links">${atalhoHist}<span class="rh-link">${itemsHoje.length>preview.length?`+${itemsHoje.length-preview.length} • `:''}Ver todos os recebimentos ›</span></div>
+      <div class="rh-list" onclick="event.stopPropagation()">${preview.map(g=>rhGroupHtml(g,'hoje-card')).join('')}</div>
+      <div class="rh-links">${atalhoHist}<span class="rh-link">${itemsHoje.length>previewRecs?`+${itemsHoje.length-previewRecs} • `:''}Ver todos os recebimentos ›</span></div>
     </div>`;
   } else {
     cardHoje=`<div class="receb-hoje rh-vazio">
