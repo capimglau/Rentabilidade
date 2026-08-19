@@ -1494,23 +1494,26 @@ body.tip-pinned::before {
   .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 52px; border-radius: 9px; }
 }
 /* Coluna "Acumulado", só no PC — depois de "Sem.": soma Recebido ou A
-   receber (toggle acima da grade) semana a semana. No mobile a célula já
-   é estreita demais pras 6 colunas de sempre; uma 7ª some (display:none —
-   nem entra na grade, então as 6 de sempre continuam do jeito que eram). */
-.rc-cal-wrap .cal-acc, .rc-cal-wrap .cal-hd.cal-acc-hd, .rc-cal-wrap .cal-acc-toggle { display: none; }
+   receber (toggle na linha de cima, ao lado do seletor de tipo — ver
+   .rc-cal-topbar-right/.cal-acc-toggle) semana a semana. No mobile a
+   célula já é estreita demais pras 6 colunas de sempre; uma 7ª some
+   (display:none — nem entra na grade, então as 6 de sempre continuam do
+   jeito que eram). */
+.rc-cal-wrap .cal-acc, .rc-cal-wrap .cal-hd.cal-acc-hd { display: none; }
+.rc-cal-topbar .cal-acc-toggle { display: none; }
 @media (min-width: 761px) {
   .rc-cal-wrap .cal-grid { grid-template-columns: repeat(5, 1fr) minmax(64px, .85fr) minmax(100px, 1.3fr); }
-  .rc-cal-wrap .cal-acc-toggle { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; margin-bottom: 10px; }
-  .rc-cal-wrap .cal-acc-toggle button {
+  .rc-cal-topbar .cal-acc-toggle { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
+  .rc-cal-topbar .cal-acc-toggle button {
     border: none; background: none; font: inherit; font-size: 11.5px; font-weight: 700;
     color: var(--ink3); padding: 6px 13px; border-radius: 999px; cursor: pointer;
     display: inline-flex; align-items: center; gap: 6px;
   }
-  .rc-cal-wrap .cal-acc-toggle button i { width: 7px; height: 7px; border-radius: 2px; background: currentColor; opacity: .55; }
-  .rc-cal-wrap .cal-acc-toggle button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-  .rc-cal-wrap .cal-acc-toggle button.on i { opacity: 1; }
-  .rc-cal-wrap .cal-acc-toggle button:first-child.on { color: var(--green); }
-  .rc-cal-wrap .cal-acc-toggle button:last-child.on { color: var(--amber); }
+  .rc-cal-topbar .cal-acc-toggle button i { width: 7px; height: 7px; border-radius: 2px; background: currentColor; opacity: .55; }
+  .rc-cal-topbar .cal-acc-toggle button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .rc-cal-topbar .cal-acc-toggle button.on i { opacity: 1; }
+  .rc-cal-topbar .cal-acc-toggle button:first-child.on { color: var(--green); }
+  .rc-cal-topbar .cal-acc-toggle button:last-child.on { color: var(--amber); }
   .rc-cal-wrap .cal-acc, .rc-cal-wrap .cal-hd.cal-acc-hd { display: flex; }
   .rc-cal-wrap .cal-hd.cal-acc-hd { display: block; }
   .rc-cal-wrap .cal-acc {
@@ -1528,6 +1531,10 @@ body.tip-pinned::before {
    enxutas que antes, porque o valor aqui é o "R$" por extenso (fR), não
    abreviado (calFRk); sem encolher, "R$ 6.003,47" cortaria demais. */
 .rc-cal-wrap .cal-hd { font-size: 11px; }
+/* Só os dias da semana (Seg-Sex) em negrito leve — "Sem." e "Acumulado"
+   ficam no peso padrão do .cal-hd (700, mais forte), pra não competir com
+   o rótulo dos dias. */
+.rc-cal-wrap .cal-hd-dow { font-weight: 600; }
 .rc-cal-wrap .cal-cell .cal-num { font-size: 11px; }
 .rc-cal-wrap .cal-cell .cal-val { font-size: 12.5px; }
 .rc-cal-wrap .cal-cell .cal-mix-item { font-size: 9.5px; }
@@ -5934,13 +5941,9 @@ function renderRecCalGridHtml(){
     (porDia[dia]=porDia[dia]||[]).push(r);
   });
 
-  const accToggle=`<div class="cal-acc-toggle">
-    <button type="button" class="${calAccMetric==='rec'?'on':''}" onclick="setCalAccMetric('rec')"><i></i>Recebido</button>
-    <button type="button" class="${calAccMetric==='pend'?'on':''}" onclick="setCalAccMetric('pend')"><i></i>A receber</button>
-  </div>`;
   const DIAS_PT=['SEG','TER','QUA','QUI','SEX'];
   const lastDay=new Date(y,m,0).getDate();
-  let head=DIAS_PT.map(d=>`<div class="cal-hd">${d}</div>`).join('')+'<div class="cal-hd">Sem.</div><div class="cal-hd cal-acc-hd">Acumulado</div>';
+  let head=DIAS_PT.map(d=>`<div class="cal-hd cal-hd-dow">${d}</div>`).join('')+'<div class="cal-hd">Sem.</div><div class="cal-hd cal-acc-hd">Acumulado</div>';
   let cell='', weekTot=0, weekRec=0, weekPend=0, weekHas=false, weekCol=0, accTot=0;
   const flushWeek=()=>{
     while(weekCol<5){ cell+='<div class="cal-cell cal-blank"></div>'; weekCol++; }
@@ -5988,7 +5991,7 @@ function renderRecCalGridHtml(){
     if(weekCol===5){ flushWeek(); }
     if(d===lastDay&&weekCol>0){ flushWeek(); }
   }
-  return `${accToggle}<div class="cal-grid">${head}${cell}</div>`;
+  return `<div class="cal-grid">${head}${cell}</div>`;
 }
 // Uma linha por cliente no detalhe do dia: total pendente (com botão
 // "Baixar tudo" — baixa em lote, de uma vez só) e total já recebido (só
@@ -6173,7 +6176,11 @@ function renderRecebHoje(){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     </button>
   </div>`;
-  const topbarRightHtml=`<div class="rc-cal-topbar-right">${tipoCalSelectHtml()}</div>`;
+  const accToggleHtml=`<div class="cal-acc-toggle">
+    <button type="button" class="${calAccMetric==='rec'?'on':''}" onclick="setCalAccMetric('rec')"><i></i>Recebido</button>
+    <button type="button" class="${calAccMetric==='pend'?'on':''}" onclick="setCalAccMetric('pend')"><i></i>A receber</button>
+  </div>`;
+  const topbarRightHtml=`<div class="rc-cal-topbar-right">${accToggleHtml}${tipoCalSelectHtml()}</div>`;
   el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${topbarRightHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-lista"><div class="g2 rh-dupla">${cardVenc}${cardHoje}</div></div>
