@@ -4901,7 +4901,7 @@ function stTag(r){
   if(isPago(r)) return`<span class="st-baixado">✓ Baixado</span>`;
   if(isVenc(r)) return`<span class="st-vencido">⚠ ${isParcial(r)?'Parcial vencido':'Vencido'}</span>`;
   if(isParcial(r)) return`<span class="st-parcial">◐ Parcial</span>`;
-  return`<span class="st-previsto">◷ ${r.prev_pgto||'—'}</span>`;
+  return`<span class="st-previsto">◷ ${fD(r.prev_pgto)}</span>`;
 }
 function fmtData(d){
   if(!d||d==='Sem data') return 'Sem data';
@@ -5203,7 +5203,7 @@ function dayHeaderHtml(dia,n,totalHtml){
   const tag=isHoje?`<span class="day-tag hoje">HOJE</span>`:isVencDia?`<span class="day-tag venc">VENCIDO</span>`:'';
   return `<div class="day-header" onclick="toggleDay(this)">
       <div class="day-weekday">${semData?'':WD[new Date(dia+'T12:00:00').getDay()]}</div>
-      <div class="day-title ${titCls}">${semData?'Sem data':dia.slice(8)+'/'+dia.slice(5,7)}</div>
+      <div class="day-title ${titCls}">${semData?'Sem data':dia.slice(8)+'/'+dia.slice(5,7)+'/'+dia.slice(2,4)}</div>
       ${tag}
       <span class="day-count">${n}</span>
       ${totalHtml}
@@ -5628,10 +5628,6 @@ function renderRecebHoje(){
   // vez de o painel inteiro sumir, senão passa a impressão de que a tela
   // não carregou.
   const dias=d=>Math.round((new Date(hoje+'T12:00:00')-new Date(d+'T12:00:00'))/86400000);
-  // Só omite o ano quando é o ano corrente — um vencimento com ano errado
-  // (dado corrompido) precisa aparecer completo, senão "13/09" parece um
-  // vencimento futuro normal quando na verdade é de um ano muito antigo.
-  const fmtD=d=>{const[y,m,dd]=d.split('-');return y===hoje.slice(0,4)?`${dd}/${m}`:`${dd}/${m}/${y}`;};
 
   // ── Esquerda: vencidos, em resumo (quem, quanto, de quando) ──
   let cardVenc;
@@ -5655,8 +5651,8 @@ function renderRecebHoje(){
       shownRows+=gruposCliente.length;
       shownRecs+=gruposCliente.reduce((a,g)=>a+g.recs.length,0);
       gruposHtml.push(`<div class="vc-day-group">
-        <div class="vc-day-total" title="${o.n} lançamento(s) vencido(s) em ${d==='—'?'sem data':fmtD(d)}">
-          <b>${d==='—'?'sem data':fmtD(d)}</b>${d==='—'?'':`<small>${dias(d)}d</small>`}<em>${fR(o.v)}</em>
+        <div class="vc-day-total" title="${o.n} lançamento(s) vencido(s) em ${d==='—'?'sem data':fD(d)}">
+          <b>${d==='—'?'sem data':fD(d)}</b>${d==='—'?'':`<small>${dias(d)}d</small>`}<em>${fR(o.v)}</em>
         </div>
         <div class="rh-list">${gruposCliente.map(g=>rhGroupHtml(g,'venc')).join('')}</div>
       </div>`);
@@ -5857,7 +5853,7 @@ function diasAteVenc(d){
   return Math.round((new Date(d+'T12:00:00')-new Date(td()+'T12:00:00'))/86400000);
 }
 function ddmm(d){ if(!d)return null; const[,mm,dd]=d.split('-'); return dd+'/'+mm; }
-function ddmmyyyy(d){ if(!d)return null; const[yy,mm,dd]=d.split('-'); return dd+'/'+mm+'/'+yy; }
+function ddmmyyyy(d){ if(!d)return null; const[yy,mm,dd]=d.split('-'); return dd+'/'+mm+'/'+yy.slice(2); }
 // Um boleto físico é emitido por PLACA + VENCIMENTO, não por lançamento: um
 // contrato com Locação + Avarias no mesmo carro, vencendo no mesmo dia, é UM
 // boleto só, de valor somado — não dois. Cada lançamento continua separado
@@ -6897,13 +6893,13 @@ function openEdit(idx){
       <span class="tag tag-forma">${fFormaLabel(r.forma)}</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:13px">
-      <div><span style="color:var(--ink3)">Saída</span> <strong>${r.saida||'—'}</strong></div>
-      <div><span style="color:var(--ink3)">Retorno</span> <strong>${r.retorno||'—'}</strong></div>
+      <div><span style="color:var(--ink3)">Saída</span> <strong>${fD(r.saida)}</strong></div>
+      <div><span style="color:var(--ink3)">Retorno</span> <strong>${fD(r.retorno)}</strong></div>
       <div><span style="color:var(--ink3)">Valor</span> <strong>${fR(r.valor)}</strong></div>
       <div><span style="color:var(--ink3)">Pago</span> <strong style="color:var(--green)">${fR(r.valor_pago)}</strong></div>
       <div><span style="color:var(--ink3)">Saldo</span> <strong style="color:${fN(r.saldo)>0?'var(--red)':'var(--green)'}">${fR(r.saldo)}</strong></div>
-      <div><span style="color:var(--ink3)">Data pagamento</span> <strong>${r.data_pagamento?fD(r.data_pagamento):'—'}</strong></div>
-      <div><span style="color:var(--ink3)">Prev. Pgto</span> <strong style="color:var(--red)">${r.prev_pgto||'—'}</strong></div>
+      <div><span style="color:var(--ink3)">Data pagamento</span> <strong>${fD(r.data_pagamento)}</strong></div>
+      <div><span style="color:var(--ink3)">Prev. Pgto</span> <strong style="color:var(--red)">${fD(r.prev_pgto)}</strong></div>
     </div>
     ${r.obs?`<div style="margin-top:8px;font-size:12px;color:var(--ink3)">Ref: ${esc(r.obs)}</div>`:''}
   `;
@@ -8506,9 +8502,9 @@ function rNovos(){
   document.getElementById('novosBody').innerHTML=NOVOS.map((r,i)=>`<tr>
     <td><span class="placa">${r.placa}</span></td><td>${r.dono}</td><td>${r.cliente}</td>
     <td style="font-size:12px">${r.tipo||'—'}</td>
-    <td style="font-size:12px">${r.saida||'—'}</td>
+    <td style="font-size:12px">${fD(r.saida)}</td>
     <td class="nr">${fR(r.valor)}</td><td><span class="tag tag-forma">${fFormaLabel(r.forma)}</span></td>
-    <td style="font-size:12px">${r.prev_pgto||'—'}</td>
+    <td style="font-size:12px">${fD(r.prev_pgto)}</td>
     <td><button class="btn btn-xs" style="color:var(--red)" onclick="if(excluirLancamento(DATA.length+${i}))rNovos()">✕</button></td>
   </tr>`).join('');
 }
@@ -8842,8 +8838,8 @@ function renderXlsPreview(headers,ci){
       <td style="font-size:11px">${r.dono}</td>
       <td>${r.cliente||'—'}</td>
       <td style="font-size:11px">${r.tipo}</td>
-      <td style="font-size:11px">${r.saida||'—'}</td>
-      <td style="font-size:11px">${r.retorno||'—'}</td>
+      <td style="font-size:11px">${fD(r.saida)}</td>
+      <td style="font-size:11px">${fD(r.retorno)}</td>
       <td style="font-size:11px">${r.forma||'—'}</td>
       <td class="nr">${fR(r.valor)}</td>
       <td>${r._dup?`<span style="color:var(--amber);font-size:11px">⚠ ${r._dupFile?'dup arquivo':'já existe'}</span>`:r.valor_pago>0?'<span style="color:var(--blue);font-size:11px">✓ baixado</span>':'<span style="color:var(--green);font-size:11px">✓</span>'}</td>
