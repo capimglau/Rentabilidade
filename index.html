@@ -1374,11 +1374,15 @@ body.tip-pinned::before {
 .vc-day-total b { font-weight: 700; color: var(--ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
 .vc-day-total small { color: var(--ink3); font-size: 10.5px; }
 .vc-day-total em { font-style: normal; font-weight: 700; color: var(--amber); font-size: 11px; }
-/* Seletor Lista/Calendário do card de vencidos/hoje — reaproveita o pill
-   toggle do Faturamento por categoria (.fr-basistoggle). Só existe (some
-   via CSS) no PC, onde as duas vistas ficam lado a lado sempre. */
+/* Seletor Calendário/Lista do card de vencidos/hoje — reaproveita o pill
+   toggle do Faturamento por categoria (.fr-basistoggle), mas com ícones em
+   vez de texto. Só existe (some via CSS) no PC, onde as duas vistas ficam
+   lado a lado sempre. */
 .rc-view-toggle { width: 100%; box-sizing: border-box; margin: 0 0 14px; }
 .rc-view-toggle button { flex: 1; }
+.rc-view-toggle-ico { width: auto; display: inline-flex; }
+.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 12px; }
+.rc-view-toggle-ico svg { width: 18px; height: 18px; }
 /* Mobile: só a vista ativa (lista OU calendário) fica visível por vez. */
 .rc-side-by-side { margin-bottom: 27px; }
 .rc-block { display: none; }
@@ -4757,9 +4761,9 @@ let mcLocCycleTimer = null;
 let mcLocCycleList = [];
 let mcLocCycleIdx = 0;
 
-// Card de vencidos/hoje do Resumo: alterna entre a lista (padrão) e o
-// calendário semanal (Seg-Sex) com todos os lançamentos pendentes do mês.
-let recebViewMode = 'lista';
+// Card de vencidos/hoje do Resumo: alterna entre o calendário semanal
+// (Seg-Sex, padrão) e a lista com todos os lançamentos pendentes do mês.
+let recebViewMode = 'cal';
 function setRecebView(mode){
   if(recebViewMode===mode)return;
   recebViewMode=mode;
@@ -5807,9 +5811,13 @@ function renderRecebHoje(){
   // No mobile o seletor alterna entre as duas vistas (só uma por vez); no
   // PC (>=761px) as duas ficam lado a lado sempre, o seletor some (CSS) e
   // as duas divs ficam visíveis ao mesmo tempo.
-  const toggleHtml=`<div class="fr-basistoggle rc-view-toggle">
-    <button type="button" class="${recebViewMode==='lista'?'on':''}" onclick="setRecebView('lista')">Lista</button>
-    <button type="button" class="${recebViewMode==='cal'?'on':''}" onclick="setRecebView('cal')">Calendário</button>
+  const toggleHtml=`<div class="fr-basistoggle rc-view-toggle rc-view-toggle-ico">
+    <button type="button" class="${recebViewMode==='cal'?'on':''}" onclick="setRecebView('cal')" title="Calendário" aria-label="Calendário">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </button>
+    <button type="button" class="${recebViewMode==='lista'?'on':''}" onclick="setRecebView('lista')" title="Lista" aria-label="Lista">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    </button>
   </div>`;
   el.innerHTML=`${toggleHtml}
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
