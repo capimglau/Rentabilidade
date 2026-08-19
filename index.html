@@ -1396,6 +1396,17 @@ body.tip-pinned::before {
    Vencido pisca vermelho; quem vence hoje pisca verde (por cima do laranja
    padrão de "a receber" do .cal-pend); futuro fica sem fundo (cal-pend já
    não preenche) até ser recebido — some sozinho da grade quando baixado. */
+/* Seletor de tipo (Locação, Avarias, Multas…) filtrando só o calendário —
+   fica no canto direito, acima da grade. */
+.rc-cal-hd-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.rc-cal-tipo-sel {
+  font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink2);
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 999px;
+  padding: 6px 26px 6px 12px; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
+}
 /* Células mais baixas que o calendário do "Previsto do mês" (que é mais
    largo) — deixa as células mais quadradas aqui, onde a coluna é estreita. */
 .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 82px; border-radius: 16px; }
@@ -4817,6 +4828,13 @@ function setRecebView(mode){
   recebViewMode=mode;
   renderRecebHoje();
 }
+// Filtro por tipo de lançamento (Locação, Avarias, Multas…) só do
+// calendário do card de vencidos/hoje — não mexe na lista ao lado.
+let selTipoCal = '';
+function setTipoCal(t){
+  selTipoCal=t;
+  renderRecebHoje();
+}
 
 // Estado do mês principal — sempre abre no mês atual (data local, não UTC:
 // perto da virada do mês o toISOString() do td() já estaria no mês seguinte).
@@ -5727,7 +5745,7 @@ function renderRecCalGridHtml(){
   const hoje=td();
   const mes=curMes;
   const [y,m]=mes.split('-').map(Number);
-  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(mes));
+  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&(r.prev_pgto||'').startsWith(mes));
   const dmap={};
   rows.forEach(r=>{
     const dia=(r.prev_pgto||'').slice(0,10); if(!dia)return;
@@ -5885,7 +5903,15 @@ function renderRecebHoje(){
   el.innerHTML=`${toggleHtml}
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-lista"><div class="g2 rh-dupla">${cardVenc}${cardHoje}</div></div>
-      <div class="rc-block rc-block-cal"><div class="rc-cal-wrap">${renderRecCalGridHtml()}</div></div>
+      <div class="rc-block rc-block-cal">
+        <div class="rc-cal-hd-row">
+          <select class="rc-cal-tipo-sel" onchange="setTipoCal(this.value)">
+            <option value=""${selTipoCal===''?' selected':''}>Todos os tipos</option>
+            ${LANC_TIPOS.map(t=>`<option value="${escHtml(t)}"${selTipoCal===t?' selected':''}>${escHtml(t)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="rc-cal-wrap">${renderRecCalGridHtml()}</div>
+      </div>
     </div>`;
 }
 
