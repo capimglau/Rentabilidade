@@ -1425,7 +1425,7 @@ body.tip-pinned::before {
    (Locação, Avarias, Multas…) à direita — sempre na mesma linha, mesmo
    quando o toggle some no PC (o seletor de tipo continua à direita). */
 .rc-cal-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.rc-cal-tipo-sel { margin-left: auto; }
+.rc-cal-topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .rc-cal-tipo-sel {
   font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink2);
   background: var(--card); border: 1.5px solid var(--line); border-radius: 999px;
@@ -1433,6 +1433,52 @@ body.tip-pinned::before {
   appearance: none; -webkit-appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
   background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
+}
+/* Ícone de ampliar, ao lado do seletor de tipo — abre o calendário em tela
+   cheia numa aba/janela NOVA (?painel=calendario, ver MODO_CAL_FULL), sem
+   mexer no layout desta página. */
+.rc-cal-expand-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; flex: 0 0 auto;
+  border: 1.5px solid var(--line); border-radius: 999px;
+  background: var(--card); color: var(--ink3); cursor: pointer;
+}
+.rc-cal-expand-btn:hover { color: var(--ink); border-color: var(--ink3); }
+.rc-cal-expand-btn svg { width: 15px; height: 15px; }
+/* Página do calendário em tela cheia (#calFullPage) — só existe pra ser
+   vista na janela aberta com "?painel=calendario" (MODO_CAL_FULL esconde
+   todo o resto do app via body.modo-cal-full, mesma ideia do modo-boletos).
+   Mesma grade (.cal-grid/.cal-cell) do calendário do "Previsto do mês", sem
+   a coluna "Sem." (não faz sentido aqui, com o detalhe completo do dia
+   logo abaixo) e com o detalhe do dia clicado (por cliente, cada
+   lançamento já visível, sem precisar desmembrar) abrindo embaixo. */
+#calFullPage { display: none; }
+body.modo-cal-full #calFullPage {
+  display: flex; flex-direction: column;
+  min-height: 100vh; padding: 20px 24px 40px;
+}
+.cal-full-page-hd { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.cal-full-page-hd .cal-legend { margin-left: auto; }
+.cal-full-body { flex: 1; }
+.cal-full-grid { grid-template-columns: repeat(5, 1fr); }
+.cal-full-day { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.cal-full-day-hd { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.cal-full-day-hd b { font-size: 16px; }
+.cal-full-day-tot { display: flex; gap: 12px; font-size: 13px; font-weight: 700; }
+.cal-full-day-tot .t-rec { color: var(--green); }
+.cal-full-day-tot .t-pend { color: var(--amber); }
+.cal-full-day-hd .btn { padding: 8px 14px; border-radius: 999px; font-size: 12.5px; }
+.cal-full-day-hd .mcl { margin-left: auto; }
+.cal-full-day-list { display: flex; flex-direction: column; gap: 12px; }
+.cal-full-cli { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.cal-full-cli-hd { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.cal-full-cli-nome { font-weight: 700; font-size: 13.5px; }
+.cal-full-cli-pago { color: var(--green); font-size: 12px; font-weight: 600; }
+.cal-full-bulk-pay { margin-left: auto; padding: 6px 12px; font-size: 12px; border-radius: 999px; }
+.cal-cell.cal-full-sel { outline: 2px solid var(--blue); outline-offset: 1px; }
+@media(max-width:760px){
+  .cal-full-day-hd b { font-size: 14px; }
+  .cal-full-cli-nome { font-size: 12.5px; }
 }
 /* Células mais baixas que o calendário do "Previsto do mês" (que é mais
    largo) — deixa as células mais quadradas aqui, onde a coluna é estreita.
@@ -3093,6 +3139,16 @@ body.modo-boletos #page-resumo > * { display: none; }
 body.modo-boletos #page-resumo > #cardBoletos { display: block; }
 body.modo-boletos #btnLinkBoletos { display: none; }
 
+/* Modo Calendário em tela cheia (ver MODO_CAL_FULL): janela nova aberta pelo
+   ícone de ampliar do calendário de vencidos/hoje do Resumo — mesma ideia do
+   modo-boletos, escondendo o resto do app (header, menu, páginas) e
+   deixando só o calendário (#calFullPage, CSS acima) na tela. */
+body.modo-cal-full { padding-left: 0 !important; padding-bottom: 0 !important; }
+body.modo-cal-full #mainDock { display: none !important; }
+body.modo-cal-full #offBanner { display: none !important; }
+body.modo-cal-full .header { display: none !important; }
+body.modo-cal-full .page { display: none !important; }
+
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css">
 <script id="ds" type="application/json">
@@ -3824,6 +3880,34 @@ body.modo-boletos #btnLinkBoletos { display: none; }
   </div>
 </div>
 
+<!-- CALENDÁRIO EM TELA CHEIA — só aparece nessa janela quando aberta via
+     "?painel=calendario" (ícone de ampliar do calendário de vencidos/hoje,
+     que abre isso numa aba/janela nova — ver MODO_CAL_FULL). Ocupa a janela
+     inteira: sem header, sem menu, sem as outras páginas do app (escondidas
+     via body.modo-cal-full no CSS). -->
+<div class="cal-full-page" id="calFullPage">
+  <div class="cal-full-page-hd">
+    <span>📅 Vencidos / Hoje — calendário</span>
+    <div class="cal-legend">
+      <span title="Recebido"><i style="background:var(--green-soft);border:1.5px solid var(--green)"></i><b class="legend-txt">Recebido</b></span>
+      <span title="A receber"><i style="background:var(--amber-soft);border:1.5px solid var(--amber)"></i><b class="legend-txt">A receber</b></span>
+      <span title="Vencido"><i style="background:var(--red-soft);border:1.5px solid var(--red)"></i><b class="legend-txt">Vencido</b></span>
+      <span title="Recebido + a receber"><i style="background:var(--purple-soft);border:1.5px solid var(--purple)"></i><b class="legend-txt">Recebido + a receber</b></span>
+    </div>
+    <button class="mcl" onclick="window.close()" title="Fechar esta janela">✕</button>
+  </div>
+  <div class="cal-nav">
+    <button class="icon-btn" onclick="calFullNav(-1)" title="Mês anterior">‹</button>
+    <span class="cal-mlbl" id="calFullMesLbl"></span>
+    <button class="icon-btn" onclick="calFullNav(1)" title="Próximo mês">›</button>
+    <div id="calFullTipoSelWrap"></div>
+  </div>
+  <div class="cal-full-body">
+    <div class="cal-grid cal-full-grid" id="calFullGrid"></div>
+    <div class="cal-full-day" id="calFullDay"></div>
+  </div>
+</div>
+
 <!-- ─── MODAL LOGIN / CRIAR CONTA ─── -->
 <div class="overlay" id="mLogin">
   <div class="modal" style="max-width:380px">
@@ -3985,6 +4069,11 @@ const DS = JSON.parse(document.getElementById("ds").textContent);
 // exigiria mudar isso no banco). O que este modo faz é esconder o resto do
 // app da tela: só aparece o painel de Boletos, sem menu, sem outras telas.
 const MODO_BOLETOS = new URLSearchParams(location.search).get('painel')==='boletos';
+// Mesma ideia do MODO_BOLETOS: janela nova aberta pelo ícone de ampliar do
+// calendário de vencidos/hoje (abrirCalendarioResumoFull), só que aqui pra
+// mostrar #calFullPage em vez do painel de Boletos. "mes" (opcional) abre
+// já no mês que a página principal estava mostrando quando o link nasceu.
+const MODO_CAL_FULL = new URLSearchParams(location.search).get('painel')==='calendario';
 function linkBoletos(){
   return location.origin+location.pathname+'?painel=boletos';
 }
@@ -4903,6 +4992,16 @@ let selTipoCal = '';
 function setTipoCal(t){
   selTipoCal=t;
   renderRecebHoje();
+  refreshCalFull();
+}
+// Select de tipo reaproveitado no card do Resumo e no calendário em tela
+// cheia (#calFullPage, janela separada) — os dois refletem o mesmo filtro
+// (selTipoCal), embora cada janela tenha sua própria variável em memória.
+function tipoCalSelectHtml(){
+  return `<select class="rc-cal-tipo-sel" onchange="setTipoCal(this.value)">
+    <option value=""${selTipoCal===''?' selected':''}>Todos os tipos</option>
+    ${LANC_TIPOS.map(t=>`<option value="${escHtml(t)}"${selTipoCal===t?' selected':''}>${escHtml(t)}</option>`).join('')}
+  </select>`;
 }
 
 // Estado do mês principal — sempre abre no mês atual (data local, não UTC:
@@ -5863,6 +5962,191 @@ function renderRecCalGridHtml(){
   return `<div class="cal-grid">${head}${cell}</div>`;
 }
 
+// ── CALENDÁRIO EM TELA CHEIA (ícone de ampliar, ao lado do seletor de
+// tipo) — abre numa aba/janela NOVA (?painel=calendario, MODO_CAL_FULL),
+// sem alterar em nada o layout desta página: só #calFullPage aparece lá,
+// numa grade ocupando a janela toda, com navegação de mês própria
+// (calFullMes). Clicar num dia abre embaixo o detalhe: total do dia,
+// quebrado por cliente (previsto/pendente e recebido), já com cada
+// lançamento individual visível (placa, cliente, valor — sem precisar
+// desmembrar nada) e baixa de todos os lançamentos daquele cliente naquele
+// dia de uma vez só (baixarTudoCliente) ou do dia inteiro (baixarTudoDia).
+let calFullMes = null;
+let calFullDiaSel = null;
+// Abre a janela nova já no mês que a página principal estava mostrando —
+// window.open (não location.href) pra não navegar a aba atual.
+function abrirCalendarioResumoFull(){
+  const url=`${location.pathname}?painel=calendario&mes=${encodeURIComponent(curMes)}`;
+  window.open(url,'_blank');
+}
+function calFullNav(delta){
+  const [y,m] = calFullMes.split('-').map(Number);
+  const dt = new Date(y, m-1+delta, 1);
+  calFullMes = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+  calFullDiaSel = null;
+  renderCalFull();
+}
+function calFullSelDia(dia){
+  calFullDiaSel = (calFullDiaSel===dia) ? null : dia;
+  renderCalFull();
+}
+function calFullFecharDia(){
+  calFullDiaSel = null;
+  renderCalFull();
+}
+function renderCalFull(){
+  const wrap=document.getElementById('calFullTipoSelWrap');
+  if(wrap) wrap.innerHTML=tipoCalSelectHtml();
+  renderCalFullGrid();
+  renderCalFullDayPanel();
+}
+// Repinta o calendário em tela cheia se essa janela for a que está com
+// #calFullPage ativo — chamado de renderAll() e de setTipoCal(), no mesmo
+// espírito de refreshCalPrevisto(), pra uma alteração (baixa, edição,
+// exclusão, sincronização de outro aparelho) não deixar essa janela aberta
+// mostrando dado velho. Na aba principal (MODO_CAL_FULL false) é um no-op.
+function refreshCalFull(){
+  if(!MODO_CAL_FULL)return;
+  renderCalFull();
+}
+function renderCalFullGrid(){
+  const mes=calFullMes;
+  const [y,m]=mes.split('-').map(Number);
+  document.getElementById('calFullMesLbl').textContent=`${MF[m-1]} ${y}`;
+  const DIAS_PT=['SEG','TER','QUA','QUI','SEX'];
+  const hoje=td();
+  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&(r.prev_pgto||'').startsWith(mes));
+  const dmap={};
+  rows.forEach(r=>{
+    const dia=(r.prev_pgto||'').slice(0,10); if(!dia)return;
+    if(!dmap[dia]) dmap[dia]={rec:0,pend:0};
+    if(isPago(r)) dmap[dia].rec+=fN(r.valor_pago);
+    else dmap[dia].pend+=fN(r.saldo);
+  });
+  const lastDay=new Date(y,m,0).getDate();
+  // Sem coluna de total da semana aqui — o detalhe completo do dia clicado
+  // já abre logo abaixo, então o total semanal só ocuparia espaço à toa.
+  let head=DIAS_PT.map(d=>`<div class="cal-hd">${d}</div>`).join('');
+  let cell='', weekCol=0;
+  for(let d=1; d<=lastDay; d++){
+    const dow=new Date(y,m-1,d).getDay();
+    if(dow===0||dow===6)continue;
+    const dia=`${mes}-${String(d).padStart(2,'0')}`;
+    const entry=dmap[dia]||{rec:0,pend:0};
+    const isToday=dia===hoje;
+    const col=dow-1;
+    while(weekCol<col){ cell+='<div class="cal-cell cal-blank"></div>'; weekCol++; }
+    let cls='cal-cell', valHtml='';
+    if(entry.rec>0&&entry.pend>0){
+      const venc=dia<hoje;
+      cls += ' cal-mix'+(venc?' rc-blink':(isToday?' rc-hoje-mov':''));
+      valHtml = `<span class="cal-mix-item rec">${calFRk(entry.rec)}</span><span class="cal-mix-item pend${venc?' venc':''}">${calFRk(entry.pend)}</span>`;
+    } else if(entry.rec>0){
+      cls += ' cal-ok';
+      valHtml = `<span class="cal-val">${calFRk(entry.rec)}</span>`;
+    } else if(entry.pend>0){
+      const venc=dia<hoje;
+      cls += venc?' cal-venc rc-blink':(isToday?' cal-pend rc-hoje-mov':' cal-pend');
+      valHtml = `<span class="cal-val">${calFRk(entry.pend)}</span>`;
+    }
+    if(isToday) cls+=' cal-today';
+    if(dia===calFullDiaSel) cls+=' cal-full-sel';
+    cell += `<div class="${cls}" role="button" tabindex="0" onclick="calFullSelDia('${dia}')" title="${fDM(dia)} · ${fR(entry.rec+entry.pend)}"><div class="cal-num">${d}</div>${valHtml}</div>`;
+    weekCol++;
+    if(weekCol===5){ weekCol=0; }
+  }
+  document.getElementById('calFullGrid').innerHTML = head+cell;
+}
+// Uma linha por cliente no detalhe do dia: total pendente (com botão
+// "Baixar tudo" — baixa em lote, de uma vez só) e total já recebido (só
+// leitura), com CADA lançamento já listado ali embaixo (placa, cliente,
+// valor, com o swipe normal de Baixar/Reverter/Editar/Excluir) — sem
+// esconder nada atrás de um resumo pra desmembrar.
+function calFullClienteHtml(dia,cliente,itensPend,itensPago){
+  const totPend=itensPend.reduce((a,r)=>a+fN(r.saldo),0);
+  const totPago=itensPago.reduce((a,r)=>a+fN(r.valor_pago),0);
+  const bulkBtn = itensPend.length>1
+    ? `<button type="button" class="btn btn-blue cal-full-bulk-pay" onclick="event.stopPropagation();baixarTudoCliente('${dia}',${JSON.stringify(cliente)})" title="Baixar de uma vez todos os lançamentos de ${esc(cliente)} nesse dia">✓ Baixar tudo · ${fR(totPend)}</button>`
+    : '';
+  const itensHtml = itensPend.map(r=>rhItemHtml(r,'')).join('') + itensPago.map(r=>rhItemHtml(r,'t-rec')).join('');
+  return `<div class="cal-full-cli">
+    <div class="cal-full-cli-hd">
+      <span class="cal-full-cli-nome">${esc(cliente)}</span>
+      ${totPago>0?`<span class="cal-full-cli-pago">✓ Recebido ${fR(totPago)}</span>`:''}
+      ${bulkBtn}
+    </div>
+    <div class="rh-list">${itensHtml}</div>
+  </div>`;
+}
+function renderCalFullDayPanel(){
+  const wrap=document.getElementById('calFullDay'); if(!wrap) return;
+  const dia=calFullDiaSel;
+  if(!dia){ wrap.innerHTML=''; return; }
+  const rows=allD().filter(r=>(r.prev_pgto||'').slice(0,10)===dia&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal));
+  const totPend=rows.filter(r=>!isPago(r)).reduce((a,r)=>a+fN(r.saldo),0);
+  const totPago=rows.filter(isPago).reduce((a,r)=>a+fN(r.valor_pago),0);
+  if(!rows.length){
+    wrap.innerHTML=`<div class="cal-full-day-hd"><b>${fDM(dia)}</b><button class="mcl" onclick="calFullFecharDia()">✕</button></div><div class="rh-nada">Nada nesse dia.</div>`;
+    return;
+  }
+  const porCliente={}, ordem=[];
+  rows.forEach(r=>{
+    const k=r.cliente||'—';
+    if(!porCliente[k]){ porCliente[k]={pend:[],pago:[]}; ordem.push(k); }
+    (isPago(r)?porCliente[k].pago:porCliente[k].pend).push(r);
+  });
+  const bulkDiaBtn = totPend>0
+    ? `<button type="button" class="btn btn-blue" onclick="baixarTudoDia('${dia}')" title="Baixar de uma vez todos os lançamentos pendentes desse dia">✓ Baixar tudo do dia · ${fR(totPend)}</button>`
+    : '';
+  const corpo=ordem.map(k=>calFullClienteHtml(dia,k,porCliente[k].pend,porCliente[k].pago)).join('');
+  wrap.innerHTML=`<div class="cal-full-day-hd">
+      <b>${fDM(dia)}</b>
+      <span class="cal-full-day-tot">${totPago>0?`<span class="t-rec">Recebido ${fR(totPago)}</span>`:''}${totPend>0?`<span class="t-pend">A receber ${fR(totPend)}</span>`:''}</span>
+      ${bulkDiaBtn}
+      <button class="mcl" onclick="calFullFecharDia()">✕</button>
+    </div>
+    <div class="cal-full-day-list">${corpo}</div>`;
+}
+// Baixa em lote — grava valor_pago=saldo/saldo=0/data_pagamento=hoje em
+// cada lançamento pendente do filtro (cliente+dia, ou o dia inteiro),
+// exatamente como uma baixa total individual (mesma lógica de
+// confirmarParcial), só que em vários lançamentos de uma vez. dbUpdate por
+// item (persiste no banco) + renderAll() no final, com "Desfazer" restaurando
+// o estado anterior de cada um — mesmo padrão de confirmarParcial/swDo.
+function _baixarLoteConfirmado(alvos,label){
+  if(!alvos.length) return;
+  const hoje=td();
+  const prevs=alvos.map(r=>({r,valor_pago:r.valor_pago,saldo:r.saldo,data_pagamento:r.data_pagamento}));
+  const totalVal=alvos.reduce((a,r)=>a+fN(r.saldo),0);
+  alvos.forEach(r=>{
+    r.valor_pago=fN(r.valor_pago)+fN(r.saldo);
+    r.saldo=0;
+    r.data_pagamento=hoje;
+    dbUpdate(r);
+  });
+  renderAll();
+  showToast(`✓ ${label}: ${fR(totalVal)} baixado (${alvos.length} lançamento${alvos.length>1?'s':''})`,'Desfazer',()=>{
+    prevs.forEach(({r,valor_pago,saldo,data_pagamento})=>{
+      r.valor_pago=valor_pago; r.saldo=saldo; r.data_pagamento=data_pagamento;
+      dbUpdate(r);
+    });
+    renderAll();
+    showToast('Baixa em lote desfeita');
+  });
+}
+function baixarTudoCliente(dia,cliente){
+  const alvos=allD().filter(r=>(r.prev_pgto||'').slice(0,10)===dia&&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  if(!alvos.length) return;
+  if(!confirm(`Confirmar a baixa de ${alvos.length} lançamento(s) de ${cliente} em ${fDM(dia)} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
+  _baixarLoteConfirmado(alvos,cliente);
+}
+function baixarTudoDia(dia){
+  const alvos=allD().filter(r=>(r.prev_pgto||'').slice(0,10)===dia&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  if(!alvos.length) return;
+  if(!confirm(`Confirmar a baixa de TODOS os ${alvos.length} lançamento(s) pendentes de ${fDM(dia)} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
+  _baixarLoteConfirmado(alvos,fDM(dia));
+}
+
 function renderRecebHoje(){
   const el=document.getElementById('recebHoje'); if(!el) return;
   const hoje=td();
@@ -5963,11 +6247,11 @@ function renderRecebHoje(){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     </button>
   </div>`;
-  const tipoSelectHtml=`<select class="rc-cal-tipo-sel" onchange="setTipoCal(this.value)">
-    <option value=""${selTipoCal===''?' selected':''}>Todos os tipos</option>
-    ${LANC_TIPOS.map(t=>`<option value="${escHtml(t)}"${selTipoCal===t?' selected':''}>${escHtml(t)}</option>`).join('')}
-  </select>`;
-  el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${tipoSelectHtml}</div>
+  const expandBtnHtml=`<button type="button" class="rc-cal-expand-btn" onclick="abrirCalendarioResumoFull()" title="Ampliar calendário em tela cheia" aria-label="Ampliar calendário">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+  </button>`;
+  const topbarRightHtml=`<div class="rc-cal-topbar-right">${tipoCalSelectHtml()}${expandBtnHtml}</div>`;
+  el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${topbarRightHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-lista"><div class="g2 rh-dupla">${cardVenc}${cardHoje}</div></div>
       <div class="rc-block rc-block-cal">
@@ -9394,6 +9678,7 @@ function renderAll(){
   else if(curPage==='auditoria')renderAuditoria();
   refreshMSearch();
   refreshCalPrevisto();
+  refreshCalFull();
 }
 function go(id){
   // Modo Boletos: só existe "resumo" nessa tela. Reforço, não a proteção em
@@ -9505,7 +9790,15 @@ async function boot(){
   updateMesLabel();
   buildResumoFilters();
   buildBaixasFilters();
-  if(MODO_BOLETOS){
+  if(MODO_CAL_FULL){
+    // Janela nova do calendário ampliado: sem menu, sem outras telas — só
+    // #calFullPage (CSS de body.modo-cal-full), já no mês que a página que
+    // abriu essa janela estava mostrando (query "mes"), senão o mês atual.
+    document.body.classList.add('modo-cal-full');
+    const qMes=new URLSearchParams(location.search).get('mes');
+    calFullMes=(qMes&&/^\d{4}-\d{2}$/.test(qMes))?qMes:curMes;
+    renderCalFull();
+  } else if(MODO_BOLETOS){
     // Link restrito: sempre Resumo, painel já aberto, sem lembrar a última
     // aba visitada (isso é sobre o app inteiro; aqui só existe uma tela).
     document.body.classList.add('modo-boletos');
