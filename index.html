@@ -429,7 +429,7 @@ body::before {
 .mc-sub { font-size: 11.5px; color: var(--ink3); margin-top: 6px; }
 /* Card de Locação por proprietário: alterna o dono exibido dentro do mesmo
    espaço do card (crossfade), em vez de listar todos de uma vez. */
-.mc-cycle-stage { position: relative; min-height: 39px; }
+.mc-cycle-stage { position: relative; min-height: 66px; }
 .mc-cycle-slide {
   position: absolute; inset: 0 0 auto 0;
   opacity: 0; transform: translateY(5px);
@@ -6281,14 +6281,17 @@ function renderResumo(){
   // espaço — clicar abre o proprietário que está em tela no momento.
   mcLocCycleList=locPorDonoMes();
   if(mcLocCycleIdx>=mcLocCycleList.length)mcLocCycleIdx=0;
+  // Cada "slide" traz o nome do proprietário no lugar do rótulo fixo (era
+  // "Locação · mês") — só o nome muda de card pra card, o valor e a
+  // legenda "Locação · mês" ficam por baixo, dentro do próprio slide.
   const locSlides=mcLocCycleList.length
-    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-value">${fR(o.v)}</div><div class="mc-sub">${esc(o.dono)}</div></div>`).join('')
-    : `<div class="mc-cycle-slide on"><div class="mc-value">—</div><div class="mc-sub">Sem locação no mês</div></div>`;
+    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label">${esc(o.dono)}</div><div class="mc-value">${fR(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
+    : `<div class="mc-cycle-slide on"><div class="mc-label">—</div><div class="mc-value">R$ 0,00</div><div class="mc-sub">Sem locação no mês</div></div>`;
   document.getElementById('res-m').innerHTML=`
     <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Total previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Total recebido · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
     <div class="mc amber" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>
-    <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="abrirDonoCicloAtual()" title="Locação do mês por proprietário — clique pra abrir o proprietário em tela"><div class="mc-label">Locação · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-cycle-stage">${locSlides}</div></div>
+    <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="abrirDonoCicloAtual()" title="Locação do mês por proprietário — clique pra abrir o proprietário em tela"><div class="mc-cycle-stage">${locSlides}</div></div>
   `;
   clearInterval(mcLocCycleTimer);
   if(mcLocCycleList.length>1){
@@ -6297,7 +6300,7 @@ function renderResumo(){
       const stage=document.querySelector('#mc-loc-cycle .mc-cycle-stage');
       if(!stage){clearInterval(mcLocCycleTimer);return;}
       stage.querySelectorAll('.mc-cycle-slide').forEach((el,i)=>el.classList.toggle('on',i===mcLocCycleIdx));
-    },3200);
+    },4000);
   }
   renderRecebHoje(inad,vencVal);
   // Seletor de ano dos gráficos mensais
