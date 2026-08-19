@@ -1418,7 +1418,11 @@ body.tip-pinned::before {
   background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
 }
 /* Células mais baixas que o calendário do "Previsto do mês" (que é mais
-   largo) — deixa as células mais quadradas aqui, onde a coluna é estreita. */
+   largo) — deixa as células mais quadradas aqui, onde a coluna é estreita.
+   A coluna "Sem." usa a mesma largura das demais (em vez do minmax mais
+   largo do .cal-grid base) — senão fica um retângulo destoando das
+   células quadradas dos dias, em vez de alinhada com elas. */
+.rc-cal-wrap .cal-grid { grid-template-columns: repeat(6, 1fr); }
 .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 75px; border-radius: 11px; }
 @media(max-width:760px){
   .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 52px; border-radius: 9px; }
