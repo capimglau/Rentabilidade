@@ -356,7 +356,7 @@
         li.innerHTML =
           `<span class="sb3d-legend-sq" style="background:${s.color}"></span>` +
           `<span class="sb3d-legend-nm">${s.key}</span>` +
-          `<span class="sb3d-legend-right"><span class="sb3d-legend-pct">${s.pct.toFixed(s.pct < 10 ? 1 : 0)}%</span><span class="sb3d-legend-val">${s.valueLabel != null ? s.valueLabel : s.value}</span></span>` +
+          `<span class="sb3d-legend-right"><span class="sb3d-legend-val">${s.valueLabel != null ? s.valueLabel : s.value}</span></span>` +
           `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
         if (!s.locked) {
           li.querySelector('.sb3d-legend-sq').addEventListener('click', e => { e.stopPropagation(); this.onToggle(ringId, s.key); });
