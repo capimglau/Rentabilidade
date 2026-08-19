@@ -1427,12 +1427,12 @@ body.tip-pinned::before {
 @media(max-width:760px){
   .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 52px; border-radius: 9px; }
 }
-/* Fontes 1px menores que o calendário do "Previsto do mês". */
-.rc-cal-wrap .cal-hd { font-size: 12px; }
-.rc-cal-wrap .cal-cell .cal-num { font-size: 13px; }
-.rc-cal-wrap .cal-cell .cal-val { font-size: 15px; }
-.rc-cal-wrap .cal-cell .cal-mix-item { font-size: 12px; }
-.rc-cal-wrap .cal-week { font-size: 13px; }
+/* Fontes menores que o calendário do "Previsto do mês". */
+.rc-cal-wrap .cal-hd { font-size: 11px; }
+.rc-cal-wrap .cal-cell .cal-num { font-size: 12px; }
+.rc-cal-wrap .cal-cell .cal-val { font-size: 14px; }
+.rc-cal-wrap .cal-cell .cal-mix-item { font-size: 11px; }
+.rc-cal-wrap .cal-week { font-size: 12px; }
 @media(max-width:760px){
   .rc-cal-wrap .cal-cell .cal-num { font-size: 12px; }
   .rc-cal-wrap .cal-cell .cal-val { font-size: 12px; }
@@ -1909,11 +1909,10 @@ html[data-theme="dark"] .receb-hoje { background: rgba(30,39,56,.85); border-col
    então repetir o fade a cada re-render fazia a lista "piscar" sozinha. */
 .rh-list .pcard { animation: none; }
 .rh-list .swipe { border-radius: 10px; }
-.pcard.rh-item { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; margin-bottom: 0; box-shadow: none; font-size: 13px; color: var(--ink); }
+.pcard.rh-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; margin-bottom: 0; box-shadow: none; font-size: 13px; color: var(--ink); }
 .rh-list .swipe-act { width: 40px; }
 .rh-list .swipe-act .ic { font-size: 15px; }
 .rh-cli { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rh-dono { font-size: 11.5px; color: var(--ink3); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .rh-val { font-weight: 700; color: var(--red); white-space: nowrap; }
 .rh-foot { margin-top: 11px; font-size: 12.5px; font-weight: 700; color: var(--blue); text-align: right; }
 /* Atalho com o total dos vencidos */
@@ -1925,8 +1924,7 @@ html[data-theme="dark"] .rh-venc-chip { border-color: rgba(255,107,107,.30); bac
 html[data-theme="dark"] .receb-hoje.modo-venc { background: rgba(30,39,56,.85); border-color: rgba(255,255,255,.08); }
 .receb-hoje.modo-venc .rh-sub, .receb-hoje.modo-venc .rh-foot { color: var(--red); }
 @media (max-width: 680px) {
-  .rh-item { grid-template-columns: auto 1fr auto; gap: 9px; }
-  .rh-dono { display: none; }
+  .rh-item { gap: 9px; }
 }
 
 /* ─── PREMISSAS PAGE ─── */
@@ -5699,7 +5697,6 @@ function centerResScroll(mShown){
 // automática, então repetir o fade a cada re-render fazia a lista "piscar".
 function rhItemHtml(r,cls){
   const i=allD().indexOf(r);
-  const col=DC[r.dono]||'#888';
   const temPago=fN(r.valor_pago)>0;
   return `<div class="swipe"><div class="swipe-actions">
     <button class="swipe-act pay" onclick="event.stopPropagation();swDo(${i},1)" title="Baixar"><span class="ic">✓</span></button>
@@ -5710,7 +5707,6 @@ function rhItemHtml(r,cls){
   <div class="pcard rh-item ${cls}">
     <span class="placa">${r.placa}</span>
     <span class="rh-cli">${esc(r.cliente||'—')}</span>
-    <span class="rh-dono"><span class="ddot" style="background:${col}"></span>${esc(r.dono||'')}</span>
     <span class="rh-val">${fR(r.saldo)}</span>
   </div></div>`;
 }
@@ -5736,9 +5732,6 @@ function agruparPorCliente(recs){
 // não dá pra agir de uma vez só numa linha somada).
 function rhGroupHtml(grp,cls){
   if(grp.recs.length===1) return rhItemHtml(grp.recs[0],cls);
-  const donos=[...new Set(grp.recs.map(r=>r.dono||''))];
-  const dono=donos.length===1?donos[0]:'';
-  const col=DC[dono]||'#888';
   return `<div class="rh-group-wrap">
     <div class="pcard rh-item rh-item-merged ${cls}" role="button" tabindex="0"
       onclick="event.stopPropagation();this.closest('.rh-group-wrap').classList.add('desmembrado')"
@@ -5746,7 +5739,6 @@ function rhGroupHtml(grp,cls){
       title="${grp.recs.length} lançamentos de ${esc(grp.cliente||'—')} — clique pra ver cada um">
       <span class="placa">${grp.recs.length}×</span>
       <span class="rh-cli">${esc(grp.cliente||'—')}</span>
-      <span class="rh-dono">${dono?`<span class="ddot" style="background:${col}"></span>${esc(dono)}`:''}</span>
       <span class="rh-val">${fR(grp.total)}</span>
     </div>
     <div class="rh-group-itens">${grp.recs.map(r=>rhItemHtml(r,cls)).join('')}</div>
