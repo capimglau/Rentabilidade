@@ -2377,7 +2377,7 @@ details[open] summary::before { transform: rotate(90deg); }
     border: .5px solid rgba(0,0,0,.07);
     border-radius: 999px;
     box-shadow: 0 8px 32px rgba(0,0,0,.18);
-    padding: 4px 6px;
+    padding: 3px 6px;
     z-index: 300;
     transform: translateZ(0);
     will-change: transform;
@@ -2405,7 +2405,7 @@ details[open] summary::before { transform: rotate(90deg); }
     align-items: center;
     justify-content: center;
     gap: 3px;
-    padding: 6px 2px;
+    padding: 4px 2px;
     border-radius: 999px;
     font-size: 10px;
     font-weight: 500;
@@ -2604,7 +2604,7 @@ details[open] summary::before { transform: rotate(90deg); }
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: rgba(255,255,255,.4);
+    background: rgba(255,255,255,.15);
     -webkit-backdrop-filter: blur(28px) saturate(190%);
     backdrop-filter: blur(28px) saturate(190%);
     /* Camada própria de composição: sem isso, o Safari no iPhone às vezes
@@ -2932,7 +2932,7 @@ html[data-theme="dark"] .ntab.on { color: var(--blue); background: rgba(255,255,
 /* Dark + mobile: dock translúcido sem o "drift" do iOS (blur no ::before) */
 @media (max-width: 760px) {
   html[data-theme="dark"] .nav-tabs { background: transparent; }
-  html[data-theme="dark"] .nav-tabs::before { background: rgba(24,33,52,.4); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
+  html[data-theme="dark"] .nav-tabs::before { background: rgba(24,33,52,.15); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
 }
 html[data-theme="dark"] .stat-pill { background: var(--surface2); }
 html[data-theme="dark"] .owner-select-wrap { background-color: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }
