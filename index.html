@@ -5333,7 +5333,7 @@ function renderBaixas(){
           </div>
           ${(r.data_pagamento||r.obs)?`<div class="pcard-info-row">
             ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
-            ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝 ${esc(r.obs)}</span>`:''}
+            ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝&nbsp;${esc(r.obs)}</span>`:''}
           </div>`:''}
           <div class="pcard-meta">
             <span class="pcard-period">🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
@@ -7344,7 +7344,7 @@ function lcCardHtml(r,gi,fecharBusca){
         </div>
         ${(r.data_pagamento||r.obs)?`<div class="pcard-info-row">
           ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
-          ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝 ${esc(r.obs)}</span>`:''}
+          ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝&nbsp;${esc(r.obs)}</span>`:''}
         </div>`:''}
         <div class="pcard-meta">
           <span>🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
@@ -7461,7 +7461,7 @@ function lcCardConsultaHtml(r){
           ${tipTag(r.tipo)}
           <span class="tag tag-forma">${fFormaLabel(r.forma)}</span>
         </div>
-        ${r.obs?`<div class="pcard-info-row"><span class="pcard-obs" title="${esc(r.obs)}">📝 ${esc(r.obs)}</span></div>`:''}
+        ${r.obs?`<div class="pcard-info-row"><span class="pcard-obs" title="${esc(r.obs)}">📝&nbsp;${esc(r.obs)}</span></div>`:''}
         <div class="pcard-meta">
           <span>🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
           <span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r.prev_pgto)}</b></span>
