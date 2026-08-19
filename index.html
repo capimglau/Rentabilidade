@@ -1357,6 +1357,12 @@ body.tip-pinned::before {
 .vc-dia b { color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
 .vc-dia small { color: var(--ink3); font-size: 10.5px; }
 .vc-chip em { font-style: normal; font-weight: 700; color: var(--red); }
+.vc-dias-grupos { display: flex; flex-direction: column; gap: 12px; margin: 2px 0 9px; }
+.vc-day-group { display: flex; flex-direction: column; gap: 6px; }
+.vc-day-total { display: flex; align-items: baseline; gap: 7px; padding: 0 2px; }
+.vc-day-total b { font-weight: 700; color: var(--ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.vc-day-total small { color: var(--ink3); font-size: 10.5px; }
+.vc-day-total em { font-style: normal; font-weight: 700; color: var(--red); margin-left: auto; }
 .vc-datas { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; color: var(--ink3); }
 /* Os dois cartões lado a lado: mesma altura, sem margem dupla entre eles. */
 .rh-dupla { margin-bottom: 27px; align-items: stretch; }   /* 16px + 70% */
@@ -5562,17 +5568,29 @@ function renderRecebHoje(){
     // é o que diz o tamanho do atraso e a ordem em que se cobra. Antes era por
     // proprietário, que não responde "de quando é esse dinheiro".
     const porDia={};
-    vencidos.forEach(r=>{const d=r.prev_pgto||'—';const o=porDia[d]||(porDia[d]={n:0,v:0});o.n++;o.v+=fN(r.saldo);});
+    vencidos.forEach(r=>{const d=r.prev_pgto||'—';const o=porDia[d]||(porDia[d]={n:0,v:0,itens:[]});o.n++;o.v+=fN(r.saldo);o.itens.push(r);porDia[d]=o;});
     const listaDias=Object.entries(porDia).sort((a,b)=>a[0].localeCompare(b[0]));
-    const previewVenc=vencidos.slice(0,4);
+    // Preview agrupada por dia: o total do dia (data + valor) sempre vem antes
+    // dos lançamentos daquele dia, nunca um lançamento solto aparecendo em
+    // cima sem o total que dá contexto a ele.
+    const CAP=4;
+    let shown=0;
+    const gruposHtml=[];
+    for(const [d,o] of listaDias){
+      if(shown>=CAP)break;
+      const itensDia=o.itens.slice(0,CAP-shown);
+      shown+=itensDia.length;
+      gruposHtml.push(`<div class="vc-day-group">
+        <div class="vc-day-total" title="${o.n} lançamento(s) vencido(s) em ${d==='—'?'sem data':fmtD(d)}">
+          <b>${d==='—'?'sem data':fmtD(d)}</b>${d==='—'?'':`<small>${dias(d)}d</small>`}<em>${fR(o.v)}</em>
+        </div>
+        <div class="rh-list">${itensDia.map(r=>rhItemHtml(r,'venc')).join('')}</div>
+      </div>`);
+    }
     cardVenc=`<div class="receb-hoje modo-venc vc-resumo" role="button" tabindex="0" onclick="irVencidos()" title="Ver todos os vencidos">
       <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">${vencidos.length} · ${fR(totVenc)}</span></div>
-      <div class="vc-donos">${listaDias.map(([d,o])=>
-        `<span class="vc-chip vc-dia" title="${o.n} lançamento(s) vencido(s) em ${d==='—'?'sem data':fmtD(d)}">
-          <b>${d==='—'?'sem data':fmtD(d)}</b>${d==='—'?'':`<small>${dias(d)}d</small>`}<em>${fRk(o.v)}</em>
-        </span>`).join('')}</div>
-      <div class="rh-list" onclick="event.stopPropagation()">${previewVenc.map(r=>rhItemHtml(r,'venc')).join('')}</div>
-      <div class="rh-foot">${vencidos.length>previewVenc.length?`+${vencidos.length-previewVenc.length} • `:''}Ver todos os vencidos ›</div>
+      <div class="vc-dias-grupos" onclick="event.stopPropagation()">${gruposHtml.join('')}</div>
+      <div class="rh-foot">${vencidos.length>shown?`+${vencidos.length-shown} • `:''}Ver todos os vencidos ›</div>
     </div>`;
   } else {
     cardVenc=`<div class="receb-hoje modo-venc rh-vazio">
