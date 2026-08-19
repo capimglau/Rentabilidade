@@ -431,22 +431,27 @@ body::before {
 .mc.purple .mc-value { color: var(--purple); }
 .mc-sub { font-size: 11.5px; color: var(--ink3); margin-top: 6px; }
 /* Card de Locação por proprietário: alterna o dono exibido dentro do mesmo
-   espaço do card (crossfade), em vez de listar todos de uma vez. */
-.mc-cycle-stage { position: relative; min-height: 66px; }
-/* Some primeiro (fade-out) pra só depois o próximo aparecer (fade-in) —
-   um crossfade simultâneo deixava os dois textos sobrepostos e ilegíveis
-   por um instante (nome/valor de um dono por cima do outro). */
+   espaço do card, um saindo de lado (esquerda) enquanto o próximo entra do
+   lado oposto (direita) — efeito de esteira/carrossel, em vez de listar
+   todos de uma vez. */
+.mc-cycle-stage { position: relative; min-height: 66px; overflow: hidden; }
+/* Repouso: fora de vista à direita, pronto pra entrar quando for a vez
+   dele. .out (saindo) empurra mais pra esquerda que o centro — depois que
+   a transição termina, o JS devolve o slide pro repouso (.reset, sem
+   transition) sem que isso apareça, já que a opacidade já está em 0. */
 .mc-cycle-slide {
   position: absolute; inset: 0 0 auto 0;
-  opacity: 0; transform: translateY(5px);
-  transition: opacity .5s ease, transform .5s ease;
-  transition-delay: 0s;
+  opacity: 0; transform: translateX(22px);
+  transition: opacity .4s ease, transform .4s ease;
   pointer-events: none;
 }
 .mc-cycle-slide.on {
-  opacity: 1; transform: translateY(0); pointer-events: auto;
-  transition-delay: .5s;
+  opacity: 1; transform: translateX(0); pointer-events: auto;
 }
+.mc-cycle-slide.out {
+  opacity: 0; transform: translateX(-22px);
+}
+.mc-cycle-slide.reset { transition: none; }
 @media (prefers-reduced-motion: reduce) {
   .mc-cycle-slide { transition: opacity .01ms; transform: none; }
 }
@@ -6570,10 +6575,24 @@ function renderResumo(){
   clearInterval(mcLocCycleTimer);
   if(mcLocCycleList.length>1){
     mcLocCycleTimer=setInterval(()=>{
-      mcLocCycleIdx=(mcLocCycleIdx+1)%mcLocCycleList.length;
       const stage=document.querySelector('#mc-loc-cycle .mc-cycle-stage');
       if(!stage){clearInterval(mcLocCycleTimer);return;}
-      stage.querySelectorAll('.mc-cycle-slide').forEach((el,i)=>el.classList.toggle('on',i===mcLocCycleIdx));
+      const slides=[...stage.querySelectorAll('.mc-cycle-slide')];
+      const prevEl=slides[mcLocCycleIdx];
+      mcLocCycleIdx=(mcLocCycleIdx+1)%mcLocCycleList.length;
+      // O que estava em cena sai pela esquerda; o próximo entra pela
+      // direita (repouso padrão) rumo ao centro — mesma direção pros dois,
+      // como uma esteira.
+      prevEl?.classList.remove('on');
+      prevEl?.classList.add('out');
+      slides[mcLocCycleIdx]?.classList.add('on');
+      setTimeout(()=>{
+        if(!prevEl)return;
+        prevEl.classList.add('reset');
+        prevEl.classList.remove('out');
+        void prevEl.offsetWidth;               // força o reflow antes de reativar a transition
+        requestAnimationFrame(()=>prevEl.classList.remove('reset'));
+      },420);
     },5000);
   }
   renderRecebHoje();
