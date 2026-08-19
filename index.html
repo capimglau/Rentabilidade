@@ -1493,11 +1493,18 @@ body.tip-pinned::before {
 .rc-cal-wrap .cal-cell .cal-val { font-size: 12.5px; }
 .rc-cal-wrap .cal-cell .cal-mix-item { font-size: 9.5px; }
 .rc-cal-wrap .cal-week { font-size: 12px; }
+/* Valor por extenso (.cal-v-full) no desktop; no mobile o valor volta a
+   ser abreviado (.cal-v-curto, calFRk — "6,0k") — célula estreita demais
+   pro "R$" por extenso, e como o texto é mais curto a fonte pode crescer
+   de novo. */
+.rc-cal-wrap .cal-v-curto { display: none; }
 @media(max-width:760px){
-  .rc-cal-wrap .cal-cell .cal-num { font-size: 10px; }
-  .rc-cal-wrap .cal-cell .cal-val { font-size: 10.5px; }
-  .rc-cal-wrap .cal-cell .cal-mix-item { font-size: 8.5px; }
+  .rc-cal-wrap .cal-cell .cal-num { font-size: 12px; }
+  .rc-cal-wrap .cal-cell .cal-val { font-size: 12px; }
+  .rc-cal-wrap .cal-cell .cal-mix-item { font-size: 10px; }
   .rc-cal-wrap .cal-week { font-size: 10px; }
+  .rc-cal-wrap .cal-v-full { display: none; }
+  .rc-cal-wrap .cal-v-curto { display: inline; }
 }
 /* Dia com pago + vencido misturados: a parte pendente fica vermelha (não
    âmbar), já que também está atrasada — não é só "a receber" normal. */
@@ -5888,6 +5895,12 @@ function rhGroupHtml(grp,cls){
 // conteúdo). Clicar no dia abre esse mesmo detalhe numa aba/janela NOVA
 // (abrirDiaJanela/MODO_CAL_DIA), com baixa em lote (por cliente ou do dia
 // inteiro) — sem sair nem alterar o layout desta página.
+// Valor por extenso no desktop, abreviado no mobile (mesmo truque de
+// .v-full/.v-curto já usado noutros lugares do app — o CSS escolhe qual
+// aparece, ver .rc-cal-wrap .cal-v-full/.cal-v-curto): na tela cheia sobra
+// espaço pro "R$" por extenso, mas no mobile as células são estreitas
+// demais e o valor cheio cortaria/empurraria o layout.
+const calValDuplo = v => `<b class="cal-v-full">${fR(v)}</b><b class="cal-v-curto">${calFRk(v)}</b>`;
 function renderRecCalGridHtml(){
   const hoje=td();
   const mes=curMes;
@@ -5906,7 +5919,7 @@ function renderRecCalGridHtml(){
   const flushWeek=()=>{
     while(weekCol<5){ cell+='<div class="cal-cell cal-blank"></div>'; weekCol++; }
     cell += weekHas
-      ? `<div class="cal-week cal-has">${fR(weekTot)}</div>`
+      ? `<div class="cal-week cal-has">${calValDuplo(weekTot)}</div>`
       : `<div class="cal-week">—</div>`;
     weekTot=0; weekHas=false; weekCol=0;
   };
@@ -5927,16 +5940,16 @@ function renderRecCalGridHtml(){
       const venc=dia<hoje;
       cls += ' cal-mix'+(venc?' rc-blink':(isToday?' rc-hoje-mov':''));
       const pendLabel=venc?'Vencido':'A receber';
-      valHtml = `<span class="cal-mix-item rec" title="Recebido ${fR(rec)}">${fR(rec)}</span>`+
-                `<span class="cal-mix-item pend${venc?' venc':''}" title="${pendLabel} ${fR(pend)}">${fR(pend)}</span>`;
+      valHtml = `<span class="cal-mix-item rec" title="Recebido ${fR(rec)}">${calValDuplo(rec)}</span>`+
+                `<span class="cal-mix-item pend${venc?' venc':''}" title="${pendLabel} ${fR(pend)}">${calValDuplo(pend)}</span>`;
     } else if(rec>0){
       cls += ' cal-ok';
-      valHtml=`<span class="cal-val" title="Recebido ${fR(rec)}">${fR(rec)}</span>`;
+      valHtml=`<span class="cal-val" title="Recebido ${fR(rec)}">${calValDuplo(rec)}</span>`;
     } else if(pend>0){
       const venc=dia<hoje;
       cls += venc?' cal-venc rc-blink':(isToday?' cal-pend rc-hoje-mov':' cal-pend');
       const label=venc?'Vencido':(isToday?'Vence hoje':'A receber');
-      valHtml=`<span class="cal-val" title="${label} ${fR(pend)}">${fR(pend)}</span>`;
+      valHtml=`<span class="cal-val" title="${label} ${fR(pend)}">${calValDuplo(pend)}</span>`;
     }
     if(isToday) cls+=' cal-today';
     const clickAttr = hasMov ? ` role="button" tabindex="0" onclick="abrirDiaJanela('${dia}')" title="Clique pra abrir ${fDM(dia)} numa janela nova"` : '';
