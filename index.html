@@ -2428,12 +2428,13 @@ details[open] summary::before { transform: rotate(90deg); }
   .mrow .mc-value { font-size: 15px; letter-spacing: -.03em; }
   .mrow .mc-sub { font-size: 8.5px; margin-top: 4px; }
   /* Os cards que cyclam (Locação, A receber/Atrasado) reservam um
-     min-height fixo pro texto não pular durante a troca. Precisa de folga
-     de sobra — com fonte grande de acessibilidade do sistema (Ajustes >
-     Tela e Brilho > Texto Maior, no iOS) o texto ocupa bem mais espaço do
-     que o normal, e como o conteúdo é position:absolute (não conta pro
-     tamanho do card), o que sobra do min-height é o único limite. */
-  .mc-cycle-stage { min-height: 72px; }
+     min-height só pra bater com a altura natural dos cards estáticos
+     (Previsto/Recebido) — não precisa de folga extra pra fonte grande de
+     acessibilidade: como o slide agora trava com inset:0 no stage, se o
+     texto precisar de mais espaço o card cresce sozinho pra acomodar (não
+     corta nem vaza) — ver o fix do vazamento mais acima. Um min-height
+     maior que o necessário só sobra como espaço morto embaixo do texto. */
+  .mc-cycle-stage { min-height: 52px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (vencidos/hoje/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
