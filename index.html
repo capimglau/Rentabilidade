@@ -1377,8 +1377,9 @@ body.tip-pinned::before {
 /* Seletor Calendário/Lista do card de vencidos/hoje — reaproveita o pill
    toggle do Faturamento por categoria (.fr-basistoggle), mas com ícones em
    vez de texto. Só existe (some via CSS) no PC, onde as duas vistas ficam
-   lado a lado sempre. */
-.rc-view-toggle { width: 100%; box-sizing: border-box; margin: 0 0 14px; }
+   lado a lado sempre. Fica na mesma linha do seletor de tipo, à esquerda
+   (o de tipo fica à direita — ver .rc-cal-topbar). */
+.rc-view-toggle { width: auto; box-sizing: border-box; margin: 0; flex: 0 0 auto; }
 .rc-view-toggle button { flex: 1; }
 .rc-view-toggle-ico { width: auto; display: inline-flex; }
 .rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 12px; }
@@ -1396,9 +1397,11 @@ body.tip-pinned::before {
    Vencido pisca vermelho; quem vence hoje pisca verde (por cima do laranja
    padrão de "a receber" do .cal-pend); futuro fica sem fundo (cal-pend já
    não preenche) até ser recebido — some sozinho da grade quando baixado. */
-/* Seletor de tipo (Locação, Avarias, Multas…) filtrando só o calendário —
-   fica no canto direito, acima da grade. */
-.rc-cal-hd-row { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+/* Barra de topo: seletor Lista/Calendário à esquerda, seletor de tipo
+   (Locação, Avarias, Multas…) à direita — sempre na mesma linha, mesmo
+   quando o toggle some no PC (o seletor de tipo continua à direita). */
+.rc-cal-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.rc-cal-tipo-sel { margin-left: auto; }
 .rc-cal-tipo-sel {
   font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink2);
   background: var(--card); border: 1.5px solid var(--line); border-radius: 999px;
@@ -5754,7 +5757,7 @@ function renderRecCalGridHtml(){
     else dmap[dia].pend+=fN(r.saldo);
   });
 
-  const DIAS_PT=['S','T','Q','Q','S'];
+  const DIAS_PT=['SEG','TER','QUA','QUI','SEX'];
   const lastDay=new Date(y,m,0).getDate();
   let head=DIAS_PT.map(d=>`<div class="cal-hd">${d}</div>`).join('')+'<div class="cal-hd">Sem.</div>';
   let cell='', weekTot=0, weekHas=false, weekCol=0;
@@ -5900,16 +5903,14 @@ function renderRecebHoje(){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
     </button>
   </div>`;
-  el.innerHTML=`${toggleHtml}
+  const tipoSelectHtml=`<select class="rc-cal-tipo-sel" onchange="setTipoCal(this.value)">
+    <option value=""${selTipoCal===''?' selected':''}>Todos os tipos</option>
+    ${LANC_TIPOS.map(t=>`<option value="${escHtml(t)}"${selTipoCal===t?' selected':''}>${escHtml(t)}</option>`).join('')}
+  </select>`;
+  el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${tipoSelectHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-lista"><div class="g2 rh-dupla">${cardVenc}${cardHoje}</div></div>
       <div class="rc-block rc-block-cal">
-        <div class="rc-cal-hd-row">
-          <select class="rc-cal-tipo-sel" onchange="setTipoCal(this.value)">
-            <option value=""${selTipoCal===''?' selected':''}>Todos os tipos</option>
-            ${LANC_TIPOS.map(t=>`<option value="${escHtml(t)}"${selTipoCal===t?' selected':''}>${escHtml(t)}</option>`).join('')}
-          </select>
-        </div>
         <div class="rc-cal-wrap">${renderRecCalGridHtml()}</div>
       </div>
     </div>`;
