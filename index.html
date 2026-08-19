@@ -1485,6 +1485,10 @@ body.tip-pinned::before {
   .rc-view-toggle.fr-basistoggle { display: none; }
   .rc-side-by-side { display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; align-items: start; }
   .rc-block { display: block; }
+  /* No PC o seletor de tipo (acima do calendário) some do fluxo dos cartões
+     de vencidos/hoje — sobra um vão grande entre o resumo do topo e esse
+     bloco. Sobe tudo (seletor + os dois lados) um pouco pra fechar o vão. */
+  #res-m { margin-bottom: 26px; }
   /* A coluna da lista fica mais estreita que a tela toda (é só ~1.15fr do
      grid) — o .g2 padrão (2 colunas a partir de 961px de VIEWPORT) ficaria
      apertado aqui. Empilha vencidos+hoje dentro da coluna até ter espaço de
