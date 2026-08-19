@@ -1429,9 +1429,11 @@ body.tip-pinned::before {
 .rc-cal-wrap .cal-cell.cal-ok { border-color: color-mix(in srgb, var(--green) 45%, transparent); }
 .rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
 .rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--purple) 45%, transparent); }
-/* Fundo vermelho (vencido) e verde (vence hoje) também um pouco mais
-   escuros que o padrão do app, no mesmo espírito do fundo dos recebidos. */
+/* Fundo vermelho (vencido), verde (vence hoje) e roxo (misto) também um
+   pouco mais escuros que o padrão do app, no mesmo espírito do fundo dos
+   recebidos — mesmo padrão de borda+fundo pra todos os estados coloridos. */
 .rc-cal-wrap .cal-cell.cal-venc { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
+.rc-cal-wrap .cal-cell.cal-mix { background: color-mix(in srgb, var(--purple-soft) 78%, var(--purple) 22%); }
 @keyframes rcBlinkRed {
   0%, 100% { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
   50% { background: transparent; }
