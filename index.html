@@ -1366,8 +1366,8 @@ body.tip-pinned::before {
 .vc-dias-grupos { display: flex; flex-direction: column; gap: 12px; margin: 2px 0 9px; }
 .vc-day-group { display: flex; flex-direction: column; gap: 6px; }
 .vc-day-total { display: flex; align-items: baseline; gap: 7px; padding: 0 2px; }
-.vc-day-total b { font-weight: 700; color: var(--ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
-.vc-day-total small { color: var(--ink3); font-size: 10.5px; }
+.vc-day-total b { font-weight: 700; color: var(--ink); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.vc-day-total small { color: var(--ink3); font-size: 11.5px; }
 .vc-day-total em { font-style: normal; font-weight: 700; color: var(--amber); font-size: 11px; }
 /* Os dois cartões lado a lado: mesma altura, sem margem dupla entre eles. */
 .rh-dupla { margin-bottom: 27px; align-items: stretch; }   /* 16px + 70% */
@@ -1375,9 +1375,9 @@ body.tip-pinned::before {
 .rh-dupla .rh-foot { margin-top: auto; padding-top: 11px; }
 .receb-hoje.rh-vazio { cursor: default; opacity: .72; }
 .receb-hoje.rh-vazio:hover { box-shadow: var(--card-shadow); transform: none; }
-.rh-nada { font-size: 12.5px; color: var(--ink3); }
+.rh-nada { font-size: 13.5px; color: var(--ink3); }
 .rh-links { display: flex; gap: 14px; justify-content: flex-end; margin-top: 11px; }
-.rh-link { font-size: 12.5px; font-weight: 700; color: var(--blue); cursor: pointer; }
+.rh-link { font-size: 13.5px; font-weight: 700; color: var(--blue); cursor: pointer; }
 .rh-link:hover { text-decoration: underline; }
 .vc-datas b { color: var(--red); font-weight: 700; }
 .rb-l { font-size: 12.5px; width: auto; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; padding: 0; margin-right: 12px; }
@@ -1756,7 +1756,7 @@ html[data-theme="dark"] .res-ctrls .rc-sel:hover {
 .receb-hoje:hover { box-shadow: 0 6px 24px rgba(31,95,168,.16); transform: translateY(-1px); border-color: var(--blue); }
 .receb-hoje:active { transform: translateY(0); }
 html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(91,155,213,.16) 0%, var(--card) 70%); border-color: rgba(91,155,213,.30); }
-.rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 11px; letter-spacing: -.01em; }
+.rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; margin-bottom: 11px; letter-spacing: -.01em; }
 .rh-sub { font-size: 12px; color: var(--blue); font-weight: 700; }
 .rh-list { display: flex; flex-direction: column; gap: 6px; }
 /* Itens de preview dos cards de vencidos/hoje na tela inicial: sem a
@@ -1765,22 +1765,20 @@ html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(9
    então repetir o fade a cada re-render fazia a lista "piscar" sozinha. */
 .rh-list .pcard { animation: none; }
 .rh-list .swipe { border-radius: 10px; }
-.pcard.rh-item { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; margin-bottom: 0; box-shadow: none; font-size: 13px; color: var(--ink); }
+.pcard.rh-item { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; margin-bottom: 0; box-shadow: none; font-size: 14px; color: var(--ink); }
 .rh-list .swipe-act { width: 40px; }
 .rh-list .swipe-act .ic { font-size: 15px; }
+.rh-item .placa { font-size: 13px; }
 .rh-cli { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rh-dono { font-size: 11.5px; color: var(--ink3); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-.rh-val { font-weight: 700; color: var(--red); white-space: nowrap; }
-.rh-foot { margin-top: 11px; font-size: 12.5px; font-weight: 700; color: var(--blue); text-align: right; }
+.rh-dono { font-size: 12.5px; color: var(--ink3); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+/* Pinado no tamanho antigo: o container (.pcard.rh-item) subiu de fonte
+   pro texto (cliente), mas o valor em R$ não deve acompanhar. */
+.rh-val { font-size: 13px; font-weight: 700; color: var(--red); white-space: nowrap; }
+.rh-foot { margin-top: 11px; font-size: 13.5px; font-weight: 700; color: var(--blue); text-align: right; }
 /* Atalho com o total dos vencidos */
 .rh-venc-chip { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 11px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s; }
 .rh-venc-chip:hover { background: rgba(191,37,24,.16); border-color: var(--red); }
 html[data-theme="dark"] .rh-venc-chip { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
-/* Inadimplência do mês, dentro do card de vencidos (antes tinha painel
-   próprio no topo do Resumo). */
-.rh-inad { display: inline-flex; align-items: center; gap: 5px; margin: -3px 0 11px; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 11.5px; font-weight: 600; }
-.rh-inad b { font-weight: 800; }
-html[data-theme="dark"] .rh-inad { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
 /* Modo "vencidos" (quando não há recebimentos hoje) */
 .receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(191,37,24,.06) 0%, #ffffff 70%); border-color: rgba(191,37,24,.35); }
 html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(255,107,107,.16) 0%, var(--card) 70%); border-color: rgba(255,107,107,.30); }
@@ -2193,45 +2191,21 @@ details[open] summary::before { transform: rotate(90deg); }
   .logo { margin: 0 6px 0 0; font-size: 17px; }
   .logo-img { height: 22px; flex-shrink: 0; }
   /* Modo compacto: corta a logo pra mostrar só o "a" (marca), sem o texto
-     "AGI Locadora" — abre mais espaço garantido pros valores ao lado. */
+     "AGI Locadora" — abre mais espaço garantido pro mês ao lado. */
   .header.hdr-compact .logo { width: 27px; overflow: hidden; }
-  .month-nav { position: static; transform: none; margin-left: 0; flex-shrink: 0; }
+  /* Calendário (mês) encostado na direita da página — sem os chips de
+     Previsto/Pendente/Recebido (escondidos abaixo) não tem mais nada
+     disputando essa linha com a logo. */
+  .month-nav { position: static; transform: none; margin-left: auto; flex-shrink: 0; }
   /* reset sidebar offsets */
   .header { left: 0 !important; width: 100% !important; }
   .page { margin-left: 0 !important; }
   body { padding-left: 0 !important; }
-  .header-right {
-    display: flex; flex-basis: 100%; margin-left: 0; justify-content: center;
-    align-items: center; gap: 6px; order: 5;
-  }
-  .header-right .stat-pill {
-    display: flex; align-items: baseline; gap: 4px; flex-shrink: 0;
-    padding: 4px 9px; border-radius: 8px;
-  }
-  .header-right .stat-pill .lbl { font-size: 9px; }
-  .header-right .stat-pill .val { font-size: 11.5px; line-height: 1; }
+  /* Linha de Previsto/Pendente/Recebido some no mobile — só cabia numa 2ª
+     linha dedicada, poluindo o topo da tela; os mesmos valores já aparecem
+     nos 4 painéis do Resumo logo abaixo. */
+  .header-right { display: none; }
   .mn-label { min-width: 50px; font-size: 11.5px; }
-
-  /* Ao rolar para baixo, o header entra em modo compacto: o mês some (sai
-     do fluxo — não só encolhe, senão sobra troco de borda/padding
-     suficiente pra estourar a linha e empurrar os valores pra 2ª linha de
-     novo) e os valores (Previsto/Pendente/Recebido) sobem pra 1ª linha, ao
-     lado da logo, no lugar dele. Volta ao normal ao rolar pra cima (mesmo
-     gatilho de scroll que esconde/mostra o dock). */
-  .header .month-nav {
-    transition: opacity .15s ease;
-  }
-  .header.hdr-compact .month-nav {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .header.hdr-compact .header-right {
-    flex-basis: auto;
-    margin-left: auto;
-    justify-content: flex-end;
-    transition: none;
-  }
 
   /* Abas viram barra de navegação fixa embaixo (estilo app) */
   .nav-tabs {
@@ -5568,10 +5542,7 @@ function rhItemHtml(r,cls){
     <span class="rh-val">${fR(r.saldo)}</span>
   </div></div>`;
 }
-// inadMes/vencValMes: inadimplência do mês corrente (vinda de renderResumo,
-// mesmo critério de prev_pgto no curMes) — exibida dentro do card de
-// vencidos em vez de ter painel próprio no topo do Resumo.
-function renderRecebHoje(inadMes,vencValMes){
+function renderRecebHoje(){
   const el=document.getElementById('recebHoje'); if(!el) return;
   const hoje=td();
   // Ordem crescente por vencimento (os mais antigos primeiro, que é a ordem
@@ -5618,10 +5589,8 @@ function renderRecebHoje(inadMes,vencValMes){
         <div class="rh-list">${itensDia.map(r=>rhItemHtml(r,'venc')).join('')}</div>
       </div>`);
     }
-    const inadHtml=inadMes==null?'':`<div class="rh-inad">Inadimplência do mês (${mLabel(curMes)}): <b>${inadMes.toFixed(1)}%</b> · ${fR(vencValMes)} vencido</div>`;
     cardVenc=`<div class="receb-hoje modo-venc vc-resumo" role="button" tabindex="0" onclick="irVencidos()" title="Ver todos os vencidos">
       <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">${vencidos.length} · ${fR(totVenc)}</span></div>
-      ${inadHtml}
       <div class="vc-dias-grupos" onclick="event.stopPropagation()">${gruposHtml.join('')}</div>
       <div class="rh-foot">${vencidos.length>shown?`+${vencidos.length-shown} • `:''}Ver todos os vencidos ›</div>
     </div>`;
@@ -6275,8 +6244,6 @@ function renderResumo(){
   const nL=rows.length, nPend=rows.filter(r=>isPend(r)).length;
   const prevLiq=totP+totS;                       // previsto líquido = recebido + a receber
   const ticket=nL?prevLiq/nL:0;
-  const vencVal=rows.filter(r=>isVenc(r)).reduce((a,r)=>a+fN(r.saldo),0);
-  const inad=prevLiq>0?(vencVal/prevLiq*100):0;
   // Comparativo vs. mês anterior (previsto líquido)
   const baseRows=allD().filter(r=>(!selDono||r.dono===selDono)&&rfMatch(r));
   const bM={};baseRows.forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(m)bM[m]=(bM[m]||0)+liq(r);});
@@ -6311,7 +6278,7 @@ function renderResumo(){
       stage.querySelectorAll('.mc-cycle-slide').forEach((el,i)=>el.classList.toggle('on',i===mcLocCycleIdx));
     },4000);
   }
-  renderRecebHoje(inad,vencVal);
+  renderRecebHoje();
   // Seletor de ano dos gráficos mensais
   {const sel=document.getElementById('rc-ano');
    if(sel){const anos=resAnos();
