@@ -1442,7 +1442,10 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
 .mc-delta.down { color: var(--red); }
 
 /* Resumo: métricas em 3 colunas */
-#res-m { grid-template-columns: repeat(4, 1fr); display: grid; }
+/* +30% na distância até o header (que já dá 20px via .page): 20*1.3=26,
+   então +6px aqui. No mobile o ajuste é outro (ver @media max-width:760px)
+   porque lá o .page já parte de um padding-top menor (16px). */
+#res-m { grid-template-columns: repeat(4, 1fr); display: grid; margin-top: 6px; }
 
 /* Busca global */
 .search-input {
@@ -2275,6 +2278,10 @@ details[open] summary::before { transform: rotate(90deg); }
 
   /* Conteúdo */
   .page { padding: 16px 14px; }
+  /* +30% na distância até o header nesse tamanho: .page dá 16px, +30% =
+     20.8px — soma 4.8px aqui (o #res-m base já tem 6px, calculado pro
+     padding-top de 20px do desktop). */
+  #res-m { margin-top: 4.8px; }
   .mrow, #res-m { grid-template-columns: 1fr 1fr; gap: 12px; }
   .mrow .mc { padding: 16px 14px; border-radius: 16px; }
   .mrow .mc-label { font-size: 8.5px; letter-spacing: .04em; margin-bottom: 5px; }
