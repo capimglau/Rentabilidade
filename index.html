@@ -1761,6 +1761,14 @@ html[data-theme="dark"] .receb-hoje { background: rgba(30,39,56,.85); border-col
 .rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 11px; letter-spacing: -.01em; }
 .rh-sub { font-size: 12px; color: var(--blue); font-weight: 700; }
 .rh-list { display: flex; flex-direction: column; gap: 6px; }
+/* Linha de empresa somada (2+ lançamentos): clicável, mostra a linha
+   agrupada até desmembrar; depois de clicar, some e dá lugar aos
+   lançamentos individuais. */
+.rh-group-wrap { display: contents; }
+.rh-item-merged { cursor: pointer; }
+.rh-group-itens { display: none; flex-direction: column; gap: 6px; }
+.rh-group-wrap.desmembrado .rh-item-merged { display: none; }
+.rh-group-wrap.desmembrado .rh-group-itens { display: flex; }
 /* Itens de preview dos cards de vencidos/hoje na tela inicial: sem a
    animação de entrada (.pcard tem fadeOp) — esses cards são redesenhados a
    cada sincronização automática (realtime do Supabase, ver marcarOffline),
@@ -2464,7 +2472,10 @@ details[open] summary::before { transform: rotate(90deg); }
   /* Só os 4 painéis do topo do Resumo (Total previsto/recebido, A receber,
      Locação) — rótulo e legenda um pouco maiores que o resto do app, sem
      mexer no valor em R$. */
-  #res-m .mc-label { font-size: 11.5px; }
+  /* Letter-spacing menor que o padrão (.08em): no mobile o rótulo é um
+     texto longo ("TOTAL PREVISTO · AGO/26") que estourava pra 2ª linha com
+     a fonte maior + o letter-spacing cheio. */
+  #res-m .mc-label { font-size: 9.5px; letter-spacing: .04em; }
   #res-m .mc-sub { font-size: 12.5px; }
   .pcard { border: none; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .pcard.venc::before { background: #ff3b30; }
@@ -5558,18 +5569,25 @@ function agruparPorCliente(recs){
 }
 // Uma linha de preview: item único usa o rhItemHtml normal (com swipe pra
 // Baixar/Reverter/Editar/Excluir); mais de um lançamento da mesma empresa
-// vira uma linha resumida (sem swipe — não dá pra agir num lançamento só a
-// partir de uma linha somada).
+// vira uma linha resumida e clicável — clicar desmembra, trocando a linha
+// somada pelos lançamentos individuais (cada um com o swipe normal, já que
+// não dá pra agir de uma vez só numa linha somada).
 function rhGroupHtml(grp,cls){
   if(grp.recs.length===1) return rhItemHtml(grp.recs[0],cls);
   const donos=[...new Set(grp.recs.map(r=>r.dono||''))];
   const dono=donos.length===1?donos[0]:'';
   const col=DC[dono]||'#888';
-  return `<div class="pcard rh-item rh-item-merged ${cls}">
-    <span class="placa">${grp.recs.length}×</span>
-    <span class="rh-cli">${esc(grp.cliente||'—')}</span>
-    <span class="rh-dono">${dono?`<span class="ddot" style="background:${col}"></span>${esc(dono)}`:''}</span>
-    <span class="rh-val">${fR(grp.total)}</span>
+  return `<div class="rh-group-wrap">
+    <div class="pcard rh-item rh-item-merged ${cls}" role="button" tabindex="0"
+      onclick="event.stopPropagation();this.closest('.rh-group-wrap').classList.add('desmembrado')"
+      onkeydown="if(event.key==='Enter'){event.stopPropagation();this.closest('.rh-group-wrap').classList.add('desmembrado');}"
+      title="${grp.recs.length} lançamentos de ${esc(grp.cliente||'—')} — clique pra ver cada um">
+      <span class="placa">${grp.recs.length}×</span>
+      <span class="rh-cli">${esc(grp.cliente||'—')}</span>
+      <span class="rh-dono">${dono?`<span class="ddot" style="background:${col}"></span>${esc(dono)}`:''}</span>
+      <span class="rh-val">${fR(grp.total)}</span>
+    </div>
+    <div class="rh-group-itens">${grp.recs.map(r=>rhItemHtml(r,cls)).join('')}</div>
   </div>`;
 }
 function renderRecebHoje(){
