@@ -434,18 +434,22 @@ body::before {
    espaço do card, um saindo de lado (esquerda) enquanto o próximo entra do
    lado oposto (direita) — efeito de esteira/carrossel, em vez de listar
    todos de uma vez. */
-/* translateZ(0) força um compositing layer próprio nesse elemento — sem
-   isso o Safari/iOS tem um bug conhecido de ignorar o overflow:hidden do
-   ancestral quando um descendente tem transform (o texto de baixo do
-   slide "vazava" pra fora do card arredondado, cortando o card mas não
-   o texto). */
-.mc-cycle-stage { position: relative; min-height: 66px; overflow: hidden; transform: translateZ(0); }
+/* No Safari/iOS o overflow:hidden do ancestral às vezes é ignorado
+   enquanto um descendente tem transform ativo (bug conhecido de
+   compositing) — o texto de baixo do slide vazava pra fora do card
+   arredondado. Em vez de depender só do clip do .mc-cycle-stage, o
+   próprio slide também trava em 100% da altura do stage (inset:0 nos
+   4 lados, não só embaixo) e ganha o próprio overflow:hidden — dupla
+   trava, e o cartão inteiro (.mc-cycle) também clipa como reforço. */
+.mc-cycle-stage { position: relative; min-height: 66px; overflow: hidden; }
+.mc.mc-cycle { overflow: hidden; }
 /* Repouso: fora de vista à direita, pronto pra entrar quando for a vez
    dele. .out (saindo) empurra mais pra esquerda que o centro — depois que
    a transição termina, o JS devolve o slide pro repouso (.reset, sem
    transition) sem que isso apareça, já que a opacidade já está em 0. */
 .mc-cycle-slide {
-  position: absolute; inset: 0 0 auto 0;
+  position: absolute; inset: 0;
+  overflow: hidden;
   opacity: 0; transform: translateX(22px);
   transition: opacity .4s ease, transform .4s ease;
   pointer-events: none;
@@ -2423,12 +2427,13 @@ details[open] summary::before { transform: rotate(90deg); }
   .mrow .mc-label { font-size: 7.5px; letter-spacing: .04em; margin-bottom: 5px; }
   .mrow .mc-value { font-size: 15px; letter-spacing: -.03em; }
   .mrow .mc-sub { font-size: 8.5px; margin-top: 4px; }
-  /* O card de Locação cycla entre proprietários (.mc-cycle-stage) e reserva
-     um min-height fixo pro texto não pular durante o crossfade — mas o
-     valor era pensado pra fonte maior de antes. Nesse tamanho ele sobrava
-     e deixava essa linha do grid (com "A receber" do lado) mais alta que a
-     de cima, destoando as duas linhas de painéis. */
-  .mc-cycle-stage { min-height: 56px; }
+  /* Os cards que cyclam (Locação, A receber/Atrasado) reservam um
+     min-height fixo pro texto não pular durante a troca. Precisa de folga
+     de sobra — com fonte grande de acessibilidade do sistema (Ajustes >
+     Tela e Brilho > Texto Maior, no iOS) o texto ocupa bem mais espaço do
+     que o normal, e como o conteúdo é position:absolute (não conta pro
+     tamanho do card), o que sobra do min-height é o único limite. */
+  .mc-cycle-stage { min-height: 72px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (vencidos/hoje/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
@@ -6605,7 +6610,7 @@ function renderResumo(){
   // vencido, o quanto disso já passou do prazo — mesmo esquema do card de
   // proprietário, só que sempre 2 slides (nunca cycla se não há vencido).
   const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
-    (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Vencido</div><div class="mc-value" style="color:var(--red)">${fR(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
+    (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fR(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   document.getElementById('res-m').innerHTML=`
     <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="abrirDonoCicloAtual()" title="Locação do mês por proprietário — clique pra abrir o proprietário em tela"><div class="mc-cycle-stage">${locSlides}</div></div>
