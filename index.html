@@ -445,6 +445,7 @@ body::before {
    Só no desktop (>=761px): abaixo disso o próprio breakpoint mobile já define
    um #res-m .mc bem mais compacto, e por ter id essa regra venceria o dele. */
 @media (min-width: 761px) {
+  #res-m { margin-bottom: 50px; }
   #res-m .mc { padding: 14px 20px; }
   #res-m .mc-icon { font-size: 15px; margin-bottom: 8px; }
   #res-m .mc-label { font-size: 12.5px; margin-bottom: 5px; }
@@ -2472,6 +2473,9 @@ details[open] summary::before { transform: rotate(90deg); }
   .card { border: 1px solid rgba(255,255,255,.65); border-radius: 18px; box-shadow: 0 2px 12px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04); }
   /* Painéis de métrica compactos e flat (iOS) */
   .mrow, #res-m { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+  /* Mais respiro até o card de vencidos/hoje logo abaixo — só no Resumo
+     (#res-m), sem mexer no margin-bottom padrão de .mrow noutras telas. */
+  #res-m { margin-bottom: 24px; }
   @media (min-width: 1024px) {
     .mrow, #res-m { gap: 10px; }
   }
