@@ -1461,6 +1461,20 @@ body.modo-cal-full #calFullPage {
 .cal-full-page-hd .cal-legend { margin-left: auto; }
 .cal-full-body { flex: 1; }
 .cal-full-grid { grid-template-columns: repeat(5, 1fr); }
+/* Célula um pouco mais alta (valor cheio, não abreviado, ocupa mais
+   espaço) e com posição relativa pro botão de baixar tudo do dia (canto
+   superior direito, sem precisar rolar até o detalhe abaixo). */
+.cal-full-grid .cal-cell { position: relative; height: 112px; }
+.cal-full-grid .cal-cell .cal-mix-item { font-size: 13px; }
+.cal-full-cell-pay {
+  position: absolute; top: 5px; right: 5px;
+  width: 20px; height: 20px; border-radius: 999px; flex: 0 0 auto;
+  border: none; background: var(--blue); color: #fff;
+  font-size: 11px; font-weight: 800; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: .85; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+}
+.cal-full-cell-pay:hover { opacity: 1; transform: scale(1.08); }
 .cal-full-day { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
 .cal-full-day-hd { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .cal-full-day-hd b { font-size: 16px; }
@@ -1503,25 +1517,26 @@ body.modo-cal-full #calFullPage {
   .rc-cal-wrap .cal-week { font-size: 10px; }
 }
 /* Dia com pago + vencido misturados: a parte pendente fica vermelha (não
-   âmbar), já que também está atrasada — não é só "a receber" normal. */
-.rc-cal-wrap .cal-mix-item.pend.venc { color: var(--red); }
+   âmbar), já que também está atrasada — não é só "a receber" normal.
+   Mesmo acabamento no calendário em tela cheia (.cal-full-grid). */
+.rc-cal-wrap .cal-mix-item.pend.venc, .cal-full-grid .cal-mix-item.pend.venc { color: var(--red); }
 /* Dias já concluídos (tudo recebido) ficam um pouco esmaecidos, pra não
    competir visualmente com o que ainda precisa de atenção — o valor
    (o que mais chama atenção) esmaece um pouco mais que o resto da célula,
    e o fundo fica um pouco mais escuro (menos lavado). */
-.rc-cal-wrap .cal-cell.cal-ok { opacity: .68; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
-.rc-cal-wrap .cal-cell.cal-ok .cal-val { opacity: .8; }
+.rc-cal-wrap .cal-cell.cal-ok, .cal-full-grid .cal-cell.cal-ok { opacity: .68; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
+.rc-cal-wrap .cal-cell.cal-ok .cal-val, .cal-full-grid .cal-cell.cal-ok .cal-val { opacity: .8; }
 /* Contorno na mesma cor do preenchimento (em vez de sumir com border-color:
    transparent), pra cada dia colorido ficar com uma borda visível e não só
    um bloco chapado. */
-.rc-cal-wrap .cal-cell.cal-ok { border-color: color-mix(in srgb, var(--green) 45%, transparent); }
-.rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
-.rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--purple) 45%, transparent); }
+.rc-cal-wrap .cal-cell.cal-ok, .cal-full-grid .cal-cell.cal-ok { border-color: color-mix(in srgb, var(--green) 45%, transparent); }
+.rc-cal-wrap .cal-cell.cal-venc, .cal-full-grid .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
+.rc-cal-wrap .cal-cell.cal-mix, .cal-full-grid .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--purple) 45%, transparent); }
 /* Fundo vermelho (vencido), verde (vence hoje) e roxo (misto) também um
    pouco mais escuros que o padrão do app, no mesmo espírito do fundo dos
    recebidos — mesmo padrão de borda+fundo pra todos os estados coloridos. */
-.rc-cal-wrap .cal-cell.cal-venc { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
-.rc-cal-wrap .cal-cell.cal-mix { background: color-mix(in srgb, var(--purple-soft) 78%, var(--purple) 22%); }
+.rc-cal-wrap .cal-cell.cal-venc, .cal-full-grid .cal-cell.cal-venc { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
+.rc-cal-wrap .cal-cell.cal-mix, .cal-full-grid .cal-cell.cal-mix { background: color-mix(in srgb, var(--purple-soft) 78%, var(--purple) 22%); }
 /* Vencido: pisca bem mais devagar e só esmaece (nunca some de vez) — chama
    atenção sem incomodar quem olha o painel o dia inteiro. O dia de hoje é
    propositalmente diferente (mais rápido e some por completo a cada ciclo),
@@ -1534,13 +1549,13 @@ body.modo-cal-full #calFullPage {
   0%, 100% { background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); border-color: transparent; }
   50% { background: transparent; }
 }
-.rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 3.4s ease-in-out infinite; }
-.rc-cal-wrap .cal-cell.rc-hoje-mov { animation: rcBlinkGreen 3s ease-in-out infinite; }
-.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-num,
-.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-val { color: var(--green); }
+.rc-cal-wrap .cal-cell.rc-blink, .cal-full-grid .cal-cell.rc-blink { animation: rcBlinkRed 3.4s ease-in-out infinite; }
+.rc-cal-wrap .cal-cell.rc-hoje-mov, .cal-full-grid .cal-cell.rc-hoje-mov { animation: rcBlinkGreen 3s ease-in-out infinite; }
+.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-num, .cal-full-grid .cal-cell.rc-hoje-mov .cal-num,
+.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-val, .cal-full-grid .cal-cell.rc-hoje-mov .cal-val { color: var(--green); }
 @media (prefers-reduced-motion: reduce) {
-  .rc-cal-wrap .cal-cell.rc-blink { animation: none; }
-  .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
+  .rc-cal-wrap .cal-cell.rc-blink, .cal-full-grid .cal-cell.rc-blink { animation: none; }
+  .rc-cal-wrap .cal-cell.rc-hoje-mov, .cal-full-grid .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
 }
 /* PC: lista e calendário lado a lado, sempre os dois visíveis — o seletor
    não faz sentido aqui (não há nada escondido pra alternar). */
@@ -5965,14 +5980,15 @@ function renderRecCalGridHtml(){
 // ── CALENDÁRIO EM TELA CHEIA (ícone de ampliar, ao lado do seletor de
 // tipo) — abre numa aba/janela NOVA (?painel=calendario, MODO_CAL_FULL),
 // sem alterar em nada o layout desta página: só #calFullPage aparece lá,
-// numa grade ocupando a janela toda, com navegação de mês própria
-// (calFullMes). Clicar num dia abre embaixo o detalhe: total do dia,
-// quebrado por cliente (previsto/pendente e recebido), já com cada
-// lançamento individual visível (placa, cliente, valor — sem precisar
-// desmembrar nada) e baixa de todos os lançamentos daquele cliente naquele
-// dia de uma vez só (baixarTudoCliente) ou do dia inteiro (baixarTudoDia).
+// com a grade do mês (visão geral) e, logo abaixo, TODOS os dias com
+// movimento já abertos de uma vez — sem precisar clicar em nada: cada dia
+// mostra o total do dia, quebrado por cliente (previsto/pendente e
+// recebido), com cada lançamento individual já visível (placa, cliente,
+// valor) e baixa de todos os lançamentos daquele cliente naquele dia de uma
+// vez só (baixarTudoCliente) ou do dia inteiro (baixarTudoDia). Clicar numa
+// célula da grade só rola a tela até aquele dia (âncora), pra navegar mais
+// rápido num mês cheio — a informação já está toda na tela.
 let calFullMes = null;
-let calFullDiaSel = null;
 // Abre a janela nova já no mês que a página principal estava mostrando —
 // window.open (não location.href) pra não navegar a aba atual.
 function abrirCalendarioResumoFull(){
@@ -5983,22 +5999,16 @@ function calFullNav(delta){
   const [y,m] = calFullMes.split('-').map(Number);
   const dt = new Date(y, m-1+delta, 1);
   calFullMes = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
-  calFullDiaSel = null;
   renderCalFull();
 }
-function calFullSelDia(dia){
-  calFullDiaSel = (calFullDiaSel===dia) ? null : dia;
-  renderCalFull();
-}
-function calFullFecharDia(){
-  calFullDiaSel = null;
-  renderCalFull();
+function calFullScrollToDia(dia){
+  document.getElementById('dia-'+dia)?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderCalFull(){
   const wrap=document.getElementById('calFullTipoSelWrap');
   if(wrap) wrap.innerHTML=tipoCalSelectHtml();
   renderCalFullGrid();
-  renderCalFullDayPanel();
+  renderCalFullDays();
 }
 // Repinta o calendário em tela cheia se essa janela for a que está com
 // #calFullPage ativo — chamado de renderAll() e de setTipoCal(), no mesmo
@@ -6024,8 +6034,8 @@ function renderCalFullGrid(){
     else dmap[dia].pend+=fN(r.saldo);
   });
   const lastDay=new Date(y,m,0).getDate();
-  // Sem coluna de total da semana aqui — o detalhe completo do dia clicado
-  // já abre logo abaixo, então o total semanal só ocuparia espaço à toa.
+  // Sem coluna de total da semana aqui — o detalhe completo de todos os
+  // dias já abre logo abaixo, então o total semanal só ocuparia espaço à toa.
   let head=DIAS_PT.map(d=>`<div class="cal-hd">${d}</div>`).join('');
   let cell='', weekCol=0;
   for(let d=1; d<=lastDay; d++){
@@ -6034,24 +6044,31 @@ function renderCalFullGrid(){
     const dia=`${mes}-${String(d).padStart(2,'0')}`;
     const entry=dmap[dia]||{rec:0,pend:0};
     const isToday=dia===hoje;
+    const hasMov=entry.rec>0||entry.pend>0;
     const col=dow-1;
     while(weekCol<col){ cell+='<div class="cal-cell cal-blank"></div>'; weekCol++; }
     let cls='cal-cell', valHtml='';
+    // Valor cheio (fR — "R$ 5.000,00"), não abreviado: aqui, em tela cheia,
+    // sobra espaço, diferente do cartão compacto do Resumo (calFRk).
     if(entry.rec>0&&entry.pend>0){
       const venc=dia<hoje;
       cls += ' cal-mix'+(venc?' rc-blink':(isToday?' rc-hoje-mov':''));
-      valHtml = `<span class="cal-mix-item rec">${calFRk(entry.rec)}</span><span class="cal-mix-item pend${venc?' venc':''}">${calFRk(entry.pend)}</span>`;
+      valHtml = `<span class="cal-mix-item rec">${fR(entry.rec)}</span><span class="cal-mix-item pend${venc?' venc':''}">${fR(entry.pend)}</span>`;
     } else if(entry.rec>0){
       cls += ' cal-ok';
-      valHtml = `<span class="cal-val">${calFRk(entry.rec)}</span>`;
+      valHtml = `<span class="cal-val">${fR(entry.rec)}</span>`;
     } else if(entry.pend>0){
       const venc=dia<hoje;
       cls += venc?' cal-venc rc-blink':(isToday?' cal-pend rc-hoje-mov':' cal-pend');
-      valHtml = `<span class="cal-val">${calFRk(entry.pend)}</span>`;
+      valHtml = `<span class="cal-val">${fR(entry.pend)}</span>`;
     }
     if(isToday) cls+=' cal-today';
-    if(dia===calFullDiaSel) cls+=' cal-full-sel';
-    cell += `<div class="${cls}" role="button" tabindex="0" onclick="calFullSelDia('${dia}')" title="${fDM(dia)} · ${fR(entry.rec+entry.pend)}"><div class="cal-num">${d}</div>${valHtml}</div>`;
+    // Dia com pendência: além de rolar até o detalhe (calFullScrollToDia),
+    // o botão "✓" baixa tudo daquele dia de uma vez, direto da grade — sem
+    // precisar nem rolar até o detalhe abaixo.
+    const clickAttr = hasMov ? ` role="button" tabindex="0" onclick="calFullScrollToDia('${dia}')"` : '';
+    const payBtn = entry.pend>0 ? `<button type="button" class="cal-full-cell-pay" onclick="event.stopPropagation();baixarTudoDia('${dia}')" title="Baixar tudo de ${fDM(dia)} de uma vez">✓</button>` : '';
+    cell += `<div class="${cls}"${clickAttr} title="${fDM(dia)}${hasMov?' · '+fR(entry.rec+entry.pend):''}">${payBtn}<div class="cal-num">${d}</div>${valHtml}</div>`;
     weekCol++;
     if(weekCol===5){ weekCol=0; }
   }
@@ -6078,34 +6095,52 @@ function calFullClienteHtml(dia,cliente,itensPend,itensPago){
     <div class="rh-list">${itensHtml}</div>
   </div>`;
 }
-function renderCalFullDayPanel(){
+// Lista TODOS os dias do mês com movimento, cada um já com o detalhe
+// completo (valores por cliente + baixar tudo) aberto — nada escondido
+// atrás de clique. Dias sem nenhum lançamento nem entram na lista.
+function renderCalFullDays(){
   const wrap=document.getElementById('calFullDay'); if(!wrap) return;
-  const dia=calFullDiaSel;
-  if(!dia){ wrap.innerHTML=''; return; }
-  const rows=allD().filter(r=>(r.prev_pgto||'').slice(0,10)===dia&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal));
-  const totPend=rows.filter(r=>!isPago(r)).reduce((a,r)=>a+fN(r.saldo),0);
-  const totPago=rows.filter(isPago).reduce((a,r)=>a+fN(r.valor_pago),0);
-  if(!rows.length){
-    wrap.innerHTML=`<div class="cal-full-day-hd"><b>${fDM(dia)}</b><button class="mcl" onclick="calFullFecharDia()">✕</button></div><div class="rh-nada">Nada nesse dia.</div>`;
+  const mes=calFullMes;
+  const [y,m]=mes.split('-').map(Number);
+  const lastDay=new Date(y,m,0).getDate();
+  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&(r.prev_pgto||'').startsWith(mes));
+  const porDia={};
+  rows.forEach(r=>{
+    const dia=(r.prev_pgto||'').slice(0,10); if(!dia)return;
+    (porDia[dia]=porDia[dia]||[]).push(r);
+  });
+  const diasComMov=[];
+  for(let d=1; d<=lastDay; d++){
+    const dia=`${mes}-${String(d).padStart(2,'0')}`;
+    if(porDia[dia]?.length) diasComMov.push(dia);
+  }
+  if(!diasComMov.length){
+    wrap.innerHTML='<div class="rh-nada">Nenhum lançamento nesse mês.</div>';
     return;
   }
-  const porCliente={}, ordem=[];
-  rows.forEach(r=>{
-    const k=r.cliente||'—';
-    if(!porCliente[k]){ porCliente[k]={pend:[],pago:[]}; ordem.push(k); }
-    (isPago(r)?porCliente[k].pago:porCliente[k].pend).push(r);
-  });
-  const bulkDiaBtn = totPend>0
-    ? `<button type="button" class="btn btn-blue" onclick="baixarTudoDia('${dia}')" title="Baixar de uma vez todos os lançamentos pendentes desse dia">✓ Baixar tudo do dia · ${fR(totPend)}</button>`
-    : '';
-  const corpo=ordem.map(k=>calFullClienteHtml(dia,k,porCliente[k].pend,porCliente[k].pago)).join('');
-  wrap.innerHTML=`<div class="cal-full-day-hd">
-      <b>${fDM(dia)}</b>
-      <span class="cal-full-day-tot">${totPago>0?`<span class="t-rec">Recebido ${fR(totPago)}</span>`:''}${totPend>0?`<span class="t-pend">A receber ${fR(totPend)}</span>`:''}</span>
-      ${bulkDiaBtn}
-      <button class="mcl" onclick="calFullFecharDia()">✕</button>
-    </div>
-    <div class="cal-full-day-list">${corpo}</div>`;
+  wrap.innerHTML=diasComMov.map(dia=>{
+    const drows=porDia[dia];
+    const totPend=drows.filter(r=>!isPago(r)).reduce((a,r)=>a+fN(r.saldo),0);
+    const totPago=drows.filter(isPago).reduce((a,r)=>a+fN(r.valor_pago),0);
+    const porCliente={}, ordem=[];
+    drows.forEach(r=>{
+      const k=r.cliente||'—';
+      if(!porCliente[k]){ porCliente[k]={pend:[],pago:[]}; ordem.push(k); }
+      (isPago(r)?porCliente[k].pago:porCliente[k].pend).push(r);
+    });
+    const bulkDiaBtn = totPend>0
+      ? `<button type="button" class="btn btn-blue" onclick="baixarTudoDia('${dia}')" title="Baixar de uma vez todos os lançamentos pendentes desse dia">✓ Baixar tudo do dia · ${fR(totPend)}</button>`
+      : '';
+    const corpo=ordem.map(k=>calFullClienteHtml(dia,k,porCliente[k].pend,porCliente[k].pago)).join('');
+    return `<div class="cal-full-day" id="dia-${dia}">
+      <div class="cal-full-day-hd">
+        <b>${fDM(dia)}</b>
+        <span class="cal-full-day-tot">${totPago>0?`<span class="t-rec">Recebido ${fR(totPago)}</span>`:''}${totPend>0?`<span class="t-pend">A receber ${fR(totPend)}</span>`:''}</span>
+        ${bulkDiaBtn}
+      </div>
+      <div class="cal-full-day-list">${corpo}</div>
+    </div>`;
+  }).join('');
 }
 // Baixa em lote — grava valor_pago=saldo/saldo=0/data_pagamento=hoje em
 // cada lançamento pendente do filtro (cliente+dia, ou o dia inteiro),
