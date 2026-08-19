@@ -1375,49 +1375,47 @@ body.tip-pinned::before {
 .vc-day-total small { color: var(--ink3); font-size: 10.5px; }
 .vc-day-total em { font-style: normal; font-weight: 700; color: var(--amber); font-size: 11px; }
 /* Seletor Lista/Calendário do card de vencidos/hoje — reaproveita o pill
-   toggle do Faturamento por categoria (.fr-basistoggle). */
+   toggle do Faturamento por categoria (.fr-basistoggle). Só existe (some
+   via CSS) no PC, onde as duas vistas ficam lado a lado sempre. */
 .rc-view-toggle { width: 100%; box-sizing: border-box; margin: 0 0 14px; }
 .rc-view-toggle button { flex: 1; }
-/* Grade Seg-Sex com todos os lançamentos pendentes do mês, célula por dia
-   (mesmo esqueleto visual do calendário de "Previsto do mês"). */
-.rc-cal-wrap { margin-bottom: 27px; }
-.rc-cal-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.rc-cal-hd { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
-.rc-cal-cell { min-height: 64px; border: 1px solid var(--line); border-radius: 10px; padding: 5px 3px; display: flex; flex-direction: column; gap: 4px; background: var(--card); }
-.rc-cal-cell.rc-blank { border: none; background: transparent; }
-.rc-cal-cell.rc-today { border-color: var(--blue); border-width: 2px; }
-.rc-cal-daynum { font-size: 10.5px; font-weight: 700; color: var(--ink3); text-align: center; line-height: 1; }
-.rc-cal-cell.rc-today .rc-cal-daynum { color: var(--blue); }
-.rc-cal-items { display: flex; flex-direction: column; gap: 3px; }
-.rc-entry-top {
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-  padding: 3px 2px; border-radius: 6px; cursor: pointer;
-  font-size: 9.5px; line-height: 1.2; text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-.rc-entry-placa { font-family: 'DM Mono', 'SF Mono', monospace; font-weight: 700; }
-.rc-entry-val { font-weight: 700; }
-/* Vencido pisca vermelho, hoje pisca verde, futuro fica sem fundo até ser
-   recebido (o card some da lista assim que baixado — allD()/isPend() já
-   filtra). */
+/* Mobile: só a vista ativa (lista OU calendário) fica visível por vez. */
+.rc-side-by-side { margin-bottom: 27px; }
+.rc-block { display: none; }
+.rc-block .rh-dupla, .rc-block .rc-cal-wrap { margin-bottom: 0; }
+.rc-mode-lista .rc-block-lista { display: block; }
+.rc-mode-cal .rc-block-cal { display: block; }
+/* Calendário Seg-Sex do mês: mesmo componente visual do calendário
+   "Previsto do mês" (.cal-grid/.cal-cell/.cal-week, já em 5 colunas —
+   sábado/domingo já saíram de lá) — só data + valor por dia, clicar abre a
+   lista de lançamentos daquele dia pra editar/baixar.
+   Vencido pisca vermelho; quem vence hoje pisca verde (por cima do laranja
+   padrão de "a receber" do .cal-pend); futuro fica sem fundo (cal-pend já
+   não preenche) até ser recebido — some sozinho da grade quando baixado. */
 @keyframes rcBlinkRed { 0%, 100% { background: var(--red-soft); } 50% { background: transparent; } }
-@keyframes rcBlinkGreen { 0%, 100% { background: var(--green-soft); } 50% { background: transparent; } }
-.rc-entry.venc .rc-entry-top { color: var(--red); animation: rcBlinkRed 1.6s ease-in-out infinite; }
-.rc-entry.hoje .rc-entry-top { color: var(--green); animation: rcBlinkGreen 1.6s ease-in-out infinite; }
-.rc-entry.futuro .rc-entry-top { color: var(--ink3); background: transparent; }
+@keyframes rcBlinkGreen { 0%, 100% { background: var(--green-soft); border-color: transparent; } 50% { background: transparent; } }
+.rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 1.6s ease-in-out infinite; }
+.rc-cal-wrap .cal-cell.rc-hoje-mov { animation: rcBlinkGreen 1.6s ease-in-out infinite; }
+.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-num,
+.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-val { color: var(--green); }
 @media (prefers-reduced-motion: reduce) {
-  .rc-entry.venc .rc-entry-top { animation: none; background: var(--red-soft); }
-  .rc-entry.hoje .rc-entry-top { animation: none; background: var(--green-soft); }
+  .rc-cal-wrap .cal-cell.rc-blink { animation: none; }
+  .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: var(--green-soft); }
 }
-/* Clicar no chip expande pro cartão completo (swipe pra Baixar/Editar/
-   Reverter/Excluir) no lugar da linha resumida. */
-.rc-entry-exp { display: none; margin-top: 2px; }
-.rc-entry.rc-open .rc-entry-exp { display: block; }
-.rc-entry.rc-open .rc-entry-top { display: none; }
-@media (max-width: 760px) {
-  .rc-cal-grid { gap: 4px; }
-  .rc-cal-cell { min-height: 52px; padding: 4px 2px; }
-  .rc-entry-top { font-size: 8.5px; }
+/* PC: lista e calendário lado a lado, sempre os dois visíveis — o seletor
+   não faz sentido aqui (não há nada escondido pra alternar). */
+@media (min-width: 761px) {
+  .rc-view-toggle.fr-basistoggle { display: none; }
+  .rc-side-by-side { display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; align-items: start; }
+  .rc-block { display: block; }
+  /* A coluna da lista fica mais estreita que a tela toda (é só ~1.15fr do
+     grid) — o .g2 padrão (2 colunas a partir de 961px de VIEWPORT) ficaria
+     apertado aqui. Empilha vencidos+hoje dentro da coluna até ter espaço de
+     verdade (telas bem largas), quando volta a ficar lado a lado. */
+  .rc-block-lista .g2.rh-dupla { grid-template-columns: 1fr; }
+}
+@media (min-width: 1400px) {
+  .rc-block-lista .g2.rh-dupla { grid-template-columns: 1fr 1fr; }
 }
 /* Os dois cartões lado a lado: mesma altura, sem margem dupla entre eles. */
 .rh-dupla { margin-bottom: 27px; align-items: stretch; }   /* 16px + 70% */
@@ -5667,57 +5665,54 @@ function rhGroupHtml(grp,cls){
   </div>`;
 }
 // Card de vencidos/hoje — modo calendário: uma linha (chip) por lançamento
-// pendente dentro da célula do dia. Colapsada mostra só placa+valor
-// (vencido pisca vermelho, hoje pisca verde, futuro sem fundo); clicar
-// expande pro cartão completo (mesmo rhItemHtml das outras vistas), com
-// swipe pra Baixar/Editar/Reverter/Excluir.
-function rcEntryHtml(r){
-  const hoje=td();
-  const cls=isVenc(r)?'venc':(r.prev_pgto===hoje?'hoje':'futuro');
-  return `<div class="rc-entry ${cls}">
-    <div class="rc-entry-top" role="button" tabindex="0"
-      onclick="event.stopPropagation();this.closest('.rc-entry').classList.toggle('rc-open')"
-      onkeydown="if(event.key==='Enter'){event.stopPropagation();this.closest('.rc-entry').classList.toggle('rc-open');}"
-      title="${esc(r.cliente||r.placa)} · ${fR(r.saldo)} — clique pra editar/baixar">
-      <span class="rc-entry-placa">${r.placa}</span><span class="rc-entry-val">${calFRk(r.saldo)}</span>
-    </div>
-    <div class="rc-entry-exp" onclick="event.stopPropagation()">${rhItemHtml(r,cls)}</div>
-  </div>`;
-}
-// Grade Seg-Sex do mês corrente com TODOS os lançamentos pendentes (não só
-// o total do dia) — mesmo esqueleto de grid/blank/flush do calendário de
-// "Previsto do mês" (renderCalPrevisto), só que cada célula lista os
-// lançamentos em vez de somar um número.
+// Grade Seg-Sex do mês corrente: só data + valor por célula (mesmo
+// componente visual do calendário "Previsto do mês" — .cal-grid/.cal-cell/
+// .cal-week, já usado em renderCalPrevisto — em vez de reinventar um
+// componente novo mais tosco). Clicar num dia com movimento abre a mesma
+// lista de lançamentos do dia (mostrarLancDiaFluxo), com swipe pra
+// Baixar/Editar/Reverter/Excluir.
 function renderRecCalGridHtml(){
   const hoje=td();
   const mes=curMes;
   const [y,m]=mes.split('-').map(Number);
   const rows=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(mes));
-  const porDia={};
-  rows.forEach(r=>{(porDia[r.prev_pgto]=porDia[r.prev_pgto]||[]).push(r);});
-  Object.values(porDia).forEach(l=>l.sort((a,b)=>fN(b.saldo)-fN(a.saldo)));
+  const dmap={};
+  rows.forEach(r=>{ if(!r.prev_pgto)return; dmap[r.prev_pgto]=(dmap[r.prev_pgto]||0)+fN(r.saldo); });
 
-  const DIAS_PT=['Seg','Ter','Qua','Qui','Sex'];
+  const DIAS_PT=['S','T','Q','Q','S'];
   const lastDay=new Date(y,m,0).getDate();
-  let head=DIAS_PT.map(d=>`<div class="rc-cal-hd">${d}</div>`).join('');
-  let cell='', weekCol=0;
-  const flushBlanks=()=>{ while(weekCol<5){cell+='<div class="rc-cal-cell rc-blank"></div>';weekCol++;} weekCol=0; };
+  let head=DIAS_PT.map(d=>`<div class="cal-hd">${d}</div>`).join('')+'<div class="cal-hd">Sem.</div>';
+  let cell='', weekTot=0, weekHas=false, weekCol=0;
+  const flushWeek=()=>{
+    while(weekCol<5){ cell+='<div class="cal-cell cal-blank"></div>'; weekCol++; }
+    cell += weekHas
+      ? `<div class="cal-week cal-has" title="${fR(weekTot)}">${calFRk(weekTot)}</div>`
+      : `<div class="cal-week">—</div>`;
+    weekTot=0; weekHas=false; weekCol=0;
+  };
   for(let d=1; d<=lastDay; d++){
     const dow=new Date(y,m-1,d).getDay();
     if(dow===0||dow===6)continue;
     const dia=`${mes}-${String(d).padStart(2,'0')}`;
+    const total=dmap[dia]||0;
+    const isToday=dia===hoje;
+    if(total>0){ weekTot+=total; weekHas=true; }
     const col=dow-1;
-    while(weekCol<col){cell+='<div class="rc-cal-cell rc-blank"></div>';weekCol++;}
-    const itens=porDia[dia]||[];
-    cell+=`<div class="rc-cal-cell${dia===hoje?' rc-today':''}">
-      <div class="rc-cal-daynum">${d}</div>
-      <div class="rc-cal-items">${itens.map(rcEntryHtml).join('')}</div>
-    </div>`;
+    while(weekCol<col){ cell+='<div class="cal-cell cal-blank"></div>'; weekCol++; }
+    let cls='cal-cell', valHtml='';
+    if(total>0){
+      const venc=dia<hoje;
+      cls += venc?' cal-venc rc-blink':(isToday?' cal-pend rc-hoje-mov':' cal-pend');
+      const label=venc?'Vencido':(isToday?'Vence hoje':'A receber');
+      valHtml=`<span class="cal-val" onclick="mostrarLancDiaFluxo('${dia}')" title="${label} ${fR(total)} · Ver lançamentos de ${fDM(dia)}">${calFRk(total)}</span>`;
+    }
+    if(isToday) cls+=' cal-today';
+    cell+=`<div class="${cls}"><div class="cal-num">${d}</div>${valHtml}</div>`;
     weekCol++;
-    if(weekCol===5)weekCol=0;
+    if(weekCol===5){ flushWeek(); }
+    if(d===lastDay&&weekCol>0){ flushWeek(); }
   }
-  if(weekCol>0)flushBlanks();
-  return `<div class="rc-cal-grid">${head}${cell}</div>`;
+  return `<div class="cal-grid">${head}${cell}</div>`;
 }
 
 function renderRecebHoje(){
@@ -5809,14 +5804,18 @@ function renderRecebHoje(){
     </div>`;
   }
 
+  // No mobile o seletor alterna entre as duas vistas (só uma por vez); no
+  // PC (>=761px) as duas ficam lado a lado sempre, o seletor some (CSS) e
+  // as duas divs ficam visíveis ao mesmo tempo.
   const toggleHtml=`<div class="fr-basistoggle rc-view-toggle">
     <button type="button" class="${recebViewMode==='lista'?'on':''}" onclick="setRecebView('lista')">Lista</button>
     <button type="button" class="${recebViewMode==='cal'?'on':''}" onclick="setRecebView('cal')">Calendário</button>
   </div>`;
-  const listaOuCal=recebViewMode==='cal'
-    ? `<div class="rc-cal-wrap">${renderRecCalGridHtml()}</div>`
-    : `<div class="g2 rh-dupla">${cardVenc}${cardHoje}</div>`;
-  el.innerHTML=toggleHtml+listaOuCal;
+  el.innerHTML=`${toggleHtml}
+    <div class="rc-side-by-side rc-mode-${recebViewMode}">
+      <div class="rc-block rc-block-lista"><div class="g2 rh-dupla">${cardVenc}${cardHoje}</div></div>
+      <div class="rc-block rc-block-cal"><div class="rc-cal-wrap">${renderRecCalGridHtml()}</div></div>
+    </div>`;
 }
 
 // ── Painéis de barra do resumo: previsto × recebido na mesma linha ──
