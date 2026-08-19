@@ -434,7 +434,12 @@ body::before {
    espaço do card, um saindo de lado (esquerda) enquanto o próximo entra do
    lado oposto (direita) — efeito de esteira/carrossel, em vez de listar
    todos de uma vez. */
-.mc-cycle-stage { position: relative; min-height: 66px; overflow: hidden; }
+/* translateZ(0) força um compositing layer próprio nesse elemento — sem
+   isso o Safari/iOS tem um bug conhecido de ignorar o overflow:hidden do
+   ancestral quando um descendente tem transform (o texto de baixo do
+   slide "vazava" pra fora do card arredondado, cortando o card mas não
+   o texto). */
+.mc-cycle-stage { position: relative; min-height: 66px; overflow: hidden; transform: translateZ(0); }
 /* Repouso: fora de vista à direita, pronto pra entrar quando for a vez
    dele. .out (saindo) empurra mais pra esquerda que o centro — depois que
    a transição termina, o JS devolve o slide pro repouso (.reset, sem
@@ -2423,7 +2428,7 @@ details[open] summary::before { transform: rotate(90deg); }
      valor era pensado pra fonte maior de antes. Nesse tamanho ele sobrava
      e deixava essa linha do grid (com "A receber" do lado) mais alta que a
      de cima, destoando as duas linhas de painéis. */
-  .mc-cycle-stage { min-height: 50px; }
+  .mc-cycle-stage { min-height: 56px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (vencidos/hoje/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
@@ -4849,6 +4854,34 @@ let selDono = '';
 let mcLocCycleTimer = null;
 let mcLocCycleList = [];
 let mcLocCycleIdx = 0;
+// Card "A receber" do Resumo: mesmo esquema, alternando entre o total a
+// receber do mês e o quanto disso já está vencido.
+let mcArecCycleTimer = null;
+let mcArecCycleIdx = 0;
+// Avança o carrossel de um card de dois-ou-mais slides: o que estava em
+// cena sai pela esquerda, o próximo entra pela direita (mesma direção pros
+// dois, como uma esteira). Devolve o slide que saiu pro repouso (sem
+// transition) só depois que a transição termina — como a opacidade já
+// está em 0 nesse momento, o "salto" de posição não aparece. Retorna o
+// stage encontrado (ou null se o card sumiu da tela, p.ex. trocou de
+// página no meio do ciclo — quem chamou deve parar o setInterval nesse caso).
+function mcCycleStep(stageSel, prevIdx, nextIdx){
+  const stage=document.querySelector(stageSel);
+  if(!stage)return null;
+  const slides=[...stage.querySelectorAll('.mc-cycle-slide')];
+  const prevEl=slides[prevIdx];
+  prevEl?.classList.remove('on');
+  prevEl?.classList.add('out');
+  slides[nextIdx]?.classList.add('on');
+  setTimeout(()=>{
+    if(!prevEl)return;
+    prevEl.classList.add('reset');
+    prevEl.classList.remove('out');
+    void prevEl.offsetWidth;               // força o reflow antes de reativar a transition
+    requestAnimationFrame(()=>prevEl.classList.remove('reset'));
+  },420);
+  return stage;
+}
 
 // Card de vencidos/hoje do Resumo: alterna entre o calendário semanal
 // (Seg-Sex, padrão) e a lista com todos os lançamentos pendentes do mês.
@@ -6545,6 +6578,8 @@ function renderResumo(){
   const totP=rows.filter(r=>isPago(r)).reduce((a,r)=>a+fN(r.valor_pago),0);
   const totS=rows.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
   const nL=rows.length, nPend=rows.filter(r=>isPend(r)).length;
+  const rowsVenc=rows.filter(r=>isVenc(r));
+  const totVenc=rowsVenc.reduce((a,r)=>a+fN(r.saldo),0), nVenc=rowsVenc.length;
   const prevLiq=totP+totS;                       // previsto líquido = recebido + a receber
   const ticket=nL?prevLiq/nL:0;
   // Comparativo vs. mês anterior (previsto líquido)
@@ -6566,34 +6601,33 @@ function renderResumo(){
   const locSlides=mcLocCycleList.length
     ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label">${esc(o.dono)}</div><div class="mc-value">${fR(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
     : `<div class="mc-cycle-slide on"><div class="mc-label">—</div><div class="mc-value">R$ 0,00</div><div class="mc-sub">Sem locação no mês</div></div>`;
+  // "A receber" também alterna: total pendente do mês e, quando há algo
+  // vencido, o quanto disso já passou do prazo — mesmo esquema do card de
+  // proprietário, só que sempre 2 slides (nunca cycla se não há vencido).
+  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
+    (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Vencido</div><div class="mc-value" style="color:var(--red)">${fR(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   document.getElementById('res-m').innerHTML=`
     <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="abrirDonoCicloAtual()" title="Locação do mês por proprietário — clique pra abrir o proprietário em tela"><div class="mc-cycle-stage">${locSlides}</div></div>
     <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
-    <div class="mc amber" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>
+    <div class="mc amber mc-cycle" id="mc-arec-cycle" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-cycle-stage">${arecSlides}</div></div>
   `;
   clearInterval(mcLocCycleTimer);
   if(mcLocCycleList.length>1){
     mcLocCycleTimer=setInterval(()=>{
-      const stage=document.querySelector('#mc-loc-cycle .mc-cycle-stage');
-      if(!stage){clearInterval(mcLocCycleTimer);return;}
-      const slides=[...stage.querySelectorAll('.mc-cycle-slide')];
-      const prevEl=slides[mcLocCycleIdx];
-      mcLocCycleIdx=(mcLocCycleIdx+1)%mcLocCycleList.length;
-      // O que estava em cena sai pela esquerda; o próximo entra pela
-      // direita (repouso padrão) rumo ao centro — mesma direção pros dois,
-      // como uma esteira.
-      prevEl?.classList.remove('on');
-      prevEl?.classList.add('out');
-      slides[mcLocCycleIdx]?.classList.add('on');
-      setTimeout(()=>{
-        if(!prevEl)return;
-        prevEl.classList.add('reset');
-        prevEl.classList.remove('out');
-        void prevEl.offsetWidth;               // força o reflow antes de reativar a transition
-        requestAnimationFrame(()=>prevEl.classList.remove('reset'));
-      },420);
-    },5000);
+      const nextIdx=(mcLocCycleIdx+1)%mcLocCycleList.length;
+      if(!mcCycleStep('#mc-loc-cycle .mc-cycle-stage',mcLocCycleIdx,nextIdx)){clearInterval(mcLocCycleTimer);return;}
+      mcLocCycleIdx=nextIdx;
+    },7000);
+  }
+  clearInterval(mcArecCycleTimer);
+  mcArecCycleIdx=0;
+  if(nVenc>0){
+    mcArecCycleTimer=setInterval(()=>{
+      const nextIdx=1-mcArecCycleIdx;
+      if(!mcCycleStep('#mc-arec-cycle .mc-cycle-stage',mcArecCycleIdx,nextIdx)){clearInterval(mcArecCycleTimer);return;}
+      mcArecCycleIdx=nextIdx;
+    },10000);
   }
   renderRecebHoje();
   // Seletor de ano dos gráficos mensais
