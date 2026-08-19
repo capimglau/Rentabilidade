@@ -6625,14 +6625,19 @@ function renderResumo(){
       mcLocCycleIdx=nextIdx;
     },7000);
   }
-  clearInterval(mcArecCycleTimer);
+  clearTimeout(mcArecCycleTimer);
   mcArecCycleIdx=0;
   if(nVenc>0){
-    mcArecCycleTimer=setInterval(()=>{
-      const nextIdx=1-mcArecCycleIdx;
-      if(!mcCycleStep('#mc-arec-cycle .mc-cycle-stage',mcArecCycleIdx,nextIdx)){clearInterval(mcArecCycleTimer);return;}
-      mcArecCycleIdx=nextIdx;
-    },10000);
+    // Assimétrico: "A receber" fica 10s em cena, "Atrasado" só 4s.
+    const scheduleArec=()=>{
+      mcArecCycleTimer=setTimeout(()=>{
+        const nextIdx=1-mcArecCycleIdx;
+        if(!mcCycleStep('#mc-arec-cycle .mc-cycle-stage',mcArecCycleIdx,nextIdx))return;
+        mcArecCycleIdx=nextIdx;
+        scheduleArec();
+      },mcArecCycleIdx===0?10000:4000);
+    };
+    scheduleArec();
   }
   renderRecebHoje();
   // Seletor de ano dos gráficos mensais
