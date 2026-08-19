@@ -583,10 +583,14 @@ body::before {
 .cal-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .cal-nav button.icon-btn { flex: 0 0 auto; }
 .cal-nav .cal-mlbl { font-weight: 700; font-size: 14px; flex: 1; text-align: center; }
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr) minmax(52px, .85fr); gap: 5px; }
-.cal-grid .cal-hd { text-align: center; font-size: 10px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
+/* Só dias úteis (Seg–Sex): sábado/domingo não têm lançamento numa locadora,
+   então saíram do grid — 5 colunas de dia + a coluna de total da semana, em
+   vez de 7+1. Sobrando espaço, tudo (fonte, altura das células, gap) cresce
+   na mesma proporção (7/5 = 1.4×) que as colunas de dia ganharam. */
+.cal-grid { display: grid; grid-template-columns: repeat(5, 1fr) minmax(73px, 1.2fr); gap: 7px; }
+.cal-grid .cal-hd { text-align: center; font-size: 14px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
 .cal-cell {
-  height: 70px;
+  height: 98px;
   border: 1.5px solid var(--line);
   border-radius: 10px;
   padding: 5px 4px;
@@ -595,7 +599,7 @@ body::before {
   background: var(--card);
 }
 .cal-cell.cal-blank { border: none; background: transparent; }
-.cal-cell .cal-num { font-size: 11.5px; color: var(--ink3); font-weight: 700; line-height: 1; text-align: center; width: 100%; }
+.cal-cell .cal-num { font-size: 16px; color: var(--ink3); font-weight: 700; line-height: 1; text-align: center; width: 100%; }
 .cal-cell.cal-today .cal-num { color: var(--blue); }
 .cal-cell.cal-today { border-color: var(--blue); border-width: 2px; }
 .cal-cell.cal-ok { background: var(--green-soft); border-color: transparent; }
@@ -605,7 +609,7 @@ body::before {
 .cal-cell.cal-mix { background: var(--purple-soft); border-color: transparent; }
 .cal-cell.cal-mix .cal-num { color: var(--purple); }
 .cal-cell .cal-val {
-  font-size: 13px; font-weight: 800; cursor: pointer;
+  font-size: 18px; font-weight: 800; cursor: pointer;
   font-variant-numeric: tabular-nums;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
   text-align: center; width: 100%;
@@ -615,14 +619,14 @@ body::before {
 .cal-cell.cal-pend .cal-val { color: var(--amber); }
 .cal-cell .cal-val:hover { text-decoration: underline; }
 .cal-cell .cal-mix-item {
-  font-size: 10.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;
+  font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.3;
 }
 .cal-cell .cal-mix-item::before { content: '●'; font-size: 6px; flex: 0 0 auto; }
 .cal-cell .cal-mix-item.rec { color: var(--green); }
 .cal-cell .cal-mix-item.pend { color: var(--amber); }
-.cal-week { height: 70px; border: 1.5px dashed var(--line); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 800; color: var(--ink3); text-align: center; padding: 0 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.cal-week { height: 98px; border: 1.5px dashed var(--line); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--ink3); text-align: center; padding: 0 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
 .cal-week.cal-has { border-color: var(--green); color: var(--green); background: var(--green-soft); }
 @media(max-width:760px){
   /* Nesse tamanho a legenda por extenso não cabe no topo — some o texto e
@@ -630,12 +634,12 @@ body::before {
   .cal-legend .legend-txt { display: none; }
   .cal-legend { gap: 7px; }
   .cal-legend i { width: 11px; height: 11px; }
-  .cal-grid { grid-template-columns: repeat(7, 1fr) minmax(40px, .8fr); gap: 3px; }
-  .cal-cell { height: 56px; padding: 3px 3px; }
-  .cal-cell .cal-num { font-size: 10.5px; }
-  .cal-cell .cal-val { font-size: 11px; }
-  .cal-cell .cal-mix-item { font-size: 9px; }
-  .cal-week { height: 56px; font-size: 9.5px; }
+  .cal-grid { grid-template-columns: repeat(5, 1fr) minmax(56px, 1.1fr); gap: 4px; }
+  .cal-cell { height: 78px; padding: 3px 3px; }
+  .cal-cell .cal-num { font-size: 15px; }
+  .cal-cell .cal-val { font-size: 15px; }
+  .cal-cell .cal-mix-item { font-size: 13px; }
+  .cal-week { height: 78px; font-size: 13px; }
 }
 
 .filt-panel select {
@@ -2474,10 +2478,10 @@ details[open] summary::before { transform: rotate(90deg); }
   /* Só os 4 painéis do topo do Resumo (Total previsto/recebido, A receber,
      Locação) — rótulo e legenda um pouco maiores que o resto do app, sem
      mexer no valor em R$. */
-  /* Letter-spacing menor que o padrão (.08em): no mobile o rótulo é um
-     texto longo ("TOTAL PREVISTO · AGO/26") que estourava pra 2ª linha com
-     a fonte maior + o letter-spacing cheio. */
-  #res-m .mc-label { font-size: 9.5px; letter-spacing: .04em; }
+  /* Letter-spacing menor que o padrão (.08em) mesmo com a fonte maior de
+     volta: sem o "Total" (só "Previsto · Ago/26") cabe numa linha só de
+     novo, mas o letter-spacing cheio ainda estourava. */
+  #res-m .mc-label { font-size: 11.5px; letter-spacing: .04em; }
   #res-m .mc-sub { font-size: 12.5px; }
   .pcard { border: none; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .pcard.venc::before { background: #ff3b30; }
@@ -6612,7 +6616,9 @@ function refreshCalPrevisto(){
 // e o valor cheio continua no title (tooltip).
 const calFRk = v => fRk(v).replace('R$ ','');
 function renderCalPrevisto(){
-  const DIAS_PT = ['D','S','T','Q','Q','S','S'];
+  // Só dia útil: sábado e domingo não têm lançamento numa locadora, então
+  // nem entram no grid — 5 colunas (Seg–Sex) + a coluna de total da semana.
+  const DIAS_PT = ['S','T','Q','Q','S'];
   const mes = calMesAtual;
   const [y,m] = mes.split('-').map(Number);
   document.getElementById('calMesLbl').textContent = `${MF[m-1]} ${y}`;
@@ -6627,7 +6633,6 @@ function renderCalPrevisto(){
   });
 
   const lastDay = new Date(y, m, 0).getDate();
-  const firstDow = new Date(y, m-1, 1).getDay();
   const today = td();
 
   let html = DIAS_PT.map(d=>`<div class="cal-hd">${d}</div>`).join('') + '<div class="cal-hd">Sem.</div>';
@@ -6635,22 +6640,29 @@ function renderCalPrevisto(){
   let cell = '';
   let weekTot = 0;
   let weekHas = false;
+  let weekCol = 0;                    // coluna atual da semana (0=Seg..4=Sex)
   const flushWeek = ()=>{
+    while(weekCol<5){ cell += '<div class="cal-cell cal-blank"></div>'; weekCol++; }
     cell += weekHas
       ? `<div class="cal-week cal-has" title="${fR(weekTot)}">${calFRk(weekTot)}</div>`
       : `<div class="cal-week">—</div>`;
-    weekTot = 0; weekHas = false;
+    weekTot = 0; weekHas = false; weekCol = 0;
   };
 
-  for(let i=0;i<firstDow;i++) cell += '<div class="cal-cell cal-blank"></div>';
-
   for(let d=1; d<=lastDay; d++){
-    const dia = `${mes}-${String(d).padStart(2,'0')}`;
     const dow = new Date(y, m-1, d).getDay();
+    if(dow===0||dow===6) continue;    // fim de semana: fora do calendário
+
+    const dia = `${mes}-${String(d).padStart(2,'0')}`;
     const entry = dmap[dia] || {rec:0,pend:0};
     const isToday = dia === today;
     const hasMov = entry.rec>0 || entry.pend>0;
     if(hasMov){ weekTot += entry.rec+entry.pend; weekHas = true; }
+
+    // Alinha o dia sob a coluna certa (Seg=0..Sex=4) — só precisa preencher
+    // colunas vazias na 1ª linha, quando o mês não começa numa segunda.
+    const col = dow-1;
+    while(weekCol<col){ cell += '<div class="cal-cell cal-blank"></div>'; weekCol++; }
 
     // Valor abreviado e sem "R$" (calFRk, ex.: "3,1k") pra nunca quebrar
     // linha dentro da célula — o valor cheio fica só no title (tooltip).
@@ -6672,10 +6684,10 @@ function renderCalPrevisto(){
     if(isToday) cls += ' cal-today';
 
     cell += `<div class="${cls}"><div class="cal-num">${d}</div>${valHtml}</div>`;
+    weekCol++;
 
-    if(dow===6){ flushWeek(); }
-    if(d===lastDay && dow!==6){
-      for(let i=dow+1;i<7;i++) cell += '<div class="cal-cell cal-blank"></div>';
+    if(weekCol===5){ flushWeek(); }
+    if(d===lastDay && weekCol>0){
       flushWeek();
     }
   }
