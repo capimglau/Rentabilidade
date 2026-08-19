@@ -1434,14 +1434,14 @@ body.tip-pinned::before {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
   background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
 }
-/* Popup ao passar o mouse numa célula com movimento do calendário de
-   vencidos/hoje: mostra, sem precisar clicar, todos os lançamentos do dia,
-   os valores por cliente e os totais — mesma técnica do .rb-tip usado nas
-   barras do Resumo: um popup fixo (sempre centralizado na tela) que é
-   filho da célula, então continua "hover" (e visível) mesmo com o popup
-   renderizado longe dela na tela. Clicar na célula (fora do popup) abre o
-   dia numa janela nova (abrirDiaJanela), com baixa em lote — ver
-   MODO_CAL_DIA/#calDiaPage, mais abaixo. */
+/* Popup do dia do calendário de vencidos/hoje: clicar numa célula com
+   movimento mostra todos os lançamentos do dia, os valores por cliente e
+   os totais, com baixa em lote — ali mesmo, sem sair da página. Fica
+   aberto até clicar fora (ou noutro dia) — não desaparece sozinho, pra dar
+   tempo de interagir/baixar (mesma ideia do .rb-tip das barras do Resumo,
+   ver .tip-on/tip-pinned, mas só por clique — sem preview no hover, que
+   trocava de dia sozinho quando o mouse passava por cima de outra célula
+   a caminho do popup). */
 .cal-daytip {
   display: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 500;
   width: min(94vw, 640px); max-height: 82vh; overflow-y: auto; padding: 22px 26px; border-radius: 16px;
@@ -1449,15 +1449,13 @@ body.tip-pinned::before {
   box-shadow: 0 24px 64px rgba(15,25,45,.35); font-size: 14px; color: var(--ink);
   text-align: left; white-space: normal; cursor: default;
 }
-@media (hover: hover) {
-  .rc-cal-wrap .cal-cell:hover .cal-daytip { display: block; }
-}
+.rc-cal-wrap .cal-cell.tip-on .cal-daytip { display: block; }
 @media (max-width: 560px) {
   .cal-daytip { width: 92vw; padding: 18px 16px; }
 }
-/* Conteúdo do detalhe de um dia (popup do hover ou #calDiaPage, na janela
-   nova) — cabeçalho com o total + baixar tudo do dia, e uma seção por
-   cliente com o total dele + baixar tudo + cada lançamento já visível. */
+/* Conteúdo do detalhe de um dia (dentro do popup) — cabeçalho com o total
+   + baixar tudo do dia, e uma seção por cliente com o total dele + baixar
+   tudo + cada lançamento já visível. */
 .cal-full-day-hd { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .cal-full-day-hd b { font-size: 16px; }
 .cal-full-day-tot { display: flex; gap: 12px; font-size: 13px; font-weight: 700; }
@@ -3149,20 +3147,6 @@ body.modo-boletos #page-resumo > * { display: none; }
 body.modo-boletos #page-resumo > #cardBoletos { display: block; }
 body.modo-boletos #btnLinkBoletos { display: none; }
 
-/* Modo dia do calendário (ver MODO_CAL_DIA): janela nova aberta ao clicar
-   num dia do calendário de vencidos/hoje do Resumo — mesma ideia do
-   modo-boletos, escondendo o resto do app (header, menu, páginas) e
-   deixando só o detalhe daquele dia (#calDiaPage) na tela, com baixa em
-   lote (por cliente ou do dia inteiro). */
-body.modo-cal-dia { padding-left: 0 !important; padding-bottom: 0 !important; }
-body.modo-cal-dia #mainDock { display: none !important; }
-body.modo-cal-dia #offBanner { display: none !important; }
-body.modo-cal-dia .header { display: none !important; }
-body.modo-cal-dia .page { display: none !important; }
-#calDiaPage { display: none; }
-body.modo-cal-dia #calDiaPage { display: block; max-width: 720px; margin: 0 auto; padding: 24px 20px 48px; }
-#calDiaPage .cal-full-day-hd { font-size: 18px; margin-bottom: 20px; }
-
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css">
 <script id="ds" type="application/json">
@@ -3894,13 +3878,6 @@ body.modo-cal-dia #calDiaPage { display: block; max-width: 720px; margin: 0 auto
   </div>
 </div>
 
-<!-- DIA DO CALENDÁRIO EM JANELA NOVA — só aparece nessa janela quando aberta
-     via "?painel=recebimento-dia&dia=AAAA-MM-DD" (clique num dia do
-     calendário de vencidos/hoje — ver MODO_CAL_DIA/abrirDiaJanela). Ocupa a
-     janela inteira: sem header, sem menu, sem as outras páginas do app
-     (escondidas via body.modo-cal-dia no CSS). -->
-<div class="cal-dia-page" id="calDiaPage"></div>
-
 <!-- ─── MODAL LOGIN / CRIAR CONTA ─── -->
 <div class="overlay" id="mLogin">
   <div class="modal" style="max-width:380px">
@@ -4062,13 +4039,6 @@ const DS = JSON.parse(document.getElementById("ds").textContent);
 // exigiria mudar isso no banco). O que este modo faz é esconder o resto do
 // app da tela: só aparece o painel de Boletos, sem menu, sem outras telas.
 const MODO_BOLETOS = new URLSearchParams(location.search).get('painel')==='boletos';
-// Mesma ideia do MODO_BOLETOS: janela nova aberta ao clicar num dia do
-// calendário de vencidos/hoje (abrirDiaJanela), só que aqui pra mostrar
-// #calDiaPage (o detalhe daquele dia, com baixa em lote) em vez do painel
-// de Boletos. MODO_CAL_DIA_DIA guarda a data (query "dia"); "dono"/"tipo"
-// (opcionais) repetem o filtro que estava ativo na página que abriu.
-const MODO_CAL_DIA = new URLSearchParams(location.search).get('painel')==='recebimento-dia';
-const MODO_CAL_DIA_DIA = new URLSearchParams(location.search).get('dia')||'';
 function linkBoletos(){
   return location.origin+location.pathname+'?painel=boletos';
 }
@@ -5889,12 +5859,14 @@ function rhGroupHtml(grp,cls){
 }
 // Card de vencidos/hoje — modo calendário: grade Seg-Sex do mês corrente
 // (mesmo componente visual do calendário "Previsto do mês" —
-// .cal-grid/.cal-cell/.cal-week). Passar o mouse num dia com movimento
-// mostra, sem precisar clicar, todos os lançamentos do dia, os valores por
-// cliente e os totais (.cal-daytip, popup fixo — diaBlocoHtml monta o
-// conteúdo). Clicar no dia abre esse mesmo detalhe numa aba/janela NOVA
-// (abrirDiaJanela/MODO_CAL_DIA), com baixa em lote (por cliente ou do dia
-// inteiro) — sem sair nem alterar o layout desta página.
+// .cal-grid/.cal-cell/.cal-week). Clicar num dia com movimento mostra
+// todos os lançamentos do dia, os valores por cliente e os totais
+// (.cal-daytip, popup fixo — diaBlocoHtml monta o conteúdo), com baixa em
+// lote (por cliente ou do dia inteiro) ali mesmo — sem sair nem alterar o
+// layout desta página. O popup só abre/fecha por clique (ver o listener
+// de document no fim do arquivo) — sem preview no hover, que trocava de
+// dia sozinho quando o mouse passava por cima de outra célula a caminho
+// do popup (ele fica centralizado na tela, longe da célula).
 // Valor por extenso no desktop, abreviado no mobile (mesmo truque de
 // .v-full/.v-curto já usado noutros lugares do app — o CSS escolhe qual
 // aparece, ver .rc-cal-wrap .cal-v-full/.cal-v-curto): na tela cheia sobra
@@ -5952,7 +5924,7 @@ function renderRecCalGridHtml(){
       valHtml=`<span class="cal-val" title="${label} ${fR(pend)}">${calValDuplo(pend)}</span>`;
     }
     if(isToday) cls+=' cal-today';
-    const clickAttr = hasMov ? ` role="button" tabindex="0" onclick="abrirDiaJanela('${dia}')" title="Clique pra abrir ${fDM(dia)} numa janela nova"` : '';
+    const clickAttr = hasMov ? ` role="button" tabindex="0" title="Clique pra ver os lançamentos de ${fDM(dia)}"` : '';
     const tipHtml = hasMov ? `<div class="cal-daytip" onclick="event.stopPropagation()">${diaBlocoHtml(dia,drows)}</div>` : '';
     cell+=`<div class="${cls}"${clickAttr}><div class="cal-num">${d}</div>${valHtml}${tipHtml}</div>`;
     weekCol++;
@@ -5983,11 +5955,8 @@ function diaClienteHtml(dia,cliente,itensPend,itensPago){
   </div>`;
 }
 // Cabeçalho (total do dia + baixar tudo) + detalhe por cliente de um dia —
-// conteúdo compartilhado entre o popup do hover (.cal-daytip, dentro da
-// célula da grade) e a página que abre numa janela nova ao clicar no dia
-// (#calDiaPage/renderCalDiaPage), pra não duplicar a mesma montagem duas
-// vezes.
-function diaBlocoHtml(dia,drows,{closable=false}={}){
+// conteúdo do popup que abre ao clicar numa célula da grade (.cal-daytip).
+function diaBlocoHtml(dia,drows){
   const totPend=drows.filter(r=>!isPago(r)).reduce((a,r)=>a+fN(r.saldo),0);
   const totPago=drows.filter(isPago).reduce((a,r)=>a+fN(r.valor_pago),0);
   const porCliente={}, ordem=[];
@@ -5999,47 +5968,13 @@ function diaBlocoHtml(dia,drows,{closable=false}={}){
   const bulkDiaBtn = totPend>0
     ? `<button type="button" class="btn btn-blue" onclick="baixarTudoDia('${dia}')" title="Baixar de uma vez todos os lançamentos pendentes desse dia">✓ Baixar tudo do dia · ${fR(totPend)}</button>`
     : '';
-  const closeBtn = closable ? `<button class="mcl" onclick="window.close()" title="Fechar esta janela">✕</button>` : '';
   const corpo=ordem.map(k=>diaClienteHtml(dia,k,porCliente[k].pend,porCliente[k].pago)).join('');
   return `<div class="cal-full-day-hd">
       <b>${fDM(dia)}</b>
       <span class="cal-full-day-tot">${totPago>0?`<span class="t-rec">Recebido ${fR(totPago)}</span>`:''}${totPend>0?`<span class="t-pend">A receber ${fR(totPend)}</span>`:''}</span>
       ${bulkDiaBtn}
-      ${closeBtn}
     </div>
     <div class="cal-full-day-list">${corpo}</div>`;
-}
-// ── DIA DO CALENDÁRIO EM JANELA NOVA (clique num dia com movimento) ──
-// Abre só o detalhe daquele dia (mesmo conteúdo do popup de hover) numa
-// aba/janela nova, com o filtro de proprietário/tipo que estava ativo na
-// página que abriu — sem mexer no layout desta página.
-function abrirDiaJanela(dia){
-  const params=new URLSearchParams({painel:'recebimento-dia',dia});
-  if(selDono) params.set('dono',selDono);
-  if(selTipoCal) params.set('tipo',selTipoCal);
-  window.open(`${location.pathname}?${params.toString()}`,'_blank');
-}
-function renderCalDiaPage(){
-  const wrap=document.getElementById('calDiaPage'); if(!wrap) return;
-  // selDono/selTipoCal já vêm setados (na abertura, a partir da query
-  // "dono"/"tipo") — usar os mesmos globais que baixarTudoCliente/
-  // baixarTudoDia filtram, senão a baixa em lote agiria sobre lançamentos
-  // que nem apareceram na tela.
-  const dia=MODO_CAL_DIA_DIA;
-  const rows=allD().filter(r=>(r.prev_pgto||'').slice(0,10)===dia&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal));
-  const corpo = rows.length
-    ? diaBlocoHtml(dia,rows,{closable:true})
-    : `<div class="cal-full-day-hd"><b>${fDM(dia)}</b><button class="mcl" onclick="window.close()" title="Fechar esta janela">✕</button></div><div class="rh-nada">Nada nesse dia.</div>`;
-  wrap.innerHTML = corpo;
-}
-// Repinta a página do dia se essa janela for a que está com #calDiaPage
-// ativo — chamado de renderAll(), no mesmo espírito de refreshCalPrevisto(),
-// pra uma alteração (baixa, edição, exclusão, sincronização de outro
-// aparelho) não deixar essa janela aberta mostrando dado velho. Na aba
-// principal (MODO_CAL_DIA false) é um no-op.
-function refreshCalDia(){
-  if(!MODO_CAL_DIA)return;
-  renderCalDiaPage();
 }
 // Baixa em lote — grava valor_pago=saldo/saldo=0/data_pagamento=hoje em
 // cada lançamento pendente do filtro (cliente+dia, ou o dia inteiro),
@@ -9609,7 +9544,12 @@ function renderAll(){
   else if(curPage==='auditoria')renderAuditoria();
   refreshMSearch();
   refreshCalPrevisto();
-  refreshCalDia();
+  // Uma baixa/edição redesenha a grade do calendário de vencidos/hoje do
+  // zero (innerHTML), o que já derruba o popup de um dia que estivesse
+  // aberto (a célula antiga, com a classe "tip-on", é substituída por uma
+  // nova sem ela) — só falta recalcular o fundo escurecido (tip-pinned),
+  // senão ficava escurecendo a tela sem nenhum popup visível.
+  _updateTipPinned();
 }
 function go(id){
   // Modo Boletos: só existe "resumo" nessa tela. Reforço, não a proteção em
@@ -9721,19 +9661,7 @@ async function boot(){
   updateMesLabel();
   buildResumoFilters();
   buildBaixasFilters();
-  if(MODO_CAL_DIA){
-    // Janela nova do dia do calendário: sem menu, sem outras telas — só
-    // #calDiaPage (CSS de body.modo-cal-dia), com o mesmo filtro de
-    // proprietário/tipo (query "dono"/"tipo") que estava ativo na página
-    // que abriu essa janela — pra baixarTudoCliente/baixarTudoDia agirem
-    // só sobre o que apareceu na tela, e não sobre lançamentos escondidos
-    // pelo filtro de origem.
-    document.body.classList.add('modo-cal-dia');
-    const qs=new URLSearchParams(location.search);
-    selDono=qs.get('dono')||'';
-    selTipoCal=qs.get('tipo')||'';
-    renderCalDiaPage();
-  } else if(MODO_BOLETOS){
+  if(MODO_BOLETOS){
     // Link restrito: sempre Resumo, painel já aberto, sem lembrar a última
     // aba visitada (isso é sobre o app inteiro; aqui só existe uma tela).
     document.body.classList.add('modo-boletos');
@@ -9760,6 +9688,14 @@ async function boot(){
   // página muda com os dados carregados).
   window.scrollTo(0,0);
 }
+// O fundo escurecido (body.tip-pinned::before) é compartilhado por
+// qualquer popup fixado por clique nesta página (barras do Resumo — .rb —
+// e dias do calendário de vencidos/hoje — .cal-cell); só liga se pelo
+// menos um dos dois tiver algo aberto, senão desliga.
+function _updateTipPinned(){
+  document.body.classList.toggle('tip-pinned',
+    !!document.querySelector('.rb.tip-on') || !!document.querySelector('.rc-cal-wrap .cal-cell.tip-on'));
+}
 // No celular não existe hover: o toque na linha abre a mesma lista, e um
 // segundo toque (ou um toque fora) fecha. No desktop, clicar na barra também
 // FIXA o popup aberto (independente do mouse sair dele) — sem isso, ao tentar
@@ -9773,7 +9709,21 @@ document.addEventListener('click',e=>{
   const abrir=linha&&!linha.classList.contains('rb-cab')&&linha.querySelector('.rb-tip');
   document.querySelectorAll('.rb.tip-on').forEach(el=>{if(el!==linha)el.classList.remove('tip-on');});
   if(abrir)linha.classList.toggle('tip-on');
-  document.body.classList.toggle('tip-pinned',!!document.querySelector('.rb.tip-on'));
+  _updateTipPinned();
+});
+// Calendário de vencidos/hoje: clicar num dia com movimento mostra o
+// mesmo detalhe (valores por cliente, baixar tudo) num popup fixo, que só
+// abre/fecha por clique — sem preview no hover, que trocava de dia sozinho
+// quando o mouse passava por cima de outra célula a caminho do popup
+// (ele fica centralizado na tela, longe de onde o mouse estava). Clicar
+// fora (ou noutro dia) fecha; clicar dentro do popup (baixar, swipe) não.
+document.addEventListener('click',e=>{
+  if(e.target.closest&&e.target.closest('.cal-daytip'))return;
+  const cel=e.target.closest?e.target.closest('.rc-cal-wrap .cal-cell'):null;
+  const abrir=cel&&cel.querySelector('.cal-daytip');
+  document.querySelectorAll('.rc-cal-wrap .cal-cell.tip-on').forEach(el=>{if(el!==cel)el.classList.remove('tip-on');});
+  if(abrir)cel.classList.toggle('tip-on');
+  _updateTipPinned();
 });
 
 // ─── Popovers de filtro (.rf e .rf-sec soltos em barra flat) — ao abrir,
