@@ -430,13 +430,20 @@ body::before {
 /* Card de Locação por proprietário: alterna o dono exibido dentro do mesmo
    espaço do card (crossfade), em vez de listar todos de uma vez. */
 .mc-cycle-stage { position: relative; min-height: 66px; }
+/* Some primeiro (fade-out) pra só depois o próximo aparecer (fade-in) —
+   um crossfade simultâneo deixava os dois textos sobrepostos e ilegíveis
+   por um instante (nome/valor de um dono por cima do outro). */
 .mc-cycle-slide {
   position: absolute; inset: 0 0 auto 0;
   opacity: 0; transform: translateY(5px);
-  transition: opacity 1.45s ease, transform 1.45s ease;
+  transition: opacity .5s ease, transform .5s ease;
+  transition-delay: 0s;
   pointer-events: none;
 }
-.mc-cycle-slide.on { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.mc-cycle-slide.on {
+  opacity: 1; transform: translateY(0); pointer-events: auto;
+  transition-delay: .5s;
+}
 @media (prefers-reduced-motion: reduce) {
   .mc-cycle-slide { transition: opacity .01ms; transform: none; }
 }
@@ -2566,7 +2573,7 @@ details[open] summary::before { transform: rotate(90deg); }
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: rgba(255,255,255,.58);
+    background: rgba(255,255,255,.4);
     -webkit-backdrop-filter: blur(28px) saturate(190%);
     backdrop-filter: blur(28px) saturate(190%);
     /* Camada própria de composição: sem isso, o Safari no iPhone às vezes
@@ -2894,7 +2901,7 @@ html[data-theme="dark"] .ntab.on { color: var(--blue); background: rgba(255,255,
 /* Dark + mobile: dock translúcido sem o "drift" do iOS (blur no ::before) */
 @media (max-width: 760px) {
   html[data-theme="dark"] .nav-tabs { background: transparent; }
-  html[data-theme="dark"] .nav-tabs::before { background: rgba(24,33,52,.58); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
+  html[data-theme="dark"] .nav-tabs::before { background: rgba(24,33,52,.4); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
 }
 html[data-theme="dark"] .stat-pill { background: var(--surface2); }
 html[data-theme="dark"] .owner-select-wrap { background-color: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }
