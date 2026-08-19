@@ -5685,9 +5685,14 @@ function renderRecCalGridHtml(){
   const hoje=td();
   const mes=curMes;
   const [y,m]=mes.split('-').map(Number);
-  const rows=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(mes));
+  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(mes));
   const dmap={};
-  rows.forEach(r=>{ if(!r.prev_pgto)return; dmap[r.prev_pgto]=(dmap[r.prev_pgto]||0)+fN(r.saldo); });
+  rows.forEach(r=>{
+    const dia=(r.prev_pgto||'').slice(0,10); if(!dia)return;
+    if(!dmap[dia]) dmap[dia]={rec:0,pend:0};
+    if(isPago(r)) dmap[dia].rec+=fN(r.valor_pago);
+    else dmap[dia].pend+=fN(r.saldo);
+  });
 
   const DIAS_PT=['S','T','Q','Q','S'];
   const lastDay=new Date(y,m,0).getDate();
@@ -5704,17 +5709,26 @@ function renderRecCalGridHtml(){
     const dow=new Date(y,m-1,d).getDay();
     if(dow===0||dow===6)continue;
     const dia=`${mes}-${String(d).padStart(2,'0')}`;
-    const total=dmap[dia]||0;
+    const entry=dmap[dia]||{rec:0,pend:0};
     const isToday=dia===hoje;
-    if(total>0){ weekTot+=total; weekHas=true; }
+    const hasMov=entry.rec>0||entry.pend>0;
+    if(hasMov){ weekTot+=entry.rec+entry.pend; weekHas=true; }
     const col=dow-1;
     while(weekCol<col){ cell+='<div class="cal-cell cal-blank"></div>'; weekCol++; }
     let cls='cal-cell', valHtml='';
-    if(total>0){
+    if(entry.rec>0&&entry.pend>0){
+      const venc=dia<hoje;
+      cls += ' cal-mix'+(venc?' rc-blink':(isToday?' rc-hoje-mov':''));
+      valHtml = `<span class="cal-mix-item rec" onclick="mostrarLancDiaFluxo('${dia}')" title="Recebido ${fR(entry.rec)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.rec)}</span>`+
+                `<span class="cal-mix-item pend" onclick="mostrarLancDiaFluxo('${dia}')" title="A receber ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
+    } else if(entry.rec>0){
+      cls += ' cal-ok';
+      valHtml=`<span class="cal-val" onclick="mostrarLancDiaFluxo('${dia}')" title="Recebido ${fR(entry.rec)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.rec)}</span>`;
+    } else if(entry.pend>0){
       const venc=dia<hoje;
       cls += venc?' cal-venc rc-blink':(isToday?' cal-pend rc-hoje-mov':' cal-pend');
       const label=venc?'Vencido':(isToday?'Vence hoje':'A receber');
-      valHtml=`<span class="cal-val" onclick="mostrarLancDiaFluxo('${dia}')" title="${label} ${fR(total)} · Ver lançamentos de ${fDM(dia)}">${calFRk(total)}</span>`;
+      valHtml=`<span class="cal-val" onclick="mostrarLancDiaFluxo('${dia}')" title="${label} ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
     }
     if(isToday) cls+=' cal-today';
     cell+=`<div class="${cls}"><div class="cal-num">${d}</div>${valHtml}</div>`;
