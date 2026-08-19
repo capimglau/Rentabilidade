@@ -161,6 +161,16 @@ body::before {
   transition: all .03s;
 }
 .mn-btn:hover { background: var(--card); color: var(--ink); }
+/* Botão de tema do cabeçalho, ao lado do seletor de mês — mesma escala
+   compacta do .month-nav (o .icon-btn padrão, 40px, é grande demais aqui). */
+.theme-btn-hdr {
+  width: 30px; height: 30px; margin-left: 8px;
+  background: var(--surface); border: 1px solid var(--line);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.theme-btn-hdr svg { width: 15px; height: 15px; }
+.theme-btn-hdr:hover { background: var(--card); }
+html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); border-color: rgba(255,255,255,.10); }
 .mn-label {
   font-size: 12.5px;
   font-weight: 600;
@@ -3234,6 +3244,7 @@ body.modo-boletos #btnLinkBoletos { display: none; }
     <div class="mn-label" id="mnLabel">—</div>
     <button class="mn-btn" onclick="navMes(1)" title="Próximo mês">›</button>
   </div>
+  <button class="icon-btn theme-btn-hdr" onclick="toggleTheme()" title="Tema" aria-label="Tema" id="themeBtnHdr"></button>
 </div>
 
 <!-- ─── PAGES ─── -->
