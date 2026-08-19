@@ -1420,6 +1420,12 @@ body.tip-pinned::before {
 /* Dias já concluídos (tudo recebido) ficam um pouco esmaecidos, pra não
    competir visualmente com o que ainda precisa de atenção. */
 .rc-cal-wrap .cal-cell.cal-ok { opacity: .68; }
+/* Contorno na mesma cor do preenchimento (em vez de sumir com border-color:
+   transparent), pra cada dia colorido ficar com uma borda visível e não só
+   um bloco chapado. */
+.rc-cal-wrap .cal-cell.cal-ok { border-color: color-mix(in srgb, var(--green) 45%, transparent); }
+.rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
+.rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--purple) 45%, transparent); }
 @keyframes rcBlinkRed { 0%, 100% { background: var(--red-soft); } 50% { background: transparent; } }
 @keyframes rcBlinkGreen { 0%, 100% { background: var(--green-soft); border-color: transparent; } 50% { background: transparent; } }
 .rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 1.6s ease-in-out infinite; }
