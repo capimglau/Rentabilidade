@@ -2460,6 +2460,11 @@ details[open] summary::before { transform: rotate(90deg); }
     background: rgba(255,255,255,.58);
     -webkit-backdrop-filter: blur(28px) saturate(190%);
     backdrop-filter: blur(28px) saturate(190%);
+    /* Camada própria de composição: sem isso, o Safari no iPhone às vezes
+       simplesmente não pinta o blur num pseudo-elemento dentro de um pai
+       position:fixed (fica sólido/opaco em vez de translúcido). */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
     z-index: -1;
     pointer-events: none;
   }
