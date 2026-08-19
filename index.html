@@ -1362,12 +1362,6 @@ body.tip-pinned::before {
   .bol-resumo-arrow { font-size: 11px; text-align: right; }
 }
 /* Resumo de vencidos: quanto, de quem e de quando, sem listar lançamento. */
-.vc-dias-grupos { display: flex; flex-direction: column; gap: 12px; margin: 2px 0 9px; }
-.vc-day-group { display: flex; flex-direction: column; gap: 6px; }
-.vc-day-total { display: flex; align-items: baseline; gap: 7px; padding: 0 2px; }
-.vc-day-total b { font-weight: 700; color: var(--ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
-.vc-day-total small { color: var(--ink3); font-size: 10.5px; }
-.vc-day-total em { font-style: normal; font-weight: 700; color: var(--amber); font-size: 11px; }
 .vc-datas { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; color: var(--ink3); }
 /* Os dois cartões lado a lado: mesma altura, sem margem dupla entre eles. */
 .rh-dupla { margin-bottom: 27px; align-items: stretch; }   /* 16px + 70% */
@@ -1757,7 +1751,11 @@ html[data-theme="dark"] .res-ctrls .rc-sel:hover {
 .receb-hoje:active { transform: translateY(0); }
 html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(91,155,213,.16) 0%, var(--card) 70%); border-color: rgba(91,155,213,.30); }
 .rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 11px; letter-spacing: -.01em; }
-.rh-sub { font-size: 12px; color: var(--blue); font-weight: 700; }
+.rh-sub { font-size: 12px; color: var(--blue); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+/* Cards compactos do Resumo (vencidos/hoje): só título + total + ">" — o
+   detalhe (lista por dia, inadimplência) só aparece ao abrir "ver todos". */
+.rh-compact .rh-hd { margin-bottom: 0; }
+.rh-chevron { font-size: 13px; opacity: .6; }
 .rh-list { display: flex; flex-direction: column; gap: 6px; }
 .rh-list .swipe { border-radius: 10px; }
 .pcard.rh-item { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; margin-bottom: 0; box-shadow: none; font-size: 13px; color: var(--ink); }
@@ -1771,11 +1769,6 @@ html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(9
 .rh-venc-chip { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 11px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s; }
 .rh-venc-chip:hover { background: rgba(191,37,24,.16); border-color: var(--red); }
 html[data-theme="dark"] .rh-venc-chip { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
-/* Inadimplência do mês, movida pra dentro do card de vencidos (antes tinha
-   painel próprio no topo do Resumo). */
-.rh-inad { display: inline-flex; align-items: center; gap: 5px; margin: -3px 0 11px; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 11.5px; font-weight: 600; }
-.rh-inad b { font-weight: 800; }
-html[data-theme="dark"] .rh-inad { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
 /* Modo "vencidos" (quando não há recebimentos hoje) */
 .receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(191,37,24,.06) 0%, #ffffff 70%); border-color: rgba(191,37,24,.35); }
 html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(255,107,107,.16) 0%, var(--card) 70%); border-color: rgba(255,107,107,.30); }
@@ -5233,14 +5226,19 @@ function renderBaixas(){
   const totPend=metricsBase.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
   const totRec=metricsBase.filter(r=>isPago(r)).reduce((a,r)=>a+fN(r.valor_pago),0);
   const nVenc=metricsBase.filter(r=>isVenc(r)).length;
+  const vencValMes=metricsBase.filter(r=>isVenc(r)).reduce((a,r)=>a+fN(r.saldo),0);
+  const prevLiqMes=totPend+totRec;
+  const inadPctMes=prevLiqMes>0?(vencValMes/prevLiqMes*100):0;
   const nHoje=metricsBase.filter(r=>isPend(r)&&r.prev_pgto===hoje).length;
 
-  // Metrics (compactos — sem 3ª linha)
+  // Metrics (compactos — sem 3ª linha). A inadimplência do mês só aparece
+  // aqui, no detalhe — na tela inicial o card de vencidos é só título +
+  // total + ">".
   document.getElementById('baixa-metrics').innerHTML=`
     <div class="mc amber"><div class="mc-label">A receber no mês</div><div class="mc-value">${fR(totPend)}</div></div>
     <div class="mc green"><div class="mc-label">Recebido no mês</div><div class="mc-value">${fR(totRec)}</div></div>
     <div class="mc blue"><div class="mc-label">Vencem hoje</div><div class="mc-value">${nHoje}</div></div>
-    <div class="mc red"><div class="mc-label">Já vencidos</div><div class="mc-value">${nVenc}</div></div>
+    <div class="mc red"><div class="mc-label">Já vencidos</div><div class="mc-value">${nVenc}</div><div class="mc-sub">${inadPctMes.toFixed(1)}% inadimplência</div></div>
   `;
   const metricsMiniText=document.getElementById('metricsMiniText');
   if(metricsMiniText)metricsMiniText.textContent=`${fR(totPend)} a receber · ${nHoje} hoje · ${nVenc} vencidos`;
@@ -5534,42 +5532,16 @@ function centerResScroll(mShown){
   });
 }
 
-// Janela "Recebimentos de hoje" no Resumo — clicar abre todos os recebimentos.
-// Exibe até 5 linhas por padrão, um atalho com o total dos vencidos e,
-// quando não há recebimentos hoje, mostra os vencidos no lugar.
-// Linha de lançamento dos atalhos "vencidos"/"hoje" da tela inicial, com o
-// mesmo swipe (Baixar/Reverter/Editar/Excluir) das outras listas — antes só
-// dava pra clicar no card inteiro e ir pra Recebimentos, sem agir direto no
-// lançamento. cls extra ('venc'/'hoje-card') reaproveita o esmaecer lento já
-// usado nos cartões de Recebimentos.
-function rhItemHtml(r,cls){
-  const i=allD().indexOf(r);
-  const col=DC[r.dono]||'#888';
-  const temPago=fN(r.valor_pago)>0;
-  return `<div class="swipe"><div class="swipe-actions">
-    <button class="swipe-act pay" onclick="event.stopPropagation();swDo(${i},1)" title="Baixar"><span class="ic">✓</span></button>
-    ${temPago?`<button class="swipe-act revert" onclick="event.stopPropagation();swDo(${i},3)" title="Reverter pagamento"><span class="ic">↺</span></button>`:''}
-    <button class="swipe-act del" onclick="event.stopPropagation();swDo(${i},4)" title="Excluir"><span class="ic">🗑</span></button>
-    <button class="swipe-act edit" onclick="event.stopPropagation();swDo(${i},0)" title="Editar"><span class="ic">✏</span></button>
-  </div>
-  <div class="pcard rh-item ${cls}">
-    <span class="placa">${r.placa}</span>
-    <span class="rh-cli">${esc(r.cliente||'—')}</span>
-    <span class="rh-dono"><span class="ddot" style="background:${col}"></span>${esc(r.dono||'')}</span>
-    <span class="rh-val">${fR(r.saldo)}</span>
-  </div></div>`;
-}
-// inadMes/vencValMes: inadimplência do mês corrente (vinda de renderResumo,
-// mesmo critério de prev_pgto no curMes) — exibida dentro do card de
-// vencidos em vez de ter painel próprio no topo do Resumo.
-function renderRecebHoje(inadMes,vencValMes){
+// Janela "Recebimentos de hoje"/"vencidos" no Resumo — clicar abre o detalhe.
+// Cards compactos: na tela inicial só entra título + contagem/valor + ">" —
+// nada de lista de lançamentos, grupos por dia ou inadimplência aqui. Isso
+// tudo só aparece no detalhe (renderBaixas), que abre ao clicar no card ou
+// em "ver todos".
+function renderRecebHoje(){
   const el=document.getElementById('recebHoje'); if(!el) return;
   const hoje=td();
-  // Ordem crescente por vencimento (os mais antigos primeiro, que é a ordem
-  // em que se cobra); dentro do mesmo dia, o de maior saldo na frente.
-  const porVenc=(a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||'')||fN(b.saldo)-fN(a.saldo);
-  const itemsHoje=allD().filter(r=>isPend(r)&&r.prev_pgto===hoje).sort(porVenc);
-  const vencidos=allD().filter(r=>isVenc(r)).sort(porVenc);
+  const itemsHoje=allD().filter(r=>isPend(r)&&r.prev_pgto===hoje);
+  const vencidos=allD().filter(r=>isVenc(r));
   const totVenc=vencidos.reduce((a,r)=>a+fN(r.saldo),0);
 
   // Os dois lado a lado: vencidos à esquerda, recebimentos de hoje à direita.
@@ -5577,53 +5549,15 @@ function renderRecebHoje(inadMes,vencValMes){
   // cai no próprio estado "vazio" (✓ nada vencido / nada vencendo hoje) em
   // vez de o painel inteiro sumir, senão passa a impressão de que a tela
   // não carregou.
-  const dias=d=>Math.round((new Date(hoje+'T12:00:00')-new Date(d+'T12:00:00'))/86400000);
-  // Só omite o ano quando é o ano corrente — um vencimento com ano errado
-  // (dado corrompido) precisa aparecer completo, senão "13/09" parece um
-  // vencimento futuro normal quando na verdade é de um ano muito antigo.
-  const fmtD=d=>{const[y,m,dd]=d.split('-');return y===hoje.slice(0,4)?`${dd}/${m}`:`${dd}/${m}/${y}`;};
+  const cardVenc=vencidos.length
+    ? `<div class="receb-hoje modo-venc rh-compact" role="button" tabindex="0" onclick="irVencidos()" title="Ver todos os vencidos">
+        <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">${vencidos.length} · ${fR(totVenc)}<span class="rh-chevron">›</span></span></div>
+      </div>`
+    : `<div class="receb-hoje modo-venc rh-vazio">
+        <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">—</span></div>
+        <div class="rh-nada">Nenhum recebimento vencido ✓</div>
+      </div>`;
 
-  // ── Esquerda: vencidos, em resumo (quem, quanto, de quando) ──
-  let cardVenc;
-  if(vencidos.length){
-    // Uma pastilha por DIA de vencimento, do mais antigo para o mais novo —
-    // é o que diz o tamanho do atraso e a ordem em que se cobra. Antes era por
-    // proprietário, que não responde "de quando é esse dinheiro".
-    const porDia={};
-    vencidos.forEach(r=>{const d=r.prev_pgto||'—';const o=porDia[d]||(porDia[d]={n:0,v:0,itens:[]});o.n++;o.v+=fN(r.saldo);o.itens.push(r);porDia[d]=o;});
-    const listaDias=Object.entries(porDia).sort((a,b)=>a[0].localeCompare(b[0]));
-    // Preview agrupada por dia: o total do dia (data + valor) sempre vem antes
-    // dos lançamentos daquele dia, nunca um lançamento solto aparecendo em
-    // cima sem o total que dá contexto a ele.
-    const CAP=4;
-    let shown=0;
-    const gruposHtml=[];
-    for(const [d,o] of listaDias){
-      if(shown>=CAP)break;
-      const itensDia=o.itens.slice(0,CAP-shown);
-      shown+=itensDia.length;
-      gruposHtml.push(`<div class="vc-day-group">
-        <div class="vc-day-total" title="${o.n} lançamento(s) vencido(s) em ${d==='—'?'sem data':fmtD(d)}">
-          <b>${d==='—'?'sem data':fmtD(d)}</b>${d==='—'?'':`<small>${dias(d)}d</small>`}<em>${fR(o.v)}</em>
-        </div>
-        <div class="rh-list">${itensDia.map(r=>rhItemHtml(r,'venc')).join('')}</div>
-      </div>`);
-    }
-    const inadHtml=inadMes==null?'':`<div class="rh-inad">Inadimplência do mês (${mLabel(curMes)}): <b>${inadMes.toFixed(1)}%</b> · ${fR(vencValMes)} vencido</div>`;
-    cardVenc=`<div class="receb-hoje modo-venc vc-resumo" role="button" tabindex="0" onclick="irVencidos()" title="Ver todos os vencidos">
-      <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">${vencidos.length} · ${fR(totVenc)}</span></div>
-      ${inadHtml}
-      <div class="vc-dias-grupos" onclick="event.stopPropagation()">${gruposHtml.join('')}</div>
-      <div class="rh-foot">${vencidos.length>shown?`+${vencidos.length-shown} • `:''}Ver todos os vencidos ›</div>
-    </div>`;
-  } else {
-    cardVenc=`<div class="receb-hoje modo-venc rh-vazio">
-      <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">—</span></div>
-      <div class="rh-nada">Nenhum recebimento vencido ✓</div>
-    </div>`;
-  }
-
-  // ── Direita: o que vence hoje ──
   // O atalho do histórico fica nos dois estados do card: é consulta do que foi
   // LANÇADO hoje (não do que vence hoje), e some se ficasse só no card vazio.
   const nFeitos=lancFeitosHoje();
@@ -5635,11 +5569,9 @@ function renderRecebHoje(inadMes,vencValMes){
   let cardHoje;
   if(itemsHoje.length){
     const totHoje=itemsHoje.reduce((a,r)=>a+fN(r.saldo),0);
-    const preview=itemsHoje.slice(0,4);
-    cardHoje=`<div class="receb-hoje" role="button" tabindex="0" onclick="irHoje()" title="Ver só os recebimentos de hoje">
-      <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">${itemsHoje.length} · ${fR(totHoje)}</span></div>
-      <div class="rh-list" onclick="event.stopPropagation()">${preview.map(r=>rhItemHtml(r,'hoje-card')).join('')}</div>
-      <div class="rh-links">${atalhoHist}<span class="rh-link">${itemsHoje.length>preview.length?`+${itemsHoje.length-preview.length} • `:''}Ver todos os recebimentos ›</span></div>
+    cardHoje=`<div class="receb-hoje rh-compact" role="button" tabindex="0" onclick="irHoje()" title="Ver só os recebimentos de hoje">
+      <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">${itemsHoje.length} · ${fR(totHoje)}<span class="rh-chevron">›</span></span></div>
+      <div class="rh-links" onclick="event.stopPropagation()">${atalhoHist}</div>
     </div>`;
   } else {
     cardHoje=`<div class="receb-hoje rh-vazio">
@@ -6266,8 +6198,6 @@ function renderResumo(){
   const nL=rows.length, nPend=rows.filter(r=>isPend(r)).length;
   const prevLiq=totP+totS;                       // previsto líquido = recebido + a receber
   const ticket=nL?prevLiq/nL:0;
-  const vencVal=rows.filter(r=>isVenc(r)).reduce((a,r)=>a+fN(r.saldo),0);
-  const inad=prevLiq>0?(vencVal/prevLiq*100):0;
   // Comparativo vs. mês anterior (previsto líquido)
   const baseRows=allD().filter(r=>(!selDono||r.dono===selDono)&&rfMatch(r));
   const bM={};baseRows.forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(m)bM[m]=(bM[m]||0)+liq(r);});
@@ -6302,7 +6232,7 @@ function renderResumo(){
       stage.querySelectorAll('.mc-cycle-slide').forEach((el,i)=>el.classList.toggle('on',i===mcLocCycleIdx));
     },4000);
   }
-  renderRecebHoje(inad,vencVal);
+  renderRecebHoje();
   // Seletor de ano dos gráficos mensais
   {const sel=document.getElementById('rc-ano');
    if(sel){const anos=resAnos();
