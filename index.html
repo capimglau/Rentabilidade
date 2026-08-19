@@ -447,9 +447,9 @@ body::before {
 @media (min-width: 761px) {
   #res-m .mc { padding: 14px 20px; }
   #res-m .mc-icon { font-size: 15px; margin-bottom: 8px; }
-  #res-m .mc-label { font-size: 11px; margin-bottom: 5px; }
+  #res-m .mc-label { font-size: 12.5px; margin-bottom: 5px; }
   #res-m .mc-value { font-size: 20px; }
-  #res-m .mc-sub { font-size: 12.5px; margin-top: 5px; }
+  #res-m .mc-sub { font-size: 14px; margin-top: 5px; }
 }
 
 /* ─── BAIXAS LAYOUT ─── */
@@ -1366,8 +1366,8 @@ body.tip-pinned::before {
 .vc-dias-grupos { display: flex; flex-direction: column; gap: 12px; margin: 2px 0 9px; }
 .vc-day-group { display: flex; flex-direction: column; gap: 6px; }
 .vc-day-total { display: flex; align-items: baseline; gap: 7px; padding: 0 2px; }
-.vc-day-total b { font-weight: 700; color: var(--ink); font-size: 13.5px; font-variant-numeric: tabular-nums; }
-.vc-day-total small { color: var(--ink3); font-size: 11.5px; }
+.vc-day-total b { font-weight: 700; color: var(--ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.vc-day-total small { color: var(--ink3); font-size: 10.5px; }
 .vc-day-total em { font-style: normal; font-weight: 700; color: var(--amber); font-size: 11px; }
 /* Os dois cartões lado a lado: mesma altura, sem margem dupla entre eles. */
 .rh-dupla { margin-bottom: 27px; align-items: stretch; }   /* 16px + 70% */
@@ -1375,9 +1375,9 @@ body.tip-pinned::before {
 .rh-dupla .rh-foot { margin-top: auto; padding-top: 11px; }
 .receb-hoje.rh-vazio { cursor: default; opacity: .72; }
 .receb-hoje.rh-vazio:hover { box-shadow: var(--card-shadow); transform: none; }
-.rh-nada { font-size: 13.5px; color: var(--ink3); }
+.rh-nada { font-size: 12.5px; color: var(--ink3); }
 .rh-links { display: flex; gap: 14px; justify-content: flex-end; margin-top: 11px; }
-.rh-link { font-size: 13.5px; font-weight: 700; color: var(--blue); cursor: pointer; }
+.rh-link { font-size: 12.5px; font-weight: 700; color: var(--blue); cursor: pointer; }
 .rh-link:hover { text-decoration: underline; }
 .vc-datas b { color: var(--red); font-weight: 700; }
 .rb-l { font-size: 12.5px; width: auto; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; padding: 0; margin-right: 12px; }
@@ -1756,7 +1756,7 @@ html[data-theme="dark"] .res-ctrls .rc-sel:hover {
 .receb-hoje:hover { box-shadow: 0 6px 24px rgba(31,95,168,.16); transform: translateY(-1px); border-color: var(--blue); }
 .receb-hoje:active { transform: translateY(0); }
 html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(91,155,213,.16) 0%, var(--card) 70%); border-color: rgba(91,155,213,.30); }
-.rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; margin-bottom: 11px; letter-spacing: -.01em; }
+.rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 11px; letter-spacing: -.01em; }
 .rh-sub { font-size: 12px; color: var(--blue); font-weight: 700; }
 .rh-list { display: flex; flex-direction: column; gap: 6px; }
 /* Itens de preview dos cards de vencidos/hoje na tela inicial: sem a
@@ -1765,16 +1765,13 @@ html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(9
    então repetir o fade a cada re-render fazia a lista "piscar" sozinha. */
 .rh-list .pcard { animation: none; }
 .rh-list .swipe { border-radius: 10px; }
-.pcard.rh-item { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; margin-bottom: 0; box-shadow: none; font-size: 14px; color: var(--ink); }
+.pcard.rh-item { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 11px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 9px 12px; margin-bottom: 0; box-shadow: none; font-size: 13px; color: var(--ink); }
 .rh-list .swipe-act { width: 40px; }
 .rh-list .swipe-act .ic { font-size: 15px; }
-.rh-item .placa { font-size: 13px; }
 .rh-cli { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rh-dono { font-size: 12.5px; color: var(--ink3); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-/* Pinado no tamanho antigo: o container (.pcard.rh-item) subiu de fonte
-   pro texto (cliente), mas o valor em R$ não deve acompanhar. */
-.rh-val { font-size: 13px; font-weight: 700; color: var(--red); white-space: nowrap; }
-.rh-foot { margin-top: 11px; font-size: 13.5px; font-weight: 700; color: var(--blue); text-align: right; }
+.rh-dono { font-size: 11.5px; color: var(--ink3); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.rh-val { font-weight: 700; color: var(--red); white-space: nowrap; }
+.rh-foot { margin-top: 11px; font-size: 12.5px; font-weight: 700; color: var(--blue); text-align: right; }
 /* Atalho com o total dos vencidos */
 .rh-venc-chip { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 11px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s; }
 .rh-venc-chip:hover { background: rgba(191,37,24,.16); border-color: var(--red); }
@@ -2465,8 +2462,8 @@ details[open] summary::before { transform: rotate(90deg); }
   /* Só os 4 painéis do topo do Resumo (Total previsto/recebido, A receber,
      Locação) — rótulo e legenda um pouco maiores que o resto do app, sem
      mexer no valor em R$. */
-  #res-m .mc-label { font-size: 10px; }
-  #res-m .mc-sub { font-size: 11px; }
+  #res-m .mc-label { font-size: 11.5px; }
+  #res-m .mc-sub { font-size: 12.5px; }
   .pcard { border: none; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .pcard.venc::before { background: #ff3b30; }
   .pcard.hoje-card::before { background: #1f5fa8; }
