@@ -400,6 +400,7 @@ body::before {
 .mc.green { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
 .mc.red   { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
 .mc.amber { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
+.mc.purple { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
 .mc-icon {
   font-size: 18px;
   margin-bottom: 10px;
@@ -424,7 +425,21 @@ body::before {
 .mc.green .mc-value { color: var(--green); }
 .mc.red .mc-value { color: var(--red); }
 .mc.amber .mc-value { color: var(--amber); }
+.mc.purple .mc-value { color: var(--purple); }
 .mc-sub { font-size: 11.5px; color: var(--ink3); margin-top: 6px; }
+/* Card de Locação por proprietário: alterna o dono exibido dentro do mesmo
+   espaço do card (crossfade), em vez de listar todos de uma vez. */
+.mc-cycle-stage { position: relative; min-height: 39px; }
+.mc-cycle-slide {
+  position: absolute; inset: 0 0 auto 0;
+  opacity: 0; transform: translateY(5px);
+  transition: opacity .45s ease, transform .45s ease;
+  pointer-events: none;
+}
+.mc-cycle-slide.on { opacity: 1; transform: translateY(0); pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .mc-cycle-slide { transition: opacity .01ms; transform: none; }
+}
 
 /* Painéis do resumo (Total faturado, Total recebido, A receber, Inadimplência) ~20% mais baixos.
    Só no desktop (>=761px): abaixo disso o próprio breakpoint mobile já define
@@ -1756,6 +1771,11 @@ html[data-theme="dark"] .receb-hoje { background: linear-gradient(165deg, rgba(9
 .rh-venc-chip { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 11px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s; }
 .rh-venc-chip:hover { background: rgba(191,37,24,.16); border-color: var(--red); }
 html[data-theme="dark"] .rh-venc-chip { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
+/* Inadimplência do mês, movida pra dentro do card de vencidos (antes tinha
+   painel próprio no topo do Resumo). */
+.rh-inad { display: inline-flex; align-items: center; gap: 5px; margin: -3px 0 11px; padding: 5px 11px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 11.5px; font-weight: 600; }
+.rh-inad b { font-weight: 800; }
+html[data-theme="dark"] .rh-inad { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
 /* Modo "vencidos" (quando não há recebimentos hoje) */
 .receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(191,37,24,.06) 0%, #ffffff 70%); border-color: rgba(191,37,24,.35); }
 html[data-theme="dark"] .receb-hoje.modo-venc { background: linear-gradient(165deg, rgba(255,107,107,.16) 0%, var(--card) 70%); border-color: rgba(255,107,107,.30); }
@@ -2634,7 +2654,7 @@ details[open] summary::before { transform: rotate(90deg); }
   box-shadow: 0 1px 6px rgba(60,70,120,.06);
 }
 .month-nav { border: none; border-radius: 999px; }
-.mc, .mc.blue, .mc.green, .mc.red, .mc.amber {
+.mc, .mc.blue, .mc.green, .mc.red, .mc.amber, .mc.purple {
   background: rgba(255,255,255,.6);
   border: 1px solid rgba(255,255,255,.8);
   box-shadow: 0 4px 16px rgba(60,70,120,.07), 0 1px 3px rgba(0,0,0,.03);
@@ -2774,6 +2794,7 @@ html[data-theme="dark"] .mc.blue  { background: rgba(26,37,64,.88); }
 html[data-theme="dark"] .mc.green { background: rgba(17,40,32,.88); }
 html[data-theme="dark"] .mc.red   { background: rgba(42,21,24,.88); }
 html[data-theme="dark"] .mc.amber { background: rgba(38,30,14,.88); }
+html[data-theme="dark"] .mc.purple { background: rgba(32,24,54,.88); }
 html[data-theme="dark"] .pcard,
 html[data-theme="dark"] .swipe .pcard { background: var(--card); }
 html[data-theme="dark"] .pcard:hover,
@@ -4669,6 +4690,14 @@ function lancEditado(){ return (editRec && allD().includes(editRec)) ? editRec :
 let loteSel = [];
 let selDono = '';
 
+// Card "Locação por proprietário" do Resumo: alterna qual dono aparece no
+// mesmo espaço do card. Estado global porque o setInterval sobrevive entre
+// chamadas de renderResumo — precisa ser limpo a cada re-render pra não
+// empilhar timers (ex.: troca de mês, edição de lançamento).
+let mcLocCycleTimer = null;
+let mcLocCycleList = [];
+let mcLocCycleIdx = 0;
+
 // Estado do mês principal — sempre abre no mês atual (data local, não UTC:
 // perto da virada do mês o toISOString() do td() já estaria no mês seguinte).
 let curMes = (()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;})();
@@ -5530,7 +5559,10 @@ function rhItemHtml(r,cls){
     <span class="rh-val">${fR(r.saldo)}</span>
   </div></div>`;
 }
-function renderRecebHoje(){
+// inadMes/vencValMes: inadimplência do mês corrente (vinda de renderResumo,
+// mesmo critério de prev_pgto no curMes) — exibida dentro do card de
+// vencidos em vez de ter painel próprio no topo do Resumo.
+function renderRecebHoje(inadMes,vencValMes){
   const el=document.getElementById('recebHoje'); if(!el) return;
   const hoje=td();
   // Ordem crescente por vencimento (os mais antigos primeiro, que é a ordem
@@ -5577,8 +5609,10 @@ function renderRecebHoje(){
         <div class="rh-list">${itensDia.map(r=>rhItemHtml(r,'venc')).join('')}</div>
       </div>`);
     }
+    const inadHtml=inadMes==null?'':`<div class="rh-inad">Inadimplência do mês (${mLabel(curMes)}): <b>${inadMes.toFixed(1)}%</b> · ${fR(vencValMes)} vencido</div>`;
     cardVenc=`<div class="receb-hoje modo-venc vc-resumo" role="button" tabindex="0" onclick="irVencidos()" title="Ver todos os vencidos">
       <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">${vencidos.length} · ${fR(totVenc)}</span></div>
+      ${inadHtml}
       <div class="vc-dias-grupos" onclick="event.stopPropagation()">${gruposHtml.join('')}</div>
       <div class="rh-foot">${vencidos.length>shown?`+${vencidos.length-shown} • `:''}Ver todos os vencidos ›</div>
     </div>`;
@@ -5917,6 +5951,23 @@ function frAbbrevR(v){
 // "Indefinido" (dono vazio na planilha) não é um proprietário de verdade —
 // fica de fora só deste componente (cálculos e filtro), sem mexer no
 // restante do app que ainda usa allD()/RF normalmente.
+// Total de Locação do mês (previsto líquido), por proprietário — alimenta o
+// card giratório do Resumo. Mesmo critério de mês/valor do resto do Resumo
+// (prev_pgto no curMes, liq() = pago + saldo).
+function locPorDonoMes(){
+  const sums={};
+  allD().forEach(r=>{
+    if((r.dono||'Indefinido')==='Indefinido')return;
+    if(!(r.tipo||'').toLowerCase().startsWith('loca'))return;
+    if(!(r.prev_pgto||'').startsWith(curMes))return;
+    sums[r.dono]=(sums[r.dono]||0)+liq(r);
+  });
+  return Object.entries(sums).map(([dono,v])=>({dono,v})).sort((a,b)=>b.v-a.v);
+}
+function abrirDonoCicloAtual(){
+  const o=mcLocCycleList[mcLocCycleIdx];
+  if(o) openDono(o.dono);
+}
 function frBaseRows(){return allD().filter(r=>r.dono!=='Indefinido'&&(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(curMes));}
 function frFilteredRows(){return frBaseRows().filter(r=>filterMatch(FRT,r));}
 // Linhas pra desenhar o anel de "dim": aplica os filtros das OUTRAS
@@ -6225,13 +6276,30 @@ function renderResumo(){
   const prevV=bM[prevKey]||0;
   let deltaBadge='';
   if(prevV>0){const dp=(prevLiq-prevV)/prevV*100;const up=dp>=0;deltaBadge=` · <span class="mc-delta ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(dp).toFixed(0)}%</span>`;}
+  // 4º card: em vez de Inadimplência (que foi pro card de Recebimentos
+  // vencidos), alterna a Locação do mês de cada proprietário no mesmo
+  // espaço — clicar abre o proprietário que está em tela no momento.
+  mcLocCycleList=locPorDonoMes();
+  if(mcLocCycleIdx>=mcLocCycleList.length)mcLocCycleIdx=0;
+  const locSlides=mcLocCycleList.length
+    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-value">${fR(o.v)}</div><div class="mc-sub">${esc(o.dono)}</div></div>`).join('')
+    : `<div class="mc-cycle-slide on"><div class="mc-value">—</div><div class="mc-sub">Sem locação no mês</div></div>`;
   document.getElementById('res-m').innerHTML=`
     <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Total previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Total recebido · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
     <div class="mc amber" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>
-    <div class="mc red" role="button" tabindex="0" onclick="irLancMetric('venc')" title="Ver só os vencidos"><div class="mc-label">Inadimplência</div><div class="mc-value">${inad.toFixed(1)}%</div><div class="mc-sub">${fR(vencVal)} vencido</div></div>
+    <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="abrirDonoCicloAtual()" title="Locação do mês por proprietário — clique pra abrir o proprietário em tela"><div class="mc-label">Locação · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-cycle-stage">${locSlides}</div></div>
   `;
-  renderRecebHoje();
+  clearInterval(mcLocCycleTimer);
+  if(mcLocCycleList.length>1){
+    mcLocCycleTimer=setInterval(()=>{
+      mcLocCycleIdx=(mcLocCycleIdx+1)%mcLocCycleList.length;
+      const stage=document.querySelector('#mc-loc-cycle .mc-cycle-stage');
+      if(!stage){clearInterval(mcLocCycleTimer);return;}
+      stage.querySelectorAll('.mc-cycle-slide').forEach((el,i)=>el.classList.toggle('on',i===mcLocCycleIdx));
+    },3200);
+  }
+  renderRecebHoje(inad,vencVal);
   // Seletor de ano dos gráficos mensais
   {const sel=document.getElementById('rc-ano');
    if(sel){const anos=resAnos();
