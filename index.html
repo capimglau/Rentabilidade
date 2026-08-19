@@ -1429,15 +1429,24 @@ body.tip-pinned::before {
 .rc-cal-wrap .cal-cell.cal-ok { border-color: color-mix(in srgb, var(--green) 45%, transparent); }
 .rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
 .rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--purple) 45%, transparent); }
-@keyframes rcBlinkRed { 0%, 100% { background: var(--red-soft); } 50% { background: transparent; } }
-@keyframes rcBlinkGreen { 0%, 100% { background: var(--green-soft); border-color: transparent; } 50% { background: transparent; } }
+/* Fundo vermelho (vencido) e verde (vence hoje) também um pouco mais
+   escuros que o padrão do app, no mesmo espírito do fundo dos recebidos. */
+.rc-cal-wrap .cal-cell.cal-venc { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
+@keyframes rcBlinkRed {
+  0%, 100% { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
+  50% { background: transparent; }
+}
+@keyframes rcBlinkGreen {
+  0%, 100% { background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); border-color: transparent; }
+  50% { background: transparent; }
+}
 .rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 1.6s ease-in-out infinite; }
 .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: rcBlinkGreen 1.6s ease-in-out infinite; }
 .rc-cal-wrap .cal-cell.rc-hoje-mov .cal-num,
 .rc-cal-wrap .cal-cell.rc-hoje-mov .cal-val { color: var(--green); }
 @media (prefers-reduced-motion: reduce) {
   .rc-cal-wrap .cal-cell.rc-blink { animation: none; }
-  .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: var(--green-soft); }
+  .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
 }
 /* PC: lista e calendário lado a lado, sempre os dois visíveis — o seletor
    não faz sentido aqui (não há nada escondido pra alternar). */
