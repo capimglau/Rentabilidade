@@ -1414,6 +1414,12 @@ body.tip-pinned::before {
   .rc-cal-wrap .cal-cell .cal-mix-item { font-size: 12px; }
   .rc-cal-wrap .cal-week { font-size: 12px; }
 }
+/* Dia com pago + vencido misturados: a parte pendente fica vermelha (não
+   âmbar), já que também está atrasada — não é só "a receber" normal. */
+.rc-cal-wrap .cal-mix-item.pend.venc { color: var(--red); }
+/* Dias já concluídos (tudo recebido) ficam um pouco esmaecidos, pra não
+   competir visualmente com o que ainda precisa de atenção. */
+.rc-cal-wrap .cal-cell.cal-ok { opacity: .68; }
 @keyframes rcBlinkRed { 0%, 100% { background: var(--red-soft); } 50% { background: transparent; } }
 @keyframes rcBlinkGreen { 0%, 100% { background: var(--green-soft); border-color: transparent; } 50% { background: transparent; } }
 .rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 1.6s ease-in-out infinite; }
@@ -5731,8 +5737,9 @@ function renderRecCalGridHtml(){
     if(entry.rec>0&&entry.pend>0){
       const venc=dia<hoje;
       cls += ' cal-mix'+(venc?' rc-blink':(isToday?' rc-hoje-mov':''));
+      const pendLabel=venc?'Vencido':'A receber';
       valHtml = `<span class="cal-mix-item rec" onclick="mostrarLancDiaFluxo('${dia}')" title="Recebido ${fR(entry.rec)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.rec)}</span>`+
-                `<span class="cal-mix-item pend" onclick="mostrarLancDiaFluxo('${dia}')" title="A receber ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
+                `<span class="cal-mix-item pend${venc?' venc':''}" onclick="mostrarLancDiaFluxo('${dia}')" title="${pendLabel} ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
     } else if(entry.rec>0){
       cls += ' cal-ok';
       valHtml=`<span class="cal-val" onclick="mostrarLancDiaFluxo('${dia}')" title="Recebido ${fR(entry.rec)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.rec)}</span>`;
