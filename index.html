@@ -456,7 +456,7 @@ body::before {
    um #res-m .mc bem mais compacto, e por ter id essa regra venceria o dele. */
 @media (min-width: 761px) {
   #res-m { margin-bottom: 50px; }
-  #res-m .mc { padding: 11px 20px; }
+  #res-m .mc { padding: 10px 18px; }
   #res-m .mc-icon { font-size: 14px; margin-bottom: 8px; }
   #res-m .mc-label { font-size: 9.5px; margin-bottom: 5px; }
   #res-m .mc-value { font-size: 17px; }
@@ -2409,7 +2409,7 @@ details[open] summary::before { transform: rotate(90deg); }
      padding-top de 20px do desktop). */
   #res-m { margin-top: 4.8px; }
   .mrow, #res-m { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .mrow .mc { padding: 11px 14px; border-radius: 16px; }
+  .mrow .mc { padding: 10px 14px; border-radius: 16px; }
   .mrow .mc-label { font-size: 7.5px; letter-spacing: .04em; margin-bottom: 5px; }
   .mrow .mc-value { font-size: 15px; letter-spacing: -.03em; }
   .mrow .mc-sub { font-size: 8.5px; margin-top: 4px; }
@@ -2418,7 +2418,7 @@ details[open] summary::before { transform: rotate(90deg); }
      valor era pensado pra fonte maior de antes. Nesse tamanho ele sobrava
      e deixava essa linha do grid (com "A receber" do lado) mais alta que a
      de cima, destoando as duas linhas de painéis. */
-  .mc-cycle-stage { min-height: 54px; }
+  .mc-cycle-stage { min-height: 50px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (vencidos/hoje/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
@@ -6564,7 +6564,7 @@ function renderResumo(){
   document.getElementById('res-m').innerHTML=`
     <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="abrirDonoCicloAtual()" title="Locação do mês por proprietário — clique pra abrir o proprietário em tela"><div class="mc-cycle-stage">${locSlides}</div></div>
-    <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
+    <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
     <div class="mc amber" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>
   `;
   clearInterval(mcLocCycleTimer);
