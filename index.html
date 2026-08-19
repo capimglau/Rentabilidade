@@ -2410,6 +2410,12 @@ details[open] summary::before { transform: rotate(90deg); }
   .mrow .mc-label { font-size: 7.5px; letter-spacing: .04em; margin-bottom: 5px; }
   .mrow .mc-value { font-size: 15px; letter-spacing: -.03em; }
   .mrow .mc-sub { font-size: 8.5px; margin-top: 4px; }
+  /* O card de Locação cycla entre proprietários (.mc-cycle-stage) e reserva
+     um min-height fixo pro texto não pular durante o crossfade — mas o
+     valor era pensado pra fonte maior de antes. Nesse tamanho ele sobrava
+     e deixava essa linha do grid (com "A receber" do lado) mais alta que a
+     de cima, destoando as duas linhas de painéis. */
+  .mc-cycle-stage { min-height: 54px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (vencidos/hoje/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
