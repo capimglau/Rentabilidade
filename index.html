@@ -1402,6 +1402,18 @@ body.tip-pinned::before {
 @media(max-width:760px){
   .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 62px; }
 }
+/* Fontes 1px menores que o calendário do "Previsto do mês". */
+.rc-cal-wrap .cal-hd { font-size: 13px; }
+.rc-cal-wrap .cal-cell .cal-num { font-size: 15px; }
+.rc-cal-wrap .cal-cell .cal-val { font-size: 17px; }
+.rc-cal-wrap .cal-cell .cal-mix-item { font-size: 14px; }
+.rc-cal-wrap .cal-week { font-size: 15px; }
+@media(max-width:760px){
+  .rc-cal-wrap .cal-cell .cal-num { font-size: 14px; }
+  .rc-cal-wrap .cal-cell .cal-val { font-size: 14px; }
+  .rc-cal-wrap .cal-cell .cal-mix-item { font-size: 12px; }
+  .rc-cal-wrap .cal-week { font-size: 12px; }
+}
 @keyframes rcBlinkRed { 0%, 100% { background: var(--red-soft); } 50% { background: transparent; } }
 @keyframes rcBlinkGreen { 0%, 100% { background: var(--green-soft); border-color: transparent; } 50% { background: transparent; } }
 .rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 1.6s ease-in-out infinite; }
