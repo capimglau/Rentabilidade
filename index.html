@@ -475,6 +475,16 @@ body::before {
   #res-m .mc-label { font-size: 9.5px; margin-bottom: 5px; }
   #res-m .mc-value { font-size: 17px; }
   #res-m .mc-sub { font-size: 10px; margin-top: 5px; }
+  /* .mrow é um grid (align-items:stretch por padrão): todo card da fileira
+     estica pra igualar o mais alto. O mais alto era o card giratório
+     (Locação por proprietário/A receber), cujo .mc-cycle-stage tem
+     min-height:66px — medida pro texto no tamanho PADRÃO (fora do
+     #res-m), maior que o texto reduzido daqui. Isso deixava a fileira
+     inteira mais alta que o necessário, sobrando bem mais espaço vazio
+     embaixo do texto dos cards estáticos (Previsto, Recebido…) do que em
+     cima. Encolher só o mínimo do stage (pro texto menor caber igual)
+     encolhe a fileira toda, sem cortar a animação do carrossel. */
+  #res-m .mc-cycle-stage { min-height: 52px; }
 }
 
 /* ─── BAIXAS LAYOUT ─── */
