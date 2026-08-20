@@ -5127,7 +5127,7 @@ function autoFillDono(placaId, donoSelectId) {
   placa.addEventListener('input', function() { preencheDono(donoSelectId, donoDaPlaca(this.value)); });
 }
 // Cor da etiqueta de cada tipo de lançamento.
-const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax'};
+const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax',Imposto:'tax'};
 const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -8701,7 +8701,7 @@ function getTaxaForma(forma){
 // uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
 // contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
 // de itens é livre.
-const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Outros'];
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Outros'];
 // Só aparece em lançamentos antigos. Não entra na lista de criar, mas precisa
 // existir na edição para continuar selecionável em quem já tem esse tipo.
 const LANC_TIPOS_LEGADO=['Taxa Bruno'];
