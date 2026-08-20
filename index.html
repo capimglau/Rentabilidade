@@ -873,7 +873,14 @@ button.day-total:active { opacity: .45; }
 .pcard.venc::before { background: var(--red); }
 .pcard.hoje-card::before { background: var(--blue); }
 .pcard.done::before { background: var(--green); }
-.pcard.done { opacity: .6; }
+/* Recebido: fundo bem clarinho e fonte esmaecida (em vez de opacity no
+   cartão inteiro, que também apagava ícones/faixa) — pendente continua com
+   a cor de cartão original (var(--card)), sem esmaecer. */
+.pcard.done { background: var(--surface); }
+.pcard.done .pcard-name,
+.pcard.done .pcard-tags > span,
+.pcard.done .pcard-meta,
+.pcard.done .pcard-obs { color: var(--ink3); }
 .pcard.parcial:not(.venc)::before { background: var(--bar-rec); }
 /* Vencido e "vence hoje" respiram devagar pra chamar atenção sem incomodar
    — um esmaecer lento, não um piscar. A faixa lateral e um tingimento bem
@@ -972,7 +979,7 @@ button.day-total:active { opacity: .45; }
   text-align: right;
   flex-shrink: 0;
 }
-.pcard.done .pcard-value { color: var(--green); text-decoration: line-through; opacity: .7; }
+.pcard.done .pcard-value { color: var(--ink3); text-decoration: line-through; }
 .pcard-actions { display: flex; gap: 6px; }
 
 /* Lista agrupada estilo iOS: um bloco branco com divisórias por dia */
@@ -2691,7 +2698,6 @@ details[open] summary::before { transform: rotate(90deg); }
   .pcard-name { font-size: 14.5px; }
   .pcard-meta { font-size: 12px; }
   .pcard-value { font-size: 16px; }
-  .pcard.done { opacity: .55; }
 
   /* ═══════ Estética iOS (minimalista) ═══════ */
   body { background: #eef0f6; color: #1c1c1e; }
@@ -2918,7 +2924,7 @@ details[open] summary::before { transform: rotate(90deg); }
    fill-mode "backwards" (não "both"!): aplica o opacity:0 ANTES de começar (sem
    flash), mas ao terminar a animação solta a propriedade de volta pro CSS normal —
    com "both" o valor final (opacity:1) da animação ficava "grudado" pra sempre,
-   por cima do opacity:.6 do .pcard.done, e nenhum cartão pago aparecia esmaecido. */
+   por cima de qualquer opacity que o cartão devesse ter. */
 .pcard { animation: fadeOp .15s ease backwards; }
 
 /* ════════════════ TEMA ESCURO (navy AGI — igual referência) ════════════════ */
