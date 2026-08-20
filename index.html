@@ -679,12 +679,16 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   .cal-legend .legend-txt { display: none; }
   .cal-legend { gap: 7px; }
   .cal-legend i { width: 11px; height: 11px; }
-  .cal-grid { grid-template-columns: repeat(5, 1fr) minmax(56px, 1.1fr); gap: 4px; }
-  .cal-cell { height: 78px; padding: 3px 3px; }
+  /* Sem a coluna "Sem." (total da semana) — só os 5 dias úteis, cada
+     célula ocupando 1/5 da largura e virando quadrado de verdade
+     (aspect-ratio, em vez de altura fixa que sobrava retangular). */
+  .cal-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .cal-grid .cal-hd:nth-child(6) { display: none; }
+  .cal-week { display: none; }
+  .cal-cell { height: auto; aspect-ratio: 1 / 1; padding: 3px 3px; }
   .cal-cell .cal-num { font-size: 15px; }
   .cal-cell .cal-val { font-size: 15px; }
   .cal-cell .cal-mix-item { font-size: 13px; }
-  .cal-week { height: 78px; font-size: 13px; }
 }
 
 .filt-panel select {
@@ -1501,7 +1505,12 @@ body.tip-pinned::before {
 .rc-cal-wrap .cal-grid { grid-template-columns: repeat(6, 1fr); column-gap: 8.5px; }
 .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 75px; border-radius: 11px; }
 @media(max-width:760px){
-  .rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week { height: 52px; border-radius: 9px; }
+  /* Sem a coluna "Sem." — só os 5 dias, célula quadrada de verdade
+     (aspect-ratio troca a altura fixa, que ficava retangular). */
+  .rc-cal-wrap .cal-grid { grid-template-columns: repeat(5, 1fr); }
+  .rc-cal-wrap .cal-hd:nth-child(6) { display: none; }
+  .rc-cal-wrap .cal-week { display: none; }
+  .rc-cal-wrap .cal-cell { height: auto; aspect-ratio: 1 / 1; border-radius: 9px; }
 }
 /* Coluna "Acumulado", só no PC — depois de "Sem.": soma Recebido ou A
    receber (toggle na linha de cima, ao lado do seletor de tipo — ver
