@@ -1581,20 +1581,26 @@ body.tip-pinned::before {
 /* Dia com pago + vencido misturados: a parte pendente fica vermelha (não
    âmbar), já que também está atrasada — não é só "a receber" normal. */
 .rc-cal-wrap .cal-mix-item.pend.venc { color: var(--red); }
-/* Dias já concluídos (tudo recebido) ficam um pouco esmaecidos, pra não
-   competir visualmente com o que ainda precisa de atenção — o fundo fica
-   um pouco mais claro (menos saturado) e o valor usa um verde mais apagado.
+/* Dias já concluídos (tudo recebido) ficam bem esmaecidos — fundo bem
+   clarinho (var(--surface), quase se misturando ao fundo da página) e fonte
+   também apagada (var(--ink3)) — pra não competir visualmente com o que
+   ainda precisa de atenção.
    Antes isso era feito com opacity na célula inteira, mas opacity afeta
    TODOS os descendentes, inclusive o popup de hover (.cal-daytip), que é
    posicionado fixo (fora do fluxo) mas continua sendo filho da célula —
    ficava translúcido e ilegível por cima da grade. Cor/fundo em vez de
    opacity resolve sem esse efeito colateral. */
-.rc-cal-wrap .cal-cell.cal-ok { background: color-mix(in srgb, var(--green-soft) 88%, var(--green) 12%); }
-.rc-cal-wrap .cal-cell.cal-ok .cal-val { color: color-mix(in srgb, var(--green) 62%, var(--ink3) 38%); }
-/* Contorno na mesma cor do preenchimento (em vez de sumir com border-color:
-   transparent), pra cada dia colorido ficar com uma borda visível e não só
-   um bloco chapado. */
-.rc-cal-wrap .cal-cell.cal-ok { border-color: color-mix(in srgb, var(--green) 30%, transparent); }
+.rc-cal-wrap .cal-cell.cal-ok { background: var(--surface); }
+.rc-cal-wrap .cal-cell.cal-ok .cal-val { color: var(--ink3); }
+/* Contorno bem discreto (em vez de sumir com border-color: transparent),
+   só pra manter a célula com uma borda visível — sem chamar atenção como
+   antes (não é mais na cor do verde). */
+.rc-cal-wrap .cal-cell.cal-ok { border-color: var(--line); }
+/* "A receber" (ainda não vencido) herda a cor forte que "recebido" usava
+   antes de ficar esmaecido — é o que ainda precisa de atenção, então fica
+   em destaque; o já resolvido (acima) é quem passa a ser discreto. */
+.rc-cal-wrap .cal-cell.cal-pend { background: var(--green-soft); border-color: color-mix(in srgb, var(--green) 30%, transparent); }
+.rc-cal-wrap .cal-cell.cal-pend .cal-val { color: var(--green); }
 .rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
 .rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--purple) 45%, transparent); }
 /* Fundo vermelho (vencido), verde (vence hoje) e roxo (misto) também um
