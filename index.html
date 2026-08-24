@@ -9788,6 +9788,19 @@ document.addEventListener('click',e=>{
   renderResumo();
 },true);
 
+// Agenda (board de dia): mouse comum só tem roda vertical — converte o
+// scroll vertical em horizontal aqui, senão quem não tem trackpad/roda
+// lateral fica sem jeito de ver os dias seguintes. Delegado no document
+// (não no .agb-wrap direto) porque o board é redesenhado a cada renderAll.
+document.addEventListener('wheel',e=>{
+  const wrap=e.target.closest&&e.target.closest('.agb-wrap');
+  if(!wrap)return;
+  if(Math.abs(e.deltaY)<=Math.abs(e.deltaX))return; // já é scroll horizontal (trackpad/shift)
+  if(wrap.scrollWidth<=wrap.clientWidth)return; // nada pra rolar
+  e.preventDefault();
+  wrap.scrollLeft+=e.deltaY;
+},{passive:false});
+
 // Dock mobile: some deslizando pra baixo enquanto o usuário rola a página
 // para baixo (lendo o conteúdo), e volta ao rolar para cima — evita ficar
 // tampando conteúdo. A transition (classe dock-anim) só fica ligada durante
