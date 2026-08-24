@@ -1423,27 +1423,19 @@ body.tip-pinned::before {
 }
 /* Resumo de vencidos: quanto, de quem e de quando, sem listar lançamento. */
 .vc-datas { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; color: var(--ink3); }
-.vc-dias-grupos { display: flex; flex-direction: column; gap: 12px; margin: 2px 0 9px; }
-.vc-day-group { display: flex; flex-direction: column; gap: 6px; }
-.vc-day-total { display: flex; align-items: baseline; gap: 7px; padding: 0 2px; }
-.vc-day-total b { font-weight: 700; color: var(--ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
-.vc-day-total small { color: var(--ink3); font-size: 10.5px; }
-.vc-day-total em { font-style: normal; font-weight: 700; color: var(--amber); font-size: 11px; }
-/* Seletor Calendário/Lista do card de vencidos/hoje — reaproveita o pill
+/* Seletor Agenda/Calendário do card de vencidos/hoje — reaproveita o pill
    toggle do Faturamento por categoria (.fr-basistoggle), mas com ícones em
-   vez de texto. Só existe (some via CSS) no PC, onde as duas vistas ficam
-   lado a lado sempre. Fica na mesma linha do seletor de tipo, à esquerda
+   vez de texto. Fica na mesma linha do seletor de tipo, à esquerda
    (o de tipo fica à direita — ver .rc-cal-topbar). */
 .rc-view-toggle.fr-basistoggle { width: auto; box-sizing: border-box; margin: 0; flex: 0 0 auto; }
 .rc-view-toggle button { flex: 1; }
 .rc-view-toggle-ico { width: auto; display: inline-flex; }
 .rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 12px; }
 .rc-view-toggle-ico svg { width: 18px; height: 18px; }
-/* Mobile: só a vista ativa (lista OU calendário) fica visível por vez. */
+/* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
 .rc-side-by-side { margin-bottom: 42px; }
 .rc-block { display: none; }
-.rc-block .rh-dupla, .rc-block .rc-cal-wrap { margin-bottom: 0; }
-.rc-mode-lista .rc-block-lista { display: block; }
+.rc-block .rc-cal-wrap { margin-bottom: 0; }
 .rc-mode-cal .rc-block-cal { display: block; }
 .rc-mode-board .rc-block-board { display: block; }
 /* Calendário Seg-Sex do mês: mesmo componente visual do calendário
@@ -1648,30 +1640,15 @@ body.tip-pinned::before {
 .agb-card-val{ font-size:12.5px; font-weight:800; color:var(--ink); white-space:nowrap; }
 .agb-card.agb-card-atrasado .agb-card-val{ color:var(--red); }
 
-/* O calendário (ou a lista de vencidos/hoje) ocupa a largura toda do
-   conteúdo em qualquer tamanho de tela — só uma vista por vez, trocada
-   pelo seletor Lista/Calendário (.rc-view-toggle), que por isso fica
-   sempre visível (antes só existia no mobile; no PC as duas vistas
-   ficavam lado a lado sempre, dividindo a largura). */
+/* A Agenda (ou o calendário do mês) ocupa a largura toda do conteúdo em
+   qualquer tamanho de tela — só uma vista por vez, trocada pelo seletor
+   Agenda/Calendário (.rc-view-toggle), que por isso fica sempre visível. */
 @media (min-width: 761px) {
   /* No PC o seletor de tipo (acima do calendário) some do fluxo dos cartões
      de vencidos/hoje — sobra um vão grande entre o resumo do topo e esse
      bloco. Sobe tudo (seletor + o bloco ativo) um pouco pra fechar o vão. */
   #res-m { margin-bottom: 26px; }
 }
-@media (min-width: 1400px) {
-  .rc-block-lista .g2.rh-dupla { grid-template-columns: 1fr 1fr; }
-}
-/* Os dois cartões lado a lado: mesma altura, sem margem dupla entre eles. */
-.rh-dupla { margin-bottom: 27px; align-items: stretch; }   /* 16px + 70% */
-.rh-dupla .receb-hoje { margin-bottom: 0; display: flex; flex-direction: column; }
-.rh-dupla .rh-foot { margin-top: auto; padding-top: 11px; }
-.receb-hoje.rh-vazio { cursor: default; opacity: .72; }
-.receb-hoje.rh-vazio:hover { box-shadow: var(--card-shadow); transform: none; }
-.rh-nada { font-size: 12.5px; color: var(--ink3); }
-.rh-links { display: flex; gap: 14px; justify-content: flex-end; margin-top: 11px; }
-.rh-link { font-size: 12.5px; font-weight: 700; color: var(--blue); cursor: pointer; }
-.rh-link:hover { text-decoration: underline; }
 .vc-datas b { color: var(--red); font-weight: 700; }
 .rb-l { font-size: 12.5px; width: auto; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; padding: 0; margin-right: 12px; }
 .rb-bg { flex: 1; height: 8.4px; background: var(--surface); border-radius: 3px; overflow: hidden; }
@@ -1780,7 +1757,6 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
   margin-left: auto; font-family: 'DM Mono', monospace;
   font-size: 11px; font-weight: 600; color: var(--ink3); white-space: nowrap;
 }
-.rh-link-hist { margin-right: auto; }
 /* Divisor de mês entre os resultados da busca — agrupa os lançamentos do
    item pesquisado por competência (prev_pgto), do mais recente pro mais antigo. */
 .srow-mes { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink3); padding: 12px 4px 4px; }
@@ -2047,26 +2023,8 @@ html[data-theme="dark"] .res-ctrls .rc-sel:hover {
   border-color: rgba(255,255,255,.22);
 }
 
-/* ─── RECEBIMENTOS DE HOJE (janela no Resumo) ─── */
-/* Mesmo fundo neutro dos 4 painéis do topo (.mc) — só o texto (rh-sub,
-   rh-foot) leva a cor azul/vermelha, o cartão em si não fica tingido. */
-.receb-hoje { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); border: 1px solid rgba(255,255,255,.65); border-radius: var(--rl); padding: 14px 16px; margin-bottom: 27px; box-shadow: var(--card-shadow); cursor: pointer; transition: box-shadow .15s, transform .15s, border-color .15s; }   /* 16px + 70% */
-.receb-hoje:hover { box-shadow: 0 4px 22px rgba(0,0,0,.12); transform: translateY(-1px); }
-.receb-hoje:active { transform: translateY(0); }
-html[data-theme="dark"] .receb-hoje { background: rgba(30,39,56,.85); border-color: rgba(255,255,255,.08); }
-.rh-hd { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; margin-bottom: 11px; letter-spacing: -.01em; }
-.rh-sub { font-size: 12px; color: var(--blue); font-weight: 700; }
+/* ─── Lançamentos do dia (calendário Seg-Sex do Resumo) ─── */
 .rh-list { display: flex; flex-direction: column; gap: 6px; }
-/* Linha de empresa somada (2+ lançamentos): clicável, mostra a linha
-   agrupada até desmembrar; depois de clicar, some e dá lugar aos
-   lançamentos individuais. */
-/* Flex normal (não "display:contents") — Safari mobile tem histórico de
-   bugs entregando toque/clique em descendentes de elementos "contents". */
-.rh-group-wrap { display: flex; flex-direction: column; gap: 6px; }
-.rh-item-merged { cursor: pointer; }
-.rh-group-itens { display: none; flex-direction: column; gap: 6px; }
-.rh-group-wrap.desmembrado .rh-item-merged { display: none; }
-.rh-group-wrap.desmembrado .rh-group-itens { display: flex; }
 /* Itens de preview dos cards de vencidos/hoje na tela inicial: sem a
    animação de entrada (.pcard tem fadeOp) — esses cards são redesenhados a
    cada sincronização automática (realtime do Supabase, ver marcarOffline),
@@ -2078,15 +2036,6 @@ html[data-theme="dark"] .receb-hoje { background: rgba(30,39,56,.85); border-col
 .rh-list .swipe-act .ic { font-size: 15px; }
 .rh-cli { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rh-val { font-weight: 700; color: var(--red); white-space: nowrap; }
-.rh-foot { margin-top: 11px; font-size: 12.5px; font-weight: 700; color: var(--blue); text-align: right; }
-/* Atalho com o total dos vencidos */
-.rh-venc-chip { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 11px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(191,37,24,.30); background: rgba(191,37,24,.08); color: var(--red); font-size: 12px; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s; }
-.rh-venc-chip:hover { background: rgba(191,37,24,.16); border-color: var(--red); }
-html[data-theme="dark"] .rh-venc-chip { border-color: rgba(255,107,107,.30); background: rgba(255,107,107,.14); }
-/* Modo "vencidos" (quando não há recebimentos hoje) */
-.receb-hoje.modo-venc { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); border-color: rgba(255,255,255,.65); }
-html[data-theme="dark"] .receb-hoje.modo-venc { background: rgba(30,39,56,.85); border-color: rgba(255,255,255,.08); }
-.receb-hoje.modo-venc .rh-sub, .receb-hoje.modo-venc .rh-foot { color: var(--red); }
 @media (max-width: 680px) {
   .rh-item { gap: 9px; }
 }
@@ -2583,12 +2532,9 @@ details[open] summary::before { transform: rotate(90deg); }
      maior que o necessário só sobra como espaço morto embaixo do texto. */
   .mc-cycle-stage { min-height: 52px; }
 
-  /* Espaçamento padrão entre os blocos do Resumo (vencidos/hoje/boletos/
+  /* Espaçamento padrão entre os blocos do Resumo (agenda/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
-  .card, .receb-hoje, .rh-dupla { margin-bottom: 48px; }   /* 28px + 70% */
-  /* Vencidos e Hoje empilham (.g2 vira 1 coluna ≤960px) — o gap entre eles
-     herdava os 14px do desktop lado a lado, curto demais empilhado. */
-  .g2.rh-dupla { gap: 18px; }
+  .card { margin-bottom: 48px; }   /* 28px + 70% */
 
   /* Filtros compactos: 3 seletores numa linha, ações na linha de baixo */
   .fbar { flex-wrap: wrap; gap: 7px; }
@@ -5263,44 +5209,9 @@ function navMes(delta){
   updateMesLabel();
   renderAll();
 }
-// Abre os Recebimentos no mês com mais vencidos, já filtrado por "Vencidos"
-function irVencidos(){
-  const venc=allD().filter(r=>isVenc(r));
-  if(venc.length){
-    const cnt={};
-    venc.forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(m)cnt[m]=(cnt[m]||0)+1;});
-    curMes=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0][0];
-    updateMesLabel();
-  }
-  const sel=document.getElementById('bf-status'); if(sel) sel.value='venc';
-  go('baixas');
-}
-// Igual ao irVencidos: garante que o mês de Recebimentos é o de hoje (o
-// usuário pode estar navegando em outro mês) antes de filtrar e entrar.
-function irHoje(){
-  curMes=td().slice(0,7);
-  updateMesLabel();
-  const sel=document.getElementById('bf-status'); if(sel) sel.value='hoje';
-  go('baixas');
-}
 function verTodosRecebimentos(){
   const sel=document.getElementById('bf-status'); if(sel) sel.value='todos';
   renderBaixas();
-}
-// Do card "Recebimentos de hoje" vazio (nada vencendo hoje): oferece ir ver
-// os próximos vencimentos (sem os já vencidos, que têm o card ao lado) ou
-// simplesmente abrir Recebimentos sem filtro nenhum.
-function irFuturos(){
-  curMes=td().slice(0,7);
-  updateMesLabel();
-  const sel=document.getElementById('bf-status'); if(sel) sel.value='futuro';
-  go('baixas');
-}
-function irRecebimentosTodos(){
-  curMes=td().slice(0,7);
-  updateMesLabel();
-  const sel=document.getElementById('bf-status'); if(sel) sel.value='todos';
-  go('baixas');
 }
 // Cards do topo do Resumo (faturado/recebido/a receber/inadimplência) levam
 // pra Lançamentos já filtrado — mesmo mês e mesmo proprietário do Resumo (se
@@ -5931,25 +5842,6 @@ function agruparPorCliente(recs){
   });
   return ordem.map(k=>g[k]);
 }
-// Uma linha de preview: item único usa o rhItemHtml normal (com swipe pra
-// Baixar/Reverter/Editar/Excluir); mais de um lançamento da mesma empresa
-// vira uma linha resumida e clicável — clicar desmembra, trocando a linha
-// somada pelos lançamentos individuais (cada um com o swipe normal, já que
-// não dá pra agir de uma vez só numa linha somada).
-function rhGroupHtml(grp,cls){
-  if(grp.recs.length===1) return rhItemHtml(grp.recs[0],cls);
-  return `<div class="rh-group-wrap">
-    <div class="pcard rh-item rh-item-merged ${cls}" role="button" tabindex="0"
-      onclick="event.stopPropagation();this.closest('.rh-group-wrap').classList.add('desmembrado')"
-      onkeydown="if(event.key==='Enter'){event.stopPropagation();this.closest('.rh-group-wrap').classList.add('desmembrado');}"
-      title="${grp.recs.length} lançamentos de ${esc(grp.cliente||'—')} — clique pra ver cada um">
-      <span class="placa">${grp.recs.length}×</span>
-      <span class="rh-cli">${esc(grp.cliente||'—')}</span>
-      <span class="rh-val">${fR(grp.total)}</span>
-    </div>
-    <div class="rh-group-itens">${grp.recs.map(r=>rhItemHtml(r,cls)).join('')}</div>
-  </div>`;
-}
 // Card de vencidos/hoje — modo calendário: grade Seg-Sex do mês corrente
 // (mesmo componente visual do calendário "Previsto do mês" —
 // .cal-grid/.cal-cell/.cal-week). Clicar num dia com movimento mostra
@@ -6175,96 +6067,8 @@ function baixarTudoDia(dia){
 
 function renderRecebHoje(){
   const el=document.getElementById('recebHoje'); if(!el) return;
-  const hoje=td();
-  // Ordem crescente por vencimento (os mais antigos primeiro, que é a ordem
-  // em que se cobra); dentro do mesmo dia, o de maior saldo na frente.
-  const porVenc=(a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||'')||fN(b.saldo)-fN(a.saldo);
-  const itemsHoje=allD().filter(r=>isPend(r)&&r.prev_pgto===hoje).sort(porVenc);
-  const vencidos=allD().filter(r=>isVenc(r)).sort(porVenc);
-  const totVenc=vencidos.reduce((a,r)=>a+fN(r.saldo),0);
-
-  // Os dois lado a lado: vencidos à esquerda, recebimentos de hoje à direita.
-  // Sempre aparecem na dashboard, mesmo sem nenhum lançamento — cada lado
-  // cai no próprio estado "vazio" (✓ nada vencido / nada vencendo hoje) em
-  // vez de o painel inteiro sumir, senão passa a impressão de que a tela
-  // não carregou.
-  const dias=d=>Math.round((new Date(hoje+'T12:00:00')-new Date(d+'T12:00:00'))/86400000);
-
-  // ── Esquerda: vencidos, em resumo (quem, quanto, de quando) ──
-  let cardVenc;
-  if(vencidos.length){
-    // Uma pastilha por DIA de vencimento, do mais antigo para o mais novo —
-    // é o que diz o tamanho do atraso e a ordem em que se cobra. Antes era por
-    // proprietário, que não responde "de quando é esse dinheiro".
-    const porDia={};
-    vencidos.forEach(r=>{const d=r.prev_pgto||'—';const o=porDia[d]||(porDia[d]={n:0,v:0,itens:[]});o.n++;o.v+=fN(r.saldo);o.itens.push(r);porDia[d]=o;});
-    const listaDias=Object.entries(porDia).sort((a,b)=>a[0].localeCompare(b[0]));
-    // Preview agrupada por dia: o total do dia (data + valor) sempre vem antes
-    // dos lançamentos daquele dia, nunca um lançamento solto aparecendo em
-    // cima sem o total que dá contexto a ele.
-    const CAP=4;
-    let shownRows=0, shownRecs=0;
-    const gruposHtml=[];
-    for(const [d,o] of listaDias){
-      if(shownRows>=CAP)break;
-      // Empresa com mais de um lançamento no dia vira uma linha só, somada.
-      const gruposCliente=agruparPorCliente(o.itens).slice(0,CAP-shownRows);
-      shownRows+=gruposCliente.length;
-      shownRecs+=gruposCliente.reduce((a,g)=>a+g.recs.length,0);
-      gruposHtml.push(`<div class="vc-day-group">
-        <div class="vc-day-total" title="${o.n} lançamento(s) vencido(s) em ${d==='—'?'sem data':fD(d)}">
-          <b>${d==='—'?'sem data':fD(d)}</b>${d==='—'?'':`<small>${dias(d)}d</small>`}<em>${fR(o.v)}</em>
-        </div>
-        <div class="rh-list">${gruposCliente.map(g=>rhGroupHtml(g,'venc')).join('')}</div>
-      </div>`);
-    }
-    cardVenc=`<div class="receb-hoje modo-venc vc-resumo" role="button" tabindex="0" onclick="irVencidos()" title="Ver todos os vencidos">
-      <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">${vencidos.length} · ${fR(totVenc)}</span></div>
-      <div class="vc-dias-grupos" onclick="event.stopPropagation()">${gruposHtml.join('')}</div>
-      <div class="rh-foot">${vencidos.length>shownRecs?`+${vencidos.length-shownRecs} • `:''}Ver todos os vencidos ›</div>
-    </div>`;
-  } else {
-    cardVenc=`<div class="receb-hoje modo-venc rh-vazio">
-      <div class="rh-hd"><span>⚠ Recebimentos vencidos</span><span class="rh-sub">—</span></div>
-      <div class="rh-nada">Nenhum recebimento vencido ✓</div>
-    </div>`;
-  }
-
-  // ── Direita: o que vence hoje ──
-  // O atalho do histórico fica nos dois estados do card: é consulta do que foi
-  // LANÇADO hoje (não do que vence hoje), e some se ficasse só no card vazio.
-  const nFeitos=lancFeitosHoje();
-  const atalhoHist=`<span class="rh-link rh-link-hist" role="button" tabindex="0"
-      onclick="event.stopPropagation();mostrarLancFeitosDia()"
-      onkeydown="if(event.key==='Enter'){event.stopPropagation();mostrarLancFeitosDia();}"
-      title="Ver os lançamentos cadastrados hoje e o histórico por dia (só consulta)"
-    >🧾 Lançados hoje${nFeitos?` (${nFeitos})`:''} ›</span>`;
-  let cardHoje;
-  if(itemsHoje.length){
-    const totHoje=itemsHoje.reduce((a,r)=>a+fN(r.saldo),0);
-    // Empresa com mais de um lançamento hoje vira uma linha só, somada.
-    const preview=agruparPorCliente(itemsHoje).slice(0,4);
-    const previewRecs=preview.reduce((a,g)=>a+g.recs.length,0);
-    cardHoje=`<div class="receb-hoje" role="button" tabindex="0" onclick="irHoje()" title="Ver só os recebimentos de hoje">
-      <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">${itemsHoje.length} · ${fR(totHoje)}</span></div>
-      <div class="rh-list" onclick="event.stopPropagation()">${preview.map(g=>rhGroupHtml(g,'hoje-card')).join('')}</div>
-      <div class="rh-links">${atalhoHist}<span class="rh-link">${itemsHoje.length>previewRecs?`+${itemsHoje.length-previewRecs} • `:''}Ver todos os recebimentos ›</span></div>
-    </div>`;
-  } else {
-    cardHoje=`<div class="receb-hoje rh-vazio">
-      <div class="rh-hd"><span>📥 Recebimentos de hoje</span><span class="rh-sub">—</span></div>
-      <div class="rh-nada">Nada vencendo hoje</div>
-      <div class="rh-links">
-        ${atalhoHist}
-        <span class="rh-link" role="button" tabindex="0" onclick="irFuturos()">Ver recebimentos futuros ›</span>
-        <span class="rh-link" role="button" tabindex="0" onclick="irRecebimentosTodos()">Exibir todos ›</span>
-      </div>
-    </div>`;
-  }
-
-  // No mobile o seletor alterna entre as duas vistas (só uma por vez); no
-  // PC (>=761px) as duas ficam lado a lado sempre, o seletor some (CSS) e
-  // as duas divs ficam visíveis ao mesmo tempo.
+  // Agenda (board por dia) é o padrão; o calendário Seg-Sex do mês continua
+  // disponível como vista secundária, alternando pelo ícone no topo.
   const toggleHtml=`<div class="fr-basistoggle rc-view-toggle rc-view-toggle-ico">
     <button type="button" class="${recebViewMode==='board'?'on':''}" onclick="setRecebView('board')" title="Agenda" aria-label="Agenda">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1.4" fill="currentColor" stroke="none"/></svg>
@@ -6272,15 +6076,11 @@ function renderRecebHoje(){
     <button type="button" class="${recebViewMode==='cal'?'on':''}" onclick="setRecebView('cal')" title="Calendário" aria-label="Calendário">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </button>
-    <button type="button" class="${recebViewMode==='lista'?'on':''}" onclick="setRecebView('lista')" title="Lista" aria-label="Lista">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-    </button>
   </div>`;
   const topbarRightHtml=`<div class="rc-cal-topbar-right">${tipoCalSelectHtml()}</div>`;
   el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${topbarRightHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
-      <div class="rc-block rc-block-lista"><div class="g2 rh-dupla">${cardVenc}${cardHoje}</div></div>
       <div class="rc-block rc-block-cal">
         <div class="rc-cal-wrap">${renderRecCalGridHtml()}</div>
       </div>
@@ -8037,10 +7837,6 @@ function lancPorDiaFeito(){
     String(b.r.created_at||'').localeCompare(String(a.r.created_at||''))));
   return porDia;
 }
-// Declarada como function: renderRecebHoje() a chama e fica ANTES daqui no
-// arquivo — com const/arrow cairia na zona morta se algo renderizasse cedo.
-function lancFeitosHoje(){ return (lancPorDiaFeito()[td()]||{itens:[]}).itens.length; }
-
 // Cartão de consulta: os mesmos dados do lançamento, sem as ações de swipe
 // (sem o wrapper .swipe o gesto nem chega a engatar — ver swStart).
 function lcCardConsultaHtml(r){
