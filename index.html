@@ -1629,8 +1629,14 @@ body.tip-pinned::before {
 .agb-dom{ font-size:10.5px; color:var(--ink3); font-weight:500; white-space:nowrap; }
 .agb-count{ flex-shrink:0; min-width:19px; height:19px; padding:0 6px; border-radius:99px; background:color-mix(in srgb, var(--ink) 10%, transparent); font-size:10.5px; font-weight:700; color:var(--ink3); display:flex; align-items:center; justify-content:center; }
 /* Coluna "Atrasados" fixa à esquerda enquanto o board rola de lado — as
-   demais colunas passam por baixo dela. */
-.agb-board>.agb-col.agb-atrasados{ position:sticky; left:0; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); }
+   demais colunas passam por baixo dela. position:sticky sozinho falha aqui
+   perto do fim do scroll (Chromium desgruda a coluna passado ~85% do
+   scroll máximo, num flex row largo — bug observado, não é limitação de
+   spec: um repro mínimo sem nenhum CSS deste app reproduz igual). Por
+   isso o acompanhamento é feito via JS (agbSyncAtrasadosFixo, ligado no
+   listener de 'scroll' do document), que sempre acerta a posição — o
+   position:relative aqui só existe pra dar contexto ao transform. */
+.agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); }
 .agb-col-body{ display:flex; flex-direction:column; gap:7px; }
 .agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
 .agb-card{ border-radius:12px; padding:10px 11px 9px; background:var(--card); border:1px solid var(--line); cursor:pointer; transition:transform .1s ease, box-shadow .15s ease; box-shadow:0 1px 3px rgba(0,0,0,.06); }
@@ -9807,6 +9813,19 @@ document.addEventListener('wheel',e=>{
   e.preventDefault();
   wrap.scrollLeft+=e.deltaY;
 },{passive:false});
+// Mantém a coluna "Atrasados" fixa acompanhando o scroll horizontal do
+// board via transform em vez de confiar só no position:sticky — em boards
+// bem largos o sticky solta a coluna perto do fim do scroll (bug do
+// Chromium, reproduzido isolado sem nenhum CSS deste app). Delegado no
+// document (o board é redesenhado a cada renderAll, perderia um listener
+// direto), com scroll:true pro evento de scroll (que não faz bubble por
+// padrão, só é capturado na fase de captura).
+document.addEventListener('scroll',e=>{
+  const wrap=e.target.closest&&e.target.closest('.agb-wrap');
+  if(!wrap)return;
+  const atrasados=wrap.querySelector('.agb-atrasados');
+  if(atrasados)atrasados.style.transform=`translateX(${wrap.scrollLeft}px)`;
+},true);
 
 // Dock mobile: some deslizando pra baixo enquanto o usuário rola a página
 // para baixo (lendo o conteúdo), e volta ao rolar para cima — evita ficar
