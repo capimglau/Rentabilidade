@@ -7606,20 +7606,17 @@ async function addItensContrato(){
 function saveEdit(){
   const r=lancEditado();
   if(!r)return;
-  // Duas famílias de "irmãos", pegas ANTES de mudar os campos de r — senão
-  // a própria edição (ex.: mudar a placa) faz r deixar de "bater" com eles
-  // antes da gente achar quem são:
-  // - irmaosParcela: mesmo lançamento original em Crédito 2x/3x (mesmo
-  //   tipo+forma, só a parcela muda) — recebem TODOS os campos cadastrais.
-  // - irmaosContrato: todo o resto do MESMO contrato (mesma placa+cliente+
-  //   saída — pode ter tipos diferentes, tipo Locação + Avarias do mesmo
-  //   aluguel) — a placa alimenta o proprietário, então placa/dono/cliente/
-  //   saída/retorno também têm que valer pro contrato inteiro; tipo e forma
-  //   continuam de cada lançamento (são a cobrança em si, não a identidade
-  //   do contrato). Escopo é só ESTE contrato/período — nunca outro
-  //   aluguel antigo do mesmo carro, que é outro chaveContrato.
+  // Parcelas irmãs (mesmo lançamento original em Crédito 2x/3x — mesmo
+  // tipo+forma, só a parcela muda, ver agbParcelaSiblings), pegas ANTES de
+  // mudar os campos de r, senão a própria edição pode fazer r deixar de
+  // "bater" com elas antes da gente achar quem são. NUNCA propaga pro
+  // resto do contrato (outros lançamentos com a mesma placa+cliente+saída,
+  // tipo Avarias/Multas do mesmo aluguel) — troca de veículo no meio de um
+  // contrato (substituição) é exatamente o caso em que lançamentos do
+  // MESMO contrato legitimamente ficam com placas/donos DIFERENTES entre
+  // si (um pedaço do período com o carro antigo, outro com o novo); cada
+  // lançamento é responsável só pelo seu próprio carro/dono.
   const irmaosParcela=agbParcelaSiblings(r).filter(x=>x!==r);
-  const irmaosContrato=itensDoContrato(r).map(({x})=>x).filter(x=>x!==r&&!irmaosParcela.includes(x));
   r.placa=normPlaca(document.getElementById('e-p').value);
   r.dono=document.getElementById('e-d').value;
   r.cliente=document.getElementById('e-c').value.trim();
@@ -7669,14 +7666,6 @@ function saveEdit(){
   // de cada parcela/cobrança.
   irmaosParcela.forEach(x=>{
     x.placa=r.placa; x.dono=r.dono; x.cliente=r.cliente; x.tipo=r.tipo; x.forma=r.forma;
-    x.saida=r.saida; x.retorno=r.retorno;
-    dbUpdate(x);
-  });
-  // Resto do contrato: só a identidade do CONTRATO (placa/dono/cliente/
-  // saída/retorno) — tipo e forma ficam de cada lançamento, já que Locação
-  // e Avarias do mesmo aluguel são cobranças diferentes de verdade.
-  irmaosContrato.forEach(x=>{
-    x.placa=r.placa; x.dono=r.dono; x.cliente=r.cliente;
     x.saida=r.saida; x.retorno=r.retorno;
     dbUpdate(x);
   });
