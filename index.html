@@ -1697,6 +1697,11 @@ body.tip-pinned::before {
 .agb-card-title{ margin:0 0 4px; font-size:12.5px; font-weight:700; color:var(--ink); line-height:1.25; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 .agb-card-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
 .agb-tag{ padding:2px 7px; border-radius:99px; font-size:9.5px; font-weight:700; background:color-mix(in srgb, var(--ev-d,var(--blue)) 16%, var(--card)); color:var(--ev-tag,var(--blue)); white-space:nowrap; }
+/* Selo de parcela (2/3 etc.): vazado em vez de preenchido, pra não brigar
+   visualmente com a cor do tipo — é outra informação (qual parcela, de um
+   grupo identificado por semelhança, ver agbParcelaSiblings), não outra
+   categoria de cor. */
+.agb-tag-parc{ background:transparent; border:1px solid color-mix(in srgb, var(--ev-tag,var(--blue)) 55%, transparent); }
 .agb-card-foot{ display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
 .agb-card-sub{ font-size:10.5px; color:var(--ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .agb-card-val{ font-size:12.5px; font-weight:800; color:var(--ink); white-space:nowrap; }
@@ -5974,6 +5979,29 @@ function agbTipoTone(tipo){
   const t=(dark?AGB_TONE.dark:AGB_TONE.light)[fam];
   return {l:t.l,d:t.d,tag:dark?t.l:t.d};
 }
+// Não existe (ainda) um id de "lançamento pai" gravado no banco ligando as
+// parcelas de um Crédito 2x/3x — elas nascem em coletaItens()/
+// dividirCentavos() como registros independentes, mas todas com a mesma
+// placa/cliente/tipo/forma/saída/retorno e um obs terminando em
+// "Parcela X/N" (só o X muda). É por essa semelhança que a gente reconhece
+// o grupo — funciona pros lançamentos já existentes no banco também, sem
+// precisar migrar nada, mas por ser uma inferência (não um id de verdade)
+// pode juntar por engano dois lançamentos distintos que coincidam em tudo
+// isso (raro).
+function agbParcelaInfo(r){
+  const m=/Parcela\s+(\d+)\s*\/\s*(\d+)/i.exec((r&&r.obs)||'');
+  return m?{atual:+m[1],total:+m[2]}:null;
+}
+function agbParcelaGroupKey(r){
+  const info=agbParcelaInfo(r);
+  if(!info)return null;
+  return [r.placa,r.cliente,r.tipo,r.forma,r.saida,r.retorno,info.total].join('|');
+}
+function agbParcelaSiblings(r){
+  const key=agbParcelaGroupKey(r);
+  if(!key)return [r];
+  return allD().filter(x=>agbParcelaGroupKey(x)===key);
+}
 function agbCardHtml(grp,dia){
   const n=grp.recs.length;
   const idx1=allD().indexOf(grp.recs[0]);
@@ -5987,7 +6015,11 @@ function agbCardHtml(grp,dia){
   const hoje=dia===td();
   const tipo=grp.recs[0].tipo||'';
   const forma=grp.recs[0].forma||'';
-  const ref=grp.recs[0].obs||'';
+  // O obs de uma parcela vem como "[ref do usuário] · Parcela X/N" (mais
+  // "· Comissão..." às vezes) — tira esse pedaço antes de exibir como REF,
+  // senão duplica com o selo de parcela logo abaixo (agbParcelaInfo).
+  const ref=(grp.recs[0].obs||'').replace(/\s*·?\s*Parcela\s+\d+\s*\/\s*\d+.*$/i,'').trim();
+  const parc=n===1?agbParcelaInfo(grp.recs[0]):null;
   const sub=[n>1?`${n} lançamentos`:esc(grp.recs[0].placa||''),esc(forma),ref?`REF ${esc(ref)}`:''].filter(Boolean).join(' · ');
   const tone=agbTipoTone(tipo);
   // Edição completa: só faz sentido pra 1 lançamento (o card agrupado
@@ -6005,7 +6037,7 @@ function agbCardHtml(grp,dia){
       title="Toque para baixar${n>1?' (todos os lançamentos deste cliente no dia)':''}">
     ${editBtn}
     <p class="agb-card-title">${esc(grp.cliente||'—')}</p>
-    ${tipo?`<div class="agb-card-tags"><span class="agb-tag">${esc(tipo)}</span></div>`:''}
+    ${(tipo||parc)?`<div class="agb-card-tags">${tipo?`<span class="agb-tag">${esc(tipo)}</span>`:''}${parc?`<span class="agb-tag agb-tag-parc" title="Parcela ${parc.atual} de ${parc.total} do mesmo lançamento — as outras aparecem em dias diferentes">◐ ${parc.atual}/${parc.total}</span>`:''}</div>`:''}
     <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fR(grp.total)}</span></div>
   </div>`;
 }
@@ -7555,6 +7587,11 @@ async function addItensContrato(){
 function saveEdit(){
   const r=lancEditado();
   if(!r)return;
+  // Parcelas irmãs (mesmo lançamento original em Crédito 2x/3x, ver
+  // agbParcelaSiblings) — pega ANTES de mudar os campos de r, senão a
+  // própria edição (ex.: mudar a forma) pode fazer r deixar de "bater" com
+  // elas antes da gente achar quem são.
+  const irmaos=agbParcelaSiblings(r).filter(x=>x!==r);
   const formaAnt=r.forma||'', valorAnt=fN(r.valor);
   r.placa=normPlaca(document.getElementById('e-p').value);
   r.dono=document.getElementById('e-d').value;
@@ -7605,6 +7642,15 @@ function saveEdit(){
   document.getElementById('e-com').value='';
   document.getElementById('e-com').disabled=true;
   dbUpdate(r);
+  // Propaga só os campos CADASTRAIS (identidade do lançamento) pras
+  // parcelas irmãs — nunca valor, previsão/data de pagamento, valor pago,
+  // saldo ou obs, que são de cada parcela (ver pergunta feita ao usuário:
+  // "só os campos cadastrais", não o lançamento inteiro).
+  irmaos.forEach(x=>{
+    x.placa=r.placa; x.dono=r.dono; x.cliente=r.cliente; x.tipo=r.tipo; x.forma=r.forma;
+    x.saida=r.saida; x.retorno=r.retorno;
+    dbUpdate(x);
+  });
   // popSel(): a edição pode ter mudado placa, cliente, dono, tipo ou forma —
   // sem reindexar aqui, o autocomplete/datalist ficava um passo atrás do que
   // acabou de ser digitado até a próxima ação em outro lugar do app.
