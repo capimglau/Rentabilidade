@@ -2366,6 +2366,20 @@ html[data-theme="dark"] .res-ctrls .rc-sel:hover {
 .fp input:focus, .fp select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,95,168,.08); }
 .fp input[readonly] { background: var(--surface); color: var(--ink3); }
 
+/* SUBSTITUIÇÃO DE VEÍCULO — preview lado a lado do lançamento atual
+   (encurtado até a data da troca) e do novo (resto do período), valor já
+   dividido proporcional aos dias, mas os dois campos continuam editáveis. */
+.sv-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.sv-split-col { display: flex; flex-direction: column; gap: 4px; background: var(--surface); border-radius: 10px; padding: 10px 12px; }
+.sv-split-hd { font-weight: 700; font-size: 13px; color: var(--ink); }
+.sv-split-hd small { font-weight: 500; color: var(--ink3); text-transform: none; letter-spacing: 0; }
+.sv-split-dias { font-size: 11.5px; color: var(--ink3); margin-bottom: 4px; }
+.sv-split-col label { font-size: 11px; font-weight: 600; color: var(--ink3); text-transform: uppercase; letter-spacing: .05em; }
+.sv-split-col input { padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 8px; font-size: 13.5px; background: var(--card); color: var(--ink); }
+.sv-total { margin-top: 8px; font-size: 12.5px; color: var(--ink3); text-align: right; }
+.sv-total-diff { color: var(--red); font-weight: 700; }
+.sv-warn { margin-top: 10px; font-size: 12.5px; color: var(--red); }
+
 /* ITENS DO CONTRATO — um contrato pode ter N lançamentos (locação, lavagem,
    avarias...), cada um com sua forma de pagamento, valor e previsão. */
 .itens-hd { display: flex; align-items: center; gap: 8px; margin: 18px 0 8px; }
@@ -3850,6 +3864,20 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <button class="btn btn-blue" style="flex:1;justify-content:center" onclick="saveEdit()">✓ Salvar</button>
         <button class="btn btn-red" onclick="deleteRow()">🗑 Excluir</button>
       </div>
+    </details>
+
+    <!-- Substituição de veículo no meio do período: encurta este lançamento
+         até a data da troca e cria um novo lançamento pro veículo novo com o
+         resto do período — valor dividido proporcional aos dias, editável.
+         Só aparece quando dá pra calcular dias (Saída e Retorno preenchidos). -->
+    <details id="mSubst" style="display:none">
+      <summary>🔄 Substituir veículo</summary>
+      <div class="fg" style="margin-top:12px">
+        <div class="fp"><label>Placa nova</label><input type="text" id="sv-p" list="placaDL" autocomplete="off" oninput="substCalcular()"></div>
+        <div class="fp"><label>Data da troca</label><input type="date" id="sv-data" oninput="substCalcular()"></div>
+      </div>
+      <div id="sv-preview"></div>
+      <button class="btn btn-blue" style="width:100%;justify-content:center;margin-top:10px" onclick="confirmarSubstituicao()">🔄 Confirmar substituição</button>
     </details>
 
     <!-- Acrescentar mais lançamentos ao MESMO contrato (mesma placa, cliente
@@ -7528,6 +7556,15 @@ function openEdit(idx){
   resetItems('ed');
   document.getElementById('edMsg').innerHTML='';
   renderIrmaos();
+  // Substituir veículo: só faz sentido com um período de dias pra ratear
+  // (Saída/Retorno preenchidos e Retorno depois da Saída) e nada pago ainda
+  // (senão o valor já recebido fica ambíguo entre os dois veículos).
+  const mSubst=document.getElementById('mSubst');
+  mSubst.style.display=(r.saida&&r.retorno&&r.retorno>r.saida&&fN(r.valor_pago)===0)?'':'none';
+  mSubst.open=false;
+  document.getElementById('sv-p').value='';
+  document.getElementById('sv-data').value='';
+  document.getElementById('sv-preview').innerHTML='';
   document.getElementById('mEdit').classList.add('on');
 }
 
@@ -8964,6 +9001,101 @@ function recalcSaldoEdit(){
   const forma=formaComBandeira(document.getElementById('e-f').value,document.getElementById('e-bd').value);
   const liquido=Math.round(v*(1-getTaxaForma(forma))*100)/100;
   document.getElementById('e-sl').value=(Math.round((liquido-vp)*100)/100).toFixed(2);
+}
+// ── SUBSTITUIÇÃO DE VEÍCULO NO MEIO DO PERÍODO ──
+// Troca de carro durante o aluguel (pane, manutenção etc.): encurta o
+// lançamento atual até a data da troca e cria um lançamento novo pro
+// veículo novo com o resto do período, valor dividido proporcional aos
+// dias de cada um — mesmo raciocínio de dividirCentavos (sem perder nem
+// sobrar centavo), mas ponderado pelos dias em vez de partes iguais.
+const diasEntre=(a,b)=>Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000);
+function splitProporcionalDias(valor,diasA,diasB){
+  const totalDias=diasA+diasB;
+  if(totalDias<=0)return[valor,0];
+  const totalCent=Math.round(valor*100);
+  const centA=Math.round(totalCent*diasA/totalDias);
+  return[centA/100,(totalCent-centA)/100];
+}
+// Recalcula e desenha o preview a cada mudança na placa nova/data da troca
+// — os dois campos de valor nascem com o rateio proporcional, mas ficam
+// editáveis (o usuário pode digitar por cima).
+function substCalcular(){
+  const r=lancEditado();
+  const box=document.getElementById('sv-preview');
+  if(!r){box.innerHTML='';return;}
+  const placaNova=normPlaca(document.getElementById('sv-p').value);
+  const dataTroca=document.getElementById('sv-data').value;
+  if(!placaNova||!dataTroca||!(dataTroca>r.saida&&dataTroca<r.retorno)){
+    box.innerHTML=dataTroca&&!(dataTroca>r.saida&&dataTroca<r.retorno)
+      ?'<div class="sv-warn">A data da troca precisa ficar entre a Saída e o Retorno do lançamento.</div>':'';
+    return;
+  }
+  const diasA=diasEntre(r.saida,dataTroca), diasB=diasEntre(dataTroca,r.retorno);
+  const[valorA,valorB]=splitProporcionalDias(fN(r.valor),diasA,diasB);
+  box.innerHTML=`<div class="sv-split">
+    <div class="sv-split-col">
+      <div class="sv-split-hd">${esc(r.placa)} <small>(atual)</small></div>
+      <div class="sv-split-dias">${diasA} dia(s) · ${fD(r.saida)} → ${fD(dataTroca)}</div>
+      <label>Valor</label>
+      <input type="number" id="sv-va" step="0.01" value="${valorA.toFixed(2)}" oninput="substTotalCheck()">
+    </div>
+    <div class="sv-split-col">
+      <div class="sv-split-hd">${esc(placaNova)} <small>(novo)</small></div>
+      <div class="sv-split-dias">${diasB} dia(s) · ${fD(dataTroca)} → ${fD(r.retorno)}</div>
+      <label>Valor</label>
+      <input type="number" id="sv-vb" step="0.01" value="${valorB.toFixed(2)}" oninput="substTotalCheck()">
+    </div>
+  </div>
+  <div class="sv-total" id="sv-total"></div>`;
+  substTotalCheck();
+}
+// Só um aviso visual (não trava) se a soma dos dois valores editados não
+// bater com o valor original — dá pra ser proposital (desconto etc.), mas
+// o usuário precisa ver que mudou.
+function substTotalCheck(){
+  const r=lancEditado();
+  const total=document.getElementById('sv-total');
+  if(!r||!total)return;
+  const va=fN(document.getElementById('sv-va').value), vb=fN(document.getElementById('sv-vb').value);
+  const soma=Math.round((va+vb)*100)/100, original=Math.round(fN(r.valor)*100)/100;
+  const bate=Math.abs(soma-original)<0.01;
+  total.innerHTML=`Soma: <strong>${fR(soma)}</strong> ${bate?'✓':`— original ${fR(original)}`}`;
+  total.className='sv-total'+(bate?'':' sv-total-diff');
+}
+function confirmarSubstituicao(){
+  const r=lancEditado();
+  if(!r)return;
+  const placaNova=normPlaca(document.getElementById('sv-p').value);
+  const dataTroca=document.getElementById('sv-data').value;
+  if(!placaNova||!(dataTroca>r.saida&&dataTroca<r.retorno)){
+    alert('Preencha a placa nova e uma data de troca entre a Saída e o Retorno.');return;
+  }
+  const vaEl=document.getElementById('sv-va'), vbEl=document.getElementById('sv-vb');
+  const valorA=fN(vaEl&&vaEl.value), valorB=fN(vbEl&&vbEl.value);
+  if(valorA<=0||valorB<=0){alert('Os dois valores precisam ser maiores que zero.');return;}
+  if(!confirm(`Confirmar substituição?\n\n${r.placa}: ${fD(r.saida)} → ${fD(dataTroca)} — ${fR(valorA)}\n${placaNova}: ${fD(dataTroca)} → ${fD(r.retorno)} — ${fR(valorB)}`))return;
+  // Campos compartilhados do lançamento novo saem do ORIGINAL (antes de
+  // mexer em r) — cliente, tipo, forma e vencimento continuam os mesmos,
+  // só placa/dono/período/valor mudam entre os dois.
+  const donoNovo=donoDaPlaca(placaNova)||r.dono;
+  const novo={
+    placa:placaNova, dono:donoNovo, cliente:r.cliente, tipo:r.tipo, forma:r.forma,
+    saida:dataTroca, retorno:r.retorno, prev_pgto:r.prev_pgto,
+    valor:valorB, valor_pago:0,
+    saldo:Math.round(valorB*(1-getTaxaForma(r.forma))*100)/100,
+    obs:`Substituição de ${r.placa} em ${fD(dataTroca)}`+(r.obs?` · ${r.obs}`:'')
+  };
+  r.retorno=dataTroca;
+  r.valor=valorA;
+  r.saldo=Math.round(valorA*(1-getTaxaForma(r.forma))*100)/100;
+  r.obs=`Substituído por ${placaNova} em ${fD(dataTroca)}`+(r.obs?` · ${r.obs}`:'');
+  dbUpdate(r);
+  (async()=>{
+    const saved=await dbInsert(novo);
+    registrarNovo(saved);
+    popSel();
+    closeEdit();renderAll();
+  })();
 }
 // Divide um valor em N parcelas de centavos o mais iguais possível, sem
 // perder nem sobrar centavo — a diferença do arredondamento fica na última.
