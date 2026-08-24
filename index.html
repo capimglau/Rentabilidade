@@ -1836,6 +1836,18 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
 .busca-grupo-hd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 0 4px 10px; }
 .busca-grupo-cli { flex: 1; min-width: 0; font-weight: 700; font-size: 13px; color: var(--ink); overflow-wrap: break-word; }
 .busca-grupo-v { font-weight: 800; font-size: 14px; color: var(--blue); white-space: nowrap; }
+/* Lançamento principal parcelado (busca global): mostra só o card
+   consolidado com o valor cheio por padrão — as parcelas individuais
+   (busca-parc-itens) ficam escondidas até tocar pra desmembrar, mesmo
+   comportamento de "clique pra ver cada um" já usado noutras listas
+   agrupadas do app. */
+.busca-parc-wrap { cursor: pointer; margin-bottom: 10px; }
+.busca-parc-card { margin-bottom: 0; }
+.busca-parc-sub { font-size: 11px; font-weight: 600; color: var(--ink3); }
+.busca-parc-itens { display: none; flex-direction: column; margin-top: 2px; padding-left: 12px; border-left: 2px solid var(--line); }
+.busca-parc-itens .pcard { margin-bottom: 8px; }
+.busca-parc-wrap.desmembrado .busca-parc-itens { display: flex; }
+.busca-parc-wrap.desmembrado .busca-parc-card { box-shadow: none; border: 1.5px dashed var(--blue-mid); }
 
 /* Resumo por forma de pagamento de um dia (clique no somatório do dia) */
 .rfd { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
@@ -2305,6 +2317,13 @@ html[data-theme="dark"] .res-ctrls .rc-sel:hover {
   overflow-y: auto;
   overscroll-behavior: contain;
   box-shadow: 0 24px 80px rgba(0,0,0,.18);
+}
+/* Busca global (painel lateral): janela bem maior que os outros modais —
+   sobra espaço pra ler contrato consolidado + parcelas sem rolar toda hora.
+   Só no PC (>=761px); no mobile fica no padrão (min(560px,100%)) — 80vw
+   numa tela de celular ficaria estreito demais, sem o fallback de 100%. */
+@media (min-width: 761px) {
+  .modal-busca { width: 80vw; max-width: 80vw; max-height: 80vh; }
 }
 .mhd {
   font-size: 16px;
@@ -3955,7 +3974,7 @@ body.modo-boletos #btnLinkBoletos { display: none; }
 
 <!-- BUSCA GLOBAL -->
 <div class="overlay" id="mSearch">
-  <div class="modal" style="max-width:520px">
+  <div class="modal modal-busca">
     <div class="mhd"><span id="searchModalTit">Buscar lançamento</span> <button class="mcl" onclick="closeSearch()">✕</button></div>
     <input id="searchInput" class="search-input" type="text" placeholder="Placa, cliente, proprietário, observação, nº do cartão…" autocomplete="off" oninput="runSearch()">
     <div id="searchResults"></div>
@@ -7981,6 +8000,15 @@ function buscaGroupedHtml(grupos,fecharBusca){
       const{r,i}=g.itens[0];
       return mesHtml+lcCardHtml(r,i,fecharBusca);
     }
+    // Grupo em que TODO item é parcela do mesmo lançamento original (mesmo
+    // Crédito 2x/3x — ver agbParcelaGroupKey): mostra só o lançamento
+    // principal com o valor cheio (ex.: R$450), não cada parcela avulsa
+    // (3× R$150) — toca pra desmembrar e ver/agir em cada parcela, se
+    // precisar. Contrato com tipos diferentes misturados (ex.: Locação +
+    // Avarias) não entra aqui — continua itemizado como sempre foi, pra não
+    // esconder cobranças que são coisas de fato distintas.
+    const chaves=g.itens.map(({r})=>agbParcelaGroupKey(r));
+    if(chaves.every(k=>k&&k===chaves[0])) return mesHtml+buscaParcelaConsolidadaHtml(g,fecharBusca);
     const first=g.itens[0].r;
     const totLiq=g.itens.reduce((a,{r})=>a+liq(r),0);
     const cards=g.itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
@@ -7994,6 +8022,41 @@ function buscaGroupedHtml(grupos,fecharBusca){
       ${cards}
     </div>`;
   }).join('');
+}
+// Cartão único do lançamento principal parcelado: soma o líquido de todas
+// as parcelas (valor cheio, ex. 3×R$150 → R$450) usando os dados
+// cadastrais da 1ª parcela (são iguais em todas — placa/cliente/tipo/
+// forma, ver saveEdit()). Clicar desmembra e mostra cada parcela com seu
+// próprio swipe (baixar/editar/excluir), igual busca-grupo normal — só o
+// estado padrão (fechado) é que muda, pra não listar parcela por parcela
+// à toa.
+function buscaParcelaConsolidadaHtml(g,fecharBusca){
+  const first=g.itens[0].r;
+  const n=g.itens.length;
+  const totLiq=g.itens.reduce((a,{r})=>a+liq(r),0);
+  const cards=g.itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
+  return `<div class="busca-parc-wrap" role="button" tabindex="0"
+      onclick="this.classList.toggle('desmembrado')"
+      onkeydown="if(event.key==='Enter')this.classList.toggle('desmembrado')"
+      title="Lançamento parcelado em ${n}x — toque pra ver cada parcela">
+    <div class="pcard busca-parc-card">
+      <div class="pcard-body">
+        <div class="pcard-top">
+          <span class="placa">${esc(first.placa)}</span>
+          <span class="pcard-name">${esc(first.cliente||'—')}</span>
+        </div>
+        <div class="pcard-tags">
+          ${tipTag(first.tipo)}
+          <span class="tag tag-forma">${fFormaLabel(first.forma)} · ${n}x</span>
+        </div>
+      </div>
+      <div class="pcard-right">
+        <span class="pcard-value">${fR(totLiq)}</span>
+        <span class="busca-parc-sub">${n} parcelas</span>
+      </div>
+    </div>
+    <div class="busca-parc-itens" onclick="event.stopPropagation()">${cards}</div>
+  </div>`;
 }
 // ── HISTÓRICO: LANÇAMENTOS FEITOS EM CADA DIA (só consulta) ──
 // "Feito em" é a data em que o lançamento ENTROU no sistema (created_at do
