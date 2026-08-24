@@ -1670,6 +1670,22 @@ body.tip-pinned::before {
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06); }
 .agb-card:active{ transform:scale(.97); }
 .agb-card.agb-card-atrasado{ background:color-mix(in srgb, var(--red-soft) 82%, var(--card) 18%); border-color:color-mix(in srgb, var(--red) 28%, transparent); }
+/* Atrasado pulsa forte (chama atenção pro atraso); hoje pulsa bem mais
+   sutil (só um lembrete leve, não é urgência) — o anel cresce e desaparece
+   por cima da sombra normal do card, sem trocar o fundo/degradê. */
+@keyframes agbPulseAtrasado{
+  0%,100%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--red) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 0 color-mix(in srgb, var(--red) 45%, transparent); }
+  50%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--red) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 6px transparent; }
+}
+.agb-card.agb-card-atrasado{ animation:agbPulseAtrasado 1.7s ease-in-out infinite; }
+@keyframes agbPulseHoje{
+  0%,100%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 0 color-mix(in srgb, var(--blue) 22%, transparent); }
+  50%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 4px transparent; }
+}
+.agb-card.agb-card-hoje:not(.agb-card-atrasado){ animation:agbPulseHoje 2.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .agb-card.agb-card-atrasado, .agb-card.agb-card-hoje{ animation:none; }
+}
 /* Lapiseira de edição completa: canto superior direito, sem disputar
    clique com o card inteiro (que baixa/confirma) — só existe pra cards de
    1 lançamento, ver agbCardHtml. */
@@ -5964,7 +5980,11 @@ function agbCardHtml(grp,dia){
   const onclick=n===1
     ? `abrirParcial(${idx1},true)`
     : `baixarTudoCliente('${dia}',${JSON.stringify(grp.cliente).replace(/"/g,'&quot;')})`;
-  const atrasado=dia!=='atrasados'&&dia<td();
+  // renderAgendaBoardHtml só bota lançamento vencido na coluna Atrasados
+  // (dia==='atrasados') — os dias normais (dia<td()) nunca acontecem, já
+  // que "futuros" já vem filtrado por prev_pgto>=hoje.
+  const atrasado=dia==='atrasados';
+  const hoje=dia===td();
   const tipo=grp.recs[0].tipo||'';
   const forma=grp.recs[0].forma||'';
   const ref=grp.recs[0].obs||'';
@@ -5978,7 +5998,7 @@ function agbCardHtml(grp,dia){
       onclick="event.stopPropagation();openEdit(${idx1})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
     </button>`:'';
-  return `<div class="agb-card${atrasado?' agb-card-atrasado':''}" role="button" tabindex="0"
+  return `<div class="agb-card${atrasado?' agb-card-atrasado':''}${hoje?' agb-card-hoje':''}" role="button" tabindex="0"
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
