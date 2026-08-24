@@ -1445,6 +1445,7 @@ body.tip-pinned::before {
 .rc-block .rh-dupla, .rc-block .rc-cal-wrap { margin-bottom: 0; }
 .rc-mode-lista .rc-block-lista { display: block; }
 .rc-mode-cal .rc-block-cal { display: block; }
+.rc-mode-board .rc-block-board { display: block; }
 /* Calendário Seg-Sex do mês: mesmo componente visual do calendário
    "Previsto do mês" (.cal-grid/.cal-cell/.cal-week, já em 5 colunas —
    sábado/domingo já saíram de lá) — só data + valor por dia, clicar abre a
@@ -1603,6 +1604,50 @@ body.tip-pinned::before {
   .rc-cal-wrap .cal-cell.rc-blink { animation: none; }
   .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
 }
+
+/* ── Agenda (board) — mesmo padrão da Agenda Mensal do AutoGest: colunas
+   por dia, "Atrasados" fixa à esquerda, cabeçalho de cada coluna fixo no
+   topo enquanto os cards rolam por baixo. ──
+   O scroll (vertical E horizontal) mora TODO em .agb-wrap — não em
+   .agb-board. Um elemento com overflow-x diferente de "visible" já vira,
+   sozinho, o "scroll container" mais próximo pra fins de position:sticky,
+   mesmo sem overflow-y; se o scroll horizontal morasse em .agb-board (como
+   numa primeira tentativa ingênua), o cabeçalho nunca colaria no topo ao
+   rolar verticalmente — foi exatamente esse bug que apareceu (e foi
+   corrigido) na versão original do AutoGest. */
+.agb-wrap{ max-height:min(560px,70vh); overflow:auto; border-radius:14px; }
+.agb-board{ display:flex; flex-wrap:nowrap; gap:12px; align-items:flex-start; padding:2px 2px 4px; }
+/* min-width:0 é obrigatório: sem ele, um flex item com flex-shrink:0 ainda
+   pode ser empurrado mais largo que o flex-basis quando o conteúdo tem
+   texto longo sem quebra — foi o que deixava a coluna "Atrasados" mais
+   larga que as outras no AutoGest antes da correção. */
+.agb-col{ flex:0 0 208px; min-width:0; display:flex; flex-direction:column; }
+@media (min-width:761px){ .agb-col{ flex-basis:240px; } }
+.agb-col-hd{ display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 11px; border-radius:12px; background:var(--card); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
+.agb-col.agb-atrasados .agb-col-hd{ background:color-mix(in srgb, var(--red) 10%, var(--card)); border-color:color-mix(in srgb, var(--red) 30%, transparent); }
+.agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 10%, var(--card)); border-color:color-mix(in srgb, var(--blue) 30%, transparent); }
+.agb-col-hd-l{ display:flex; align-items:baseline; gap:5px; min-width:0; overflow:hidden; }
+.agb-dow{ font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap; }
+.agb-col.agb-atrasados .agb-dow{ color:var(--red); }
+.agb-col.agb-hoje .agb-dow{ color:var(--blue); }
+.agb-dom{ font-size:10.5px; color:var(--ink3); font-weight:500; white-space:nowrap; }
+.agb-count{ flex-shrink:0; min-width:19px; height:19px; padding:0 6px; border-radius:99px; background:color-mix(in srgb, var(--ink) 10%, transparent); font-size:10.5px; font-weight:700; color:var(--ink3); display:flex; align-items:center; justify-content:center; }
+/* Coluna "Atrasados" fixa à esquerda enquanto o board rola de lado — as
+   demais colunas passam por baixo dela. */
+.agb-board>.agb-col.agb-atrasados{ position:sticky; left:0; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); }
+.agb-col-body{ display:flex; flex-direction:column; gap:7px; }
+.agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
+.agb-card{ border-radius:12px; padding:10px 11px 9px; background:var(--card); border:1px solid var(--line); cursor:pointer; transition:transform .1s ease, box-shadow .15s ease; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+.agb-card:active{ transform:scale(.97); }
+.agb-card.agb-card-atrasado{ background:color-mix(in srgb, var(--red-soft) 82%, var(--card) 18%); border-color:color-mix(in srgb, var(--red) 28%, transparent); }
+.agb-card-title{ margin:0 0 5px; font-size:12.5px; font-weight:700; color:var(--ink); line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.agb-card-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px; }
+.agb-tag{ padding:2px 7px; border-radius:99px; font-size:9.5px; font-weight:700; background:color-mix(in srgb, var(--blue) 14%, var(--card)); color:var(--blue); white-space:nowrap; }
+.agb-card-foot{ display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+.agb-card-sub{ font-size:10.5px; color:var(--ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.agb-card-val{ font-size:12.5px; font-weight:800; color:var(--ink); white-space:nowrap; }
+.agb-card.agb-card-atrasado .agb-card-val{ color:var(--red); }
+
 /* O calendário (ou a lista de vencidos/hoje) ocupa a largura toda do
    conteúdo em qualquer tamanho de tela — só uma vista por vez, trocada
    pelo seletor Lista/Calendário (.rc-view-toggle), que por isso fica
@@ -4993,7 +5038,7 @@ function mcCycleStep(stageSel, prevIdx, nextIdx){
 
 // Card de vencidos/hoje do Resumo: alterna entre o calendário semanal
 // (Seg-Sex, padrão) e a lista com todos os lançamentos pendentes do mês.
-let recebViewMode = 'cal';
+let recebViewMode = 'board';
 function setRecebView(mode){
   if(recebViewMode===mode)return;
   recebViewMode=mode;
@@ -5921,6 +5966,67 @@ function rhGroupHtml(grp,cls){
 // espaço pro "R$" por extenso, mas no mobile as células são estreitas
 // demais e o valor cheio cortaria/empurraria o layout.
 const calValDuplo = v => `<b class="cal-v-full">${fR(v)}</b><b class="cal-v-curto">${calFRk(v)}</b>`;
+// ── Agenda em board (mesmo padrão da Agenda Mensal do AutoGest): uma
+// coluna "Atrasados" (agrega tudo o que já venceu) seguida de uma coluna
+// por dia futuro com pendência, em ordem cronológica. Cada card é um
+// cliente daquele dia (um ou mais lançamentos agrupados, mesmo
+// agrupamento de agruparPorCliente já usado nos cards de vencidos/hoje);
+// tocar no card baixa na hora — um lançamento único abre o modal de
+// confirmação (abrirParcial(idx,true), o mesmo "✓ Confirmar baixa" do
+// swipe), mais de um do mesmo cliente no mesmo dia usa a baixa em lote já
+// existente (baixarTudoCliente), sem duplicar nenhuma lógica de baixa.
+const DOW_PT=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+const MES_PT=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function agbCardHtml(grp,dia){
+  const n=grp.recs.length;
+  const onclick=n===1
+    ? `abrirParcial(${allD().indexOf(grp.recs[0])},true)`
+    : `baixarTudoCliente('${dia}',${JSON.stringify(grp.cliente).replace(/"/g,'&quot;')})`;
+  const atrasado=dia!=='atrasados'&&dia<td();
+  const tipo=grp.recs[0].tipo||'';
+  const sub=n>1?`${n} lançamentos`:esc(grp.recs[0].placa||grp.recs[0].forma||'');
+  return `<div class="agb-card${atrasado?' agb-card-atrasado':''}" role="button" tabindex="0"
+      onclick="event.stopPropagation();${onclick}"
+      onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
+      title="Toque para baixar${n>1?' (todos os lançamentos deste cliente no dia)':''}">
+    <p class="agb-card-title">${esc(grp.cliente||'—')}</p>
+    ${tipo?`<div class="agb-card-tags"><span class="agb-tag">${esc(tipo)}</span></div>`:''}
+    <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fR(grp.total)}</span></div>
+  </div>`;
+}
+function agbColHtml(cls,dow,dom,itens,dia){
+  const grupos=agruparPorCliente(itens);
+  const total=itens.reduce((a,r)=>a+fN(r.saldo),0);
+  return `<div class="agb-col ${cls}">
+    <div class="agb-col-hd">
+      <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
+      <div class="agb-count" title="${fR(total)}">${itens.length}</div>
+    </div>
+    <div class="agb-col-body">${grupos.length?grupos.map(g=>agbCardHtml(g,dia)).join(''):'<div class="agb-empty">Sem lançamentos</div>'}</div>
+  </div>`;
+}
+// Mesma janela de 90 dias já usada na "Projeção de recebimentos" do
+// Resumo — evita um board infinito com parcelas de contratos longos lá
+// na frente, mantendo o mesmo horizonte que o resto da dashboard já usa.
+function renderAgendaBoardHtml(){
+  const hoje=td();
+  const tF=addD(hoje,90);
+  const base=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&r.prev_pgto);
+  const vencidos=base.filter(r=>r.prev_pgto<hoje);
+  const futuros=base.filter(r=>r.prev_pgto>=hoje&&r.prev_pgto<=tF);
+  const porDia={};
+  futuros.forEach(r=>{(porDia[r.prev_pgto]=porDia[r.prev_pgto]||[]).push(r);});
+  const dias=Object.keys(porDia).sort();
+  const cols=[];
+  if(vencidos.length) cols.push(agbColHtml('agb-atrasados','Atrasados','',vencidos,'atrasados'));
+  dias.forEach(dia=>{
+    const dt=new Date(dia+'T12:00:00');
+    const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
+    cols.push(agbColHtml(dia===hoje?'agb-hoje':'',dow,dom,porDia[dia],dia));
+  });
+  if(!cols.length) return '<div class="agb-empty" style="margin:4px 0">Nenhum lançamento pendente nos próximos 90 dias ✓</div>';
+  return `<div class="agb-wrap"><div class="agb-board">${cols.join('')}</div></div>`;
+}
 function renderRecCalGridHtml(){
   const hoje=td();
   const mes=curMes;
@@ -6052,9 +6158,12 @@ function _baixarLoteConfirmado(alvos,label){
   });
 }
 function baixarTudoCliente(dia,cliente){
-  const alvos=allD().filter(r=>(r.prev_pgto||'').slice(0,10)===dia&&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  const atrasados=dia==='atrasados';
+  const hoje=td();
+  const alvos=allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)&&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
   if(!alvos.length) return;
-  if(!confirm(`Confirmar a baixa de ${alvos.length} lançamento(s) de ${cliente} em ${fDM(dia)} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
+  const quando=atrasados?'em atraso':`em ${fDM(dia)}`;
+  if(!confirm(`Confirmar a baixa de ${alvos.length} lançamento(s) de ${cliente} ${quando} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
   _baixarLoteConfirmado(alvos,cliente);
 }
 function baixarTudoDia(dia){
@@ -6157,6 +6266,9 @@ function renderRecebHoje(){
   // PC (>=761px) as duas ficam lado a lado sempre, o seletor some (CSS) e
   // as duas divs ficam visíveis ao mesmo tempo.
   const toggleHtml=`<div class="fr-basistoggle rc-view-toggle rc-view-toggle-ico">
+    <button type="button" class="${recebViewMode==='board'?'on':''}" onclick="setRecebView('board')" title="Agenda" aria-label="Agenda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r="1.4" fill="currentColor" stroke="none"/></svg>
+    </button>
     <button type="button" class="${recebViewMode==='cal'?'on':''}" onclick="setRecebView('cal')" title="Calendário" aria-label="Calendário">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </button>
@@ -6167,6 +6279,7 @@ function renderRecebHoje(){
   const topbarRightHtml=`<div class="rc-cal-topbar-right">${tipoCalSelectHtml()}</div>`;
   el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${topbarRightHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
+      <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-lista"><div class="g2 rh-dupla">${cardVenc}${cardHoje}</div></div>
       <div class="rc-block rc-block-cal">
         <div class="rc-cal-wrap">${renderRecCalGridHtml()}</div>
