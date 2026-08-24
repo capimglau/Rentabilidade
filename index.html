@@ -1618,12 +1618,12 @@ body.tip-pinned::before {
    fração do próprio board (que ocupa 100% do .agb-wrap), não um px fixo,
    pra sempre fechar em exatamente 4 nessa faixa de tela. */
 @media (min-width:761px){ .agb-board{ width:100%; } .agb-col{ flex-basis:calc((100% - 36px)/4); } }
-.agb-col-hd{ display:flex; flex-direction:column; gap:3px; padding:8px 11px; border-radius:12px; background:color-mix(in srgb, var(--ink) 4%, var(--card)); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
+.agb-col-hd{ display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 11px; border-radius:12px; background:color-mix(in srgb, var(--ink) 4%, var(--card)); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
 .agb-col.agb-atrasados .agb-col-hd{ background:color-mix(in srgb, var(--red) 10%, var(--card)); border-color:color-mix(in srgb, var(--red) 30%, transparent); }
 .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 10%, var(--card)); border-color:color-mix(in srgb, var(--blue) 30%, transparent); }
-.agb-col-hd-top{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
-.agb-col-hd-l{ display:flex; align-items:baseline; gap:5px; min-width:0; overflow:hidden; }
-.agb-col-total{ font-size:12px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; }
+.agb-col-hd-l{ display:flex; align-items:baseline; gap:5px; min-width:0; overflow:hidden; flex-shrink:0; }
+.agb-col-hd-r{ display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; }
+.agb-col-total{ font-size:12px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .agb-col.agb-atrasados .agb-col-total{ color:var(--red); }
 .agb-col.agb-hoje .agb-col-total{ color:var(--blue); }
 .agb-dow{ font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap; }
@@ -5929,7 +5929,8 @@ function agbCardHtml(grp,dia){
   const atrasado=dia!=='atrasados'&&dia<td();
   const tipo=grp.recs[0].tipo||'';
   const forma=grp.recs[0].forma||'';
-  const sub=[n>1?`${n} lançamentos`:esc(grp.recs[0].placa||''),esc(forma)].filter(Boolean).join(' · ');
+  const ref=grp.recs[0].obs||'';
+  const sub=[n>1?`${n} lançamentos`:esc(grp.recs[0].placa||''),esc(forma),ref?`REF ${esc(ref)}`:''].filter(Boolean).join(' · ');
   const tone=agbTipoTone(tipo);
   return `<div class="agb-card${atrasado?' agb-card-atrasado':''}" role="button" tabindex="0"
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag}"
@@ -5946,11 +5947,11 @@ function agbColHtml(cls,dow,dom,itens,dia){
   const total=itens.reduce((a,r)=>a+fN(r.saldo),0);
   return `<div class="agb-col ${cls}">
     <div class="agb-col-hd">
-      <div class="agb-col-hd-top">
-        <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
-        <div class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</div>
+      <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
+      <div class="agb-col-hd-r">
+        <span class="agb-col-total">${fR(total)}</span>
+        <span class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</span>
       </div>
-      <div class="agb-col-total">${fR(total)}</div>
     </div>
     <div class="agb-col-body">${grupos.length?grupos.map(g=>agbCardHtml(g,dia)).join(''):'<div class="agb-empty">Sem lançamentos</div>'}</div>
   </div>`;
