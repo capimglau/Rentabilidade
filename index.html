@@ -9886,17 +9886,13 @@ async function boot(){
   updateMesLabel();
   buildResumoFilters();
   buildBaixasFilters();
-  if(MODO_BOLETOS){
-    // Link restrito: sempre Resumo, painel já aberto, sem lembrar a última
-    // aba visitada (isso é sobre o app inteiro; aqui só existe uma tela).
-    document.body.classList.add('modo-boletos');
-    bolExpandido=true;
-    go('resumo');
-  } else {
-    go(paginaSalva());   // volta para a aba onde o usuário estava (já renderiza)
-  }
-  initMobileFilters();
-  initSync();
+  // Antes do go() que renderiza a página inicial — não pode depender disso
+  // ter dado certo. go() aciona renderResumo()/o gráfico Chart.js daquela
+  // aba, e um erro ali (CDN fora do ar, dado inesperado etc.) travava a
+  // função assíncrona no meio, e tudo que vinha DEPOIS nunca rodava —
+  // inclusive isso aqui, deixando placa→dono (autoFillDono) e o
+  // autocompletar de placa (autoCompletePlaca) sem funcionar pro resto da
+  // sessão inteira, mesmo sem nenhuma relação com o que quebrou.
   autoCompletePlaca('nf-p');
   autoCompletePlaca('e-p');
   autoCompletePlaca('ai-p');
@@ -9904,6 +9900,21 @@ async function boot(){
   autoFillDono('e-p','e-d');
   autoFillDono('ai-p','ai-d');
   setTimeout(renderPremissas, 100);
+  try{
+    if(MODO_BOLETOS){
+      // Link restrito: sempre Resumo, painel já aberto, sem lembrar a última
+      // aba visitada (isso é sobre o app inteiro; aqui só existe uma tela).
+      document.body.classList.add('modo-boletos');
+      bolExpandido=true;
+      go('resumo');
+    } else {
+      go(paginaSalva());   // volta para a aba onde o usuário estava (já renderiza)
+    }
+  }catch(err){
+    console.error('[boot] falha ao renderizar a página inicial:',err);
+  }
+  initMobileFilters();
+  initSync();
   // ONLINE só diz que existe config — SB_OFF diz se o banco respondeu de fato.
   if(ONLINE&&!SB_OFF) console.log('AGI Locadora · Supabase ONLINE ·', DATA.length, 'lançamentos');
   else if(ONLINE) console.warn('AGI Locadora · Supabase INACESSÍVEL ·', _cfg.url, '— exibindo', DATA.length, 'dados de exemplo, SEM persistência.');
