@@ -3829,12 +3829,12 @@ body.modo-boletos #btnLinkBoletos { display: none; }
         <div class="fp"><label>Tipo</label>
           <select id="e-t"></select></div>
         <div class="fp"><label>Forma</label>
-          <select id="e-f" onchange="syncBandeiraEdit()"><option>Crédito</option><option>Crédito 3x</option><option>Crédito 2x</option><option>Débito</option><option>Boleto</option><option>Depósito</option><option>Dinheiro</option></select></div>
+          <select id="e-f" onchange="syncBandeiraEdit();recalcSaldoEdit();"><option>Crédito</option><option>Crédito 3x</option><option>Crédito 2x</option><option>Débito</option><option>Boleto</option><option>Depósito</option><option>Dinheiro</option></select></div>
         <div class="fp" id="e-bd-wrap"><label>Bandeira</label>
-          <select id="e-bd"></select></div>
+          <select id="e-bd" onchange="recalcSaldoEdit()"></select></div>
         <div class="fp"><label>Saída</label><input type="date" id="e-s"></div>
         <div class="fp"><label>Retorno</label><input type="date" id="e-r"></div>
-        <div class="fp"><label>Valor</label><input type="number" id="e-v" step="0.01"></div>
+        <div class="fp"><label>Valor</label><input type="number" id="e-v" step="0.01" oninput="recalcSaldoEdit()"></div>
         <div class="fp">
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap">
             <input type="checkbox" id="e-com-on" onchange="document.getElementById('e-com').disabled=!this.checked;if(!this.checked)document.getElementById('e-com').value=''" style="width:14px;height:14px;flex:none">Comissão a abater (%)
@@ -3842,9 +3842,9 @@ body.modo-boletos #btnLinkBoletos { display: none; }
           <input type="number" id="e-com" step="0.01" min="0" max="100" placeholder="0" disabled title="Abate do Valor acima uma única vez, ao clicar em Salvar.">
         </div>
         <div class="fp"><label>Prev. Pgto</label><input type="date" id="e-pp"></div>
-        <div class="fp"><label>Valor pago</label><input type="number" id="e-vp" step="0.01"></div>
+        <div class="fp"><label>Valor pago</label><input type="number" id="e-vp" step="0.01" oninput="recalcSaldoEdit()"></div>
         <div class="fp"><label>Data pagamento</label><input type="date" id="e-dtpag"></div>
-        <div class="fp"><label>Saldo</label><input type="number" id="e-sl" step="0.01"></div>
+        <div class="fp"><label>Saldo</label><input type="number" id="e-sl" step="0.01" title="Recalculado sozinho ao mudar Valor/Valor pago/Forma — abate o valor pago do valor líquido da forma. Editar aqui direto sobrescreve o automático."></div>
         <div class="fp s2"><label>Obs</label><input type="text" id="e-obs"></div>
       </div>
       <div style="display:flex;gap:8px;margin-top:12px">
@@ -7611,7 +7611,6 @@ function saveEdit(){
   // própria edição (ex.: mudar a forma) pode fazer r deixar de "bater" com
   // elas antes da gente achar quem são.
   const irmaos=agbParcelaSiblings(r).filter(x=>x!==r);
-  const formaAnt=r.forma||'', valorAnt=fN(r.valor);
   r.placa=normPlaca(document.getElementById('e-p').value);
   r.dono=document.getElementById('e-d').value;
   r.cliente=document.getElementById('e-c').value.trim();
@@ -7646,15 +7645,10 @@ function saveEdit(){
   }
   r.valor_pago=parseFloat(document.getElementById('e-vp').value)||null;
   r.data_pagamento=document.getElementById('e-dtpag').value||null;
+  // Saldo já vem certo do campo — recalcSaldoEdit() mantém e-sl acompanhando
+  // Valor/Valor pago/Forma a cada mudança (só fica diferente do automático
+  // se o usuário digitar nele por último, o que é escolha dele e prevalece).
   r.saldo=parseFloat(document.getElementById('e-sl').value)||0;
-  // Trocar a forma ou a bandeira muda a taxa — e o saldo é o valor JÁ com a
-  // taxa descontada. Sem isso o lançamento ficava com o líquido da bandeira
-  // antiga. Só recalcula quando nada foi recebido ainda e o saldo estava no
-  // valor automático: saldo digitado à mão é escolha do usuário e prevalece.
-  const saldoAuto=Math.abs(r.saldo-valorAnt*(1-getTaxaForma(formaAnt)))<=0.011;
-  if(r.forma!==formaAnt && saldoAuto && fN(r.valor_pago)===0){
-    r.saldo=Math.round(r.valor*(1-getTaxaForma(r.forma))*100)/100;
-  }
   const obsDigitado=document.getElementById('e-obs').value||'';
   r.obs=(obsDigitado||comNota)?`${obsDigitado}${comNota}`:null;
   document.getElementById('e-com-on').checked=false;
@@ -8952,6 +8946,20 @@ function syncBandeiraEdit(atual){
   if(!f||!sel)return;
   const mostra=syncBandeiraSel(sel,f.value,atual,true);
   if(wrap)wrap.style.display=mostra?'':'none';
+}
+// Saldo sempre acompanha Valor/Valor pago/Forma no modal de edição — igual
+// já é no lançamento novo (coletaItens já grava saldo=valor líquido da
+// forma, nunca deixa o usuário digitar à parte). No de edição o Saldo
+// segue editável (é campo do banco, cobre um desconto manual ou qualquer
+// ajuste que a fórmula não preveja), mas o valor sempre parte do cálculo
+// automático a cada mudança nos outros três campos — só fica "torto" se o
+// usuário mexer no próprio Saldo por último, depois de mexer nos outros.
+function recalcSaldoEdit(){
+  const v=parseFloat(document.getElementById('e-v').value)||0;
+  const vp=parseFloat(document.getElementById('e-vp').value)||0;
+  const forma=formaComBandeira(document.getElementById('e-f').value,document.getElementById('e-bd').value);
+  const liquido=Math.round(v*(1-getTaxaForma(forma))*100)/100;
+  document.getElementById('e-sl').value=(Math.round((liquido-vp)*100)/100).toFixed(2);
 }
 // Divide um valor em N parcelas de centavos o mais iguais possível, sem
 // perder nem sobrar centavo — a diferença do arredondamento fica na última.
