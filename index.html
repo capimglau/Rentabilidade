@@ -1649,12 +1649,20 @@ body.tip-pinned::before {
    suave embaixo. Sem --ev-l/--ev-d (não deveria acontecer, sempre setados)
    cai no cinza neutro do --card. Cards mais baixos que a v1: padding e
    margens internas enxutas. */
-.agb-card{ border-radius:12px; padding:8px 10px 7px; cursor:pointer; transition:transform .1s ease, box-shadow .15s ease;
+.agb-card{ position:relative; border-radius:12px; padding:8px 26px 7px 10px; cursor:pointer; transition:transform .1s ease, box-shadow .15s ease;
   background:linear-gradient(165deg, var(--ev-l,var(--card)), color-mix(in srgb, var(--ev-l,var(--card)) 55%, var(--ev-d,var(--card)) 45%));
   border:1px solid color-mix(in srgb, var(--ev-d,var(--line)) 24%, transparent);
   box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06); }
 .agb-card:active{ transform:scale(.97); }
 .agb-card.agb-card-atrasado{ background:color-mix(in srgb, var(--red-soft) 82%, var(--card) 18%); border-color:color-mix(in srgb, var(--red) 28%, transparent); }
+/* Lapiseira de edição completa: canto superior direito, sem disputar
+   clique com o card inteiro (que baixa/confirma) — só existe pra cards de
+   1 lançamento, ver agbCardHtml. */
+.agb-card-edit{ position:absolute; top:6px; right:6px; width:20px; height:20px; padding:0; border:none; border-radius:6px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  background:color-mix(in srgb, var(--ev-d,var(--ink)) 14%, transparent); color:var(--ev-tag,var(--ink3)); }
+.agb-card-edit svg{ width:12px; height:12px; }
+.agb-card-edit:active{ transform:scale(.9); }
 .agb-card-title{ margin:0 0 4px; font-size:12.5px; font-weight:700; color:var(--ink); line-height:1.25; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 .agb-card-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
 .agb-tag{ padding:2px 7px; border-radius:99px; font-size:9.5px; font-weight:700; background:color-mix(in srgb, var(--ev-d,var(--blue)) 16%, var(--card)); color:var(--ev-tag,var(--blue)); white-space:nowrap; }
@@ -5923,8 +5931,9 @@ function agbTipoTone(tipo){
 }
 function agbCardHtml(grp,dia){
   const n=grp.recs.length;
+  const idx1=allD().indexOf(grp.recs[0]);
   const onclick=n===1
-    ? `abrirParcial(${allD().indexOf(grp.recs[0])},true)`
+    ? `abrirParcial(${idx1},true)`
     : `baixarTudoCliente('${dia}',${JSON.stringify(grp.cliente).replace(/"/g,'&quot;')})`;
   const atrasado=dia!=='atrasados'&&dia<td();
   const tipo=grp.recs[0].tipo||'';
@@ -5932,11 +5941,20 @@ function agbCardHtml(grp,dia){
   const ref=grp.recs[0].obs||'';
   const sub=[n>1?`${n} lançamentos`:esc(grp.recs[0].placa||''),esc(forma),ref?`REF ${esc(ref)}`:''].filter(Boolean).join(' · ');
   const tone=agbTipoTone(tipo);
+  // Edição completa: só faz sentido pra 1 lançamento (o card agrupado
+  // representa vários registros diferentes) — reaproveita o mesmo
+  // openEdit(idx) do swipe "✏ Editar" já usado em Lançamentos/Recebimentos,
+  // sem duplicar formulário nem lógica de salvar.
+  const editBtn=n===1?`<button type="button" class="agb-card-edit" title="Editar lançamento completo"
+      onclick="event.stopPropagation();openEdit(${idx1})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+    </button>`:'';
   return `<div class="agb-card${atrasado?' agb-card-atrasado':''}" role="button" tabindex="0"
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
       title="Toque para baixar${n>1?' (todos os lançamentos deste cliente no dia)':''}">
+    ${editBtn}
     <p class="agb-card-title">${esc(grp.cliente||'—')}</p>
     ${tipo?`<div class="agb-card-tags"><span class="agb-tag">${esc(tipo)}</span></div>`:''}
     <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fR(grp.total)}</span></div>
