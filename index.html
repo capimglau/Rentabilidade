@@ -1294,8 +1294,12 @@ tr:hover td { background: #f9f8f5; }
 
 /* RANK BAR */
 .rb { display: flex; align-items: center; gap: 0; margin-bottom: 7px; position: relative; }
-/* Lista de atrasados ao passar o mouse na barra — modal grande, sempre
-   centralizado na tela (fixed + translate), não mais colado na barra. */
+/* Detalhe das barras do Resumo (atrasados/a vencer/recebidos) — modal
+   grande, sempre centralizado na tela (fixed + translate), não colado na
+   barra. Abre SÓ por clique (.rb.tip-on), igual o popup do calendário de
+   vencidos/hoje — antes também abria no hover, mas isso trocava/piscava
+   sozinho ao passar o mouse pelas barras vizinhas sem intenção de abrir
+   nada. */
 .rb-tip {
   display: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 500;
   width: min(94vw, 760px); max-height: 84vh; overflow-y: auto; padding: 28px 32px; border-radius: 18px;
@@ -1303,24 +1307,19 @@ tr:hover td { background: #f9f8f5; }
   box-shadow: 0 24px 64px rgba(15,25,45,.35); font-size: 16px; color: var(--ink);
   text-align: left; white-space: normal; cursor: default;
 }
-/* Fundo escurecido atrás do modal — só quando fixado por clique. */
+.rb.tip-on .rb-tip { display: block; }
+/* Fundo escurecido atrás do modal — enquanto fixado por clique. */
 body.tip-pinned::before {
   content: ''; position: fixed; inset: 0; background: rgba(15,23,42,.48); z-index: 490;
 }
-/* No toque o :hover fica grudado na última linha tocada, e o segundo toque não
-   fecharia mais nada — por isso o hover vale só para quem tem mouse. */
 @media (hover: hover) {
-  .rb:hover .rb-tip { display: block; }
   /* backdrop-filter cria containing block p/ position:fixed — sem isso,
      o modal (.rb-tip) fica preso dentro do card, mal posicionado e sem
-     rolar. Desligado enquanto o popup deste card está visível. */
-  .card:has(.rb:hover) { position: relative; z-index: 40; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  /* Com um popup fixado (clique), o hover de outras barras não deve mais
-     trocar/fechar o que está fixado — só clicar em outra barra (ou fora)
-     troca. Sem isso, ao arrastar o mouse até a lista fixada, passar por
-     cima de outra barra reabriria o popup dela por cima. */
-  body.tip-pinned .rb:hover .rb-tip { display: none; }
-  body.tip-pinned .rb.tip-on .rb-tip { display: block; }
+     rolar. Desligado com o popup aberto (:hover cobre o instante do
+     clique, tip-on cobre o resto da interação — ex.: arrastar o mouse até
+     o popup pra clicar num lançamento, quando o :hover da barra original
+     já não vale mais). */
+  .card:has(.rb:hover), .card:has(.rb.tip-on) { position: relative; z-index: 40; -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 .rb.tip-on .rb-tip { display: block; }
 /* O cartão tem backdrop-filter, o que cria contexto de empilhamento: sem
@@ -9922,11 +9921,11 @@ function _updateTipPinned(){
   document.body.classList.toggle('tip-pinned',
     !!document.querySelector('.rb.tip-on') || !!document.querySelector('.rc-cal-wrap .cal-cell.tip-on'));
 }
-// No celular não existe hover: o toque na linha abre a mesma lista, e um
-// segundo toque (ou um toque fora) fecha. No desktop, clicar na barra também
-// FIXA o popup aberto (independente do mouse sair dele) — sem isso, ao tentar
-// arrastar o mouse até a lista para clicar num lançamento, o cursor passa por
-// cima da barra de baixo e o popup troca/fecha antes de chegar lá.
+// Abre só por clique/toque (mobile e desktop iguais — não existe mais
+// preview no hover, ver .rb-tip). Clicar na barra FIXA o popup aberto até
+// clicar noutra barra ou fora dela — sem isso, ao tentar arrastar o mouse
+// até a lista pra clicar num lançamento, o cursor passa por cima da barra
+// de baixo e o popup trocaria/fecharia antes de chegar lá.
 document.addEventListener('click',e=>{
   // Interações dentro do próprio popup (swipe de baixar/reverter/editar,
   // ou só revelar os botões) não devem fixar/fechar o popup em si.
@@ -10050,9 +10049,14 @@ document.addEventListener('click',e=>{
   if(!insideAny)rfCloseAllOpen();
 },true);
 // Boletos do mês: clicar fora da lista expandida fecha, igual clicar de novo.
+// Clicar numa barra do Resumo (.rb, ex.: "Por proprietário") não conta como
+// "fora" — sem essa exceção, abrir o detalhe de uma barra (que também abre
+// só por clique) fechava o Boletos de tabela, o que dispara renderResumo()
+// e redesenha as barras do zero, apagando o tip-on que acabou de ser
+// ligado pelo outro listener de click um instante antes.
 document.addEventListener('click',e=>{
   if(!bolExpandido)return;
-  if(e.target.closest&&e.target.closest('#resBoletos'))return;
+  if(e.target.closest&&(e.target.closest('#resBoletos')||e.target.closest('.rb')))return;
   bolExpandido=false;
   renderResumo();
 },true);
