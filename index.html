@@ -1458,6 +1458,18 @@ body.tip-pinned::before {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
   background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
 }
+/* Busca da Agenda: ao lado do seletor Agenda/Calendário — só filtra o
+   board (agbMatchQ em renderAgendaBoardHtml), então só é gerada (ver
+   renderRecebHoje) quando recebViewMode==='board', pra não sugerir que
+   filtra o que não filtra no modo Calendário. flex:1 com min-width:0 pra
+   encolher no mobile em vez de estourar a topbar. */
+.agb-busca{ display:flex; align-items:center; gap:6px; flex:1 1 120px; min-width:0; max-width:280px;
+  background:var(--card); border:1.5px solid var(--line); border-radius:999px; padding:6px 10px; }
+.agb-busca-ic{ width:14px; height:14px; flex-shrink:0; color:var(--ink3); }
+.agb-busca-input{ flex:1; min-width:0; border:none; background:none; outline:none; font-family:inherit; font-size:12px; font-weight:600; color:var(--ink); }
+.agb-busca-input::placeholder{ color:var(--ink3); font-weight:500; }
+.agb-busca-clear{ flex-shrink:0; width:16px; height:16px; border:none; border-radius:50%; padding:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--ink) 12%, transparent); color:var(--ink3); font-size:10px; line-height:1; }
 /* Popup do dia do calendário de vencidos/hoje: clicar numa célula com
    movimento mostra todos os lançamentos do dia, os valores por cliente e
    os totais, com baixa em lote — ali mesmo, sem sair da página. Fica
@@ -1636,10 +1648,13 @@ body.tip-pinned::before {
    perto do fim do scroll (Chromium desgruda a coluna passado ~85% do
    scroll máximo, num flex row largo — bug observado, não é limitação de
    spec: um repro mínimo sem nenhum CSS deste app reproduz igual). Por
-   isso o acompanhamento é feito via JS (agbSyncAtrasadosFixo, ligado no
-   listener de 'scroll' do document), que sempre acerta a posição — o
-   position:relative aqui só existe pra dar contexto ao transform. */
-.agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); }
+   isso o acompanhamento é feito via JS (listener de 'scroll' do document,
+   só ativo a partir de 761px — ver innerWidth<761 lá), que sempre acerta a
+   posição — o position:relative aqui só existe pra dar contexto ao
+   transform. Só no PC: no mobile a coluna rola junto com as outras (tela
+   estreita demais pra sobrar espaço com ela fixa ocupando um pedaço fixo
+   da largura o tempo todo). */
+@media (min-width:761px){ .agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); } }
 .agb-col-body{ display:flex; flex-direction:column; gap:7px; }
 .agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
 /* Fundo pastel + relevo "3d" iguais aos cards da Agenda Mensal do
@@ -5028,6 +5043,20 @@ function setTipoCal(t){
   selTipoCal=t;
   renderRecebHoje();
 }
+// Busca da Agenda (board de dia) — filtra por QUALQUER campo do
+// lançamento, não só cliente/placa: dono, tipo, forma, REF/obs, valor e a
+// data de previsão também entram na comparação, tudo sem acento/maiúscula.
+let selAgbQ = '';
+function setAgbQ(v){
+  selAgbQ=v;
+  renderRecebHoje();
+}
+function agbMatchQ(r){
+  if(!selAgbQ.trim())return true;
+  const q=semAcento(selAgbQ).toLowerCase();
+  const hay=semAcento([r.cliente,r.placa,r.dono,r.tipo,r.forma,r.obs,fR(r.saldo),fR(r.valor),fDM(r.prev_pgto)].filter(Boolean).join(' ')).toLowerCase();
+  return hay.includes(q);
+}
 function tipoCalSelectHtml(){
   return `<select class="rc-cal-tipo-sel" onchange="setTipoCal(this.value)">
     <option value=""${selTipoCal===''?' selected':''}>Todos os tipos</option>
@@ -5980,7 +6009,7 @@ function agbColHtml(cls,dow,dom,itens,dia){
 function renderAgendaBoardHtml(){
   const hoje=td();
   const tF=addD(hoje,90);
-  const base=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&r.prev_pgto);
+  const base=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&r.prev_pgto&&agbMatchQ(r));
   const vencidos=base.filter(r=>r.prev_pgto<hoje);
   const futuros=base.filter(r=>r.prev_pgto>=hoje&&r.prev_pgto<=tF);
   const porDia={};
@@ -6144,6 +6173,11 @@ function baixarTudoDia(dia){
 
 function renderRecebHoje(){
   const el=document.getElementById('recebHoje'); if(!el) return;
+  // Refaz o innerHTML inteiro (inclusive a busca da Agenda) a cada render —
+  // sem isso o campo perderia o foco a cada tecla digitada, já que o
+  // <input> em si é recriado do zero junto com o resto.
+  const buscaFoco=document.activeElement&&document.activeElement.id==='agbBuscaInput';
+  const buscaCursor=buscaFoco?document.activeElement.selectionStart:null;
   // Agenda (board por dia) é o padrão; o calendário Seg-Sex do mês continua
   // disponível como vista secundária, alternando pelo ícone no topo.
   const toggleHtml=`<div class="fr-basistoggle rc-view-toggle rc-view-toggle-ico">
@@ -6154,14 +6188,26 @@ function renderRecebHoje(){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     </button>
   </div>`;
+  // Busca da Agenda: filtra por qualquer campo do lançamento (ver
+  // agbMatchQ) — só faz sentido no modo board, então some no modo
+  // Calendário (CSS .rc-mode-cal .agb-busca).
+  const buscaHtml=`<div class="agb-busca">
+    <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda…" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
+    ${selAgbQ?`<button type="button" class="agb-busca-clear" title="Limpar busca" onclick="setAgbQ('')">✕</button>`:''}
+  </div>`;
   const topbarRightHtml=`<div class="rc-cal-topbar-right">${tipoCalSelectHtml()}</div>`;
-  el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${topbarRightHtml}</div>
+  el.innerHTML=`<div class="rc-cal-topbar">${toggleHtml}${recebViewMode==='board'?buscaHtml:''}${topbarRightHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-cal">
         <div class="rc-cal-wrap">${renderRecCalGridHtml()}</div>
       </div>
     </div>`;
+  if(buscaFoco){
+    const inp=document.getElementById('agbBuscaInput');
+    if(inp){ inp.focus(); if(buscaCursor!=null) inp.setSelectionRange(buscaCursor,buscaCursor); }
+  }
 }
 
 // ── Painéis de barra do resumo: previsto × recebido na mesma linha ──
@@ -9892,7 +9938,11 @@ document.addEventListener('scroll',e=>{
   const wrap=e.target.closest&&e.target.closest('.agb-wrap');
   if(!wrap)return;
   const atrasados=wrap.querySelector('.agb-atrasados');
-  if(atrasados)atrasados.style.transform=`translateX(${wrap.scrollLeft}px)`;
+  if(!atrasados)return;
+  // No mobile ela rola junto com as outras colunas (fica sem transform,
+  // igual as demais) — só fica fixa a partir de 761px, mesma faixa das
+  // 4 colunas por tela (ver .agb-col flex-basis).
+  atrasados.style.transform=window.innerWidth<761?'':`translateX(${wrap.scrollLeft}px)`;
 },true);
 
 // Dock mobile: some deslizando pra baixo enquanto o usuário rola a página
