@@ -1657,32 +1657,39 @@ body.tip-pinned::before {
 @media (min-width:761px){ .agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); } }
 .agb-col-body{ display:flex; flex-direction:column; gap:7px; }
 .agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
-/* No mobile a coluna do dia mostra só os 3 primeiros cards; o resto vai pra
-   um "baralho" (pilha de cartas) fixo no fundo da coluna — toca pra abrir e
-   ver os demais, sem crescer a coluna toda (que já rola dentro do board).
-   No PC (>=761px) some o baralho e os cards ficam todos abertos direto,
-   igual antes — ver bloco @media (min-width:761px) mais abaixo. */
-.agb-col-more{ display:none; flex-direction:column; gap:7px; margin-top:7px; }
+/* No mobile a coluna do dia mostra só os 3 primeiros cards; o resto fica
+   escondido atrás do 3º, que ganha um efeito de baralho (bordas de outros
+   cards espiando embaixo, via box-shadow — sem nenhum elemento novo) e um
+   selo "+N" que abre a lista completa. No PC (>=761px) o efeito some e os
+   cards ficam todos abertos direto, igual antes — ver bloco
+   @media (min-width:761px) mais abaixo. */
+.agb-col-more{ display:none; flex-direction:column; gap:7px; margin-top:14px; }
 .agb-col.agb-col-open .agb-col-more{ display:flex; }
-.agb-deck{ display:flex; align-items:center; gap:9px; cursor:pointer; padding:7px 10px; border-radius:12px;
-  border:1.5px dashed color-mix(in srgb, var(--ink) 20%, var(--line)); background:color-mix(in srgb, var(--ink) 3%, var(--card)); }
-.agb-deck:active{ transform:scale(.98); }
-.agb-deck-stack{ position:relative; width:26px; height:20px; flex-shrink:0; }
-.agb-deck-stack span{ position:absolute; left:0; right:0; top:0; height:14px; border-radius:5px;
-  background:var(--card); border:1px solid color-mix(in srgb, var(--ink) 16%, var(--line)); }
-.agb-deck-stack span:nth-child(1){ top:6px; opacity:.55; transform:scale(.9); }
-.agb-deck-stack span:nth-child(2){ top:3px; opacity:.8; transform:scale(.95); }
-.agb-deck-stack span:nth-child(3){ top:0; }
-.agb-col.agb-col-open .agb-deck-stack{ transform:rotate(180deg); }
-.agb-deck-info{ flex:1; min-width:0; font-size:11px; font-weight:700; color:var(--ink2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.agb-deck-info b{ color:var(--ink); }
-.agb-deck-txt-open{ display:none; }
-.agb-col.agb-col-open .agb-deck-txt-closed{ display:none; }
-.agb-col.agb-col-open .agb-deck-txt-open{ display:inline; }
-.agb-deck-arrow{ flex-shrink:0; font-size:11px; color:var(--ink3); transition:transform .15s ease; }
-.agb-col.agb-col-open .agb-deck-arrow{ transform:rotate(180deg); }
+.agb-card.agb-card-stack{
+  margin-bottom:12px;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.5),
+    0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent),
+    0 1px 4px rgba(0,0,0,.06),
+    0 6px 0 -2px color-mix(in srgb, var(--ev-d,var(--card)) 32%, var(--ev-l,var(--card)) 68%),
+    0 11px 0 -3px color-mix(in srgb, var(--ev-d,var(--card)) 52%, var(--ev-l,var(--card)) 48%);
+}
+.agb-card.agb-card-stack.agb-card-atrasado{
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.5),
+    0 8px 14px -12px color-mix(in srgb, var(--red) 35%, transparent),
+    0 1px 4px rgba(0,0,0,.06),
+    0 6px 0 -2px color-mix(in srgb, var(--red) 24%, var(--red-soft) 76%),
+    0 11px 0 -3px color-mix(in srgb, var(--red) 40%, var(--red-soft) 60%);
+}
+.agb-col.agb-col-open .agb-card.agb-card-stack{ box-shadow:none; margin-bottom:0; }
+.agb-card-stack-badge{ position:absolute; right:10px; bottom:-9px; z-index:2; padding:2px 8px; border-radius:99px;
+  font-size:10.5px; font-weight:800; color:#fff; background:color-mix(in srgb, var(--ink) 88%, transparent);
+  box-shadow:0 2px 5px rgba(0,0,0,.18); cursor:pointer; }
+.agb-col.agb-col-open .agb-card-stack-badge{ display:none; }
 @media (min-width:761px){
-  .agb-deck{ display:none; }
+  .agb-card.agb-card-stack{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06); margin-bottom:0; }
+  .agb-card-stack-badge{ display:none; }
   .agb-col-more{ display:flex !important; }
 }
 /* Fundo pastel + relevo "3d" iguais aos cards da Agenda Mensal do
@@ -6167,7 +6174,7 @@ function numerarGrupo(grupo){
   grupo.forEach(x=>{x.lanc_num=num;});
   return num;
 }
-function agbCardHtml(grp,dia){
+function agbCardHtml(grp,dia,hiddenCount){
   const n=grp.recs.length;
   const idx1=allD().indexOf(grp.recs[0]);
   const onclick=n===1
@@ -6195,7 +6202,13 @@ function agbCardHtml(grp,dia){
       onclick="event.stopPropagation();openEdit(${idx1})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
     </button>`:'';
-  return `<div class="agb-card${atrasado?' agb-card-atrasado':''}${hoje?' agb-card-hoje':''}" role="button" tabindex="0"
+  // Card "topo do baralho": é um card de verdade (o 3º da coluna), só que
+  // com sombras extras (ver .agb-card-stack) simulando bordas de outros
+  // cards espiando embaixo, mais um selo "+N" clicável que abre o resto —
+  // sem criar nenhum card novo só pra representar a pilha.
+  const stackClass=hiddenCount?' agb-card-stack':'';
+  const stackBadge=hiddenCount?`<span class="agb-card-stack-badge" onclick="event.stopPropagation();toggleAgbDeck(this)" title="Ver mais ${hiddenCount} lançamento(s)">+${hiddenCount}</span>`:'';
+  return `<div class="agb-card${atrasado?' agb-card-atrasado':''}${hoje?' agb-card-hoje':''}${stackClass}" role="button" tabindex="0"
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
@@ -6204,29 +6217,23 @@ function agbCardHtml(grp,dia){
     <p class="agb-card-title">${esc(grp.cliente||'—')}</p>
     ${(tipo||parc)?`<div class="agb-card-tags">${tipo?`<span class="agb-tag">${esc(tipo)}</span>`:''}${parc?`<span class="agb-tag agb-tag-parc" title="Parcela ${parc.atual} de ${parc.total} do mesmo lançamento — as outras aparecem em dias diferentes">◐ ${parc.atual}/${parc.total}</span>`:''}</div>`:''}
     <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fR(grp.total)}</span></div>
+    ${stackBadge}
   </div>`;
 }
 // No mobile só os 3 primeiros cards ficam soltos na coluna; do 4º em diante
-// vira um "baralho" (pilha) fixo no fundo, que abre ao toque — mesma ideia
-// do resumo-que-expande do painel de Boletos do mês, aqui em forma de
-// cards empilhados. No PC o CSS (@media min-width:761px) ignora o baralho
-// e mostra tudo aberto, então o corte de 3 não afeta a tela grande.
+// fica escondido atrás do 3º, que vira o "topo do baralho" (ver
+// agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir.
+// No PC o CSS (@media min-width:761px) ignora o efeito de baralho e mostra
+// tudo aberto, então o corte de 3 não afeta a tela grande.
 const AGB_COL_LIMITE=3;
 function agbColHtml(cls,dow,dom,itens,dia){
   const grupos=agruparPorCliente(itens);
   const total=itens.reduce((a,r)=>a+fN(r.saldo),0);
+  const temResto=grupos.length>AGB_COL_LIMITE;
   const visiveis=grupos.slice(0,AGB_COL_LIMITE);
-  const resto=grupos.slice(AGB_COL_LIMITE);
-  const restoTotal=resto.reduce((a,g)=>a+fN(g.total),0);
-  const deckHtml=resto.length?`<div class="agb-deck" onclick="event.stopPropagation();toggleAgbDeck(this)" role="button" tabindex="0" title="Ver os demais lançamentos do dia">
-      <div class="agb-deck-stack"><span></span><span></span><span></span></div>
-      <div class="agb-deck-info">
-        <span class="agb-deck-txt-closed"><b>+${resto.length}</b> · ${fR(restoTotal)}</span>
-        <span class="agb-deck-txt-open">Ocultar</span>
-      </div>
-      <span class="agb-deck-arrow">▾</span>
-    </div>
-    <div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia)).join('')}</div>`:'';
+  const resto=temResto?grupos.slice(AGB_COL_LIMITE):[];
+  const cardsHtml=visiveis.map((g,i)=>agbCardHtml(g,dia,(temResto&&i===visiveis.length-1)?resto.length:0)).join('');
+  const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia)).join('')}</div>`:'';
   const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
   return `<div class="agb-col ${cls}">
     <div class="agb-col-hd"${hdClick}>
@@ -6236,7 +6243,7 @@ function agbColHtml(cls,dow,dom,itens,dia){
         <span class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</span>
       </div>
     </div>
-    <div class="agb-col-body">${grupos.length?visiveis.map(g=>agbCardHtml(g,dia)).join(''):'<div class="agb-empty">Sem lançamentos</div>'}${deckHtml}</div>
+    <div class="agb-col-body">${grupos.length?cardsHtml:'<div class="agb-empty">Sem lançamentos</div>'}${moreHtml}</div>
   </div>`;
 }
 // Abre/fecha o baralho de cards extras da coluna (só existe efeito no
