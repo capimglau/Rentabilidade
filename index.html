@@ -8765,6 +8765,12 @@ function mostrarLancCategoria(dim,key){
 // Mostra cada grupo com seus itens, reaproveitando o modal e os cartões
 // (com edição/baixa/reverter) da busca global.
 function mostrarDuplicados(){
+  // Igual às outras telas que moram no #mSearch: se registra pra se
+  // repintar a cada renderAll(). Sem isso, baixar/editar/excluir um
+  // duplicado por aqui (os cartões têm swipe) deixava a lista velha na
+  // tela — e, pior, os índices dos cartões seguintes passavam a apontar
+  // pro lançamento errado depois de uma exclusão.
+  ULTIMO_MSEARCH=mostrarDuplicados;
   const all=allD();
   const grupos={};
   all.forEach((r,i)=>{
@@ -9721,7 +9727,8 @@ function rNovos(){
   // excluirLancamento() é o delete de verdade (confirma, apaga no banco,
   // tira de DATA/NOVOS e atualiza os painéis) — o índice em allD() de um
   // item de NOVOS é sempre DATA.length + a posição dele em NOVOS.
-  document.getElementById('novosBody').innerHTML=NOVOS.map((r,i)=>`<tr>
+  const body=document.getElementById('novosBody'); if(!body)return;
+  body.innerHTML=NOVOS.map((r,i)=>`<tr>
     <td><span class="placa">${r.placa}</span></td><td>${r.dono}</td><td>${r.cliente}</td>
     <td style="font-size:12px">${r.tipo||'—'}</td>
     <td style="font-size:12px">${fD(r.saida)}</td>
@@ -10315,6 +10322,11 @@ function paginaSalva(){
 // aberto ficar mostrando dado desatualizado.
 function renderAll(){
   updateHeader();buildOwnerPills();buildMiniSummary();
+  // A tabela "Novos lançamentos" também é alimentada por aqui: uma edição
+  // que reparcela pode CRIAR parcela (vai pra NOVOS) ou EXCLUIR uma que
+  // estava listada nela. Repintando junto com o resto, a tabela nunca fica
+  // com linha fantasma nem deixa de mostrar o que acabou de nascer.
+  rNovos();
   if(curPage==='baixas')renderBaixas();
   else if(curPage==='lancamentos')renderLanc();
   else if(curPage==='resumo')renderResumo();
