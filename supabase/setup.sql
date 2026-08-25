@@ -154,6 +154,17 @@ alter table public.lancamentos
   add column if not exists data_pagamento date;
 
 
+-- ═══════════ PARTE 3.1 · COLUNA lanc_num ═══════════
+-- Número do lançamento principal: cada item lançado ganha o seu, e as
+-- parcelas do cartão (2x/3x) nascem todas com o mesmo — é por ele que a
+-- edição de uma parcela acha as outras. Ver supabase/lanc_num.sql.
+
+alter table public.lancamentos
+  add column if not exists lanc_num text;
+
+create index if not exists idx_lancamentos_lanc_num on public.lancamentos (lanc_num);
+
+
 -- ═══════════ PARTE 4 · FROTA (185 veículos) ═══════════
 
 insert into public.veiculos (placa, dono) values
