@@ -1876,24 +1876,21 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
 #srFiltToggleBtn.sr-hide { display: none !important; }
 
 /* Grupo de resultados da busca que são o mesmo contrato (placa+cliente+
-   período) — cartão parcelado em N vezes, ou N tipos lançados juntos.
-   Molduras os cartões individuais sem tirar o swipe de cada um. */
+   período) — um lançamento parcelado em N vezes, N tipos lançados juntos
+   (Locação + Avarias + Lavagem), ou os dois ao mesmo tempo. Molduras os
+   cartões individuais sem tirar o swipe de cada um — nada fica escondido
+   atrás de clique, é sempre claro que tudo ali é do mesmo contrato. */
 .busca-grupo { border: 1.5px dashed var(--blue-mid); border-radius: 14px; padding: 10px 10px 2px; margin: 6px 0 14px; }
 .busca-grupo-hd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 0 4px 10px; }
 .busca-grupo-cli { flex: 1; min-width: 0; font-weight: 700; font-size: 13px; color: var(--ink); overflow-wrap: break-word; }
 .busca-grupo-v { font-weight: 800; font-size: 14px; color: var(--blue); white-space: nowrap; }
-/* Lançamento principal parcelado (busca global): mostra só o card
-   consolidado com o valor cheio por padrão — as parcelas individuais
-   (busca-parc-itens) ficam escondidas até tocar pra desmembrar, mesmo
-   comportamento de "clique pra ver cada um" já usado noutras listas
-   agrupadas do app. */
-.busca-parc-wrap { cursor: pointer; margin-bottom: 10px; }
-.busca-parc-card { margin-bottom: 0; }
-.busca-parc-sub { font-size: 11px; font-weight: 600; color: var(--ink3); }
-.busca-parc-itens { display: none; flex-direction: column; margin-top: 2px; padding-left: 12px; border-left: 2px solid var(--line); }
-.busca-parc-itens .pcard { margin-bottom: 8px; }
-.busca-parc-wrap.desmembrado .busca-parc-itens { display: flex; }
-.busca-parc-wrap.desmembrado .busca-parc-card { box-shadow: none; border: 1.5px dashed var(--blue-mid); }
+/* Um lançamento parcelado (Crédito 2x/3x) dentro do contrato: faixa com
+   tipo, forma e o total DELE, e as parcelas logo abaixo, sempre abertas. */
+.busca-lanc-wrap { margin: 4px 0 10px; }
+.busca-lanc-hd { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 0 2px 6px; }
+.busca-lanc-v { margin-left: auto; font-weight: 700; font-size: 12.5px; color: var(--ink2); }
+.busca-lanc-itens { display: flex; flex-direction: column; padding-left: 12px; border-left: 2px solid var(--line); }
+.busca-lanc-itens .pcard { margin-bottom: 8px; }
 
 /* Resumo por forma de pagamento de um dia (clique no somatório do dia) */
 .rfd { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
@@ -8560,62 +8557,61 @@ function buscaGroupedHtml(grupos,fecharBusca){
       const{r,i}=g.itens[0];
       return mesHtml+lcCardHtml(r,i,fecharBusca);
     }
-    // Grupo em que TODO item é parcela do mesmo lançamento original (mesmo
-    // Crédito 2x/3x — ver agbParcelaGroupKey): mostra só o lançamento
-    // principal com o valor cheio (ex.: R$450), não cada parcela avulsa
-    // (3× R$150) — toca pra desmembrar e ver/agir em cada parcela, se
-    // precisar. Contrato com tipos diferentes misturados (ex.: Locação +
-    // Avarias) não entra aqui — continua itemizado como sempre foi, pra não
-    // esconder cobranças que são coisas de fato distintas.
-    const chaves=g.itens.map(({r})=>agbParcelaGroupKey(r));
-    if(chaves.every(k=>k&&k===chaves[0])) return mesHtml+buscaParcelaConsolidadaHtml(g,fecharBusca);
-    const first=g.itens[0].r;
-    const totLiq=g.itens.reduce((a,{r})=>a+liq(r),0);
-    const cards=g.itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
-    return mesHtml+`<div class="busca-grupo">
-      <div class="busca-grupo-hd">
-        <span class="placa">${esc(first.placa)}</span>
-        <span class="busca-grupo-cli">${esc(first.cliente||'—')}</span>
-        <span class="itens-cnt">${g.itens.length} itens</span>
-        <span class="busca-grupo-v">${fR(totLiq)}</span>
-      </div>
-      ${cards}
-    </div>`;
+    return mesHtml+buscaContratoHtml(g,fecharBusca);
   }).join('');
 }
-// Cartão único do lançamento principal parcelado: soma o líquido de todas
-// as parcelas (valor cheio, ex. 3×R$150 → R$450) usando os dados
-// cadastrais da 1ª parcela (são iguais em todas — placa/cliente/tipo/
-// forma, ver saveEdit()). Clicar desmembra e mostra cada parcela com seu
-// próprio swipe (baixar/editar/excluir), igual busca-grupo normal — só o
-// estado padrão (fechado) é que muda, pra não listar parcela por parcela
-// à toa.
-function buscaParcelaConsolidadaHtml(g,fecharBusca){
+// Separa os itens de UM contrato (já agrupados por chaveContrato — mesma
+// placa+cliente+saída) pelo lançamento principal a que cada um pertence:
+// mesmo lanc_num, ou a inferência por semelhança nos lançamentos antigos
+// (agbParcelaGroupKey) — sem nenhuma das duas coisas, cada item é o seu
+// próprio lançamento (fallback pelo id, nunca junta dois registros por
+// engano). Uma Locação em Crédito 3x vira um lançamento de 3 itens; uma
+// Avaria à vista vira um lançamento de 1 item — os dois dentro do MESMO
+// contrato.
+function lancamentosDoGrupoContrato(g){
+  const porLanc=new Map();
+  g.itens.forEach(item=>{
+    const key=agbParcelaGroupKey(item.r)||('id|'+item.r.id);
+    if(!porLanc.has(key))porLanc.set(key,[]);
+    porLanc.get(key).push(item);
+  });
+  return[...porLanc.values()].map(itens=>itens.sort((a,b)=>ordemParcela(a.r,b.r)));
+}
+// Bloco de UM contrato inteiro: cabeçalho com placa, cliente, quantos
+// lançamentos ele tem e o TOTAL líquido de tudo (Locação + Avarias +
+// Lavagem, parcelado ou não) — deixando claro que tudo ali embaixo é do
+// MESMO contrato. Cada lançamento aparece por completo, sem nada atrás de
+// clique: se for parcelado (Crédito 2x/3x), ganha uma faixa com o tipo, a
+// forma e o total DELE, e as N parcelas ficam logo abaixo, já abertas.
+function buscaContratoHtml(g,fecharBusca){
   const first=g.itens[0].r;
-  const n=g.itens.length;
   const totLiq=g.itens.reduce((a,{r})=>a+liq(r),0);
-  const cards=g.itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
-  return `<div class="busca-parc-wrap" role="button" tabindex="0"
-      onclick="this.classList.toggle('desmembrado')"
-      onkeydown="if(event.key==='Enter')this.classList.toggle('desmembrado')"
-      title="Lançamento parcelado em ${n}x — toque pra ver cada parcela">
-    <div class="pcard busca-parc-card">
-      <div class="pcard-body">
-        <div class="pcard-top">
-          <span class="placa">${esc(first.placa)}</span>
-          <span class="pcard-name">${esc(first.cliente||'—')}</span>
-        </div>
-        <div class="pcard-tags">
-          ${tipTag(first.tipo)}
-          <span class="tag tag-forma">${fFormaLabel(first.forma)} · ${n}x</span>
-        </div>
+  const lancamentos=lancamentosDoGrupoContrato(g);
+  const cntTxt=lancamentos.length===g.itens.length
+    ?`${lancamentos.length} lançamento${lancamentos.length===1?'':'s'}`
+    :`${lancamentos.length} lançamento${lancamentos.length===1?'':'s'} · ${g.itens.length} parcelas`;
+  const corpo=lancamentos.map(itens=>{
+    if(itens.length<2)return itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
+    const pr=itens[0].r, n=itens.length;
+    const totLanc=itens.reduce((a,{r})=>a+liq(r),0);
+    const cards=itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
+    return `<div class="busca-lanc-wrap">
+      <div class="busca-lanc-hd">
+        ${tipTag(pr.tipo)}
+        <span class="tag tag-forma">${fFormaLabel(pr.forma)} · ${n}x</span>
+        <span class="busca-lanc-v">${fR(totLanc)}</span>
       </div>
-      <div class="pcard-right">
-        <span class="pcard-value">${fR(totLiq)}</span>
-        <span class="busca-parc-sub">${n} parcelas</span>
-      </div>
+      <div class="busca-lanc-itens">${cards}</div>
+    </div>`;
+  }).join('');
+  return `<div class="busca-grupo">
+    <div class="busca-grupo-hd">
+      <span class="placa">${esc(first.placa)}</span>
+      <span class="busca-grupo-cli">${esc(first.cliente||'—')}</span>
+      <span class="itens-cnt">${cntTxt}</span>
+      <span class="busca-grupo-v">${fR(totLiq)}</span>
     </div>
-    <div class="busca-parc-itens" onclick="event.stopPropagation()">${cards}</div>
+    ${corpo}
   </div>`;
 }
 // ── HISTÓRICO: LANÇAMENTOS FEITOS EM CADA DIA (só consulta) ──
