@@ -54,8 +54,13 @@ ler e gravar de verdade.
    - chave **anon public**
 
 > Os scripts avulsos (`schema.sql`, `seed.sql`, `veiculos.sql`,
-> `boleto_feito.sql`) continuam no repositório para rodar uma parte de cada
-> vez. O `setup.sql` é a soma deles, na ordem certa.
+> `boleto_feito.sql`, `lanc_num.sql`) continuam no repositório para rodar uma
+> parte de cada vez. O `setup.sql` é a soma deles, na ordem certa.
+>
+> Em banco **já em uso**, rode `supabase/lanc_num.sql` uma vez: é a coluna do
+> número do lançamento principal, que liga as parcelas do cartão entre si.
+> Sem ela o app continua funcionando (agrupa pelo texto "Parcela X/N" do
+> obs), só não numera os lançamentos.
 >
 > Cuidado: a PARTE 5 do `setup.sql` começa com `truncate` nos lançamentos.
 > Em banco novo é o desejado; em banco já em uso, pule essa parte.
@@ -139,6 +144,7 @@ supabase/schema.sql                 Cria as 4 tabelas e as políticas
 supabase/seed.sql                   Carrega os 753 lançamentos iniciais
 supabase/veiculos.sql               Carrega a frota (185 veículos)
 supabase/boleto_feito.sql           Coluna boleto_feito nos lançamentos
+supabase/lanc_num.sql               Coluna lanc_num (número do lançamento principal)
 supabase/realtime.sql               Publica lancamentos no Realtime (atualização automática)
 supabase/README-import.md           Como a planilha vira SQL (o que foi tratado)
 supabase/functions/ai-contrato/     Edge Function opcional (IA por foto)
