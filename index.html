@@ -5373,6 +5373,14 @@ const isParcial = r => isPend(r) && fN(r.valor_pago) > 0;
 // Valor líquido do lançamento (recebido + saldo a receber), já descontada a
 // taxa de cartão — use no lugar de r.valor em qualquer total/painel financeiro.
 const liq = r => fN(r.valor_pago) + fN(r.saldo);
+// "Recebido" de uma lista de lançamentos: TUDO que já entrou, inclusive o
+// que veio de baixa parcial (lançamento ainda pendente pelo resto). Somar
+// só os quitados escondia esse dinheiro — não entrava em Recebido nem em
+// Pendente (que conta só o saldo que falta), e o Previsto (recebido +
+// pendente) encolhia sozinho a cada parcial, brigando com o Saldo final e
+// com a página de Lançamentos, que sempre usaram liq(). Fonte única dessa
+// conta: use em todo painel que mostre "recebido".
+const somaRecebido = rows => rows.reduce((a,r)=>a+fN(r.valor_pago),0);
 
 function tipTag(t){
   return`<span class="tag tag-${TC[t]||'out'}">${t}</span>`;
@@ -5536,10 +5544,16 @@ if(window.Chart){
 function updateHeader(){
   const all=allD();
   // Both chips filtered by curMes
-  const pendMes=all.filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(curMes));
-  const recMes=all.filter(r=>isPago(r)&&(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(curMes));
+  const doMes=all.filter(r=>(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(curMes));
+  const pendMes=doMes.filter(r=>isPend(r));
   const pendV=pendMes.reduce((a,r)=>a+fN(r.saldo),0);
-  const recV=recMes.reduce((a,r)=>a+fN(r.valor_pago),0);
+  // Recebido = tudo que JÁ ENTROU, inclusive de lançamento ainda pendente
+  // (baixa parcial). Somar só os quitados fazia o dinheiro de uma parcial
+  // sumir da tela: não aparecia em Recebido (o lançamento não está quitado)
+  // nem em Pendente (que só conta o saldo que falta), e o Previsto
+  // encolhia sozinho a cada recebimento parcial. Mesma conta de liq()
+  // (pago + saldo), que já é a base do extrato e do saldo final.
+  const recV=somaRecebido(doMes);
   // Mobile: valores abreviados (R$ 1,2k) — mesmo na segunda linha
   // dedicada, o nome completo ("R$ 107.240,53") não caberia nos 3 chips
   // lado a lado; no desktop, formato completo de sempre.
@@ -5608,7 +5622,7 @@ function buildMiniSummary(){
   const venc=pend.filter(r=>isVenc(r));
   const p7=pend.filter(r=>r.prev_pgto&&r.prev_pgto>t&&r.prev_pgto<=addD(t,7));
   const totalPendMes=rows.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
-  const totalRecMes=rows.filter(r=>isPago(r)).reduce((a,r)=>a+fN(r.valor_pago),0);
+  const totalRecMes=somaRecebido(rows);
 
   document.getElementById('miniSummary').innerHTML=`
     <div class="ms-row"><span class="ms-label">No mês — pendente</span><span class="ms-value amber">${fR(totalPendMes)}</span></div>
@@ -5692,7 +5706,7 @@ function renderBaixas(){
   // Métricas do mês completo, considerando filtro de proprietário (selDono) e filtros aplicados
   const metricsBase=allMes;
   const totPend=metricsBase.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
-  const totRec=metricsBase.filter(r=>isPago(r)).reduce((a,r)=>a+fN(r.valor_pago),0);
+  const totRec=somaRecebido(metricsBase);
   const nVenc=metricsBase.filter(r=>isVenc(r)).length;
   const nHoje=metricsBase.filter(r=>isPend(r)&&r.prev_pgto===hoje).length;
 
@@ -5728,7 +5742,7 @@ function renderBaixas(){
   diaKeys.forEach((dia,gi)=>{
     const items=byDay[dia];
     const totDia=items.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
-    const recDia=items.filter(r=>isPago(r)).reduce((a,r)=>a+fN(r.valor_pago),0);
+    const recDia=somaRecebido(items);
     const isHoje=dia===hoje;
     const isVencDia=dia<hoje&&dia!=='Sem data';
     const allDone=items.every(r=>isPago(r));
@@ -6280,7 +6294,7 @@ function renderRecCalGridHtml(){
     if(dow===0||dow===6)continue;
     const dia=`${mes}-${String(d).padStart(2,'0')}`;
     const drows=porDia[dia]||[];
-    const rec=drows.filter(isPago).reduce((a,r)=>a+fN(r.valor_pago),0);
+    const rec=somaRecebido(drows);
     const pend=drows.filter(r=>!isPago(r)).reduce((a,r)=>a+fN(r.saldo),0);
     const isToday=dia===hoje;
     const hasMov=rec>0||pend>0;
@@ -6320,7 +6334,7 @@ function renderRecCalGridHtml(){
 // esconder nada atrás de um resumo pra desmembrar.
 function diaClienteHtml(dia,cliente,itensPend,itensPago){
   const totPend=itensPend.reduce((a,r)=>a+fN(r.saldo),0);
-  const totPago=itensPago.reduce((a,r)=>a+fN(r.valor_pago),0);
+  const totPago=somaRecebido(itensPend.concat(itensPago));
   const bulkBtn = itensPend.length>1
     ? `<button type="button" class="btn btn-blue cal-full-bulk-pay" onclick="event.stopPropagation();baixarTudoCliente('${dia}',${JSON.stringify(cliente)})" title="Baixar de uma vez todos os lançamentos de ${esc(cliente)} nesse dia">✓ Baixar tudo · ${fR(totPend)}</button>`
     : '';
@@ -6338,7 +6352,7 @@ function diaClienteHtml(dia,cliente,itensPend,itensPago){
 // conteúdo do popup que abre ao clicar numa célula da grade (.cal-daytip).
 function diaBlocoHtml(dia,drows){
   const totPend=drows.filter(r=>!isPago(r)).reduce((a,r)=>a+fN(r.saldo),0);
-  const totPago=drows.filter(isPago).reduce((a,r)=>a+fN(r.valor_pago),0);
+  const totPago=somaRecebido(drows);
   const porCliente={}, ordem=[];
   drows.forEach(r=>{
     const k=r.cliente||'—';
@@ -7043,7 +7057,7 @@ function renderResumo(){
   renderFatRings();
   // Todos os lançamentos com prev_pgto no mês (competência de caixa)
   const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&rfMatch(r)&&(r.prev_pgto||'').startsWith(curMes));
-  const totP=rows.filter(r=>isPago(r)).reduce((a,r)=>a+fN(r.valor_pago),0);
+  const totP=somaRecebido(rows);
   const totS=rows.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
   const nL=rows.length, nPend=rows.filter(r=>isPend(r)).length;
   const rowsVenc=rows.filter(r=>isVenc(r));
@@ -7464,12 +7478,12 @@ function renderCalPrevisto(){
 // ── PROPRIETÁRIOS ──
 function renderProp(){
   const rows=allD().filter(r=>(r.prev_pgto||'').startsWith(curMes));
-  const recRowsProp=rows.filter(r=>isPago(r));
+
   const donos=[...new Set(rows.map(r=>r.dono))].sort();
   const totG=rows.reduce((a,r)=>a+liq(r),0);
   document.getElementById('propCards').innerHTML=donos.map(d=>{
     const dr=rows.filter(r=>r.dono===d);
-    const tp=recRowsProp.filter(r=>r.dono===d).reduce((a,r)=>a+fN(r.valor_pago),0);
+    const tp=somaRecebido(dr);
     const ts=dr.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
     const tv=tp+ts;                                 // previsto líquido = recebido + pendente
     const np=new Set(dr.map(r=>r.placa)).size;
