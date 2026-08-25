@@ -1863,6 +1863,17 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
    item pesquisado por competência (prev_pgto), do mais recente pro mais antigo. */
 .srow-mes { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink3); padding: 12px 4px 4px; }
 .srow-mes:first-child { padding-top: 2px; }
+/* Subtotal de cada mês na busca (buscaGroupedHtml): reaproveita o cartão
+   .search-total, mas SEM o sticky — aqui ele se repete um por mês, rolando
+   normal com a lista, e um "position:sticky" empilhado feio um em cima do
+   outro toda vez que a lista rolasse passando de um mês pro outro. */
+.srow-mes-tot { position: static; margin-top: 14px; }
+.srow-mes-tot:first-child { margin-top: 0; }
+/* Esconde de vez o botão "Filtros" da busca global quando o #mSearch foi
+   aberto por outra tela (dia, categoria, duplicados) — precisa vencer o
+   ".filt-toggle-btn{display:block!important}" do mobile (ver
+   setSearchFiltersVisiveis()), por isso o seletor por id. */
+#srFiltToggleBtn.sr-hide { display: none !important; }
 
 /* Grupo de resultados da busca que são o mesmo contrato (placa+cliente+
    período) — cartão parcelado em N vezes, ou N tipos lançados juntos.
@@ -2733,7 +2744,8 @@ details[open] summary::before { transform: rotate(90deg); }
   }
 
   #filtPanel,
-  #lfFiltPanel {
+  #lfFiltPanel,
+  #srFiltPanel {
     max-height: 500px;
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
@@ -2741,7 +2753,8 @@ details[open] summary::before { transform: rotate(90deg); }
   }
 
   #filtPanel.collapsed,
-  #lfFiltPanel.collapsed {
+  #lfFiltPanel.collapsed,
+  #srFiltPanel.collapsed {
     max-height: 0;
     opacity: 0;
     padding: 0 !important;
@@ -4050,6 +4063,22 @@ body.modo-boletos #btnLinkBoletos { display: none; }
   <div class="modal modal-busca">
     <div class="mhd"><span id="searchModalTit">Buscar lançamento</span> <button class="mcl" onclick="closeSearch()">✕</button></div>
     <input id="searchInput" class="search-input" type="text" placeholder="Placa, cliente, proprietário, observação, nº do cartão…" autocomplete="off" oninput="runSearch()">
+    <!-- Filtros: só a busca de lançamento (openSearch) usa — os outros
+         reaproveitamentos do #mSearch (dia da projeção, dia do fluxo,
+         categoria do faturamento, duplicados) já chegam com o recorte
+         deles prontos e escondem este bloco via toggleSearchFilters(). -->
+    <button class="filt-toggle-btn" id="srFiltToggleBtn" onclick="toggleSearchFilters()" style="display:none">▼ Filtros</button>
+    <div class="filt-panel filt-panel-baixas" id="srFiltPanel">
+      <select id="sr-tipo" onchange="runSearch()"><option value="">Todos os tipos</option></select>
+      <select id="sr-forma" onchange="runSearch()"><option value="">Todas as formas</option></select>
+      <select id="sr-dono" onchange="runSearch()"><option value="">Todos os proprietários</option></select>
+      <select id="sr-status" onchange="runSearch()">
+        <option value="">Todos</option>
+        <option value="pend">Pendentes</option>
+        <option value="pago">Baixados</option>
+        <option value="venc">Vencidos</option>
+      </select>
+    </div>
     <div id="searchResults"></div>
   </div>
 </div>
@@ -4583,6 +4612,37 @@ async function tentarBiometriaLogin(silencioso){
   } else if(!silencioso){
     msg.innerHTML='<span style="color:var(--red)">Não foi possível confirmar. Tente de novo ou use a senha.</span>';
   }
+}
+// Filtros da busca global (tipo/forma/proprietário/status): só existem
+// quando o modal foi aberto por openSearch() — os outros reaproveitamentos
+// de #mSearch (dia, categoria, duplicados) escondem o botão e o painel
+// pra não misturar um filtro esquecido ligado com um recorte que já vem
+// pronto deles. runSearch() já lê os selects direto, então só falta
+// mostrar/esconder e colapsar como os outros painéis de filtro.
+function toggleSearchFilters(){
+  const panel=document.getElementById('srFiltPanel');
+  const btn=document.getElementById('srFiltToggleBtn');
+  if(!panel||!btn)return;
+  const isCollapsed=panel.classList.contains('collapsed');
+  panel.classList.toggle('collapsed',!isCollapsed);
+  btn.classList.toggle('expanded',isCollapsed);
+  btn.textContent=isCollapsed?'▲ Filtros':'▼ Filtros';
+}
+// Zera os filtros e mostra/esconde o bloco pra caber com quem abriu o
+// #mSearch: true pra busca de lançamento (openSearch), false pras outras
+// telas que reaproveitam o modal com o recorte delas já pronto.
+function setSearchFiltersVisiveis(v){
+  const panel=document.getElementById('srFiltPanel');
+  const btn=document.getElementById('srFiltToggleBtn');
+  if(panel){
+    panel.style.display=v?'':'none';
+    if(v){ panel.classList.add('collapsed'); ['sr-tipo','sr-forma','sr-dono','sr-status'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); }
+  }
+  // A regra mobile ".filt-toggle-btn{display:block!important}" vence
+  // qualquer btn.style.display via JS — por isso a classe (seletor por id
+  // tem mais especificidade que a regra de classe, mesmo os dois com
+  // !important) em vez de mexer no style inline.
+  if(btn){ btn.classList.remove('expanded'); btn.textContent='▼ Filtros'; btn.classList.toggle('sr-hide',!v); }
 }
 function toggleFilterPanel(panelId){
   const panel=document.getElementById(panelId);
@@ -8275,7 +8335,9 @@ function confirmarParcial(){
 function openSearch(){
   document.getElementById('mSearch').classList.add('on');
   const tit=document.getElementById('searchModalTit'); if(tit)tit.textContent='Buscar lançamento';
-  const i=document.getElementById('searchInput');i.style.display='';i.value='';runSearch();
+  const i=document.getElementById('searchInput');i.style.display='';i.value='';
+  setSearchFiltersVisiveis(true);
+  runSearch();
   setTimeout(()=>i.focus(),120);
 }
 function closeSearch(){document.getElementById('mSearch').classList.remove('on');ULTIMO_MSEARCH=null;}
@@ -8350,23 +8412,34 @@ function runSearch(){
   const qRaw=document.getElementById('searchInput').value.trim();
   const q=xlsNorm(qRaw);
   const box=document.getElementById('searchResults');
-  if(!qRaw){box.innerHTML='<div class="srow-empty">Digite qualquer termo: placa, cliente, proprietário, observação, nº do cartão…</div>';return;}
+  // Filtros (tipo/forma/proprietário/status) — só existem quando o modal
+  // foi aberto por openSearch() (ver setSearchFiltersVisiveis); nos outros
+  // reaproveitamentos de #mSearch os campos não existem e os valores saem
+  // vazios, então filtGeral não filtra nada e o comportamento é o de antes.
+  const fTipo=document.getElementById('sr-tipo')?.value||'';
+  const fForma=document.getElementById('sr-forma')?.value||'';
+  const fDono=document.getElementById('sr-dono')?.value||'';
+  const fStatus=document.getElementById('sr-status')?.value||'';
+  const temFiltro=fTipo||fForma||fDono||fStatus;
+  if(!qRaw&&!temFiltro){box.innerHTML='<div class="srow-empty">Digite qualquer termo (placa, cliente, proprietário, observação, nº do cartão…) ou use os filtros.</div>';return;}
   const all=allD();
   const res=[];
-  for(let i=0;i<all.length;i++){const r=all[i];if(matchBusca(r,qRaw))res.push({r,i});}
+  for(let i=0;i<all.length;i++){
+    const r=all[i];
+    if(qRaw&&!matchBusca(r,qRaw))continue;
+    if(fTipo&&r.tipo!==fTipo)continue;
+    if(fForma&&r.forma!==fForma)continue;
+    if(fDono&&r.dono!==fDono)continue;
+    if(fStatus==='pago'&&!isPago(r))continue;
+    if(fStatus==='pend'&&!isPend(r))continue;
+    if(fStatus==='venc'&&!isVenc(r))continue;
+    res.push({r,i});
+  }
   if(!res.length){box.innerHTML='<div class="srow-empty">Nada encontrado.</div>';return;}
-  const totPago=res.reduce((a,{r})=>a+fN(r.valor_pago),0);                    // recebido (líquido, inclui baixa parcial)
-  const totPend=res.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);           // a receber (líquido)
-  const totLiq=totPago+totPend;                                              // total líquido (já descontada a taxa de cartão)
-  // Totais do mês vigente (curMes), por competência (prev_pgto)
-  const inMes=res.filter(({r})=>(r.prev_pgto||'').slice(0,7)===curMes);
-  const mPago=inMes.reduce((a,{r})=>a+fN(r.valor_pago),0);
-  const mPend=inMes.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);
-  const mLiq=mPago+mPend;                                                    // total líquido do mês
+  // Se a busca corresponde a proprietário(s), mostra os totais de LOCAÇÃO do mês (previsto/recebido)
   const [my,mm]=curMes.split('-');
   const mesLabel=MN[parseInt(mm)-1]+'/'+my.slice(2);
-  // Se a busca corresponde a proprietário(s), mostra os totais de LOCAÇÃO do mês (previsto/recebido)
-  const donosMatch=[...new Set(all.map(r=>r.dono).filter(Boolean))].filter(d=>xlsNorm(d).includes(q));
+  const donosMatch=q?[...new Set(all.map(r=>r.dono).filter(Boolean))].filter(d=>xlsNorm(d).includes(q)):[];
   let ownerHtml='';
   if(donosMatch.length){
     const locRows=all.filter(r=>donosMatch.includes(r.dono)&&(r.tipo||'').toLowerCase().startsWith('loca')&&(r.prev_pgto||'').slice(0,7)===curMes);
@@ -8381,20 +8454,10 @@ function runSearch(){
       </div>
     </div>`;
   }
-  const totHtml=`<div class="search-total">
-    <div class="st-blk">
-      <div class="st-main"><span>Geral · ${res.length} resultado${res.length>1?'s':''}</span><span class="st-val">${fR(totLiq)}</span></div>
-      <div class="st-sub"><span class="st-pago">Pago ${fR(totPago)}</span><span class="st-pend">Pendente ${fR(totPend)}</span></div>
-    </div>
-    <div class="st-blk st-month">
-      <div class="st-main"><span>Mês ${mesLabel} · ${inMes.length} resultado${inMes.length===1?'':'s'}</span><span class="st-val">${fR(mLiq)}</span></div>
-      <div class="st-sub"><span class="st-pago">Pago ${fR(mPago)}</span><span class="st-pend">Pendente ${fR(mPend)}</span></div>
-    </div>
-  </div>`;
   const grupos=agruparResultadosBusca(res);
   const shown=grupos.slice(0,40);
   const moreHtml=grupos.length>shown.length?`<div class="srow-empty">+${grupos.length-shown.length} contrato(s) não exibido(s) — refine a busca</div>`:'';
-  box.innerHTML=ownerHtml+totHtml+buscaGroupedHtml(shown,true)+moreHtml;
+  box.innerHTML=ownerHtml+buscaGroupedHtml(shown,true)+moreHtml;
 }
 // Cartão de lançamento com swipe (arrastar revela Baixar/Parcial/Reverter/
 // Editar) — mesma marcação usada em Recebimentos, reaproveitada aqui pra ter
@@ -8462,15 +8525,33 @@ function lancListHtml(items,fecharBusca){
 // cliente, quantidade e o total (líquido) do conjunto, e os cartões de
 // cada item — cada um continua com seu próprio swipe (baixar/editar/
 // excluir individualmente não muda).
+// Valores líquidos (pago/pendente) de todos os itens de uma lista de
+// grupos — usado pra montar o subtotal que abre cada mês.
+function totaisGrupos(grupos){
+  let pago=0,pend=0,n=0;
+  grupos.forEach(g=>g.itens.forEach(({r})=>{pago+=fN(r.valor_pago);if(isPend(r))pend+=fN(r.saldo);n++;}));
+  return{pago,pend,liq:pago+pend,n};
+}
 function buscaGroupedHtml(grupos,fecharBusca){
+  // Corre em sequência (não um Map por mês): a mesma ordenação de
+  // agruparResultadosBusca pode voltar ao mesmo mês duas vezes (um
+  // pedaço no bloco "futuro", outro no bloco "passado/vencido") — cada
+  // aparição soma só os itens que vêm logo abaixo dela, senão o mesmo
+  // total apareceria duplicado nos dois cabeçalhos.
   let mesCorrente=undefined;
-  return grupos.map(g=>{
+  return grupos.map((g,idx)=>{
     const mesKey=(g.ref||'').slice(0,7);
     let mesHtml='';
     if(mesKey!==mesCorrente){
       mesCorrente=mesKey;
       const lbl=mesKey?MN[parseInt(mesKey.slice(5,7),10)-1]+'/'+mesKey.slice(2,4):'Sem vencimento';
-      mesHtml=`<div class="srow-mes">${lbl}</div>`;
+      let fim=idx+1;
+      while(fim<grupos.length&&(grupos[fim].ref||'').slice(0,7)===mesKey)fim++;
+      const t=totaisGrupos(grupos.slice(idx,fim));
+      mesHtml=`<div class="search-total srow-mes-tot">
+        <div class="st-main"><span>${lbl} · ${t.n} lançamento${t.n===1?'':'s'}</span><span class="st-val">${fR(t.liq)}</span></div>
+        <div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div>
+      </div>`;
     }
     if(g.itens.length<2){
       const{r,i}=g.itens[0];
@@ -8603,6 +8684,7 @@ function lcCardConsultaHtml(r){
 function mostrarLancFeitosDia(dia){
   const alvo=dia||td();
   ULTIMO_MSEARCH=()=>mostrarLancFeitosDia(alvo);
+  setSearchFiltersVisiveis(false);
   const porDia=lancPorDiaFeito();
   const doDia=porDia[alvo]||{itens:[],bruto:0,liq:0};
   // Hoje sempre aparece na régua, mesmo sem nada lançado ainda, para não
@@ -8638,6 +8720,7 @@ function mostrarLancFeitosDia(dia){
 // primeira barra) — reaproveita o modal da busca global.
 function mostrarLancDia(dia){
   ULTIMO_MSEARCH=()=>mostrarLancDia(dia);
+  setSearchFiltersVisiveis(false);
   const venc=dia==='vencidos';
   const hoje=td();
   const all=allD();
@@ -8666,6 +8749,7 @@ function mostrarLancDia(dia){
 // pra dar pra baixar/editar sem sair dali.
 function resumoFormasDia(dia,origem){
   ULTIMO_MSEARCH=()=>resumoFormasDia(dia,origem);
+  setSearchFiltersVisiveis(false);
   const rows=(DIA_ROWS[origem]||{})[dia]||[];
   const jaAberto=document.getElementById('mSearch')?.classList.contains('on');
   if(!rows.length){
@@ -8721,6 +8805,7 @@ function resumoFormasDia(dia,origem){
 // baixar/parcial/reverter/editar/excluir via swipe.
 function mostrarLancDiaFluxo(dia){
   ULTIMO_MSEARCH=()=>mostrarLancDiaFluxo(dia);
+  setSearchFiltersVisiveis(false);
   const all=allD();
   const items=[];
   all.forEach((r,i)=>{
@@ -8755,6 +8840,7 @@ function mostrarLancDiaFluxo(dia){
 // mesmo modal/cartões da busca global usado em mostrarLancDia(Fluxo).
 function mostrarLancCategoria(dim,key){
   ULTIMO_MSEARCH=()=>mostrarLancCategoria(dim,key);
+  setSearchFiltersVisiveis(false);
   const rows=frRowsForRing(dim).filter(r=>((r[dim]||'').trim()||'—')===key);
   if(!rows.length){
     // Só sai sem abrir nada na 1ª chamada; se já estava aberto (refresh
@@ -8796,6 +8882,7 @@ function mostrarDuplicados(){
   // tela — e, pior, os índices dos cartões seguintes passavam a apontar
   // pro lançamento errado depois de uma exclusão.
   ULTIMO_MSEARCH=mostrarDuplicados;
+  setSearchFiltersVisiveis(false);
   const all=allD();
   const grupos={};
   all.forEach((r,i)=>{
@@ -10215,12 +10302,12 @@ function popSel(){
   const tipos=[...new Set(all.map(r=>r.tipo).filter(Boolean))].sort();
   const formas=[...new Set(all.map(r=>r.forma).filter(Boolean))].sort();
   ['nf-d','e-d','ai-d'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Selecione</option>';donos.forEach(d=>el.innerHTML+=`<option>${d}</option>`);el.value=cv;});
-  ['lf-dono'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os proprietários</option>';donos.forEach(d=>el.innerHTML+=`<option>${d}</option>`);el.value=cv;});
+  ['lf-dono','sr-dono'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os proprietários</option>';donos.forEach(d=>el.innerHTML+=`<option>${d}</option>`);el.value=cv;});
   // Tipo na edição: mesma lista de LANC_TIPOS (+ legados), pra não existir
   // tipo que dá pra criar mas não dá pra escolher ao editar.
   {const el=document.getElementById('e-t');if(el){const cv=el.value;el.innerHTML=EDIT_TIPOS.map(t=>`<option>${t}</option>`).join('');selVal('e-t',cv);}}
-  ['lf-tipo'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os tipos</option>';tipos.forEach(t=>el.innerHTML+=`<option>${t}</option>`);el.value=cv;});
-  ['lf-forma'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todas as formas</option>';formas.forEach(f=>el.innerHTML+=`<option>${f}</option>`);el.value=cv;});
+  ['lf-tipo','sr-tipo'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os tipos</option>';tipos.forEach(t=>el.innerHTML+=`<option>${t}</option>`);el.value=cv;});
+  ['lf-forma','sr-forma'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todas as formas</option>';formas.forEach(f=>el.innerHTML+=`<option>${f}</option>`);el.value=cv;});
   reindexarPlacas();
   // Todas as placas conhecidas (cadastradas em Veículos ou só lançadas) —
   // alimenta o autocomplete da placa em Novo lançamento, OCR e Editar, pra
