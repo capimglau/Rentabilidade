@@ -1630,6 +1630,7 @@ body.tip-pinned::before {
    pra sempre fechar em exatamente 4 nessa faixa de tela. */
 @media (min-width:761px){ .agb-board{ width:100%; } .agb-col{ flex-basis:calc((100% - 36px)/4); } }
 .agb-col-hd{ display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 11px; border-radius:12px; background:color-mix(in srgb, var(--ink) 4%, var(--card)); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
+.agb-col-hd[onclick]{ cursor:pointer; }
 .agb-col.agb-atrasados .agb-col-hd{ background:color-mix(in srgb, var(--red) 10%, var(--card)); border-color:color-mix(in srgb, var(--red) 30%, transparent); }
 .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 10%, var(--card)); border-color:color-mix(in srgb, var(--blue) 30%, transparent); }
 .agb-col-hd-l{ display:flex; align-items:baseline; gap:5px; min-width:0; overflow:hidden; flex-shrink:0; }
@@ -6212,8 +6213,9 @@ function agbColHtml(cls,dow,dom,itens,dia){
       <span class="agb-deck-arrow">▾</span>
     </div>
     <div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia)).join('')}</div>`:'';
+  const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
   return `<div class="agb-col ${cls}">
-    <div class="agb-col-hd">
+    <div class="agb-col-hd"${hdClick}>
       <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
       <div class="agb-col-hd-r">
         <span class="agb-col-total">${fR(total)}</span>
