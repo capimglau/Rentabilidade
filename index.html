@@ -5993,7 +5993,7 @@ function resMonths(){
   return arr;
 }
 // Valor de um lançamento conforme a base selecionada.
-function valBase(r){ return resBase==='caixa' ? (isPago(r)?fN(r.valor_pago):0) : resBase==='pend' ? fN(r.saldo) : fN(r.valor); }
+function valBase(r){ return resBase==='caixa' ? fN(r.valor_pago) : resBase==='pend' ? fN(r.saldo) : fN(r.valor); }
 function cumArr(arr){ let s=0; return arr.map(v=>s+=v); }
 function mLabel(k){ const[y,m]=k.split('-'); return MN[parseInt(m)-1]+'/'+y.slice(2); }
 // Posiciona a rolagem das séries temporais com o mês vigente centralizado.
@@ -6462,9 +6462,13 @@ function agrupaPrevRec(rows,chave){
     if(k===null||k===undefined||k==='')return;
     const o=g[k]||(g[k]={prev:0,rec:0,atr:0,atrRows:[],recRows:[],venRows:[]});
     o.prev+=liq(r);
-    if(isPago(r)){o.rec+=fN(r.valor_pago);o.recRows.push(r);}
-    else if(isVenc(r)){o.atr+=fN(r.saldo);o.atrRows.push(r);}
-    else o.venRows.push(r);
+    // Um lançamento com baixa PARCIAL entra nos dois lados: o que já entrou
+    // soma no recebido, o que falta segue em atrasado ou a vencer. Contar só
+    // o quitado zerava a barra verde de quem pagou metade — e jogava o valor
+    // cheio no vermelho, como se nada tivesse entrado.
+    if(fN(r.valor_pago)>0){o.rec+=fN(r.valor_pago);o.recRows.push(r);}
+    if(isVenc(r)){o.atr+=fN(r.saldo);o.atrRows.push(r);}
+    else if(isPend(r))o.venRows.push(r);
   });
   return Object.entries(g);
 }
@@ -6775,7 +6779,7 @@ function frFilteredRows(){return frBaseRows().filter(r=>filterMatch(FRT,r));}
 function frRowsForRing(dim){
   return frBaseRows().filter(r=>FR_ORDER.every(d=>d===dim||!FRT[d].size||FRT[d].has(r[d])));
 }
-function frValBase(r){return frBasis==='caixa'?(isPago(r)?fN(r.valor_pago):0):frBasis==='pend'?fN(r.saldo):liq(r);}
+function frValBase(r){return frBasis==='caixa'?fN(r.valor_pago):frBasis==='pend'?fN(r.saldo):liq(r);}
 function frSum(rows){return rows.reduce((s,r)=>s+frValBase(r),0);}
 
 // Top 10 categorias reais + "Outros" só se sobrar alguma além dessas —
@@ -7134,7 +7138,7 @@ function renderResumo(){
   // Pendente separado em atrasado (venceu e não entrou) e a vencer.
   const atrsM={};
   baseRows.forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(!m)return;
-    recM[m]=(recM[m]||0)+(isPago(r)?fN(r.valor_pago):0);
+    recM[m]=(recM[m]||0)+fN(r.valor_pago);
     atrsM[m]=(atrsM[m]||0)+(isVenc(r)?fN(r.saldo):0);
     pendM[m]=(pendM[m]||0)+((isPend(r)&&!isVenc(r))?fN(r.saldo):0);});
   let recA=mShown.map(k=>recM[k]||0), pendA=mShown.map(k=>pendM[k]||0), atrsA=mShown.map(k=>atrsM[k]||0);
@@ -7172,7 +7176,7 @@ function renderResumo(){
   baseRows.forEach(r=>{
     const m=(r.prev_pgto||'').slice(0,7);if(!m)return;
     fatM[m]=(fatM[m]||0)+liq(r);
-    rcvM[m]=(rcvM[m]||0)+(isPago(r)?fN(r.valor_pago):0);
+    rcvM[m]=(rcvM[m]||0)+fN(r.valor_pago);
     atrM[m]=(atrM[m]||0)+(isVenc(r)?fN(r.saldo):0);
   });
   let fatA=mShown.map(k=>fatM[k]||0), rcvA=mShown.map(k=>rcvM[k]||0), atrA=mShown.map(k=>atrM[k]||0);
@@ -8344,12 +8348,12 @@ function runSearch(){
   const res=[];
   for(let i=0;i<all.length;i++){const r=all[i];if(matchBusca(r,qRaw))res.push({r,i});}
   if(!res.length){box.innerHTML='<div class="srow-empty">Nada encontrado.</div>';return;}
-  const totPago=res.reduce((a,{r})=>a+(isPago(r)?fN(r.valor_pago):0),0);      // recebido (líquido)
+  const totPago=res.reduce((a,{r})=>a+fN(r.valor_pago),0);                    // recebido (líquido, inclui baixa parcial)
   const totPend=res.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);           // a receber (líquido)
   const totLiq=totPago+totPend;                                              // total líquido (já descontada a taxa de cartão)
   // Totais do mês vigente (curMes), por competência (prev_pgto)
   const inMes=res.filter(({r})=>(r.prev_pgto||'').slice(0,7)===curMes);
-  const mPago=inMes.reduce((a,{r})=>a+(isPago(r)?fN(r.valor_pago):0),0);
+  const mPago=inMes.reduce((a,{r})=>a+fN(r.valor_pago),0);
   const mPend=inMes.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);
   const mLiq=mPago+mPend;                                                    // total líquido do mês
   const [my,mm]=curMes.split('-');
@@ -8359,7 +8363,7 @@ function runSearch(){
   let ownerHtml='';
   if(donosMatch.length){
     const locRows=all.filter(r=>donosMatch.includes(r.dono)&&(r.tipo||'').toLowerCase().startsWith('loca')&&(r.prev_pgto||'').slice(0,7)===curMes);
-    const locReceb=locRows.reduce((a,r)=>a+(isPago(r)?fN(r.valor_pago):0),0); // recebido (líquido)
+    const locReceb=somaRecebido(locRows);                                     // recebido (líquido, inclui baixa parcial)
     const locReceber=locRows.reduce((a,r)=>a+(isPend(r)?fN(r.saldo):0),0);    // a receber (líquido)
     const locPrev=locReceb+locReceber;                                       // previsto = recebido + a receber
     const nome=donosMatch.length===1?donosMatch[0]:donosMatch.length+' proprietários';
@@ -8730,7 +8734,7 @@ function mostrarLancDiaFluxo(dia){
   const tit=document.getElementById('searchModalTit');
   if(tit) tit.textContent=fDM(dia);
   const box=document.getElementById('searchResults');
-  const totPago=items.reduce((a,{r})=>a+(isPago(r)?fN(r.valor_pago):0),0);
+  const totPago=items.reduce((a,{r})=>a+fN(r.valor_pago),0);
   const totPend=items.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);
   const totHtml=`<div class="search-total"><div class="st-blk">
     <div class="st-main"><span>${items.length} lançamento${items.length>1?'s':''}</span><span class="st-val">${fR(totPago+totPend)}</span></div>
@@ -8761,7 +8765,7 @@ function mostrarLancCategoria(dim,key){
   const tit=document.getElementById('searchModalTit');
   if(tit) tit.textContent=key;
   const box=document.getElementById('searchResults');
-  const totPago=items.reduce((a,{r})=>a+(isPago(r)?fN(r.valor_pago):0),0);
+  const totPago=items.reduce((a,{r})=>a+fN(r.valor_pago),0);
   const totPend=items.reduce((a,{r})=>a+(isPend(r)?fN(r.saldo):0),0);
   const totHtml=`<div class="search-total"><div class="st-blk">
     <div class="st-main"><span>${items.length} lançamento${items.length>1?'s':''}</span><span class="st-val">${fR(totPago+totPend)}</span></div>
