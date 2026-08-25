@@ -1656,6 +1656,34 @@ body.tip-pinned::before {
 @media (min-width:761px){ .agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); } }
 .agb-col-body{ display:flex; flex-direction:column; gap:7px; }
 .agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
+/* No mobile a coluna do dia mostra só os 3 primeiros cards; o resto vai pra
+   um "baralho" (pilha de cartas) fixo no fundo da coluna — toca pra abrir e
+   ver os demais, sem crescer a coluna toda (que já rola dentro do board).
+   No PC (>=761px) some o baralho e os cards ficam todos abertos direto,
+   igual antes — ver bloco @media (min-width:761px) mais abaixo. */
+.agb-col-more{ display:none; flex-direction:column; gap:7px; margin-top:7px; }
+.agb-col.agb-col-open .agb-col-more{ display:flex; }
+.agb-deck{ display:flex; align-items:center; gap:9px; cursor:pointer; padding:7px 10px; border-radius:12px;
+  border:1.5px dashed color-mix(in srgb, var(--ink) 20%, var(--line)); background:color-mix(in srgb, var(--ink) 3%, var(--card)); }
+.agb-deck:active{ transform:scale(.98); }
+.agb-deck-stack{ position:relative; width:26px; height:20px; flex-shrink:0; }
+.agb-deck-stack span{ position:absolute; left:0; right:0; top:0; height:14px; border-radius:5px;
+  background:var(--card); border:1px solid color-mix(in srgb, var(--ink) 16%, var(--line)); }
+.agb-deck-stack span:nth-child(1){ top:6px; opacity:.55; transform:scale(.9); }
+.agb-deck-stack span:nth-child(2){ top:3px; opacity:.8; transform:scale(.95); }
+.agb-deck-stack span:nth-child(3){ top:0; }
+.agb-col.agb-col-open .agb-deck-stack{ transform:rotate(180deg); }
+.agb-deck-info{ flex:1; min-width:0; font-size:11px; font-weight:700; color:var(--ink2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.agb-deck-info b{ color:var(--ink); }
+.agb-deck-txt-open{ display:none; }
+.agb-col.agb-col-open .agb-deck-txt-closed{ display:none; }
+.agb-col.agb-col-open .agb-deck-txt-open{ display:inline; }
+.agb-deck-arrow{ flex-shrink:0; font-size:11px; color:var(--ink3); transition:transform .15s ease; }
+.agb-col.agb-col-open .agb-deck-arrow{ transform:rotate(180deg); }
+@media (min-width:761px){
+  .agb-deck{ display:none; }
+  .agb-col-more{ display:flex !important; }
+}
 /* Fundo pastel + relevo "3d" iguais aos cards da Agenda Mensal do
    AutoGest (.agk2-ev-card): degradê tom-sobre-tom entre --ev-l/--ev-d
    (setados inline por card, conforme o tipo do lançamento — ver
@@ -6163,9 +6191,27 @@ function agbCardHtml(grp,dia){
     <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fR(grp.total)}</span></div>
   </div>`;
 }
+// No mobile só os 3 primeiros cards ficam soltos na coluna; do 4º em diante
+// vira um "baralho" (pilha) fixo no fundo, que abre ao toque — mesma ideia
+// do resumo-que-expande do painel de Boletos do mês, aqui em forma de
+// cards empilhados. No PC o CSS (@media min-width:761px) ignora o baralho
+// e mostra tudo aberto, então o corte de 3 não afeta a tela grande.
+const AGB_COL_LIMITE=3;
 function agbColHtml(cls,dow,dom,itens,dia){
   const grupos=agruparPorCliente(itens);
   const total=itens.reduce((a,r)=>a+fN(r.saldo),0);
+  const visiveis=grupos.slice(0,AGB_COL_LIMITE);
+  const resto=grupos.slice(AGB_COL_LIMITE);
+  const restoTotal=resto.reduce((a,g)=>a+fN(g.total),0);
+  const deckHtml=resto.length?`<div class="agb-deck" onclick="event.stopPropagation();toggleAgbDeck(this)" role="button" tabindex="0" title="Ver os demais lançamentos do dia">
+      <div class="agb-deck-stack"><span></span><span></span><span></span></div>
+      <div class="agb-deck-info">
+        <span class="agb-deck-txt-closed"><b>+${resto.length}</b> · ${fR(restoTotal)}</span>
+        <span class="agb-deck-txt-open">Ocultar</span>
+      </div>
+      <span class="agb-deck-arrow">▾</span>
+    </div>
+    <div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia)).join('')}</div>`:'';
   return `<div class="agb-col ${cls}">
     <div class="agb-col-hd">
       <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
@@ -6174,8 +6220,14 @@ function agbColHtml(cls,dow,dom,itens,dia){
         <span class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</span>
       </div>
     </div>
-    <div class="agb-col-body">${grupos.length?grupos.map(g=>agbCardHtml(g,dia)).join(''):'<div class="agb-empty">Sem lançamentos</div>'}</div>
+    <div class="agb-col-body">${grupos.length?visiveis.map(g=>agbCardHtml(g,dia)).join(''):'<div class="agb-empty">Sem lançamentos</div>'}${deckHtml}</div>
   </div>`;
+}
+// Abre/fecha o baralho de cards extras da coluna (só existe efeito no
+// mobile — no PC o CSS já mostra tudo aberto e esconde o baralho).
+function toggleAgbDeck(el){
+  const col=el.closest('.agb-col');
+  if(col)col.classList.toggle('agb-col-open');
 }
 // Mesma janela de 90 dias já usada na "Projeção de recebimentos" do
 // Resumo — evita um board infinito com parcelas de contratos longos lá
