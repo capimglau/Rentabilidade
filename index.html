@@ -4069,6 +4069,7 @@ body.modo-boletos #btnLinkBoletos { display: none; }
          deles prontos e escondem este bloco via toggleSearchFilters(). -->
     <button class="filt-toggle-btn" id="srFiltToggleBtn" onclick="toggleSearchFilters()" style="display:none">▼ Filtros</button>
     <div class="filt-panel filt-panel-baixas" id="srFiltPanel">
+      <select id="sr-mes" onchange="runSearch()"><option value="">Todos os meses</option></select>
       <select id="sr-tipo" onchange="runSearch()"><option value="">Todos os tipos</option></select>
       <select id="sr-forma" onchange="runSearch()"><option value="">Todas as formas</option></select>
       <select id="sr-dono" onchange="runSearch()"><option value="">Todos os proprietários</option></select>
@@ -4636,7 +4637,7 @@ function setSearchFiltersVisiveis(v){
   const btn=document.getElementById('srFiltToggleBtn');
   if(panel){
     panel.style.display=v?'':'none';
-    if(v){ panel.classList.add('collapsed'); ['sr-tipo','sr-forma','sr-dono','sr-status'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); }
+    if(v){ panel.classList.add('collapsed'); ['sr-mes','sr-tipo','sr-forma','sr-dono','sr-status'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); }
   }
   // A regra mobile ".filt-toggle-btn{display:block!important}" vence
   // qualquer btn.style.display via JS — por isso a classe (seletor por id
@@ -8412,21 +8413,23 @@ function runSearch(){
   const qRaw=document.getElementById('searchInput').value.trim();
   const q=xlsNorm(qRaw);
   const box=document.getElementById('searchResults');
-  // Filtros (tipo/forma/proprietário/status) — só existem quando o modal
-  // foi aberto por openSearch() (ver setSearchFiltersVisiveis); nos outros
-  // reaproveitamentos de #mSearch os campos não existem e os valores saem
-  // vazios, então filtGeral não filtra nada e o comportamento é o de antes.
+  // Filtros (mês/tipo/forma/proprietário/status) — só existem quando o
+  // modal foi aberto por openSearch() (ver setSearchFiltersVisiveis); nos
+  // outros reaproveitamentos de #mSearch os campos não existem e os
+  // valores saem vazios, então nada filtra e o comportamento é o de antes.
+  const fMes=document.getElementById('sr-mes')?.value||'';
   const fTipo=document.getElementById('sr-tipo')?.value||'';
   const fForma=document.getElementById('sr-forma')?.value||'';
   const fDono=document.getElementById('sr-dono')?.value||'';
   const fStatus=document.getElementById('sr-status')?.value||'';
-  const temFiltro=fTipo||fForma||fDono||fStatus;
+  const temFiltro=fMes||fTipo||fForma||fDono||fStatus;
   if(!qRaw&&!temFiltro){box.innerHTML='<div class="srow-empty">Digite qualquer termo (placa, cliente, proprietário, observação, nº do cartão…) ou use os filtros.</div>';return;}
   const all=allD();
   const res=[];
   for(let i=0;i<all.length;i++){
     const r=all[i];
     if(qRaw&&!matchBusca(r,qRaw))continue;
+    if(fMes&&(r.prev_pgto||'').slice(0,7)!==fMes)continue;
     if(fTipo&&r.tipo!==fTipo)continue;
     if(fForma&&r.forma!==fForma)continue;
     if(fDono&&r.dono!==fDono)continue;
@@ -10308,6 +10311,15 @@ function popSel(){
   {const el=document.getElementById('e-t');if(el){const cv=el.value;el.innerHTML=EDIT_TIPOS.map(t=>`<option>${t}</option>`).join('');selVal('e-t',cv);}}
   ['lf-tipo','sr-tipo'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os tipos</option>';tipos.forEach(t=>el.innerHTML+=`<option>${t}</option>`);el.value=cv;});
   ['lf-forma','sr-forma'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todas as formas</option>';formas.forEach(f=>el.innerHTML+=`<option>${f}</option>`);el.value=cv;});
+  // Meses do filtro da busca: todo mês que tem algum lançamento por
+  // vencimento (prev_pgto) — mesma fonte que agrupa os resultados por mês
+  // na lista (buscaGroupedHtml), do mais antigo pro mais recente.
+  {const el=document.getElementById('sr-mes');if(el){
+    const cv=el.value;
+    const meses=[...new Set(all.map(r=>(r.prev_pgto||'').slice(0,7)).filter(Boolean))].sort();
+    el.innerHTML='<option value="">Todos os meses</option>'+meses.map(m=>`<option value="${m}">${mLabel(m)}</option>`).join('');
+    el.value=cv;
+  }}
   reindexarPlacas();
   // Todas as placas conhecidas (cadastradas em Veículos ou só lançadas) —
   // alimenta o autocomplete da placa em Novo lançamento, OCR e Editar, pra
