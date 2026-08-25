@@ -7675,9 +7675,37 @@ function datasParcelasGrupo(grupo,n,r,ppEdit){
   while(out.length<n){ ultima=addDUtil(ultima||td(),PREM.prazoParcela); out.push(ultima); }
   return out;
 }
+// ── PAGAMENTO DO CLIENTE (vários lançamentos passados juntos) ──
+// A forma de pagamento não é de um item, é do CLIENTE: quando a locação, a
+// avaria e a lavagem do mesmo contrato foram passadas no mesmo cartão, no
+// mesmo dia, elas são UM pagamento em 3x — cada uma continua sendo um
+// lançamento com o seu próprio valor (200 de locação + 150 de lavagem são
+// dois lançamentos), mas a forma e a quantidade de parcelas são as mesmas
+// pra todos. Por isso mudar a forma numa delas muda em todas.
+//
+// O que junta: mesmo contrato (placa+cliente+saída, chaveContrato), mesma
+// forma gravada e mesma data-base — o vencimento da 1ª parcela, que é o que
+// sobra no banco da data em que o cartão foi passado. Uma lavagem paga em
+// dinheiro à parte, ou um item passado noutro dia, fica de fora.
+const dataBaseLanc=g=>((g&&g[0]&&g[0].prev_pgto)||'');
+// Devolve os lançamentos do mesmo pagamento, cada um como a lista das suas
+// parcelas em ordem (inclusive o do próprio r).
+function lancamentosDoPagamento(r){
+  if(!r)return [];
+  const k=chaveContrato(r), f=(r.forma||''), base=dataBaseLanc(grupoLancamento(r));
+  const porLanc=new Map();
+  allD().forEach(x=>{
+    if((x.forma||'')!==f||chaveContrato(x)!==k)return;
+    const key=agbParcelaGroupKey(x)||('id|'+x.id);
+    if(!porLanc.has(key))porLanc.set(key,[]);
+    porLanc.get(key).push(x);
+  });
+  return [...porLanc.values()].map(g=>g.sort(ordemParcela)).filter(g=>dataBaseLanc(g)===base);
+}
 // Estado do painel de parcelas da edição: o que vai acontecer com o
-// lançamento principal se salvar agora. Uma fonte só, usada tanto pelo
-// preview (refreshParcEdit) quanto pelo salvamento (saveEdit).
+// lançamento principal — e com os outros lançamentos do mesmo pagamento —
+// se salvar agora. Uma fonte só, usada tanto pelo preview
+// (refreshParcEdit) quanto pelo salvamento (saveEdit).
 function planoParcelasEdit(){
   const r=lancEditado(); if(!r)return null;
   const grupo=grupoLancamento(r);
@@ -7696,13 +7724,30 @@ function planoParcelasEdit(){
   // trava, abrir e salvar um grupo cuja forma não é cartão parcelado (um
   // "Parcela 1/2" escrito à mão num boleto, por exemplo) proporia juntar
   // tudo num lançamento só — restauração que ninguém pediu.
-  const nAlvo=(n!==parcelasForma(r.forma||''))?n:grupo.length;
-  return {r,grupo,forma,n:nAlvo,total,manual,
+  const mudaParc=n!==parcelasForma(r.forma||'');
+  const nAlvo=mudaParc?n:grupo.length;
+  // Mudou a forma de pagamento? Então mudou pro pagamento INTEIRO: os
+  // outros lançamentos passados junto (mesmo contrato, mesma forma, mesma
+  // data-base) acompanham a forma nova e o número novo de parcelas. O
+  // VALOR de cada um continua sendo dele — cada item é lançado
+  // separadamente e ninguém rateia nada.
+  const formaMudou=forma!==(r.forma||'');
+  const outrosPag=formaMudou?lancamentosDoPagamento(r).filter(g=>g.indexOf(r)<0):[];
+  return {r,grupo,forma,n:nAlvo,total,manual,formaMudou,mudaParc,
+    pagamento:outrosPag,
     // Redivide quando o usuário mexeu no total OU quando o número de
     // parcelas mudou.
     redivide:manual||nAlvo!==grupo.length,
     parcelado:grupo.length>1||nAlvo>1};
 }
+// Como cada lançamento do pagamento fica com a forma nova: mantém o valor
+// total dele, só redividido no número de parcelas que a forma nova pede.
+function planoPagamentoItem(g,nAlvo){
+  const total=totalGrupo(g);
+  const n=Math.max(1,nAlvo);
+  return {g, total, n, partes:dividirCentavos(total,n), sobra:g.slice(n), cria:Math.max(0,n-g.length)};
+}
+const descrLancPag=g=>`${g[0].tipo||'Lançamento'}${rotuloLanc(g[0])?` ${rotuloLanc(g[0])}`:''} (${fR(totalGrupo(g))})`;
 function refreshParcEdit(reinicia){
   const wrap=document.getElementById('e-parc-wrap'); if(!wrap)return;
   const tot=document.getElementById('e-parc-total');
@@ -7712,17 +7757,29 @@ function refreshParcEdit(reinicia){
   if(!p){wrap.style.display='none';return;}
   const inf=agbParcelaInfo(p.r);
   if(labV)labV.textContent=(p.grupo.length>1)?`Valor da parcela ${inf?inf.atual:p.grupo.indexOf(p.r)+1}/${p.grupo.length}`:'Valor';
-  if(!p.parcelado){wrap.style.display='none';return;}
+  // O painel aparece pra lançamento parcelado e também quando a forma nova
+  // vai arrastar outros lançamentos do mesmo pagamento (aí o aviso importa
+  // mesmo sem parcela nenhuma: Boleto → Dinheiro do pagamento inteiro).
+  if(!p.parcelado&&!p.pagamento.length){wrap.style.display='none';return;}
   wrap.style.display='';
-  if(tot&&!p.manual)tot.value=p.total.toFixed(2);
   const lab=document.getElementById('e-parc-lab');
+  // Sem parcelamento não há total a redividir — só o aviso do pagamento.
+  if(tot)tot.style.display=p.parcelado?'':'none';
+  if(lab)lab.style.display=p.parcelado?'':'none';
+  if(tot&&!p.manual)tot.value=p.total.toFixed(2);
   if(lab)lab.textContent=`Valor total do lançamento${p.grupo.length>1?` (${p.grupo.length} parcelas)`:''}`;
   const box=document.getElementById('e-parc-info'); if(!box)return;
   const num=rotuloLanc(p.r);
   const cab=num?`<strong>${esc(num)}</strong> · `:'';
+  // Aviso do pagamento: quando a forma mudou e o cliente passou mais coisa
+  // junto (locação + avaria + lavagem no mesmo cartão), tudo isso acompanha.
+  const pag=p.pagamento.length
+    ? `<br>💳 Mesmo pagamento do cliente: ${p.pagamento.map(g=>esc(descrLancPag(g))).join(', ')} — ${p.pagamento.length===1?'esse lançamento acompanha':'esses lançamentos acompanham'} a forma nova${p.mudaParc?` e ${p.pagamento.length===1?'vira':'viram'} ${p.n===1?'1 lançamento':parcelasForma(p.forma)+' parcelas'} também`:''} (cada um com o valor dele).`
+    : '';
+  if(!p.parcelado){ box.innerHTML=pag.replace(/^<br>/,''); return; }
   if(!p.redivide){
     box.innerHTML=`${cab}${p.grupo.length} parcelas, total <strong>${fR(p.total)}</strong>.
-      Edite o total pra redividir entre todas — mexer só no Valor acima muda apenas esta parcela.`;
+      Edite o total pra redividir entre todas — mexer só no Valor acima muda apenas esta parcela.${pag}`;
     return;
   }
   const partes=dividirCentavos(p.total,p.n);
@@ -7732,7 +7789,7 @@ function refreshParcEdit(reinicia){
   const extra=sobra.length
     ?`<br>🗑 Exclui ${sobra.length===1?'a parcela':'as parcelas'} ${sobra.map(x=>{const i=agbParcelaInfo(x);return `${i?i.atual+'/'+i.total:''} (${fD(x.prev_pgto)}, ${fR(x.valor)}${fN(x.valor_pago)>0?` — ⚠ já recebeu ${fR(x.valor_pago)}`:''})`;}).join(', ')}`
     :(p.n>p.grupo.length?`<br>➕ Cria ${p.n-p.grupo.length} parcela(s) nova(s).`:'');
-  box.innerHTML=`${cab}Ao salvar: <strong>${p.n===1?'1 lançamento':p.n+' parcelas'}</strong> — ${linhas}${extra}`;
+  box.innerHTML=`${cab}Ao salvar: <strong>${p.n===1?'1 lançamento':p.n+' parcelas'}</strong> — ${linhas}${extra}${pag}`;
 }
 // Deixa as N parcelas do lançamento principal iguais ao que ficou definido
 // na edição: redivide o total (dividirCentavos, sem perder centavo), repassa
@@ -7860,13 +7917,19 @@ async function saveEdit(){
   const plano=planoParcelasEdit();
   const grupo=plano?plano.grupo:[r];
   const irmaosParcela=grupo.filter(x=>x!==r);
-  r.placa=normPlaca(document.getElementById('e-p').value);
-  r.dono=document.getElementById('e-d').value;
-  r.cliente=document.getElementById('e-c').value.trim();
-  r.tipo=document.getElementById('e-t').value;
-  r.forma=formaComBandeira(document.getElementById('e-f').value,document.getElementById('e-bd').value);
-  r.saida=document.getElementById('e-s').value||null;
-  r.retorno=document.getElementById('e-r').value||null;
+  // Campos lidos do formulário ANTES de tocar em r: só viram valores do
+  // registro depois que todos os confirm() passarem. Se o usuário desistir
+  // no confirm, r fica exatamente como estava (mexer em r antes deixava a
+  // tela mostrando dado que nunca foi gravado).
+  const novo={
+    placa:normPlaca(document.getElementById('e-p').value),
+    dono:document.getElementById('e-d').value,
+    cliente:document.getElementById('e-c').value.trim(),
+    tipo:document.getElementById('e-t').value,
+    forma:formaComBandeira(document.getElementById('e-f').value,document.getElementById('e-bd').value),
+    saida:document.getElementById('e-s').value||null,
+    retorno:document.getElementById('e-r').value||null,
+  };
   const _pp=document.getElementById('e-pp').value||null;
   // Trava contra ano absurdo (ex: campo de data nativo salvando um ano
   // truncado tipo "0002" em vez de "2026") — sem isso o lançamento vira um
@@ -7879,7 +7942,7 @@ async function saveEdit(){
       return;
     }
   }
-  r.prev_pgto=_pp?proxUtil(_pp):null;
+  novo.prev_pgto=_pp?proxUtil(_pp):null;
   const vDigitado=parseFloat(document.getElementById('e-v').value)||0;
   // Redivide o lançamento inteiro quando o usuário mexeu no VALOR TOTAL do
   // painel de parcelas, ou quando o número de parcelas mudou (Forma de 3x
@@ -7895,37 +7958,64 @@ async function saveEdit(){
   const desconta=v=>Math.round(v*(1-pctCom/100)*100)/100;
   let total=redivide?(pctCom>0?desconta(plano.total):plano.total):0;
   let comNota='';
-  r.valor=vDigitado;
+  novo.valor=vDigitado;
   if(pctCom>0){
     const bruto=redivide?plano.total:vDigitado;
-    if(!redivide)r.valor=desconta(vDigitado);
-    comNota=` · Comissão ${pctCom}% (-${fR(bruto-(redivide?total:r.valor))})`;
+    if(!redivide)novo.valor=desconta(vDigitado);
+    comNota=` · Comissão ${pctCom}% (-${fR(bruto-(redivide?total:novo.valor))})`;
   }
   const nNovo=redivide?plano.n:grupo.length;
-  // Criar/excluir parcela é irreversível — confirma antes de mexer em nada
-  // (por isso este confirm vem antes de gravar qualquer campo de r).
+  // Os outros lançamentos que o cliente passou JUNTO com este (mesmo
+  // contrato, mesma forma, mesma data): a forma de pagamento é do cliente,
+  // não do item, então mudar a forma aqui muda a deles também — cada um
+  // mantendo o SEU valor, só redividido no número novo de parcelas.
+  const outrosPag=(plano&&plano.formaMudou)?plano.pagamento:[];
+  // Mesma trava do lançamento aberto: só mexe na QUANTIDADE de parcelas dos
+  // outros quando a forma nova pede um número diferente do que a antiga
+  // pedia (3x → 2x). Trocar só a bandeira (Visa → Master) não reparcela
+  // nada — nem transforma num 3x um lançamento que nunca foi parcelado.
+  const nParaGrupo=g=>(plano&&plano.mudaParc)?Math.max(1,parcelasForma(novo.forma)):g.length;
+  // Criar/excluir parcela é irreversível, e mexer no pagamento inteiro
+  // alcança lançamento que nem está aberto na tela — confirma antes de
+  // gravar qualquer coisa.
+  const linhasConf=[];
   if(redivide&&nNovo!==grupo.length){
     const sobra=grupo.slice(nNovo);
-    const linhas=dividirCentavos(total,nNovo);
-    const partes=`${nNovo===1?'1 lançamento de':nNovo+' parcelas de'} ${linhas.map(v=>fR(v)).join(' · ')}`;
+    const partes=`${nNovo===1?'1 lançamento de':nNovo+' parcelas de'} ${dividirCentavos(total,nNovo).map(v=>fR(v)).join(' · ')}`;
     const aviso=sobra.length
-      ?`\n\nSerá EXCLUÍDA${sobra.length>1?'S':''}: ${sobra.map(x=>{const i=agbParcelaInfo(x);return `${i?`parcela ${i.atual}/${i.total}`:'parcela'} de ${fR(x.valor)} (venc. ${fD(x.prev_pgto)})${fN(x.valor_pago)>0?` ⚠ já tem ${fR(x.valor_pago)} recebido`:''}`;}).join('; ')}`
-      :`\n\nSerão criadas ${nNovo-grupo.length} parcela(s) nova(s).`;
-    if(!confirm(`Lançamento ${rotuloLanc(r)||'principal'}: de ${grupo.length} para ${nNovo} parcela(s).\nTotal ${fR(total)} → ${partes}.${aviso}\n\nContinuar?`))return;
+      ?`\n   🗑 exclui ${sobra.map(x=>{const i=agbParcelaInfo(x);return `${i?`parcela ${i.atual}/${i.total}`:'parcela'} de ${fR(x.valor)} (venc. ${fD(x.prev_pgto)})${fN(x.valor_pago)>0?` ⚠ já tem ${fR(x.valor_pago)} recebido`:''}`;}).join('; ')}`
+      :`\n   ➕ cria ${nNovo-grupo.length} parcela(s) nova(s)`;
+    linhasConf.push(`• ${novo.tipo||'Lançamento'} ${rotuloLanc(r)||''} — de ${grupo.length} para ${nNovo} parcela(s): total ${fR(total)} → ${partes}${aviso}`);
   }
-  r.valor_pago=parseFloat(document.getElementById('e-vp').value)||null;
-  r.data_pagamento=document.getElementById('e-dtpag').value||null;
+  outrosPag.forEach(g=>{
+    const pp=planoPagamentoItem(g,nParaGrupo(g));
+    const mudouN=pp.n!==g.length;
+    const det=mudouN
+      ? ` — de ${g.length} para ${pp.n} parcela(s): ${pp.partes.map(v=>fR(v)).join(' · ')}${pp.sobra.length?`\n   🗑 exclui ${pp.sobra.map(x=>`${fR(x.valor)} (venc. ${fD(x.prev_pgto)})${fN(x.valor_pago)>0?` ⚠ já tem ${fR(x.valor_pago)} recebido`:''}`).join('; ')}`:''}`
+      : ' — só muda a forma (valor e vencimentos ficam)';
+    linhasConf.push(`• ${descrLancPag(g)}${det}`);
+  });
+  if(linhasConf.length){
+    const cab=outrosPag.length
+      ? `Pagamento de ${r.cliente||r.placa} — ${fFormaLabel(r.forma)} → ${fFormaLabel(novo.forma)}.\nForam ${outrosPag.length+1} lançamentos passados juntos; cada um mantém o valor dele:\n\n`
+      : `Lançamento ${rotuloLanc(r)||'principal'}:\n\n`;
+    if(!confirm(`${cab}${linhasConf.join('\n')}\n\nContinuar?`))return;
+  }
+  novo.valor_pago=parseFloat(document.getElementById('e-vp').value)||null;
+  novo.data_pagamento=document.getElementById('e-dtpag').value||null;
   // Saldo já vem certo do campo — recalcSaldoEdit() mantém e-sl acompanhando
   // Valor/Valor pago/Forma a cada mudança (só fica diferente do automático
   // se o usuário digitar nele por último, o que é escolha dele e prevalece).
   // Na redivisão quem manda é o rateio (sincronizarParcelas recalcula o
   // saldo de cada parcela pela taxa da forma).
-  r.saldo=parseFloat(document.getElementById('e-sl').value)||0;
+  novo.saldo=parseFloat(document.getElementById('e-sl').value)||0;
   const obsDigitado=document.getElementById('e-obs').value||'';
-  r.obs=(obsDigitado||comNota)?`${obsDigitado}${comNota}`:null;
+  novo.obs=(obsDigitado||comNota)?`${obsDigitado}${comNota}`:null;
   document.getElementById('e-com-on').checked=false;
   document.getElementById('e-com').value='';
   document.getElementById('e-com').disabled=true;
+  // Confirmado: agora sim o registro aberto recebe o que foi digitado.
+  Object.assign(r,novo);
   // Número do lançamento principal: quem ainda não tem (lançamento antigo,
   // importado do Excel) ganha o seu agora, e o grupo inteiro passa a
   // compartilhá-lo — daí pra frente as parcelas se acham pelo número, sem
@@ -7947,6 +8037,16 @@ async function saveEdit(){
       dbUpdate(x);
     });
   }
+  // Os outros lançamentos do mesmo pagamento: forma nova, número de
+  // parcelas novo, valor de cada um preservado. O tipo, a placa e o resto
+  // continuam sendo deles (uma avaria não vira locação por causa disso).
+  for(const g of outrosPag){
+    numerarGrupo(g);
+    const nG=nParaGrupo(g), totG=totalGrupo(g);
+    g.forEach(x=>{x.forma=novo.forma;});
+    await sincronizarParcelas(g[0],g,nG,totG,null,obsSemParcela(g[0].obs));
+  }
+  if(outrosPag.length)showToast(`✓ Pagamento de ${r.cliente||r.placa}: ${outrosPag.length+1} lançamentos em ${fFormaLabel(novo.forma)}`);
   // popSel(): a edição pode ter mudado placa, cliente, dono, tipo ou forma —
   // sem reindexar aqui, o autocomplete/datalist ficava um passo atrás do que
   // acabou de ser digitado até a próxima ação em outro lugar do app.
