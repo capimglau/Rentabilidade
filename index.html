@@ -3391,7 +3391,7 @@ body.modo-boletos #btnLinkBoletos { display: none; }
        lá embaixo) pra baixo das ações Selec. Todos/Baixar. -->
   <div class="fbar" style="margin-bottom:10px">
     <input type="text" id="bx-q" class="search-input" style="flex:1;min-width:0;margin-bottom:0" placeholder="Buscar placa, cliente, proprietário, observação, nº do cartão…" autocomplete="off" oninput="renderBaixas()">
-    <button class="btn btn-sm" onclick="mostrarDuplicados()" title="Lançamentos com a mesma placa, período (saída/retorno) e tipo — no cartão parcelado (2x/3x) também precisa vencimento e valor iguais">🔁 Duplicados</button>
+    <button class="btn btn-sm" onclick="mostrarDuplicados()" title="Lançamentos com a mesma placa, período (saída/retorno), cliente e tipo — no cartão parcelado (2x/3x) também precisa vencimento e valor iguais">🔁 Duplicados</button>
   </div>
   <!-- No mobile o botão "Filtros" e este painel são movidos por JS
        (initMobileFilters) pra ficarem ao lado dos botões redondos
@@ -8875,12 +8875,13 @@ function mostrarLancCategoria(dim,key){
   box.innerHTML=totHtml+lancListHtml(items,true);
 }
 // Botão "Duplicados" de Recebimentos: agrupa TODOS os lançamentos (não só
-// os do mês) por placa + período (saída/retorno) + tipo. Isso já pega, por
-// exemplo, um mesmo contrato de boleto lançado duas vezes com a data de
-// pagamento errada. A exceção é o cartão parcelado (Crédito 2x/3x): cada
-// parcela tem mesma placa/período/tipo mas vencimento e valor diferentes,
-// então só entram no grupo se vencimento (prev_pgto) E valor também forem
-// iguais — senão toda venda parcelada apareceria como falso duplicado.
+// os do mês) por placa + período (saída/retorno) + cliente + tipo. Isso já
+// pega, por exemplo, um mesmo contrato de boleto lançado duas vezes com a
+// data de pagamento errada. A exceção é o cartão parcelado (Crédito 2x/3x):
+// cada parcela tem mesma placa/período/cliente/tipo mas vencimento e valor
+// diferentes, então só entram no grupo se vencimento (prev_pgto) E valor
+// também forem iguais — senão toda venda parcelada apareceria como falso
+// duplicado.
 // Mostra cada grupo com seus itens, reaproveitando o modal e os cartões
 // (com edição/baixa/reverter) da busca global.
 function mostrarDuplicados(){
@@ -8895,7 +8896,7 @@ function mostrarDuplicados(){
   const grupos={};
   all.forEach((r,i)=>{
     const parcelado=/2x|3x/.test(fFormaLabel(r.forma||''));
-    const partes=[r.placa||'—',r.saida||'—',r.retorno||'—',r.tipo||'—'];
+    const partes=[r.placa||'—',r.saida||'—',r.retorno||'—',r.cliente||'—',r.tipo||'—'];
     if(parcelado) partes.push(r.prev_pgto||'—',fN(r.valor).toFixed(2));
     const key=partes.join(' · ');
     (grupos[key]=grupos[key]||[]).push({r,i});
@@ -8908,7 +8909,7 @@ function mostrarDuplicados(){
   if(tit) tit.textContent='🔁 Possíveis duplicados';
   const box=document.getElementById('searchResults');
   if(!dupGrupos.length){
-    box.innerHTML='<div class="srow-empty">Nenhum duplicado encontrado — nenhum lançamento repete placa, período e tipo (considerando vencimento e valor no caso de cartão parcelado).</div>';
+    box.innerHTML='<div class="srow-empty">Nenhum duplicado encontrado — nenhum lançamento repete placa, período, cliente e tipo (considerando vencimento e valor no caso de cartão parcelado).</div>';
     return;
   }
   const totalItens=dupGrupos.reduce((a,[,items])=>a+items.length,0);
