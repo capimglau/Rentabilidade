@@ -6829,10 +6829,26 @@ function locPorDonoMes(){
   });
   return Object.entries(sums).map(([dono,v])=>({dono,v})).sort((a,b)=>b.v-a.v);
 }
-function abrirDonoCicloAtual(){
-  const o=mcLocCycleList[mcLocCycleIdx];
-  if(o) openDono(o.dono);
+// Avança manualmente o card "Locação por proprietário" (clique) e reinicia
+// o timer automático a partir daí, pra não emendar um tick automático logo
+// em seguida do clique.
+function mcLocCycleTick(){
+  if(mcLocCycleList.length<2)return;
+  const nextIdx=(mcLocCycleIdx+1)%mcLocCycleList.length;
+  if(!mcCycleStep('#mc-loc-cycle .mc-cycle-stage',mcLocCycleIdx,nextIdx)){clearInterval(mcLocCycleTimer);return;}
+  mcLocCycleIdx=nextIdx;
 }
+function mcLocCycleStart(){
+  clearInterval(mcLocCycleTimer);
+  if(mcLocCycleList.length>1)mcLocCycleTimer=setInterval(mcLocCycleTick,7000);
+}
+function mcLocCycleClick(){
+  mcLocCycleTick();
+  mcLocCycleStart();
+}
+// Mouse em cima pausa a alternância automática; ao sair, ela retoma do zero.
+function mcLocCyclePause(){clearInterval(mcLocCycleTimer);}
+function mcLocCycleResume(){mcLocCycleStart();}
 function frBaseRows(){return allD().filter(r=>r.dono!=='Indefinido'&&(!selDono||r.dono===selDono)&&(r.prev_pgto||'').startsWith(curMes));}
 function frFilteredRows(){return frBaseRows().filter(r=>filterMatch(FRT,r));}
 // Linhas pra desenhar o anel de "dim": aplica os filtros das OUTRAS
@@ -7159,18 +7175,11 @@ function renderResumo(){
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fR(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   document.getElementById('res-m').innerHTML=`
     <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
-    <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="abrirDonoCicloAtual()" title="Locação do mês por proprietário — clique pra abrir o proprietário em tela"><div class="mc-cycle-stage">${locSlides}</div></div>
+    <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="mcLocCycleClick()" onmouseenter="mcLocCyclePause()" onmouseleave="mcLocCycleResume()" title="Locação do mês por proprietário — clique pra passar pro próximo"><div class="mc-cycle-stage">${locSlides}</div></div>
     <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
     <div class="mc amber mc-cycle" id="mc-arec-cycle" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-cycle-stage">${arecSlides}</div></div>
   `;
-  clearInterval(mcLocCycleTimer);
-  if(mcLocCycleList.length>1){
-    mcLocCycleTimer=setInterval(()=>{
-      const nextIdx=(mcLocCycleIdx+1)%mcLocCycleList.length;
-      if(!mcCycleStep('#mc-loc-cycle .mc-cycle-stage',mcLocCycleIdx,nextIdx)){clearInterval(mcLocCycleTimer);return;}
-      mcLocCycleIdx=nextIdx;
-    },7000);
-  }
+  mcLocCycleStart();
   clearTimeout(mcArecCycleTimer);
   mcArecCycleIdx=0;
   if(nVenc>0){
