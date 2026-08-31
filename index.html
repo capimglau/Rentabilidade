@@ -1625,10 +1625,13 @@ body.tip-pinned::before {
    texto longo sem quebra — foi o que deixava a coluna "Atrasados" mais
    larga que as outras no AutoGest antes da correção. */
 .agb-col{ flex:0 0 208px; min-width:0; display:flex; flex-direction:column; }
-/* 4 colunas cabem por vez na tela (o resto rola) — no PC a largura vira
+/* 3 colunas cabem por vez na tela (o resto rola) — no PC a largura vira
    fração do próprio board (que ocupa 100% do .agb-wrap), não um px fixo,
-   pra sempre fechar em exatamente 4 nessa faixa de tela. */
-@media (min-width:761px){ .agb-board{ width:100%; } .agb-col{ flex-basis:calc((100% - 36px)/4); } }
+   pra sempre fechar em exatamente 3 nessa faixa de tela. Mesma contagem da
+   Agenda Mensal do Sistema Estilo/AutoGest (.agk2-day-col lá, 3 colunas +
+   "Atrasados" fixa) — pedido do usuário pra igualar a aparência entre os
+   dois apps. Dois gaps de 12px (ver .agb-board) entre 3 colunas = 24px. */
+@media (min-width:761px){ .agb-board{ width:100%; } .agb-col{ flex-basis:calc((100% - 24px)/3); } }
 .agb-col-hd{ display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 11px; border-radius:12px; background:color-mix(in srgb, var(--ink) 4%, var(--card)); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
 .agb-col-hd[onclick]{ cursor:pointer; }
 .agb-col.agb-atrasados .agb-col-hd{ background:color-mix(in srgb, var(--red) 10%, var(--card)); border-color:color-mix(in srgb, var(--red) 30%, transparent); }
@@ -1654,7 +1657,7 @@ body.tip-pinned::before {
    transform. Só no PC: no mobile a coluna rola junto com as outras (tela
    estreita demais pra sobrar espaço com ela fixa ocupando um pedaço fixo
    da largura o tempo todo). */
-@media (min-width:761px){ .agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:8px 0 10px -8px rgba(0,0,0,.14); } }
+@media (min-width:761px){ .agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:10px 0 12px -8px rgba(0,0,0,0.12); } }
 .agb-col-body{ display:flex; flex-direction:column; gap:7px; }
 .agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
 /* No mobile a coluna do dia mostra só os 3 primeiros cards; o resto fica
@@ -1692,32 +1695,51 @@ body.tip-pinned::before {
   .agb-card-stack-badge{ display:none; }
   .agb-col-more{ display:flex !important; }
 }
-/* Fundo pastel + relevo "3d" iguais aos cards da Agenda Mensal do
-   AutoGest (.agk2-ev-card): degradê tom-sobre-tom entre --ev-l/--ev-d
-   (setados inline por card, conforme o tipo do lançamento — ver
-   agbTipoTone/agbCardHtml) + sombra com realce no topo (inset) e queda
-   suave embaixo. Sem --ev-l/--ev-d (não deveria acontecer, sempre setados)
-   cai no cinza neutro do --card. Cards mais baixos que a v1: padding e
-   margens internas enxutas. */
+/* Fundo pastel + relevo "3d" EXATAMENTE iguais aos cards da Agenda Mensal do
+   Sistema Estilo/AutoGest (.agk2-ev-card): mesmas duas fórmulas de degradê
+   (claro/escuro, com o "+5% de branco" nas pontas) e mesma sombra dupla
+   (inset de brilho no topo + sombra de contato + sombra de queda tingida da
+   cor da família) — pedido do usuário pra igualar a aparência entre os dois
+   apps, não só imitar. --ev-l/--ev-d setados inline por card, conforme o
+   tipo do lançamento (ver agbTipoTone/agbCardHtml). Sem eles (não deveria
+   acontecer, sempre setados) cai no cinza neutro do --card. */
 .agb-card{ position:relative; border-radius:12px; padding:8px 26px 7px 10px; cursor:pointer; transition:transform .1s ease, box-shadow .15s ease;
-  background:linear-gradient(165deg, var(--ev-l,var(--card)), color-mix(in srgb, var(--ev-l,var(--card)) 55%, var(--ev-d,var(--card)) 45%));
+  background:linear-gradient(165deg, color-mix(in srgb, white 5%, color-mix(in srgb, white 22%, var(--ev-l,var(--card)))), color-mix(in srgb, white 5%, color-mix(in srgb, var(--ev-l,var(--card)) 40%, var(--ev-d,var(--card)) 60%)));
   border:1px solid color-mix(in srgb, var(--ev-d,var(--line)) 24%, transparent);
-  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06); }
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--ev-d,#000) 45%, transparent); }
+html[data-theme="dark"] .agb-card{
+  background:linear-gradient(165deg, color-mix(in srgb, white 5%, color-mix(in srgb, var(--ev-l,var(--card)) 88%, black 12%)), color-mix(in srgb, white 5%, var(--ev-d,var(--card))));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--ev-d,#000) 70%, transparent);
+}
 .agb-card:active{ transform:scale(.97); }
 .agb-card.agb-card-atrasado{ background:color-mix(in srgb, var(--red-soft) 82%, var(--card) 18%); border-color:color-mix(in srgb, var(--red) 28%, transparent); }
 /* Atrasado pulsa forte (chama atenção pro atraso); hoje pulsa bem mais
    sutil (só um lembrete leve, não é urgência) — o anel cresce e desaparece
    por cima da sombra normal do card, sem trocar o fundo/degradê. */
 @keyframes agbPulseAtrasado{
-  0%,100%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--red) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 0 color-mix(in srgb, var(--red) 45%, transparent); }
-  50%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--red) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 6px transparent; }
+  0%,100%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--red) 45%, transparent), 0 0 0 0 color-mix(in srgb, var(--red) 45%, transparent); }
+  50%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--red) 45%, transparent), 0 0 0 6px transparent; }
 }
 .agb-card.agb-card-atrasado{ animation:agbPulseAtrasado 1.7s ease-in-out infinite; }
 @keyframes agbPulseHoje{
-  0%,100%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 0 color-mix(in srgb, var(--blue) 22%, transparent); }
-  50%{ box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06), 0 0 0 4px transparent; }
+  0%,100%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--ev-d,#000) 45%, transparent), 0 0 0 0 color-mix(in srgb, var(--blue) 22%, transparent); }
+  50%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--ev-d,#000) 45%, transparent), 0 0 0 4px transparent; }
 }
 .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animation:agbPulseHoje 2.8s ease-in-out infinite; }
+/* Mesmas duas animações, só com a sombra-base do tema escuro (ver
+   html[data-theme="dark"] .agb-card acima) — sem isso o pulso ficava com a
+   sombra "clara" (ambiente rgba(0,0,0,.10)) mesmo no escuro, destoando um
+   pouco dos cards vizinhos parados. */
+@keyframes agbPulseAtrasadoDark{
+  0%,100%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--red) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--red) 45%, transparent); }
+  50%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--red) 70%, transparent), 0 0 0 6px transparent; }
+}
+@keyframes agbPulseHojeDark{
+  0%,100%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--ev-d,#000) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--blue) 22%, transparent); }
+  50%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--ev-d,#000) 70%, transparent), 0 0 0 4px transparent; }
+}
+html[data-theme="dark"] .agb-card.agb-card-atrasado{ animation-name:agbPulseAtrasadoDark; }
+html[data-theme="dark"] .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animation-name:agbPulseHojeDark; }
 @media (prefers-reduced-motion: reduce) {
   .agb-card.agb-card-atrasado, .agb-card.agb-card-hoje{ animation:none; }
 }
@@ -6142,18 +6164,22 @@ const MES_PT=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov',
 // (AGK2_TONE/AGK2_TIPO_FAMILIA em index.html de lá) — reaproveitada aqui
 // pra diferenciar os cards da Agenda por tipo de lançamento (Locação,
 // Avarias, Lavagem etc.), com o mesmo esquema claro/escuro.
+// Valores EXATOS de AGK2_TONE (index.html do Sistema Estilo/AutoGest) — antes
+// esta paleta era só "inspirada" nela, com hex próprios; agora são os mesmos
+// pares claro/escuro por família, pedido do usuário pra igualar de verdade a
+// aparência entre os dois apps (não só o esquema geral).
 const AGB_TONE={
   light:{
-    verde:{l:'#E2E9E5',d:'#89A998'}, vermelho:{l:'#ECDEDC',d:'#B08581'},
-    azul:{l:'#E2E5E9',d:'#8997A9'}, roxo:{l:'#E5E2E9',d:'#9689A9'},
-    ambar:{l:'#E9E6E2',d:'#A99D89'}, ciano:{l:'#E2E7E9',d:'#89A3A9'},
-    rosa:{l:'#E9E2E5',d:'#A98998'}, indigo:{l:'#E2E3E9',d:'#898BA9'}
+    verde:{l:'#D3D7D2',d:'#7F9079'}, vermelho:{l:'#D9D3D4',d:'#977E83'},
+    azul:{l:'#D5D7DA',d:'#808B98'}, roxo:{l:'#D7D7D7',d:'#909090'},
+    ambar:{l:'#DAD4CE',d:'#A0876E'}, ciano:{l:'#D1D9DA',d:'#70989E'},
+    rosa:{l:'#DDD8D0',d:'#B29E84'}, indigo:{l:'#D4D4DA',d:'#8484A0'}
   },
   dark:{
-    verde:{l:'#81A494',d:'#28362D'}, vermelho:{l:'#BE908B',d:'#472E2A'},
-    azul:{l:'#8190A4',d:'#282E3A'}, roxo:{l:'#8E81A4',d:'#302838'},
-    ambar:{l:'#A4978A',d:'#3A322A'}, ciano:{l:'#819DA4',d:'#28363A'},
-    rosa:{l:'#A48190',d:'#3A282E'}, indigo:{l:'#8185A4',d:'#282A3A'}
+    verde:{l:'#758D70',d:'#232F21'}, vermelho:{l:'#543740',d:'#28191E'},
+    azul:{l:'#344558',d:'#161E29'}, roxo:{l:'#424242',d:'#1E1E1E'},
+    ambar:{l:'#54483C',d:'#2C241D'}, ciano:{l:'#3F515A',d:'#1C2529'},
+    rosa:{l:'#544C3C',d:'#2C2619'}, indigo:{l:'#3A3A48',d:'#191922'}
   }
 };
 const AGB_TIPO_FAMILIA={
