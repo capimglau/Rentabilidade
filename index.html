@@ -2940,8 +2940,13 @@ details[open] summary::before { transform: rotate(90deg); }
   @media (min-width: 1024px) {
     .mrow, #res-m { gap: 10px; }
   }
-  .mc { border: 1px solid rgba(255,255,255,.65); border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04); padding: 10px 11px; }
-  .mc:hover { transform: none; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+  /* box-shadow: SEM override aqui — usa var(--card-shadow), mesma sombra
+     dupla "vidro" do resto do app (antes esta regra achatava o efeito só
+     no mobile, com uma sombra fraca de duas camadas sem inset — era por
+     isso que "os primeiros painéis abaixo do cabeçalho" (os 4 cards do
+     Resumo) pareciam sem o efeito no celular). */
+  .mc { border: 1px solid rgba(255,255,255,.65); border-radius: 14px; padding: 10px 11px; }
+  .mc:hover { transform: none; }
   .mc::before, .mc::after { display: none; }
   .mc-icon { font-size: 13px; margin-bottom: 4px; }
   /* Rótulo/valor/legenda: SEM override aqui também — mesmo tamanho da
