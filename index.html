@@ -5422,6 +5422,15 @@ const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agost
 const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 const fR = v => v==null?'—':'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+/* Mesmo tratamento de centavos da Estilo (BRLValue lá): centavos menores,
+   mais leves e um pouco mais claros que o valor principal — não muda o
+   texto, só a apresentação, então só serve pra HTML (innerHTML), nunca pra
+   `title=`/`textContent`/alert (aí teria que ser fR, texto puro, senão a
+   tag <span> aparece literalmente escrita). font-size em "em": herda do
+   elemento que contém, funciona em qualquer contexto sem precisar de um
+   tamanho base fixo (diferente do BRLValue, que recebe `size` porque é um
+   componente React próprio). */
+const fRH = v => { if(v==null)return '—'; const n=parseFloat(v); const neg=n<0; const partes=Math.abs(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).split(','); return (neg?'-':'')+'R$ '+partes[0]+'<span style="font-size:.6em;font-weight:600;opacity:.55;margin-left:1px">,'+(partes[1]||'00')+'</span>'; };
 const fN = v => parseFloat(v)||0;
 // Data de hoje em horário LOCAL. Com toISOString() (UTC) o app virava o dia às
 // 21h de Brasília: o que vencia amanhã aparecia como "de hoje" e o que vencia
@@ -5841,8 +5850,8 @@ function renderBaixas(){
 
   // Metrics (compactos — sem 3ª linha)
   document.getElementById('baixa-metrics').innerHTML=`
-    <div class="mc amber"><div class="mc-label">A receber no mês</div><div class="mc-value">${fR(totPend)}</div></div>
-    <div class="mc green"><div class="mc-label">Recebido no mês</div><div class="mc-value">${fR(totRec)}</div></div>
+    <div class="mc amber"><div class="mc-label">A receber no mês</div><div class="mc-value">${fRH(totPend)}</div></div>
+    <div class="mc green"><div class="mc-label">Recebido no mês</div><div class="mc-value">${fRH(totRec)}</div></div>
     <div class="mc blue"><div class="mc-label">Vencem hoje</div><div class="mc-value">${nHoje}</div></div>
     <div class="mc red"><div class="mc-label">Já vencidos</div><div class="mc-value">${nVenc}</div></div>
   `;
@@ -6344,7 +6353,7 @@ function agbCardHtml(grp,dia,hiddenCount){
     ${editBtn}
     <p class="agb-card-title">${esc(grp.cliente||'—')}</p>
     ${(tipo||parc)?`<div class="agb-card-tags">${tipo?`<span class="agb-tag">${esc(tipo)}</span>`:''}${parc?`<span class="agb-tag agb-tag-parc" title="Parcela ${parc.atual} de ${parc.total} do mesmo lançamento — as outras aparecem em dias diferentes">◐ ${parc.atual}/${parc.total}</span>`:''}</div>`:''}
-    <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fR(grp.total)}</span></div>
+    <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fRH(grp.total)}</span></div>
     ${stackBadge}
   </div>`;
   if(!hiddenCount)return cardHtml;
@@ -6683,7 +6692,7 @@ function verMaisTip(el){
 // Valor por extenso no desktop e abreviado no celular (o CSS escolhe qual
 // aparece). Sem isso os dois valores estouram a coluna e espremem a barra.
 const fRk=v=>{const n=fN(v);return n>=1000?'R$ '+(n/1000).toFixed(1).replace('.',',')+'k':'R$ '+Math.round(n);};
-const vDuplo=v=>`<b class="v-full">${fR(v)}</b><b class="v-curto">${fRk(v)}</b>`;
+const vDuplo=v=>`<b class="v-full">${fRH(v)}</b><b class="v-curto">${fRk(v)}</b>`;
 // Mesma ideia do vDuplo, mas pro nome: por extenso no desktop, só o primeiro
 // nome no celular (o CSS escolhe qual aparece) — evita truncar nomes longos.
 const primeiroNome=nome=>String(nome||'').trim().split(/\s+/)[0]||nome;
@@ -6801,12 +6810,12 @@ function renderBoletosPainel(rows){
     <div class="bol-resumo-stat afazer" onclick="event.stopPropagation();verBoletosFiltro('afazer')" title="Ver só os boletos a emitir">
       <span class="bol-resumo-n">${afazer}</span>
       <span class="bol-resumo-lbl">a emitir</span>
-      <span class="bol-resumo-v">${fR(totFazer)}</span>
+      <span class="bol-resumo-v">${fRH(totFazer)}</span>
     </div>
     <div class="bol-resumo-stat feitos" onclick="event.stopPropagation();verBoletosFiltro('feitos')" title="Ver só os boletos emitidos">
       <span class="bol-resumo-n">${feitos}</span>
       <span class="bol-resumo-lbl">emitidos</span>
-      <span class="bol-resumo-v">${fR(totFeitos)}</span>
+      <span class="bol-resumo-v">${fRH(totFeitos)}</span>
     </div>
     <div class="bol-resumo-arrow" onclick="toggleBoletosExpand()" title="${bolExpandido?'Ocultar':'Ver'} os boletos, um a um">${bolExpandido?'▲ ocultar':'▼ ver boletos'}</div>
   </div>`;
@@ -7024,7 +7033,7 @@ function frxItemsFor(dim){
   return list.map(it=>{
     const isOutros=it.key==='Outros';
     return {
-      key:it.key, value:it.value, valueLabel:fR(it.value),
+      key:it.key, value:it.value, valueLabel:fRH(it.value),
       color:isOutros?FR_OUTROS:FR_PALETTE[it.rank%FR_PALETTE.length],
       selected:it.sel, locked:isOutros,
     };
@@ -7160,7 +7169,7 @@ function frUpdateTotal(){
   const activeCount=FR_ORDER.reduce((s,d)=>s+(FRT[d].size?1:0),0);
   const lbl=document.getElementById('frTotalLabel'), val=document.getElementById('frTotalValue'), sub=document.getElementById('frTotalSub');
   if(lbl)lbl.textContent=frBasis==='comp'?'Total previsto':frBasis==='pend'?'Total a receber':'Total recebido';
-  if(val)val.textContent=fR(grand);
+  if(val)val.innerHTML=fRH(grand);
   if(sub)sub.textContent=rows.length+' lançamento'+(rows.length===1?'':'s')+
     (activeCount?' · '+activeCount+' filtro'+(activeCount===1?'':'s')+' ativo'+(activeCount===1?'':'s'):'');
 }
@@ -7242,17 +7251,17 @@ function renderResumo(){
   // "Locação · mês") — só o nome muda de card pra card, o valor e a
   // legenda "Locação · mês" ficam por baixo, dentro do próprio slide.
   const locSlides=mcLocCycleList.length
-    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label">${esc(o.dono)}</div><div class="mc-value">${fR(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
+    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label">${esc(o.dono)}</div><div class="mc-value">${fRH(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
     : `<div class="mc-cycle-slide on"><div class="mc-label">—</div><div class="mc-value">R$ 0,00</div><div class="mc-sub">Sem locação no mês</div></div>`;
   // "A receber" também alterna: total pendente do mês e, quando há algo
   // vencido, o quanto disso já passou do prazo — mesmo esquema do card de
   // proprietário, só que sempre 2 slides (nunca cycla se não há vencido).
-  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fR(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
-    (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fR(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
+  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
+    (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   document.getElementById('res-m').innerHTML=`
-    <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fR(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
+    <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="mcLocCycleClick()" onmouseenter="mcLocCyclePause()" onmouseleave="mcLocCycleResume()" title="Locação do mês por proprietário — clique pra passar pro próximo"><div class="mc-cycle-stage">${locSlides}</div></div>
-    <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fR(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
+    <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
     <div class="mc amber mc-cycle" id="mc-arec-cycle" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-cycle-stage">${arecSlides}</div></div>
   `;
   mcLocCycleStart();
@@ -7451,9 +7460,9 @@ function renderFluxo(){
   const [cy,cm] = curMes.split('-');
   document.getElementById('fc-mes-label').textContent = `${MF[parseInt(cm)-1]} ${cy}`;
   document.getElementById('fc-summary').innerHTML = `
-    <div class="mc green" style="flex:1;min-width:130px"><div class="mc-label">Total recebido</div><div class="mc-value">${fR(totRec)}</div></div>
-    <div class="mc amber" style="flex:1;min-width:130px"><div class="mc-label">A receber</div><div class="mc-value">${fR(totPend)}</div></div>
-    <div class="mc blue" style="flex:1;min-width:130px"><div class="mc-label">Previsto (líquido)</div><div class="mc-value">${fR(totRec+totPend)}</div></div>
+    <div class="mc green" style="flex:1;min-width:130px"><div class="mc-label">Total recebido</div><div class="mc-value">${fRH(totRec)}</div></div>
+    <div class="mc amber" style="flex:1;min-width:130px"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totPend)}</div></div>
+    <div class="mc blue" style="flex:1;min-width:130px"><div class="mc-label">Previsto (líquido)</div><div class="mc-value">${fRH(totRec+totPend)}</div></div>
   `;
 
   // Tabela
