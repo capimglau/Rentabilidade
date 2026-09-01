@@ -15,6 +15,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Poppins:wght@700;800&display=swap');
+/* APP-FONT-IBM-PLEX: fonte do app inteiro trocada de DM Sans pra IBM Plex Sans
+   (pedido do usuário: "mesmo esquema de fontes... e a fonte IBM da Estilo" —
+   mesma técnica usada no index.html do Sistema Estilo/AutoGest, ver lá o
+   comentário "APP-FONT-IBM-PLEX"). O @import da DM Sans acima continua no
+   arquivo — reverter é só apagar este bloco (até "APP-FONT-IBM-PLEX-END") e
+   o @import da IBM Plex Sans logo abaixo, sem perder nada.
+   :not() nos 3 elementos com fonte monoespaçada DE PROPÓSITO (placa, hora do
+   lançamento no histórico, valor do prêmio) — são alinhamento tabular
+   deliberado (dígitos de largura igual), não "fonte esquecida" a padronizar;
+   diferente do Sistema Estilo, que não tem nenhum uso de monoespaçada e por
+   isso não precisou dessa exceção. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+body, body *:not(.placa):not(.lc-ro-hora):not(.prem-input){ font-family:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif !important; }
+/* APP-FONT-IBM-PLEX-END */
 
 :root {
   --ink: #0c0c0f;
@@ -94,7 +108,11 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(160deg, #dfe7f2 0%, #eef0f6 40%, #e9e4f0 100%);
+  /* Mesmo cinza chapado do fundo claro do Sistema Estilo/AutoGest (--c-bg/
+     body{background} de lá, #eef0f6) — pedido do usuário. Era um degradê
+     diagonal (azulado/lilás nas pontas); o body já tinha #eef0f6 sólido por
+     baixo (ver body{background} acima), então bastava tirar o degradê. */
+  background: #eef0f6;
   pointer-events: none;
   font-size: 14px;
   line-height: 1.5;
@@ -1668,30 +1686,37 @@ body.tip-pinned::before {
    @media (min-width:761px) mais abaixo. */
 .agb-col-more{ display:none; flex-direction:column; gap:7px; margin-top:14px; }
 .agb-col.agb-col-open .agb-col-more{ display:flex; }
-.agb-card.agb-card-stack{
-  margin-bottom:12px;
-  box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,.5),
-    0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent),
-    0 1px 4px rgba(0,0,0,.06),
-    0 6px 0 -2px color-mix(in srgb, var(--ev-d,var(--card)) 32%, var(--ev-l,var(--card)) 68%),
-    0 11px 0 -3px color-mix(in srgb, var(--ev-d,var(--card)) 52%, var(--ev-l,var(--card)) 48%);
+/* Baralho: MESMO efeito (e mesmo CSS, portado 1:1) do
+   .agk2-ev-baralho-wrap/.agk2-ev-ghost da Agenda Mensal do Sistema
+   Estilo/AutoGest — fantasmas IRMÃOS reais no DOM (não box-shadow em
+   camadas, que era a versão anterior deste arquivo), colocados ANTES do
+   cartão de verdade (topo do baralho) dentro de um wrapper com
+   overflow:visible. Sendo irmãos anteriores no DOM, sem z-index em nenhum
+   dos dois, o cartão real (que vem depois) pinta por cima naturalmente. */
+.agb-baralho-wrap{ position:relative; overflow:visible; margin-bottom:12px; }
+.agb-ev-ghost{
+  position:absolute; inset:0; border-radius:12px; pointer-events:none;
+  background:linear-gradient(165deg, color-mix(in srgb, var(--ev-l) 70%, var(--ev-d) 30%), color-mix(in srgb, var(--ev-l) 25%, var(--ev-d) 75%));
+  border:1px solid color-mix(in srgb, var(--ev-d) 30%, var(--line));
+  box-shadow:0 6px 12px -8px color-mix(in srgb, var(--ev-d) 30%, transparent);
 }
-.agb-card.agb-card-stack.agb-card-atrasado{
-  box-shadow:
-    inset 0 1.5px 0 rgba(255,255,255,.5),
-    0 8px 14px -12px color-mix(in srgb, var(--red) 35%, transparent),
-    0 1px 4px rgba(0,0,0,.06),
-    0 6px 0 -2px color-mix(in srgb, var(--red) 24%, var(--red-soft) 76%),
-    0 11px 0 -3px color-mix(in srgb, var(--red) 40%, var(--red-soft) 60%);
+/* Sem rotação nem deslocamento lateral: só desce e estreita, como carta
+   espiando por baixo (rotação + card largo lê como cunha torta, não pilha). */
+.agb-ev-ghost-1{ transform:translateY(5px) scaleX(0.965); opacity:0.9; }
+.agb-ev-ghost-2{ transform:translateY(10px) scaleX(0.93); opacity:0.55; }
+html[data-theme="dark"] .agb-ev-ghost{
+  border-color:rgba(255,255,255,0.18);
+  box-shadow:0 6px 14px -6px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.10);
 }
-.agb-col.agb-col-open .agb-card.agb-card-stack{ box-shadow:none; margin-bottom:0; }
+.agb-col.agb-col-open .agb-ev-ghost{ display:none; }
+.agb-col.agb-col-open .agb-baralho-wrap{ margin-bottom:0; }
 .agb-card-stack-badge{ position:absolute; right:10px; bottom:-9px; z-index:2; padding:2px 8px; border-radius:99px;
   font-size:10.5px; font-weight:800; color:#fff; background:color-mix(in srgb, var(--ink) 88%, transparent);
   box-shadow:0 2px 5px rgba(0,0,0,.18); cursor:pointer; }
 .agb-col.agb-col-open .agb-card-stack-badge{ display:none; }
 @media (min-width:761px){
-  .agb-card.agb-card-stack{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,.5), 0 8px 14px -12px color-mix(in srgb, var(--ev-d,#000) 35%, transparent), 0 1px 4px rgba(0,0,0,.06); margin-bottom:0; }
+  .agb-ev-ghost{ display:none; }
+  .agb-baralho-wrap{ margin-bottom:0; }
   .agb-card-stack-badge{ display:none; }
   .agb-col-more{ display:flex !important; }
 }
@@ -1751,7 +1776,10 @@ html[data-theme="dark"] .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animati
   background:color-mix(in srgb, var(--ev-d,var(--ink)) 14%, transparent); color:var(--ev-tag,var(--ink3)); }
 .agb-card-edit svg{ width:12px; height:12px; }
 .agb-card-edit:active{ transform:scale(.9); }
-.agb-card-title{ margin:0 0 4px; font-size:12.5px; font-weight:700; color:var(--ink); line-height:1.25; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+/* Tamanhos iguais aos do cartão da Agenda Mensal do Sistema Estilo
+   (.agk2-ev-title/.agk2-ev-val/.agk2-ev-sub) — título/valor 13px, detalhe
+   11px (eram 12.5/12.5/10.5). */
+.agb-card-title{ margin:0 0 4px; font-size:13px; font-weight:600; color:var(--ink); line-height:1.25; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 .agb-card-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
 .agb-tag{ padding:2px 7px; border-radius:99px; font-size:9.5px; font-weight:700; background:color-mix(in srgb, var(--ev-d,var(--blue)) 16%, var(--card)); color:var(--ev-tag,var(--blue)); white-space:nowrap; }
 /* Selo de parcela (2/3 etc.): vazado em vez de preenchido, pra não brigar
@@ -1760,8 +1788,8 @@ html[data-theme="dark"] .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animati
    categoria de cor. */
 .agb-tag-parc{ background:transparent; border:1px solid color-mix(in srgb, var(--ev-tag,var(--blue)) 55%, transparent); }
 .agb-card-foot{ display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
-.agb-card-sub{ font-size:10.5px; color:var(--ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.agb-card-val{ font-size:12.5px; font-weight:800; color:var(--ink); white-space:nowrap; }
+.agb-card-sub{ font-size:11px; font-weight:500; color:var(--ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.agb-card-val{ font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; }
 .agb-card.agb-card-atrasado .agb-card-val{ color:var(--red); }
 
 /* A Agenda (ou o calendário do mês) ocupa a largura toda do conteúdo em
@@ -5553,7 +5581,7 @@ function mkC(id,cfg){if(CH[id])CH[id].destroy();const c=document.getElementById(
 function vGrad(context,cFrom,cTo){const ch=context.chart,area=ch.chartArea;if(!area)return cFrom;const g=ch.ctx.createLinearGradient(0,area.top,0,area.bottom);g.addColorStop(0,cFrom);g.addColorStop(1,cTo);return g;}
 // Qualidade/identidade visual padrão dos gráficos
 if(window.Chart){
-  Chart.defaults.font.family="'DM Sans', -apple-system, sans-serif";
+  Chart.defaults.font.family="'IBM Plex Sans', -apple-system, sans-serif";
   Chart.defaults.font.size=11;
   Chart.defaults.color='#6b6b7a';
   Chart.defaults.devicePixelRatio=Math.max(2, window.devicePixelRatio||1);
@@ -6286,13 +6314,15 @@ function agbCardHtml(grp,dia,hiddenCount){
       onclick="event.stopPropagation();openEdit(${idx1})">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
     </button>`:'';
-  // Card "topo do baralho": é um card de verdade (o 3º da coluna), só que
-  // com sombras extras (ver .agb-card-stack) simulando bordas de outros
-  // cards espiando embaixo, mais um selo "+N" clicável que abre o resto —
-  // sem criar nenhum card novo só pra representar a pilha.
-  const stackClass=hiddenCount?' agb-card-stack':'';
+  // Card "topo do baralho": é um card de verdade (o último visível da
+  // coluna), envolto por dois FANTASMAS irmãos reais no DOM (.agb-ev-ghost,
+  // ANTES dele) espiando atrás — mesmo efeito (e mesmo CSS, ver
+  // .agb-baralho-wrap/.agb-ev-ghost) do baralho da Agenda Mensal do Sistema
+  // Estilo/AutoGest (.agk2-ev-baralho-wrap/.agk2-ev-ghost lá), trocado da
+  // sombra em camadas que este app usava antes — mais um selo "+N" clicável
+  // que abre o resto. Sem criar nenhum card novo só pra representar a pilha.
   const stackBadge=hiddenCount?`<span class="agb-card-stack-badge" onclick="event.stopPropagation();toggleAgbDeck(this)" title="Ver mais ${hiddenCount} lançamento(s)">+${hiddenCount}</span>`:'';
-  return `<div class="agb-card${atrasado?' agb-card-atrasado':''}${hoje?' agb-card-hoje':''}${stackClass}" role="button" tabindex="0"
+  const cardHtml=`<div class="agb-card${atrasado?' agb-card-atrasado':''}${hoje?' agb-card-hoje':''}" role="button" tabindex="0"
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
@@ -6303,13 +6333,20 @@ function agbCardHtml(grp,dia,hiddenCount){
     <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fR(grp.total)}</span></div>
     ${stackBadge}
   </div>`;
+  if(!hiddenCount)return cardHtml;
+  return `<div class="agb-baralho-wrap" style="--ev-l:${tone.l};--ev-d:${tone.d}">
+    <div class="agb-ev-ghost agb-ev-ghost-1"></div>
+    <div class="agb-ev-ghost agb-ev-ghost-2"></div>
+    ${cardHtml}
+  </div>`;
 }
-// No mobile só os 3 primeiros cards ficam soltos na coluna; do 4º em diante
-// fica escondido atrás do 3º, que vira o "topo do baralho" (ver
+// No mobile só os 4 primeiros cards ficam soltos na coluna; do 5º em diante
+// fica escondido atrás do 4º, que vira o "topo do baralho" (ver
 // agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir.
 // No PC o CSS (@media min-width:761px) ignora o efeito de baralho e mostra
-// tudo aberto, então o corte de 3 não afeta a tela grande.
-const AGB_COL_LIMITE=3;
+// tudo aberto, então o corte de 4 não afeta a tela grande. (Era 3 — pedido
+// do usuário pra igualar com o padrão do Sistema Estilo/AutoGest.)
+const AGB_COL_LIMITE=4;
 function agbColHtml(cls,dow,dom,itens,dia){
   const grupos=agruparPorCliente(itens);
   const total=itens.reduce((a,r)=>a+fN(r.saldo),0);
@@ -7290,21 +7327,21 @@ function renderResumo(){
     mkC('cAcum',{type:'line',data:{labels:labelsT,datasets:[
       {label:'Recebido',data:rcvA,borderColor:c=>vGrad(c,'#0d6e3e','#52c98c'),backgroundColor:'rgba(13,110,62,.10)',fill:true,borderWidth:3,tension:.35,pointRadius:2.5,pointHoverRadius:5,pointBackgroundColor:'#0d6e3e',pointBorderColor:'#fff',pointBorderWidth:1.5},
       dsAtraso
-    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'DM Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'IBM Plex Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   } else if(resBase==='pend'){
     const aRecA=fatA.map((v,i)=>Math.max(0,v-rcvA[i]));
     if(hdAcum) hdAcum.textContent='A receber × atrasado'+(resAcum?' — acumulado':' — mensal');
     mkC('cAcum',{type:'line',data:{labels:labelsT,datasets:[
       {label:'A receber',data:aRecA,borderColor:c=>vGrad(c,'#d99a0b','#f7c948'),backgroundColor:'rgba(242,176,30,.12)',fill:true,borderWidth:3,tension:.35,pointRadius:2.5,pointHoverRadius:5,pointBackgroundColor:'#d99a0b',pointBorderColor:'#fff',pointBorderWidth:1.5},
       dsAtraso
-    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'DM Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'IBM Plex Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   } else {
     if(hdAcum) hdAcum.textContent='Previsto × recebido × atrasado'+(resAcum?' — acumulado':' — mensal');
     mkC('cAcum',{type:'line',data:{labels:labelsT,datasets:[
       {label:'Previsto',data:fatA,borderColor:c=>vGrad(c,'#d99a0b','#f7c948'),backgroundColor:'rgba(242,176,30,.12)',fill:true,borderWidth:3,tension:.35,pointRadius:2.5,pointHoverRadius:5,pointBackgroundColor:'#d99a0b',pointBorderColor:'#fff',pointBorderWidth:1.5},
       {label:'Recebido',data:rcvA,borderColor:c=>vGrad(c,'#0d6e3e','#52c98c'),backgroundColor:'rgba(13,110,62,.08)',fill:true,borderWidth:3,tension:.35,pointRadius:2.5,pointHoverRadius:5,pointBackgroundColor:'#0d6e3e',pointBorderColor:'#fff',pointBorderWidth:1.5},
       dsAtraso
-    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'DM Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}}); 
+    ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'IBM Plex Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}}); 
   }
 
   document.getElementById('resRecDono').innerHTML=rbDuplo(agrupaPrevRec(rows,r=>r.dono),{rank:true});
@@ -7361,8 +7398,8 @@ function renderResumo(){
       tooltip:{callbacks:{
         title:it=>it[0].label==='Vencidos'?'Vencidos':'Vence em '+it[0].label,
         label:ctx=>' '+fR(ctx.raw)+' · '+(projQt[ctx.dataIndex]||0)+' lançamento(s)'}}},
-    scales:{y:{beginAtZero:true,grace:'14%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}},
-      x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,font:{size:11,family:'DM Sans'}}}}}});
+    scales:{y:{beginAtZero:true,grace:'14%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}},
+      x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,font:{size:11,family:'IBM Plex Sans'}}}}}});
   requestAnimationFrame(()=>centerResScroll(mShown));
 }
 
@@ -7618,7 +7655,7 @@ function renderProp(){
   if(meses.length>12) meses=meses.slice(-12);
   const evoSum={};
   evoBase.forEach(r=>{const k=(r.prev_pgto||'').slice(0,7);if(!k||!r.dono)return;(evoSum[r.dono]||(evoSum[r.dono]={}))[k]=(evoSum[r.dono][k]||0)+liq(r);});
-  mkC('cEvo',{type:'line',data:{labels:meses.map(k=>{const[y,m]=k.split('-');return MN[parseInt(m)-1]+' '+y.slice(2);}),datasets:donos.map(d=>({label:d,data:meses.map(m=>(evoSum[d]&&evoSum[d][m])||0),borderColor:DC[d]||'#888',backgroundColor:(DC[d]||'#888')+'18',tension:.4,fill:true,pointRadius:4,pointHoverRadius:7,pointBackgroundColor:'#fff',pointBorderWidth:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,family:'DM Sans'},boxWidth:10,padding:16,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{y:{ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{dash:[4,4]}},x:{grid:{display:false},ticks:{font:{size:11,family:'DM Sans'}}}}}});
+  mkC('cEvo',{type:'line',data:{labels:meses.map(k=>{const[y,m]=k.split('-');return MN[parseInt(m)-1]+' '+y.slice(2);}),datasets:donos.map(d=>({label:d,data:meses.map(m=>(evoSum[d]&&evoSum[d][m])||0),borderColor:DC[d]||'#888',backgroundColor:(DC[d]||'#888')+'18',tension:.4,fill:true,pointRadius:4,pointHoverRadius:7,pointBackgroundColor:'#fff',pointBorderWidth:2}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,family:'IBM Plex Sans'},boxWidth:10,padding:16,usePointStyle:true}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{y:{ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{dash:[4,4]}},x:{grid:{display:false},ticks:{font:{size:11,family:'IBM Plex Sans'}}}}}});
 }
 
 // ── EXTRATO DO DONO (receitas × despesas) ──
@@ -7744,7 +7781,7 @@ function renderDonoChart(d){
   mkC('cDono',{type:'bar',data:{labels:lbl,datasets:[
     {label:'Receitas',data:meses.map(k=>recM[k]||0),backgroundColor:'rgba(52,199,89,.8)',borderRadius:6},
     {label:'Despesas',data:meses.map(k=>despM[k]||0),backgroundColor:'rgba(255,59,48,.8)',borderRadius:6}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,family:'DM Sans'},boxWidth:10,padding:14,usePointStyle:true}},tooltip:{mode:'index',callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const r=items.find(i=>i.dataset.label==='Receitas'); const e=items.find(i=>i.dataset.label==='Despesas'); return 'Resultado: '+fR((r?r.raw:0)-(e?e.raw:0));}}}},scales:{y:{ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',font:{size:11,family:'DM Sans'}},grid:{color:gridCol()},border:{dash:[4,4]}},x:{grid:{display:false},ticks:{font:{size:11,family:'DM Sans'}}}}}});
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:12,family:'IBM Plex Sans'},boxWidth:10,padding:14,usePointStyle:true}},tooltip:{mode:'index',callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const r=items.find(i=>i.dataset.label==='Receitas'); const e=items.find(i=>i.dataset.label==='Despesas'); return 'Resultado: '+fR((r?r.raw:0)-(e?e.raw:0));}}}},scales:{y:{ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{dash:[4,4]}},x:{grid:{display:false},ticks:{font:{size:11,family:'IBM Plex Sans'}}}}}});
 }
 
 function escHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
