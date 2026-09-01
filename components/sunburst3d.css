@@ -116,7 +116,7 @@
 @keyframes sb3d-hub-troca { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 .sb3d-hub-troca .sb3d-hub-label,
 .sb3d-hub-troca .sb3d-hub-value { animation: sb3d-hub-troca .3s ease both; }
-.sb3d-hub-label { font-size: 8.5px; font-weight: 700; color: var(--ink3); letter-spacing: .04em; text-transform: uppercase; max-width: 88%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb3d-hub-label { font-size: 8.5px; font-weight: 700; color: var(--ink3); letter-spacing: .04em; max-width: 88%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sb3d-hub-value { font-size: 15px; font-weight: 800; color: var(--ink); letter-spacing: -.01em; margin-top: 2px; max-width: 92%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sb3d-hub-sub { display: flex; align-items: center; gap: 4px; font-size: 9.5px; font-weight: 700; color: #16a34a; margin-top: 3px; }
 :root[data-theme="dark"] .sb3d-hub-sub { color: #4ade80; }
@@ -145,7 +145,7 @@
 /* ─── Legenda premium: bolinha, nome, barra, valor, percentual ─── */
 .sb3d-legends { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; }
 .sb3d-legend-block { flex: 1 1 220px; min-width: 200px; }
-.sb3d-legend-title { font-size: 11px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--ink3); margin: 0 0 7px 2px; }
+.sb3d-legend-title { font-size: 11px; font-weight: 800; letter-spacing: .07em; color: var(--ink3); margin: 0 0 7px 2px; }
 .sb3d-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .sb3d-legend li {
   display: grid; grid-template-columns: 10px 1fr auto; grid-template-rows: auto auto; column-gap: 8px;
