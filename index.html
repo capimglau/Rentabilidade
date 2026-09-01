@@ -435,7 +435,9 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   .sidebar-sep { display: block; height: 1px; background: rgba(0,0,0,.07); margin: 6px 12px; width: calc(100% - 24px); }
 }
 .mc {
-  background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%);
+  /* Branco puro (var(--card)), não mais o degradê sutil #eef2f9→branco —
+     pedido do usuário, mesmo padrão do fundo das datas da Agenda. */
+  background: var(--card);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255,255,255,.65);
@@ -459,11 +461,10 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
 #res-m .mc { cursor: pointer; }
 .mc::before { display: none; }
 .mc::after { display: none; }
-.mc.blue  { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
-.mc.green { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
-.mc.red   { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
-.mc.amber { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
-.mc.purple { background: linear-gradient(165deg, #eef2f9 0%, #ffffff 62%); }
+/* .mc.blue/.green/.red/.amber/.purple não precisam mais de background
+   próprio — eram os 5 repetindo o MESMO degradê do .mc base; agora que o
+   fundo é sólido (var(--card)), já herdam certo sem duplicar nada. A cor
+   de cada tipo continua só no valor (.mc-value), como sempre foi. */
 .mc-icon {
   font-size: 18px;
   margin-bottom: 10px;
@@ -3267,7 +3268,7 @@ html[data-theme="dark"] .owner-pills {
   border-color: rgba(255,255,255,.07);
 }
 html[data-theme="dark"] .mc {
-  background: rgba(30,39,56,.85);
+  background: var(--card); /* sólido, não mais translúcido — mesmo espírito "puro" pedido pro claro */
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid rgba(255,255,255,.08);
