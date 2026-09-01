@@ -72,17 +72,20 @@ body, body *:not(.placa):not(.lc-ro-hora):not(.prem-input){ font-family:'IBM Ple
   --shadow-sm: 0 1px 1px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06);
   --shadow-md: 0 2px 16px rgba(0,0,0,.09), 0 1px 4px rgba(0,0,0,.05);
   --shadow-lg: 0 8px 32px rgba(0,0,0,.13), 0 2px 8px rgba(0,0,0,.06);
-  /* Mesma sombra dupla "vidro" dos painéis do Sistema Estilo/AutoGest
-     (.ag-kpi-card lá) — brilho branco de topo (inset) dá o relevo, e DOIS
+  /* Valor EXATO de .ag-kpi-card do Sistema Estilo/AutoGest (mesma fórmula,
+     sem adaptar) — brilho branco de topo (inset) dá o relevo, e DOIS
      box-shadows externos (um de contato, curto e mais forte; outro de
-     queda, mais largo e suave) dão profundidade real, em vez da sombra
-     achatada de duas camadas sem inset que este arquivo usava antes. Tem
-     override pro tema escuro logo abaixo (ver html[data-theme="dark"]).
-     Intensificada (blur maior, menos spread negativo, opacidade maior) —
-     a primeira versão ficava quase imperceptível (spread -14px cortava
-     quase todo o blur de 10px, e as opacidades 0.28/0.10 eram baixas
-     demais pra aparecer contra o fundo claro da página). */
-  --card-shadow: inset 0 1.5px 0 rgba(255,255,255,0.4), 0 14px 28px -10px rgba(0,0,0,0.35), 0 3px 18px rgba(0,0,0,.16);
+     queda, mais largo e suave) dão profundidade real. A Estilo usa ESSE
+     MESMO valor em claro E escuro (só o tema "onix" de lá tem um valor
+     próprio) — por isso aqui também não tem mais override pro tema escuro
+     (tinha um antes, com opacidades bem menores "pra combinar com o
+     escuro", mas isso não existe do lado de lá: era uma das diferenças que
+     faziam o efeito "não aparecer"/ficar diferente do app original). Uma
+     tentativa anterior "intensificou" esses números pra tentar compensar o
+     efeito sumido — na real o problema era um bug à parte (.mc no mobile
+     achatava a sombra, ver comentário mais abaixo), não os valores em si;
+     revertido pro original exato assim que o bug foi achado. */
+  --card-shadow: inset 0 1.5px 0 rgba(255,255,255,0.35), 0 10px 18px -14px rgba(0,0,0,0.28), 0 2px 14px rgba(0,0,0,.10);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 /* overflow-x: clip (não hidden!) — hidden força o overflow-y "invisível"
@@ -445,7 +448,7 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   box-shadow: var(--card-shadow);
   transition: box-shadow .2s, transform .2s;
 }
-.mc:hover { box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.4), 0 14px 28px -10px rgba(0,0,0,0.35), 0 6px 26px rgba(0,0,0,.2); transform: translateY(-1px); }
+.mc:hover { box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.4), 0 14px 22px -14px rgba(0,0,0,0.32), 0 4px 22px rgba(0,0,0,.16); transform: translateY(-1px); } /* valor exato de .ag-kpi-card:hover da Estilo */
 #res-m .mc { cursor: pointer; }
 .mc::before { display: none; }
 .mc::after { display: none; }
@@ -1822,7 +1825,7 @@ html[data-theme="dark"] .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animati
   /* No PC o seletor de tipo (acima do calendário) some do fluxo dos cartões
      de vencidos/hoje — sobra um vão grande entre o resumo do topo e esse
      bloco. Sobe tudo (seletor + o bloco ativo) um pouco pra fechar o vão. */
-  #res-m { margin-bottom: 34.4px; } /* mais +15% em cima do anterior (era 29.9px) — pedido do usuário: "desça mais um pouco a agenda" */
+  #res-m { margin-bottom: 39.6px; } /* mais +15% em cima do anterior (era 34.4px) — pedido do usuário: "pode descer a agenda mais" */
 }
 .vc-datas b { color: var(--red); font-weight: 700; }
 .rb-l { font-size: 12.5px; width: auto; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; padding: 0; margin-right: 12px; }
@@ -2936,12 +2939,17 @@ details[open] summary::before { transform: rotate(90deg); }
   .mrow, #res-m { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
   /* Mais respiro até o card de vencidos/hoje logo abaixo — só no Resumo
      (#res-m), sem mexer no margin-bottom padrão de .mrow noutras telas. */
-  #res-m { margin-bottom: 31.7px; } /* mais +15% em cima do anterior (era 27.6px) — pedido do usuário: "desça mais um pouco a agenda" */
+  #res-m { margin-bottom: 36.5px; } /* mais +15% em cima do anterior (era 31.7px) — pedido do usuário: "pode descer a agenda mais" */
   @media (min-width: 1024px) {
     .mrow, #res-m { gap: 10px; }
   }
-  .mc { border: 1px solid rgba(255,255,255,.65); border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04); padding: 10px 11px; }
-  .mc:hover { transform: none; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+  /* box-shadow: SEM override aqui — usa var(--card-shadow), mesma sombra
+     dupla "vidro" do resto do app (antes esta regra achatava o efeito só
+     no mobile, com uma sombra fraca de duas camadas sem inset — era por
+     isso que "os primeiros painéis abaixo do cabeçalho" (os 4 cards do
+     Resumo) pareciam sem o efeito no celular). */
+  .mc { border: 1px solid rgba(255,255,255,.65); border-radius: 14px; padding: 10px 11px; }
+  .mc:hover { transform: none; }
   .mc::before, .mc::after { display: none; }
   .mc-icon { font-size: 13px; margin-bottom: 4px; }
   /* Rótulo/valor/legenda: SEM override aqui também — mesmo tamanho da
@@ -3217,11 +3225,10 @@ html[data-theme="dark"] {
   --shadow-sm: 0 1px 3px rgba(0,0,0,.45);
   --shadow-md: 0 4px 16px rgba(0,0,0,.55);
   --shadow-lg: 0 12px 40px rgba(0,0,0,.6);
-  /* Mesmo par escuro do Sistema Estilo pro --card-shadow: inset bem mais
-     sutil (0.07 em vez de 0.4 — não há luz ambiente clara no escuro) e as
-     duas sombras externas mais fortes/escuras. Intensificada junto com a
-     versão clara (ver :root) — estava quase imperceptível. */
-  --card-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 3px 10px rgba(0,0,0,0.4), 0 10px 26px rgba(0,0,0,0.5);
+  /* SEM override de --card-shadow aqui — a Estilo usa o mesmo valor em
+     claro e escuro (ver comentário em :root); um dark override próprio,
+     com opacidades bem menores, era uma das diferenças que faziam esse
+     efeito ficar diferente do app original. */
   background: #131c2c;
 }
 html[data-theme="dark"] body { background: #131c2c; color: var(--ink); }
