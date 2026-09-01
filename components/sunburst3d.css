@@ -22,8 +22,8 @@
   .sb3d-legend-block { flex-basis: 180px; min-width: 160px; }
   .sb3d-legend-title { font-size: 8.5px; margin-bottom: 4px; }
   .sb3d-legend { gap: 0px; }
-  .sb3d-legend li { padding: 3px 6px; font-size: 11.5px; column-gap: 6px; }
-  .sb3d-legend-val { font-size: 11.3px; }
+  .sb3d-legend li { padding: 3px 6px; font-size: 9.5px; column-gap: 6px; } /* -2px (era 11.5px) */
+  .sb3d-legend-val { font-size: 9.3px; } /* -2px (era 11.3px) */
   .sb3d-legend-bar-wrap { height: 3px; margin-top: 2px; }
   .sb3d-legend-sq { width: 5px; height: 5px; }
   /* Teste: nomes de proprietário com uma fonte "de vitrine" (a mesma
@@ -150,7 +150,7 @@
 .sb3d-legend li {
   display: grid; grid-template-columns: 10px 1fr auto; grid-template-rows: auto auto; column-gap: 8px;
   align-items: center; padding: 6px 7px; border-radius: 10px; cursor: pointer;
-  transition: background .12s, box-shadow .12s; font-size: 14.5px;
+  transition: background .12s, box-shadow .12s; font-size: 12.5px; /* -2px (era 14.5px), pedido do usuário */
 }
 .sb3d-legend li:hover { background: var(--surface); }
 .sb3d-legend li.on { background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--ink); }
@@ -160,7 +160,7 @@
 .sb3d-legend-sq { grid-column: 1; grid-row: 1 / span 2; width: 6px; height: 6px; border-radius: 50%; align-self: center; box-shadow: 0 0 0 1px rgba(255,255,255,.3) inset; }
 .sb3d-legend-nm { grid-column: 2; grid-row: 1; color: var(--ink); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .sb3d-legend-right { grid-column: 3; grid-row: 1; display: flex; align-items: baseline; gap: 6px; justify-self: end; }
-.sb3d-legend-val { color: var(--ink); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; font-family: 'DM Mono', ui-monospace, monospace; }
+.sb3d-legend-val { color: var(--ink); font-size: 12px; /* -2px (era 14px), pedido do usuário */ font-weight: 700; font-variant-numeric: tabular-nums; font-family: 'DM Mono', ui-monospace, monospace; }
 .sb3d-legend-bar-wrap { grid-column: 2 / span 2; grid-row: 2; height: 4px; border-radius: 99px; background: var(--surface); box-shadow: inset 0 1px 1.5px rgba(0,0,0,.06); overflow: hidden; margin-top: 3px; }
 .sb3d-legend-bar { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.22,1,.36,1); box-shadow: 0 0 6px 0 var(--bc, transparent); }
 
