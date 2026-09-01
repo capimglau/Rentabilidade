@@ -455,18 +455,22 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   margin-bottom: 10px;
   display: block;
 }
+/* Mesmo padrão de tamanho dos cards KPI do Sistema Estilo (.ag-kpi-card lá:
+   rótulo 11px/600, valor 15px/700, texto de apoio 9px) — o valor era grande
+   demais (24px) e dominava o card, com o rótulo pequeno demais (10.5px) e
+   sem destaque; pedido do usuário: "diminua os valores e aumente os textos".
+   Mesmo tamanho em qualquer tela (a Estilo não diferencia PC/mobile aqui),
+   então os overrides de #res-m (ver abaixo) não mexem mais nesses 3. */
 .mc-label {
-  font-size: 10.5px;
-  font-weight: 700;
-    letter-spacing: .08em;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--ink3);
   margin-bottom: 7px;
 }
 .mc-label .mes { font-size: 1em; color: var(--red); }
 .mc-value {
-  font-size: 24px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: -.04em;
   line-height: 1;
 }
 .mc.blue .mc-value { color: var(--blue); }
@@ -474,7 +478,7 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
 .mc.red .mc-value { color: var(--red); }
 .mc.amber .mc-value { color: var(--amber); }
 .mc.purple .mc-value { color: var(--purple); }
-.mc-sub { font-size: 11.5px; color: var(--ink3); margin-top: 6px; }
+.mc-sub { font-size: 9px; color: var(--ink3); margin-top: 6px; }
 /* Card de Locação por proprietário: alterna o dono exibido dentro do mesmo
    espaço do card, um saindo de lado (esquerda) enquanto o próximo entra do
    lado oposto (direita) — efeito de esteira/carrossel, em vez de listar
@@ -517,9 +521,8 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   #res-m { margin-bottom: 50px; }
   #res-m .mc { padding: 10px 18px; }
   #res-m .mc-icon { font-size: 14px; margin-bottom: 8px; }
-  #res-m .mc-label { font-size: 9.5px; margin-bottom: 5px; }
-  #res-m .mc-value { font-size: 17px; }
-  #res-m .mc-sub { font-size: 10px; margin-top: 5px; }
+  /* Rótulo/valor/legenda: SEM override aqui — .mc-label/.mc-value/.mc-sub já
+     usam o mesmo tamanho da Estilo em qualquer tela (ver definição base). */
   /* .mrow é um grid (align-items:stretch por padrão): todo card da fileira
      estica pra igualar o mais alto. O mais alto era o card giratório
      (Locação por proprietário/A receber), cujo .mc-cycle-stage tem
@@ -2726,9 +2729,9 @@ details[open] summary::before { transform: rotate(90deg); }
   #res-m { margin-top: 4.8px; }
   .mrow, #res-m { grid-template-columns: 1fr 1fr; gap: 12px; }
   .mrow .mc { padding: 10px 14px; border-radius: 16px; }
-  .mrow .mc-label { font-size: 7.5px; letter-spacing: .04em; margin-bottom: 5px; }
-  .mrow .mc-value { font-size: 15px; letter-spacing: -.03em; }
-  .mrow .mc-sub { font-size: 8.5px; margin-top: 4px; }
+  /* Rótulo/valor/legenda: SEM override aqui também — mesmo tamanho da
+     Estilo (11/15/9px, ver base .mc-label/.mc-value/.mc-sub) em qualquer
+     tela, inclusive nesse breakpoint mais estreito (2 colunas). */
   /* Os cards que cyclam (Locação, A receber/Atrasado) reservam um
      min-height só pra bater com a altura natural dos cards estáticos
      (Previsto/Recebido) — não precisa de folga extra pra fonte grande de
@@ -2935,17 +2938,8 @@ details[open] summary::before { transform: rotate(90deg); }
   .mc:hover { transform: none; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
   .mc::before, .mc::after { display: none; }
   .mc-icon { font-size: 13px; margin-bottom: 4px; }
-  .mc-label { font-size: 8.5px; letter-spacing: .04em; margin-bottom: 3px; }
-  .mc-value { font-size: 16px; letter-spacing: -.03em; }
-  .mc-sub { font-size: 9.5px; margin-top: 2px; }
-  /* Só os 4 painéis do topo do Resumo (Total previsto/recebido, A receber,
-     Locação) — rótulo e legenda um pouco maiores que o resto do app, sem
-     mexer no valor em R$. */
-  /* Letter-spacing menor que o padrão (.08em) mesmo com a fonte maior de
-     volta: sem o "Total" (só "Previsto · Ago/26") cabe numa linha só de
-     novo, mas o letter-spacing cheio ainda estourava. */
-  #res-m .mc-label { font-size: 11.5px; letter-spacing: .04em; }
-  #res-m .mc-sub { font-size: 11.5px; }
+  /* Rótulo/valor/legenda: SEM override aqui também — mesmo tamanho da
+     Estilo (11/15/9px) em qualquer tela, mobile incluído (ver base). */
   .pcard { border: none; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
   .pcard.venc::before { background: #ff3b30; }
   .pcard.hoje-card::before { background: #1f5fa8; }
@@ -3090,7 +3084,8 @@ details[open] summary::before { transform: rotate(90deg); }
      ficam visíveis desde 760px pra baixo agora, com o layout compacto de
      lá (ver acima) — sem precisar de outra regra conflitante aqui. */
   .mrow, #res-m { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .mc-value { font-size: 18px; }
+  /* .mc-value: sem override aqui também — mesmo 15px da Estilo em qualquer
+     tela (ver base .mc-value). */
 }
 @keyframes fadeOp { from { opacity: 0; } to { opacity: 1; } }
 /* só opacidade: animar transform aqui quebraria o swipe (CSS anim > style inline).
