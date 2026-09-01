@@ -77,8 +77,12 @@ body, body *:not(.placa):not(.lc-ro-hora):not(.prem-input){ font-family:'IBM Ple
      box-shadows externos (um de contato, curto e mais forte; outro de
      queda, mais largo e suave) dão profundidade real, em vez da sombra
      achatada de duas camadas sem inset que este arquivo usava antes. Tem
-     override pro tema escuro logo abaixo (ver html[data-theme="dark"]). */
-  --card-shadow: inset 0 1.5px 0 rgba(255,255,255,0.35), 0 10px 18px -14px rgba(0,0,0,0.28), 0 2px 14px rgba(0,0,0,.10);
+     override pro tema escuro logo abaixo (ver html[data-theme="dark"]).
+     Intensificada (blur maior, menos spread negativo, opacidade maior) —
+     a primeira versão ficava quase imperceptível (spread -14px cortava
+     quase todo o blur de 10px, e as opacidades 0.28/0.10 eram baixas
+     demais pra aparecer contra o fundo claro da página). */
+  --card-shadow: inset 0 1.5px 0 rgba(255,255,255,0.4), 0 14px 28px -10px rgba(0,0,0,0.35), 0 3px 18px rgba(0,0,0,.16);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 /* overflow-x: clip (não hidden!) — hidden força o overflow-y "invisível"
@@ -441,7 +445,7 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   box-shadow: var(--card-shadow);
   transition: box-shadow .2s, transform .2s;
 }
-.mc:hover { box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.35), 0 10px 18px -14px rgba(0,0,0,0.28), 0 4px 22px rgba(0,0,0,.12); transform: translateY(-1px); }
+.mc:hover { box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.4), 0 14px 28px -10px rgba(0,0,0,0.35), 0 6px 26px rgba(0,0,0,.2); transform: translateY(-1px); }
 #res-m .mc { cursor: pointer; }
 .mc::before { display: none; }
 .mc::after { display: none; }
@@ -1684,7 +1688,7 @@ body.tip-pinned::before {
 .agb-dow{ font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap; }
 .agb-col.agb-atrasados .agb-dow{ color:var(--red); }
 .agb-col.agb-hoje .agb-dow{ color:var(--blue); }
-.agb-dom{ font-size:10.5px; color:var(--ink3); font-weight:500; white-space:nowrap; }
+.agb-dom{ font-size:12.5px; color:var(--ink3); font-weight:500; white-space:nowrap; } /* +2px (era 10.5px), pedido do usuário */
 .agb-count{ flex-shrink:0; min-width:19px; height:19px; padding:0 6px; border-radius:99px; background:color-mix(in srgb, var(--ink) 10%, transparent); font-size:10.5px; font-weight:700; color:var(--ink3); display:flex; align-items:center; justify-content:center; }
 /* Coluna "Atrasados" fixa à esquerda enquanto o board rola de lado — as
    demais colunas passam por baixo dela. position:sticky sozinho falha aqui
@@ -3214,9 +3218,10 @@ html[data-theme="dark"] {
   --shadow-md: 0 4px 16px rgba(0,0,0,.55);
   --shadow-lg: 0 12px 40px rgba(0,0,0,.6);
   /* Mesmo par escuro do Sistema Estilo pro --card-shadow: inset bem mais
-     sutil (0.07 em vez de 0.35 — não há luz ambiente clara no escuro) e as
-     duas sombras externas mais fortes/escuras. */
-  --card-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 1px 2px rgba(0,0,0,0.30), 0 6px 14px rgba(0,0,0,0.40);
+     sutil (0.07 em vez de 0.4 — não há luz ambiente clara no escuro) e as
+     duas sombras externas mais fortes/escuras. Intensificada junto com a
+     versão clara (ver :root) — estava quase imperceptível. */
+  --card-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 3px 10px rgba(0,0,0,0.4), 0 10px 26px rgba(0,0,0,0.5);
   background: #131c2c;
 }
 html[data-theme="dark"] body { background: #131c2c; color: var(--ink); }
