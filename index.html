@@ -442,7 +442,14 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   border-radius: 22px;
   padding: 18px 20px;
   position: relative;
-  overflow: hidden;
+  /* overflow:hidden REMOVIDO: um box-shadow externo (não-inset) é cortado
+     pelo overflow:hidden do PRÓPRIO elemento — é por isso que a sombra
+     dupla não aparecia atrás desses 4 painéis, mesmo com var(--card-shadow)
+     certo. Não precisa dele pra nada aqui: o fundo já respeita border-radius
+     sozinho, os ::before/::after deste seletor já estão desligados
+     (display:none, ver abaixo) e a única coisa que de fato precisava de
+     recorte — o slide do card giratório — já tem overflow:hidden PRÓPRIO em
+     .mc-cycle-stage, um nível mais interno. */
   /* Mesma sombra dupla "vidro" dos painéis do Sistema Estilo (var(--card-shadow),
      ver :root) — brilho de topo (inset) + sombra de contato + sombra de queda. */
   box-shadow: var(--card-shadow);
