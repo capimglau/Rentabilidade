@@ -1667,9 +1667,14 @@ body.tip-pinned::before {
    "Atrasados" fixa) — pedido do usuário pra igualar a aparência entre os
    dois apps. Dois gaps de 12px (ver .agb-board) entre 3 colunas = 24px. */
 @media (min-width:761px){ .agb-board{ width:100%; } .agb-col{ flex-basis:calc((100% - 24px)/3); } }
-.agb-col-hd{ display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 11px; border-radius:12px; background:color-mix(in srgb, var(--ink) 4%, var(--card)); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
+/* Fundo do cabeçalho de cada coluna: branco liso (var(--card)) por padrão —
+   inclusive "Atrasados", que fica só com o texto em vermelho (ver .agb-dow
+   mais abaixo), igual à Agenda Mensal do Sistema Estilo/AutoGest (o
+   cabeçalho lá nunca tinge de vermelho, só o rótulo "Atrasados"). Só "Hoje"
+   mantém o tingido azul — pedido do usuário: "painéis de datas com fundo
+   totalmente branco, com exceção de hoje que mantenha azul". */
+.agb-col-hd{ display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 11px; border-radius:12px; background:var(--card); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
 .agb-col-hd[onclick]{ cursor:pointer; }
-.agb-col.agb-atrasados .agb-col-hd{ background:color-mix(in srgb, var(--red) 10%, var(--card)); border-color:color-mix(in srgb, var(--red) 30%, transparent); }
 .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 10%, var(--card)); border-color:color-mix(in srgb, var(--blue) 30%, transparent); }
 .agb-col-hd-l{ display:flex; align-items:baseline; gap:5px; min-width:0; overflow:hidden; flex-shrink:0; }
 .agb-col-hd-r{ display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; }
