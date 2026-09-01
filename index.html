@@ -1695,12 +1695,15 @@ body.tip-pinned::before {
 @media (min-width:761px){ .agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:10px 0 12px -8px rgba(0,0,0,0.12); } }
 .agb-col-body{ display:flex; flex-direction:column; gap:7px; }
 .agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
-/* No mobile a coluna do dia mostra só os 3 primeiros cards; o resto fica
-   escondido atrás do 3º, que ganha um efeito de baralho (bordas de outros
-   cards espiando embaixo, via box-shadow — sem nenhum elemento novo) e um
-   selo "+N" que abre a lista completa. No PC (>=761px) o efeito some e os
-   cards ficam todos abertos direto, igual antes — ver bloco
-   @media (min-width:761px) mais abaixo. */
+/* Coluna do dia mostra só os primeiros AGB_COL_LIMITE cards (hoje 4); o
+   resto fica escondido atrás do último, que ganha o efeito de baralho
+   (fantasmas espiando atrás, ver .agb-baralho-wrap/.agb-ev-ghost abaixo) e
+   um selo "+N" que abre a lista completa. Vale em QUALQUER tela — igual à
+   Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (pedido
+   do usuário: "ainda são exibidos mais de 4 cards numa data e eles não
+   ficam agrupados, quero o mesmo estilo da Estilo" — antes só valia no
+   mobile; no PC (>=761px) um CSS à parte forçava todos os cards abertos,
+   removido agora). */
 .agb-col-more{ display:none; flex-direction:column; gap:7px; margin-top:14px; }
 .agb-col.agb-col-open .agb-col-more{ display:flex; }
 /* Baralho: MESMO efeito (e mesmo CSS, portado 1:1) do
@@ -1731,12 +1734,6 @@ html[data-theme="dark"] .agb-ev-ghost{
   font-size:10.5px; font-weight:800; color:#fff; background:color-mix(in srgb, var(--ink) 88%, transparent);
   box-shadow:0 2px 5px rgba(0,0,0,.18); cursor:pointer; }
 .agb-col.agb-col-open .agb-card-stack-badge{ display:none; }
-@media (min-width:761px){
-  .agb-ev-ghost{ display:none; }
-  .agb-baralho-wrap{ margin-bottom:0; }
-  .agb-card-stack-badge{ display:none; }
-  .agb-col-more{ display:flex !important; }
-}
 /* Fundo pastel + relevo "3d" EXATAMENTE iguais aos cards da Agenda Mensal do
    Sistema Estilo/AutoGest (.agk2-ev-card): mesmas duas fórmulas de degradê
    (claro/escuro, com o "+5% de branco" nas pontas) e mesma sombra dupla
@@ -6352,12 +6349,11 @@ function agbCardHtml(grp,dia,hiddenCount){
     ${cardHtml}
   </div>`;
 }
-// No mobile só os 4 primeiros cards ficam soltos na coluna; do 5º em diante
-// fica escondido atrás do 4º, que vira o "topo do baralho" (ver
-// agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir.
-// No PC o CSS (@media min-width:761px) ignora o efeito de baralho e mostra
-// tudo aberto, então o corte de 4 não afeta a tela grande. (Era 3 — pedido
-// do usuário pra igualar com o padrão do Sistema Estilo/AutoGest.)
+// Só os 4 primeiros cards ficam soltos na coluna, em QUALQUER tela; do 5º em
+// diante fica escondido atrás do 4º, que vira o "topo do baralho" (ver
+// agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir. Igual
+// à Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (antes
+// só valia no mobile; o CSS que forçava tudo aberto no PC foi removido).
 const AGB_COL_LIMITE=4;
 function agbColHtml(cls,dow,dom,itens,dia){
   const grupos=agruparPorCliente(itens);
