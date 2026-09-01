@@ -518,7 +518,7 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
    Só no desktop (>=761px): abaixo disso o próprio breakpoint mobile já define
    um #res-m .mc bem mais compacto, e por ter id essa regra venceria o dele. */
 @media (min-width: 761px) {
-  #res-m { margin-bottom: 50px; }
+  #res-m { margin-bottom: 50px; } /* Sobrescrito por outro bloco @media(min-width:761px) mais abaixo neste mesmo arquivo, que vence por vir depois na cascata — é lá que o valor real está (ver comentário "sobra um vão grande"). */
   #res-m .mc { padding: 10px 18px; }
   #res-m .mc-icon { font-size: 14px; margin-bottom: 8px; }
   /* Rótulo/valor/legenda: SEM override aqui — .mc-label/.mc-value/.mc-sub já
@@ -1818,7 +1818,7 @@ html[data-theme="dark"] .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animati
   /* No PC o seletor de tipo (acima do calendário) some do fluxo dos cartões
      de vencidos/hoje — sobra um vão grande entre o resumo do topo e esse
      bloco. Sobe tudo (seletor + o bloco ativo) um pouco pra fechar o vão. */
-  #res-m { margin-bottom: 26px; }
+  #res-m { margin-bottom: 29.9px; } /* +15% (era 26px) — pedido do usuário: "desça a agenda em 15%" */
 }
 .vc-datas b { color: var(--red); font-weight: 700; }
 .rb-l { font-size: 12.5px; width: auto; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; padding: 0; margin-right: 12px; }
@@ -2932,7 +2932,7 @@ details[open] summary::before { transform: rotate(90deg); }
   .mrow, #res-m { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
   /* Mais respiro até o card de vencidos/hoje logo abaixo — só no Resumo
      (#res-m), sem mexer no margin-bottom padrão de .mrow noutras telas. */
-  #res-m { margin-bottom: 24px; }
+  #res-m { margin-bottom: 27.6px; } /* +15% (era 24px) — pedido do usuário: "desça a agenda em 15%" */
   @media (min-width: 1024px) {
     .mrow, #res-m { gap: 10px; }
   }
@@ -5426,11 +5426,12 @@ const fR = v => v==null?'—':'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimu
    mais leves e um pouco mais claros que o valor principal — não muda o
    texto, só a apresentação, então só serve pra HTML (innerHTML), nunca pra
    `title=`/`textContent`/alert (aí teria que ser fR, texto puro, senão a
-   tag <span> aparece literalmente escrita). font-size em "em": herda do
-   elemento que contém, funciona em qualquer contexto sem precisar de um
-   tamanho base fixo (diferente do BRLValue, que recebe `size` porque é um
-   componente React próprio). */
-const fRH = v => { if(v==null)return '—'; const n=parseFloat(v); const neg=n<0; const partes=Math.abs(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).split(','); return (neg?'-':'')+'R$ '+partes[0]+'<span style="font-size:.6em;font-weight:600;opacity:.55;margin-left:1px">,'+(partes[1]||'00')+'</span>'; };
+   tag <span> aparece literalmente escrita). font-size em calc(em + px):
+   ainda herda proporcionalmente do elemento que contém (funciona em
+   qualquer contexto sem precisar de um tamanho base fixo), mas com um
+   acréscimo fixo em cima — pedido do usuário: "aumente 2px os centavos"
+   (antes era só .6em, sem acréscimo). */
+const fRH = v => { if(v==null)return '—'; const n=parseFloat(v); const neg=n<0; const partes=Math.abs(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).split(','); return (neg?'-':'')+'R$ '+partes[0]+'<span style="font-size:calc(.6em + 2px);font-weight:600;opacity:.55;margin-left:1px">,'+(partes[1]||'00')+'</span>'; };
 const fN = v => parseFloat(v)||0;
 // Data de hoje em horário LOCAL. Com toISOString() (UTC) o app virava o dia às
 // 21h de Brasília: o que vencia amanhã aparecia como "de hoje" e o que vencia
@@ -5695,10 +5696,21 @@ function updateHeader(){
   // Mobile: valores abreviados (R$ 1,2k) — mesmo na segunda linha
   // dedicada, o nome completo ("R$ 107.240,53") não caberia nos 3 chips
   // lado a lado; no desktop, formato completo de sempre.
-  const fmt=window.innerWidth<=760?frAbbrevR:fR;
-  document.getElementById('hPrev').textContent=fmt(pendV+recV);
-  document.getElementById('hPend').textContent=fmt(pendV);
-  document.getElementById('hRec').textContent=fmt(recV);
+  // Desktop usa fRH (centavos menores, igual ao resto do Resumo — antes
+  // ficava com fR/textContent, então os centavos destoavam do padrão dos
+  // outros valores em R$ do app). Mobile continua abreviado (sem centavos
+  // pra mostrar), então segue com textContent normal.
+  const mobile=window.innerWidth<=760;
+  const elPrev=document.getElementById('hPrev'), elPend=document.getElementById('hPend'), elRec=document.getElementById('hRec');
+  if(mobile){
+    elPrev.textContent=frAbbrevR(pendV+recV);
+    elPend.textContent=frAbbrevR(pendV);
+    elRec.textContent=frAbbrevR(recV);
+  }else{
+    elPrev.innerHTML=fRH(pendV+recV);
+    elPend.innerHTML=fRH(pendV);
+    elRec.innerHTML=fRH(recV);
+  }
 }
 
 // ── OWNER PILLS ──
