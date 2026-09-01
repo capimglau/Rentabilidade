@@ -1818,7 +1818,7 @@ html[data-theme="dark"] .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animati
   /* No PC o seletor de tipo (acima do calendário) some do fluxo dos cartões
      de vencidos/hoje — sobra um vão grande entre o resumo do topo e esse
      bloco. Sobe tudo (seletor + o bloco ativo) um pouco pra fechar o vão. */
-  #res-m { margin-bottom: 29.9px; } /* +15% (era 26px) — pedido do usuário: "desça a agenda em 15%" */
+  #res-m { margin-bottom: 34.4px; } /* mais +15% em cima do anterior (era 29.9px) — pedido do usuário: "desça mais um pouco a agenda" */
 }
 .vc-datas b { color: var(--red); font-weight: 700; }
 .rb-l { font-size: 12.5px; width: auto; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; padding: 0; margin-right: 12px; }
@@ -2932,7 +2932,7 @@ details[open] summary::before { transform: rotate(90deg); }
   .mrow, #res-m { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
   /* Mais respiro até o card de vencidos/hoje logo abaixo — só no Resumo
      (#res-m), sem mexer no margin-bottom padrão de .mrow noutras telas. */
-  #res-m { margin-bottom: 27.6px; } /* +15% (era 24px) — pedido do usuário: "desça a agenda em 15%" */
+  #res-m { margin-bottom: 31.7px; } /* mais +15% em cima do anterior (era 27.6px) — pedido do usuário: "desça mais um pouco a agenda" */
   @media (min-width: 1024px) {
     .mrow, #res-m { gap: 10px; }
   }
