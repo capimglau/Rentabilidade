@@ -1621,10 +1621,18 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    mesmo arquivo, então com especificidade igual eles venciam por ordem de
    cascata e o padding/borda daqui nunca chegavam a valer. Dobrar a classe
    sobe a especificidade sem precisar de !important. */
-.rc-view-toggle-ico.rc-view-toggle-ico { width: auto; display: inline-flex; align-items: center; padding: 2px; border-width: 1px; }
-/* +10% de ALTURA (pedido do usuário), largura intocada: o padding
-   horizontal (9px) fica como estava — só o vertical cresce (3 -> 4.3px,
-   +1.3px de cada lado = +2.6px no total, 26 -> 28.6px de trilho). */
+/* [altura-explicita] height:29px + box-sizing:border-box, não mais uma
+   ALTURA IMPLÍCITA somando borda+padding+ícone (2+4+8,6+14=28,6px): a soma
+   batia certinho no Chromium (usado pra testar aqui), mas o usuário
+   reportou por foto o trilho MENOR que a busca ao lado num iPhone de
+   verdade — o motor do WebKit não arredonda esses fracionários (4,3px de
+   padding, ícone de 14px) exatamente igual ao Chromium, e a soma de várias
+   parcelas fracionárias é onde essa divergência entre motores mais
+   aparece. Uma altura explícita elimina a soma: o navegador não tem o que
+   arredondar diferente, o trilho fecha em 29px em QUALQUER motor. .agb-busca
+   e .rc-cal-tipo-sel (mesma altura-alvo) recebem o mesmo tratamento
+   abaixo, pelo mesmo motivo. */
+.rc-view-toggle-ico.rc-view-toggle-ico { width: auto; display: inline-flex; align-items: center; padding: 2px; border-width: 1px; box-sizing: border-box; height: 29px; }
 .rc-view-toggle-ico.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 4.3px 9px; }
 .rc-view-toggle-ico.rc-view-toggle-ico svg { width: 14px; height: 14px; display: block; }
 /* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
@@ -1654,15 +1662,17 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    quando o toggle some no PC (o seletor de tipo continua à direita). */
 .rc-cal-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .rc-cal-topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-/* Mesma altura do trilho Agenda/Calendário e da busca ao lado (29px):
-   media 28px antes (border 1,5 + padding 6+6 + a caixa de linha do texto de
-   12px/700) — 1px mais baixo que os outros dois, "menor que os outros do
-   lado" (pedido do usuário). +0,5px de cada lado no padding vertical fecha
-   a conta. */
+/* Mesma altura do trilho Agenda/Calendário e da busca ao lado — height
+   explícita (ver [altura-explicita] em .rc-view-toggle-ico acima), não
+   mais a soma de borda+padding+linha de texto: essa soma tinha uma parcela
+   a mais que os motores de renderização calculam de formas ligeiramente
+   diferentes (a altura da caixa de linha do próprio TEXTO da option, que
+   Chromium e WebKit não arredondam sempre igual pro mesmo font-size/peso).
+   height:29px tira essa parcela variável da conta. */
 .rc-cal-tipo-sel {
   font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink2);
   background: var(--card); border: 1.5px solid var(--line); border-radius: 999px;
-  padding: 6.5px 26px 6.5px 12px; cursor: pointer;
+  padding: 6.5px 26px 6.5px 12px; cursor: pointer; box-sizing: border-box; height: 29px;
   appearance: none; -webkit-appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
   background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
@@ -1676,10 +1686,14 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    base 120 -> 96px) e com tipo/ícone um ponto menores. Continua elástica
    entre o teto e a base — quem manda na largura é o espaço que sobra na
    linha do seletor Agenda/Calendário.
-   Altura: acompanha o trilho ao lado — 6 -> 7.3px de padding vertical
-   quando ele subiu de 26 para 28.6px (+10%, pedido do usuário). Os dois
-   têm que fechar no MESMO valor — ver .rc-view-toggle-ico. */
-.agb-busca{ display:flex; align-items:center; gap:5px; flex:1 1 96px; min-width:0; max-width:200px;
+   Altura: height explícita, 29px (ver [altura-explicita] em
+   .rc-view-toggle-ico acima) — não mais padding vertical somado à caixa
+   de linha do <input>, que é justamente a parcela que diverge entre
+   motores de renderização (Chromium vs WebKit) pro mesmo font-size, e foi
+   o que deixou a busca visivelmente mais alta que o trilho ao lado num
+   iPhone de verdade, mesmo com os dois medindo igual no Chromium usado
+   pra testar aqui. */
+.agb-busca{ display:flex; align-items:center; gap:5px; flex:1 1 96px; min-width:0; max-width:200px; box-sizing:border-box; height:29px;
   background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7.3px 9px; }
 .agb-busca-ic{ width:12px; height:12px; flex-shrink:0; color:var(--ink3); }
 .agb-busca-input{ flex:1; min-width:0; border:none; background:none; outline:none; font-family:inherit; font-size:11px; font-weight:600; color:var(--ink); }
