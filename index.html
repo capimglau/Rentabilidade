@@ -48,6 +48,19 @@ body, body *:not(.placa):not(.lc-ro-hora):not(.prem-input){ font-family:'IBM Ple
   --surface: #f2f2f7;
   --surface2: #e5e5ea;
   --card: #ffffff;
+  /* [paleta-pastel-paineis] Versão FECHADA/pastel das cores vivas, usada
+     nos VALORES dos painéis da Dashboard — mesmos hex de _flagCorPastel()
+     do Sistema Estilo, que é o que tinge os painéis do Dashboard de lá e a
+     bandeira dos cards da Agenda. As vivas (--blue/--green/--red/--amber/
+     --purple) continuam existindo pro resto do app (botões, chips, alertas):
+     estas aqui são só a família "sóbria" dos painéis, na mesma proporção de
+     matiz das cores da Agenda. */
+  --pastel-blue: #4a6f8a;
+  --pastel-green: #5a8a63;
+  --pastel-red: #8f5060;
+  --pastel-amber: #c08a4a;
+  --pastel-purple: #8a6b8f;
+  --pastel-teal: #4a8f85;
   --blue: #1f5fa8;
   --blue2: #143f6e;
   --blue-soft: #e8f0f9;
@@ -491,17 +504,22 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   color: var(--ink3);
   margin-bottom: 7px;
 }
-.mc-label .mes { font-size: 1em; color: var(--red); }
+/* [paleta-pastel-paineis] O mês no rótulo de "Previsto" era o último
+   respingo de cor viva dentro destes painéis — vai pra família pastel
+   junto com os valores. */
+.mc-label .mes { font-size: 1em; color: var(--pastel-red); }
 .mc-value {
   font-size: 15px;
   font-weight: 700;
   line-height: 1;
 }
-.mc.blue .mc-value { color: var(--blue); }
-.mc.green .mc-value { color: var(--green); }
-.mc.red .mc-value { color: var(--red); }
-.mc.amber .mc-value { color: var(--amber); }
-.mc.purple .mc-value { color: var(--purple); }
+/* [paleta-pastel-paineis] Valores na família pastel, não mais nas cores
+   vivas — mesmo tratamento dos painéis do Dashboard da Estilo. */
+.mc.blue .mc-value { color: var(--pastel-blue); }
+.mc.green .mc-value { color: var(--pastel-green); }
+.mc.red .mc-value { color: var(--pastel-red); }
+.mc.amber .mc-value { color: var(--pastel-amber); }
+.mc.purple .mc-value { color: var(--pastel-purple); }
 .mc-sub { font-size: 9px; color: var(--ink3); margin-top: 6px; }
 /* Card de Locação por proprietário: alterna o dono exibido dentro do mesmo
    espaço do card, um saindo de lado (esquerda) enquanto o próximo entra do
@@ -1278,10 +1296,11 @@ button.day-total:active { opacity: .45; }
 .ms-row:last-child { border-bottom: none; }
 .ms-label { font-size: 12.5px; color: var(--ink3); }
 .ms-value { font-size: 13px; font-weight: 700; }
-.ms-value.blue { color: var(--blue); }
-.ms-value.green { color: var(--green); }
-.ms-value.red { color: var(--red); }
-.ms-value.amber { color: var(--amber); }
+/* [paleta-pastel-paineis] Mesma família dos .mc — é o mesmo tipo de painel. */
+.ms-value.blue { color: var(--pastel-blue); }
+.ms-value.green { color: var(--pastel-green); }
+.ms-value.red { color: var(--pastel-red); }
+.ms-value.amber { color: var(--pastel-amber); }
 
 /* ─── CARD ─── */
 .card {
@@ -1729,7 +1748,12 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    numa primeira tentativa ingênua), o cabeçalho nunca colaria no topo ao
    rolar verticalmente — foi exatamente esse bug que apareceu (e foi
    corrigido) na versão original do AutoGest. */
-.agb-wrap{ max-height:min(560px,70vh); overflow:auto; border-radius:14px; }
+/* Sem barra de rolagem visível (pedido do usuário) — mesmo tratamento do
+   .agk2-board-wrap da Estilo: a rolagem continua funcionando (roda, arrasto,
+   teclado), só o indicador some. Firefox usa scrollbar-width; WebKit/Blink
+   precisam do pseudo-elemento. */
+.agb-wrap{ max-height:min(560px,70vh); overflow:auto; border-radius:14px; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch; }
+.agb-wrap::-webkit-scrollbar{ display:none; }
 /* gap 14px e padding 4px 0 2px (era 12px / 2px 2px 4px) — valores da
    .agk2-board da Estilo. */
 .agb-board{ display:flex; flex-wrap:nowrap; gap:14px; align-items:flex-start; padding:4px 0 2px 0; }
@@ -3338,6 +3362,15 @@ details[open] summary::before { transform: rotate(90deg); }
 .swipe.open .swipe-actions { opacity: 1; transition: opacity 0s; }
 
 html[data-theme="dark"] {
+  /* [paleta-pastel-paineis] No escuro os mesmos papéis pedem tons CLAROS —
+     os pastéis do claro sumiriam contra o fundo. Hex de C_BASE_DARK do
+     Sistema Estilo, o par escuro exato da mesma paleta. */
+  --pastel-blue: #9FBDE6;
+  --pastel-green: #8FCBA3;
+  --pastel-red: #F2A6A0;
+  --pastel-amber: #F4C78C;
+  --pastel-purple: #C9AEDD;
+  --pastel-teal: #9FD3E0;
   --ink: #eef2f8;
   --ink2: #b6c1d2;
   --ink3: #8190a6;
@@ -3406,11 +3439,11 @@ html[data-theme="dark"] .mc {
   border: 1px solid rgba(255,255,255,.08);
   box-shadow: var(--card-shadow);
 }
-html[data-theme="dark"] .mc.blue  { background: rgba(26,37,64,.88); }
-html[data-theme="dark"] .mc.green { background: rgba(17,40,32,.88); }
-html[data-theme="dark"] .mc.red   { background: rgba(42,21,24,.88); }
-html[data-theme="dark"] .mc.amber { background: rgba(38,30,14,.88); }
-html[data-theme="dark"] .mc.purple { background: rgba(32,24,54,.88); }
+/* [paleta-pastel-paineis] Fundo tingido por cor REMOVIDO no escuro: era
+   sobra de antes do "fundo branco puro" pedido pros .mc no tema claro. Com
+   o valor já na cor da família (pastel), um fundo colorido por cima disso
+   é a mesma informação duas vezes — e a Estilo tinge só o valor, nunca o
+   card (ver .ag-kpi-card lá). Todos herdam var(--card) da regra base. */
 html[data-theme="dark"] .pcard,
 html[data-theme="dark"] .swipe .pcard { background: var(--card); }
 html[data-theme="dark"] .pcard:hover,
