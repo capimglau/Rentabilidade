@@ -479,8 +479,12 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
    rótulo 11px/600, valor 15px/700, texto de apoio 9px) — o valor era grande
    demais (24px) e dominava o card, com o rótulo pequeno demais (10.5px) e
    sem destaque; pedido do usuário: "diminua os valores e aumente os textos".
-   Mesmo tamanho em qualquer tela (a Estilo não diferencia PC/mobile aqui),
-   então os overrides de #res-m (ver abaixo) não mexem mais nesses 3. */
+   Mesmo tamanho em qualquer tela (a Estilo não diferencia PC/mobile aqui).
+   Exceção: a fileira do Resumo (#res-m, Previsto→A receber) leva o valor
+   1px menor — ver o override logo abaixo, pedido do usuário. */
+/* Valor 14px (era 15px, −1px) SÓ na fileira do Resumo: as outras .mrow do
+   app (Baixas, Lançamentos) continuam em 15px, que é o padrão da Estilo. */
+#res-m .mc-value { font-size: 14px; }
 .mc-label {
   font-size: 11px;
   font-weight: 600;
@@ -539,7 +543,12 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
    um #res-m .mc bem mais compacto, e por ter id essa regra venceria o dele. */
 @media (min-width: 761px) {
   #res-m { margin-bottom: 50px; } /* Sobrescrito por outro bloco @media(min-width:761px) mais abaixo neste mesmo arquivo, que vence por vir depois na cascata — é lá que o valor real está (ver comentário "sobra um vão grande"). */
-  #res-m .mc { padding: 10px 18px; }
+  /* Fileira mais baixa (pedido do usuário): padding vertical 10→7px e os
+     respiros internos entre rótulo/valor/legenda apertados junto (7→5 e
+     6→4). Só o vertical — o horizontal (18px) fica como estava. */
+  #res-m .mc { padding: 7px 18px; }
+  #res-m .mc-label { margin-bottom: 5px; }
+  #res-m .mc-sub { margin-top: 4px; }
   #res-m .mc-icon { font-size: 14px; margin-bottom: 8px; }
   /* Rótulo/valor/legenda: SEM override aqui — .mc-label/.mc-value/.mc-sub já
      usam o mesmo tamanho da Estilo em qualquer tela (ver definição base). */
@@ -552,7 +561,11 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
      embaixo do texto dos cards estáticos (Previsto, Recebido…) do que em
      cima. Encolher só o mínimo do stage (pro texto menor caber igual)
      encolhe a fileira toda, sem cortar a animação do carrossel. */
-  #res-m .mc-cycle-stage { min-height: 52px; }
+  /* 52→44px junto com o padding acima: é o stage do card giratório que
+     define o piso de altura da fileira inteira (grid com align-items
+     stretch), então sem baixar ele os cards estáticos encolhem e a fileira
+     não. 44px ainda cabe rótulo+valor+legenda no tamanho atual. */
+  #res-m .mc-cycle-stage { min-height: 44px; }
 }
 
 /* ─── BAIXAS LAYOUT ─── */
@@ -1522,7 +1535,11 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 12px; }
 .rc-view-toggle-ico svg { width: 18px; height: 18px; }
 /* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
-.rc-side-by-side { margin-bottom: 42px; }
+/* 42→24px: é este o vão entre a Agenda e o painel de Boletos logo abaixo
+   (pedido do usuário: "suba o painel de boletos para mais perto da
+   agenda"). 24px é o mesmo respiro que a Estilo usa entre seções distintas
+   do Dashboard. */
+.rc-side-by-side { margin-bottom: 24px; }
 .rc-block { display: none; }
 .rc-block .rc-cal-wrap { margin-bottom: 0; }
 .rc-mode-cal .rc-block-cal { display: block; }
