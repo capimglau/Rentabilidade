@@ -1467,10 +1467,16 @@ body.tip-pinned::before {
    os blocos sempre fizeram, o botão só duplicava isso).
    Cores exatamente as da Estilo (C_BASE_LIGHT/C_BASE_DARK): laranja
    #9C5400 / #F4C78C, verde #0F7A3D / #8FCBA3. ── */
+/* SEM caixa própria (fundo/borda/raio/sombra): na Estilo o ledger É o
+   painel, aqui ele mora DENTRO do .card "Boletos do mês", que já desenha a
+   caixa. Com a caixa própria virava card-dentro-de-card — duas bordas quase
+   paralelas que liam como uma barra atravessando a tela, e o bloco encostava
+   no painel de baixo (bug reportado por foto). O respiro horizontal também
+   sai: o padding de 22px do .card já é o respiro certo, e sem ele o filete
+   entre as linhas alinha com a borda do painel, como na Estilo. */
 .bol-ledger{
   --bol-org:#9C5400; --bol-grn:#0F7A3D;
-  background:var(--card); border:1px solid var(--line); border-radius:18px;
-  overflow:hidden; box-shadow:0 1px 12px rgba(0,0,0,0.05); padding:4px 16px 8px;
+  background:none; border:0; border-radius:0; box-shadow:none; padding:0;
 }
 html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .bol-lrow{ display:flex; align-items:center; gap:12px; padding:10px 0; cursor:pointer; }
@@ -1493,7 +1499,6 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 /* No celular tudo sobe um pouco (mesmo "_cp" da Estilo): caixa e respiro
    menores, mas título/subtítulo/valor um pouco maiores que no PC. */
 @media (max-width:760px){
-  .bol-ledger{ padding:4px 14px 6px; }
   .bol-lrow{ padding:8px 0; }
   .bol-lic{ width:30px; height:30px; }
   .bol-ltit{ font-size:13px; }
@@ -1736,6 +1741,9 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .agb-col-hd{ display:flex; flex-direction:column; align-items:stretch; gap:5px; padding:10px 12px; border-radius:14px; background:var(--card); border:1px solid var(--line); margin-bottom:10px; flex-shrink:0; position:sticky; top:0; z-index:2; }
 .agb-col-hd[onclick]{ cursor:pointer; }
 .agb-dh-main{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
+/* A data pode encolher (ellipsis) pra o chip do total, que é o que se lê de
+   relance, nunca ser espremido — por isso min-width:0 aqui e flex-shrink:0
+   no chip (ver .agb-dh-in/.agb-dh-out). */
 .agb-col-hd-l{ display:flex; align-items:baseline; gap:6px; min-width:0; overflow:hidden; }
 .agb-dow{ font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; }
 .agb-dom{ font-size:11.5px; color:var(--ink3); font-weight:700; white-space:nowrap; }
@@ -1754,10 +1762,9 @@ html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in s
 /* Chip de total do dia — .agk2-dh-in/.agk2-dh-out da Estilo. Aqui todo
    lançamento da agenda é a RECEBER, então só a versão "entrada" (verde) é
    usada; a de saída fica definida pra não divergir do original. */
-.agb-dh-tot{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .agb-dh-in, .agb-dh-out{
   font-size:10.5px; font-weight:800; letter-spacing:-0.1px; padding:1px 7px; border-radius:99px;
-  white-space:nowrap; font-variant-numeric:tabular-nums;
+  white-space:nowrap; font-variant-numeric:tabular-nums; flex-shrink:0;
 }
 .agb-dh-in{ background:rgba(52,199,89,0.15); color:#2C7A46; }
 .agb-dh-out{ background:rgba(255,149,0,0.17); color:#8F5600; }
@@ -6598,17 +6605,17 @@ function agbColHtml(cls,dow,dom,itens,dia){
   const cardsHtml=visiveis.map((g,i)=>agbCardHtml(g,dia,(temResto&&i===visiveis.length-1)?resto.length:0)).join('');
   const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia)).join('')}</div>`:'';
   const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
-  // Cabeçalho em DUAS linhas, igual ao .agk2-day-col-head da Estilo: a de
-  // sempre (dia + contagem) e, quando o dia move dinheiro, o chip do total.
-  // Numa linha só, no board do PC (cada dia ocupa 1/3 da largura), data +
-  // total + contagem não cabem lado a lado.
+  // Cabeçalho de UMA linha só (pedido do usuário): data à esquerda com a
+  // contagem de lançamentos logo ao lado, e o chip do total a receber no
+  // canto direito — o total tinha caído pra uma segunda linha. Mesmo
+  // arranjo do .agk2-dh-main da Estilo, que também põe data e valor do dia
+  // nos dois cantos da mesma linha.
   return `<div class="agb-col ${cls}">
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
-        <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
-        <span class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</span>
+        <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}<span class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</span></div>
+        ${total>0.005?`<span class="agb-dh-in" title="A receber no dia">${agbMoedaCurta(total,'+')}</span>`:''}
       </div>
-      ${total>0.005?`<div class="agb-dh-tot"><span class="agb-dh-in" title="A receber no dia">${agbMoedaCurta(total,'+')}</span></div>`:''}
     </div>
     <div class="agb-col-body">${grupos.length?cardsHtml:'<div class="agb-empty">Sem lançamentos</div>'}${moreHtml}</div>
   </div>`;
