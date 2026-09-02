@@ -1752,7 +1752,14 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    .agk2-board-wrap da Estilo: a rolagem continua funcionando (roda, arrasto,
    teclado), só o indicador some. Firefox usa scrollbar-width; WebKit/Blink
    precisam do pseudo-elemento. */
-.agb-wrap{ max-height:min(560px,70vh); overflow:auto; border-radius:14px; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch; }
+/* Teto de 400px/46vh (era 560px/70vh): o painel continua HUGANDO o
+   conteúdo (é max-height, não height) — uma coluna cheia no limite normal
+   de 4 cartões dá ~344px e nem encosta no teto, então nada muda no caso
+   comum. O teto só age quando alguém abre o baralho de um dia (coluna
+   passa de 600px): antes ela esticava o painel até 560px e empurrava o
+   painel de Boletos pra fora da tela do notebook (bug reportado por foto);
+   agora a coluna rola por dentro e a página não cresce junto. */
+.agb-wrap{ max-height:min(400px,46vh); overflow:auto; border-radius:14px; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch; }
 .agb-wrap::-webkit-scrollbar{ display:none; }
 /* gap 14px e padding 4px 0 2px (era 12px / 2px 2px 4px) — valores da
    .agk2-board da Estilo. */
