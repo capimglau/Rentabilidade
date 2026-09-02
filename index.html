@@ -3356,13 +3356,13 @@ details[open] summary::before { transform: rotate(90deg); }
   .stat-pill .val.r { color: var(--pastel-red); }
   .stat-pill .val.g { color: var(--pastel-green); }
 
-  /* Transparência leve com blur (pedido do usuário) — alpha alta o
-     suficiente (.9) pra não deixar o conteúdo de trás legível/"vazando",
-     só um efeito sutil de vidro. */
+  /* Transparência com blur (pedido do usuário) — .9 tinha ficado quase
+     imperceptível (perto de sólido); .72 dá vidro fosco visível mas o
+     blur ainda evita o conteúdo de trás aparecer legível/"vazando". */
   .nav-tabs {
-    background: rgba(255,255,255,.9);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    backdrop-filter: blur(16px) saturate(180%);
+    background: rgba(255,255,255,.72);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    backdrop-filter: blur(18px) saturate(180%);
     border: .5px solid rgba(0,0,0,.07);
     box-shadow: 0 10px 34px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.65);
   }
@@ -3688,7 +3688,7 @@ html[data-theme="dark"] .month-nav { background: var(--surface2); box-shadow: no
 html[data-theme="dark"] .mn-btn { background: transparent; color: var(--ink2); }
 html[data-theme="dark"] .mn-btn:hover { background: rgba(255,255,255,.06); color: var(--ink); }
 html[data-theme="dark"] .mn-label { color: var(--ink); }
-html[data-theme="dark"] .nav-tabs { background: rgba(24,33,52,.9); border: .5px solid rgba(255,255,255,.07); box-shadow: 0 10px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter: blur(16px) saturate(180%); backdrop-filter: blur(16px) saturate(180%); }
+html[data-theme="dark"] .nav-tabs { background: rgba(24,33,52,.72); border: .5px solid rgba(255,255,255,.07); box-shadow: 0 10px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); }
 html[data-theme="dark"] .ntab { color: var(--dock-petroleo); transition: background .18s ease, color .18s ease; }
 html[data-theme="dark"] .ntab.on { color: var(--dock-petroleo); background: rgba(255,255,255,.08); }
 /* .stat-pill sem fundo também no escuro (ver a regra base). */
