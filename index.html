@@ -1783,64 +1783,133 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
   .rc-cal-wrap .cal-v-full { display: none; }
   .rc-cal-wrap .cal-v-curto { display: inline; }
 }
-/* Dia com pago + vencido misturados: a parte pendente fica vermelha (não
-   âmbar), já que também está atrasada — não é só "a receber" normal. */
-.rc-cal-wrap .cal-mix-item.pend.venc { color: var(--pastel-red); }
-/* Dias já concluídos (tudo recebido) ficam bem esmaecidos — fundo bem
-   clarinho (var(--surface), quase se misturando ao fundo da página) e fonte
-   também apagada (var(--ink3)) — pra não competir visualmente com o que
-   ainda precisa de atenção.
-   Antes isso era feito com opacity na célula inteira, mas opacity afeta
-   TODOS os descendentes, inclusive o popup de hover (.cal-daytip), que é
-   posicionado fixo (fora do fluxo) mas continua sendo filho da célula —
-   ficava translúcido e ilegível por cima da grade. Cor/fundo em vez de
-   opacity resolve sem esse efeito colateral. */
-.rc-cal-wrap .cal-cell.cal-ok { background: color-mix(in srgb, var(--green-soft) 35%, var(--surface) 65%); }
-.rc-cal-wrap .cal-cell.cal-ok .cal-val { color: color-mix(in srgb, var(--pastel-green) 40%, var(--card) 60%); }
-/* Contorno bem discreto (em vez de sumir com border-color: transparent),
-   só pra manter a célula com uma borda visível — sem chamar atenção como
-   antes (não é mais na cor do verde). */
-.rc-cal-wrap .cal-cell.cal-ok { border-color: var(--line); }
-/* "A receber" (ainda não vencido) herda a cor forte que "recebido" usava
-   antes de ficar esmaecido — é o que ainda precisa de atenção, então fica
-   em destaque; o já resolvido (acima) é quem passa a ser discreto. Um
-   pouco abaixo do verde cheio/original (que ficava escuro demais), pra
-   cada estado ficar na proporção certa em vez de dois extremos. */
-.rc-cal-wrap .cal-cell.cal-pend { background: color-mix(in srgb, var(--green-soft) 85%, var(--green) 15%); border-color: color-mix(in srgb, var(--green) 30%, transparent); }
-.rc-cal-wrap .cal-cell.cal-pend .cal-val { color: color-mix(in srgb, var(--pastel-green) 80%, var(--ink3) 20%); }
-.rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--pastel-red) 45%, transparent); }
-.rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--pastel-purple) 45%, transparent); }
-/* Fundo vermelho (vencido), verde (vence hoje) e roxo (misto) também um
-   pouco mais escuros que o padrão do app, no mesmo espírito do fundo dos
-   recebidos — mesmo padrão de borda+fundo pra todos os estados coloridos. */
-.rc-cal-wrap .cal-cell.cal-venc { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
-.rc-cal-wrap .cal-cell.cal-mix { background: color-mix(in srgb, var(--purple-soft) 78%, var(--purple) 22%); }
+/* ── Redesenho com a paleta/linguagem visual da Agenda ──
+   A Agenda (agb-card) não pinta o cartão inteiro pela categoria — fica
+   branco/var(--card) com sombra dupla e a cor concentrada num acento (a
+   bandeira). Aqui é o mesmo espírito: a célula do dia volta a ser um
+   cartão claro com sombra leve (em vez de um bloco inteiro tingido) e quem
+   carrega a cor do estado é o VALOR, agora em formato de pílula — mesmo
+   padrão de "chip" arredondado dos totais da Agenda (.agb-dh-in/.agb-dh-out
+   e .agb-ev-atraso, ver acima), com as mesmas cores/rgba daquele componente.
+   O contorno da célula fica só um traço fino tingido, pra dar contexto sem
+   virar um bloco sólido de cor. */
+.rc-cal-wrap .cal-cell, .rc-cal-wrap .cal-week {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 3px rgba(0,0,0,.06);
+}
+html[data-theme="dark"] .rc-cal-wrap .cal-cell, html[data-theme="dark"] .rc-cal-wrap .cal-week {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 1px 3px rgba(0,0,0,.35);
+}
 /* Data (número do dia) sempre em cinza neutro, no canto superior esquerdo
-   da célula — não muda de cor por estado (recebido/vencido/hoje/misto);
-   quem carrega a cor é o valor, não a data. */
+   da célula — não muda de cor por estado (recebido/vencido/misto); só o
+   dia de hoje foge disso (ver .cal-today abaixo). Quem carrega a cor do
+   estado é a pílula do valor, não a data. */
 .rc-cal-wrap .cal-cell { position: relative; }
 .rc-cal-wrap .cal-cell .cal-num {
   position: absolute; top: 5px; left: 7px; width: auto; text-align: left;
   color: var(--ink3) !important; font-weight: 600;
 }
+/* Pílula do valor — mesma forma/peso dos chips da Agenda (border-radius:99px,
+   font-weight:800, padding curto). Sem o "●" antes do valor (herdado do
+   calendário genérico/.cal-mix-item base): a cor de fundo da própria pílula
+   já é o sinal, o bullet ficava redundante. */
+.rc-cal-wrap .cal-cell .cal-val, .rc-cal-wrap .cal-cell .cal-mix-item {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: auto; max-width: 100%; align-self: center;
+  padding: 2px 8px; border-radius: 99px; font-weight: 800;
+}
+.rc-cal-wrap .cal-cell .cal-mix-item::before { content: none; }
+/* Recebido (dia já concluído) — pílula verde discreta: a mesma cor da
+   Agenda (rgba(52,199,89,…)), só num tom mais fraco por já estar resolvido
+   e não precisar competir com o que ainda falta receber. A célula em volta
+   fica lisa (var(--card)), sem tingir. */
+.rc-cal-wrap .cal-cell.cal-ok { background: var(--card); border-color: var(--line); }
+.rc-cal-wrap .cal-cell.cal-ok .cal-val, .rc-cal-wrap .cal-cell .cal-mix-item.rec {
+  background: rgba(52,199,89,.14); color: #2C7A46;
+}
+/* A receber (ainda não vencido) — pílula verde cheia, cor "de entrada" da
+   Agenda (.agb-dh-in): é o que ainda precisa de atenção, fica em destaque.
+   A célula ganha só um verniz bem leve (não mais um bloco cheio), com
+   borda tingida no mesmo tom — dá contexto sem competir com a pílula. */
+.rc-cal-wrap .cal-cell.cal-pend {
+  background: color-mix(in srgb, var(--green-soft) 55%, var(--card) 45%);
+  border-color: color-mix(in srgb, var(--green) 24%, var(--line) 76%);
+}
+.rc-cal-wrap .cal-cell.cal-pend .cal-val {
+  background: rgba(52,199,89,.22); color: #237A43;
+}
+/* Vencido — pílula vermelha, mesma cor do selo de atraso da Agenda
+   (.agb-ev-atraso). Dia com pago + vencido misturados: a parte pendente
+   usa essa mesma pílula vermelha (não verde) — já está atrasada, não é
+   "a receber" normal. */
+.rc-cal-wrap .cal-cell.cal-venc {
+  background: color-mix(in srgb, var(--red-soft) 55%, var(--card) 45%);
+  border-color: color-mix(in srgb, var(--red) 28%, var(--line) 72%);
+}
+.rc-cal-wrap .cal-cell.cal-venc .cal-val, .rc-cal-wrap .cal-cell .cal-mix-item.pend.venc {
+  background: rgba(255,59,48,.16); color: #A8322A;
+}
+.rc-cal-wrap .cal-cell .cal-mix-item.pend:not(.venc) {
+  background: rgba(52,199,89,.22); color: #237A43;
+}
+/* Misto (recebido + a receber no mesmo dia) — acento roxo só no contorno,
+   as duas pílulas (verde do recebido, verde/vermelha do pendente) já dizem
+   o resto; column-ish, uma embaixo da outra, sem disputar espaço. */
+.rc-cal-wrap .cal-cell.cal-mix {
+  background: color-mix(in srgb, var(--purple-soft) 45%, var(--card) 55%);
+  border-color: color-mix(in srgb, var(--purple) 26%, var(--line) 74%);
+}
+html[data-theme="dark"] .rc-cal-wrap .cal-cell.cal-ok .cal-val, html[data-theme="dark"] .rc-cal-wrap .cal-cell .cal-mix-item.rec {
+  background: rgba(52,199,89,.18); color: #8FE0A8;
+}
+html[data-theme="dark"] .rc-cal-wrap .cal-cell.cal-pend .cal-val, html[data-theme="dark"] .rc-cal-wrap .cal-cell .cal-mix-item.pend:not(.venc) {
+  background: rgba(52,199,89,.26); color: #8FE0A8;
+}
+html[data-theme="dark"] .rc-cal-wrap .cal-cell.cal-venc .cal-val, html[data-theme="dark"] .rc-cal-wrap .cal-cell .cal-mix-item.pend.venc {
+  background: rgba(255,120,110,.22); color: #FFD9D5;
+}
+/* Hoje — mesmo tratamento da Agenda pro cabeçalho do dia atual (.agb-hoje):
+   verniz azul suave no fundo + número do dia em azul, no lugar da borda
+   grossa de 2px que destoava do resto (célula "gritando" sozinha na
+   grade). Especificidade (.rc-cal-wrap .cal-cell.cal-today, 3 classes)
+   já vence a regra genérica do calendário base (.cal-cell.cal-today, 2
+   classes) sem precisar de !important. */
+.rc-cal-wrap .cal-cell.cal-today {
+  border-width: 1.5px; border-color: color-mix(in srgb, var(--blue) 35%, var(--line) 65%);
+  background: color-mix(in srgb, var(--blue) 8%, var(--card));
+}
+html[data-theme="dark"] .rc-cal-wrap .cal-cell.cal-today { background: color-mix(in srgb, var(--blue) 16%, var(--card)); }
+.rc-cal-wrap .cal-cell.cal-today .cal-num { color: var(--blue) !important; font-weight: 700; }
+/* Semana (coluna "Sem.") — mesma pílula verde do dia, dentro do cartão da
+   semana, no lugar do bloco verde cheio de antes. */
+.rc-cal-wrap .cal-week { background: var(--surface); border-style: solid; border-color: var(--line); color: var(--ink3); font-weight: 700; }
+.rc-cal-wrap .cal-week.cal-has {
+  background: color-mix(in srgb, var(--green-soft) 40%, var(--card) 60%);
+  border-color: color-mix(in srgb, var(--green) 22%, var(--line) 78%);
+  color: #237A43;
+}
+html[data-theme="dark"] .rc-cal-wrap .cal-week.cal-has {
+  background: color-mix(in srgb, var(--green-soft) 25%, var(--card) 75%);
+  color: #8FE0A8;
+}
 /* Vencido: pisca bem mais devagar e só esmaece (nunca some de vez) — chama
    atenção sem incomodar quem olha o painel o dia inteiro. O dia de hoje é
    propositalmente diferente (mais rápido e some por completo a cada ciclo),
-   pra não se confundir com o vencido. */
+   pra não se confundir com o vencido. Valores no novo tom mais leve
+   (verniz, não bloco cheio) — a pílula do valor já não anima, só o verniz
+   da célula por trás dela. */
 @keyframes rcBlinkRed {
-  0%, 100% { background: color-mix(in srgb, var(--red-soft) 78%, var(--red) 22%); }
-  50% { background: color-mix(in srgb, var(--red-soft) 94%, var(--red) 6%); }
+  0%, 100% { background: color-mix(in srgb, var(--red-soft) 55%, var(--card) 45%); }
+  50% { background: color-mix(in srgb, var(--red-soft) 85%, var(--card) 15%); }
 }
 @keyframes rcBlinkGreen {
-  0%, 100% { background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); border-color: transparent; }
+  0%, 100% { background: color-mix(in srgb, var(--green-soft) 55%, var(--card) 45%); border-color: transparent; }
   50% { background: transparent; }
 }
 .rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 3.4s ease-in-out infinite; }
 .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: rcBlinkGreen 3s ease-in-out infinite; }
-.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-val { color: var(--pastel-green); }
 @media (prefers-reduced-motion: reduce) {
   .rc-cal-wrap .cal-cell.rc-blink { animation: none; }
-  .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
+  .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 55%, var(--card) 45%); }
 }
 
 /* ── Agenda (board) — MESMO tratamento visual da Agenda Mensal do Sistema
