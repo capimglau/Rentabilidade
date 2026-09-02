@@ -1605,7 +1605,10 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    cascata e o padding/borda daqui nunca chegavam a valer. Dobrar a classe
    sobe a especificidade sem precisar de !important. */
 .rc-view-toggle-ico.rc-view-toggle-ico { width: auto; display: inline-flex; align-items: center; padding: 2px; border-width: 1px; }
-.rc-view-toggle-ico.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 3px 9px; }
+/* +10% de ALTURA (pedido do usuário), largura intocada: o padding
+   horizontal (9px) fica como estava — só o vertical cresce (3 -> 4.3px,
+   +1.3px de cada lado = +2.6px no total, 26 -> 28.6px de trilho). */
+.rc-view-toggle-ico.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 4.3px 9px; }
 .rc-view-toggle-ico.rc-view-toggle-ico svg { width: 14px; height: 14px; display: block; }
 /* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
 /* Vão entre a Agenda e o painel de Boletos logo abaixo: 42 → 24 → 12px, em
@@ -1648,11 +1651,11 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    base 120 -> 96px) e com tipo/ícone um ponto menores. Continua elástica
    entre o teto e a base — quem manda na largura é o espaço que sobra na
    linha do seletor Agenda/Calendário.
-   Altura: o respiro vertical foi 6 -> 4px e voltou pra 6px quando o seletor
-   ao lado subiu pra 26px (o de 22px espremia os ícones dele). Os dois têm
-   que fechar no MESMO valor — ver .rc-view-toggle-ico. */
+   Altura: acompanha o trilho ao lado — 6 -> 7.3px de padding vertical
+   quando ele subiu de 26 para 28.6px (+10%, pedido do usuário). Os dois
+   têm que fechar no MESMO valor — ver .rc-view-toggle-ico. */
 .agb-busca{ display:flex; align-items:center; gap:5px; flex:1 1 96px; min-width:0; max-width:200px;
-  background:var(--card); border:1px solid var(--line); border-radius:999px; padding:6px 9px; }
+  background:var(--card); border:1px solid var(--line); border-radius:999px; padding:7.3px 9px; }
 .agb-busca-ic{ width:12px; height:12px; flex-shrink:0; color:var(--ink3); }
 .agb-busca-input{ flex:1; min-width:0; border:none; background:none; outline:none; font-family:inherit; font-size:11px; font-weight:600; color:var(--ink); }
 .agb-busca-input::placeholder{ color:var(--ink3); font-weight:500; }
@@ -6754,6 +6757,10 @@ function agbColHtml(cls,dow,dom,itens,dia){
 function toggleAgbDeck(el){
   const col=el.closest('.agb-col');
   if(col)col.classList.toggle('agb-col-open');
+  // Abrir/fechar o baralho muda a altura da coluna sem passar por
+  // renderRecebHoje (só troca uma classe) — reajusta na hora, sem esperar
+  // o próximo scroll/resize (ver agbAjustaAlturaAtiva).
+  agbAjustaAlturaAtiva();
 }
 // Mesma janela de 90 dias já usada na "Projeção de recebimentos" do
 // Resumo — evita um board infinito com parcelas de contratos longos lá
@@ -6925,6 +6932,8 @@ function baixarTudoDia(dia){
 
 function renderRecebHoje(){
   const el=document.getElementById('recebHoje'); if(!el) return;
+  // Não é aqui que a altura é ajustada — ver agbAjustaAlturaAtiva(), chamada
+  // no fim desta função, depois do innerHTML novo estar no DOM.
   // Refaz o innerHTML inteiro (inclusive a busca da Agenda) a cada render —
   // sem isso o campo perderia o foco a cada tecla digitada, já que o
   // <input> em si é recriado do zero junto com o resto.
@@ -6960,7 +6969,57 @@ function renderRecebHoje(){
     const inp=document.getElementById('agbBuscaInput');
     if(inp){ inp.focus(); if(buscaCursor!=null) inp.setSelectionRange(buscaCursor,buscaCursor); }
   }
+  agbAjustaAlturaAtiva();
 }
+// [altura-coluna-ativa] No mobile, .agb-board é UM ÚNICO flex-row com TODAS
+// as colunas do período lado a lado (a "página" visível é só um recorte
+// horizontal via scroll-snap) — e num flex-row a altura do próprio row é a
+// do item MAIS ALTO dele, mesmo que esse item esteja fora de tela. Uma
+// coluna "Atrasados" com 2 cards herdava a altura de outra coluna bem mais
+// cheia escondida à direita, sobrando um vão vazio enorme antes do painel
+// de Boletos logo abaixo (bug reportado por foto). No PC não existe esse
+// problema: as 3 colunas visíveis são as únicas do row (o resto rola pra
+// fora do grid), então a altura naturalmente corresponde ao que está na
+// tela — por isso o ajuste só roda abaixo de 761px.
+// Mede qual coluna tem mais SOBREPOSIÇÃO HORIZONTAL com o wrap (não a
+// primeira nem a do meio: com swipe rápido pode sobrar mais de uma
+// parcialmente visível) e trava a altura do wrap nela. max-height (CSS)
+// continua valendo por cima disso — abrir o baralho de um dia bem cheio
+// ainda pára no teto de sempre e rola por dentro.
+function agbAjustaAlturaAtiva(){
+  document.querySelectorAll('.agb-wrap').forEach(function(wrap){
+    if(window.innerWidth>760){ wrap.style.height=''; return; }
+    const cols=wrap.querySelectorAll('.agb-col');
+    if(!cols.length){ wrap.style.height=''; return; }
+    const wr=wrap.getBoundingClientRect();
+    let melhorCol=null, melhorSobra=-1;
+    cols.forEach(function(col){
+      const r=col.getBoundingClientRect();
+      const sobra=Math.min(r.right,wr.right)-Math.max(r.left,wr.left);
+      if(sobra>melhorSobra){ melhorSobra=sobra; melhorCol=col; }
+    });
+    if(!melhorCol||melhorSobra<=0){ wrap.style.height=''; return; }
+    wrap.style.height=melhorCol.getBoundingClientRect().height+'px';
+  });
+}
+// Refaz a medição quando: o board rola (troca de dia no carrossel — sob
+// requestAnimationFrame, porque o scroll-snap dispara vários eventos
+// 'scroll' seguidos durante o próprio gesto e só a posição final importa);
+// a janela muda de tamanho (cruzar os 761px liga/desliga o ajuste); ou o
+// usuário abre/fecha o baralho de um dia (toggleAgbDeck só troca uma
+// classe, sem re-render — ver a própria função). Delegado no document
+// (não em .agb-wrap direto) porque o board é redesenhado do zero a cada
+// renderResumo/renderRecebHoje, perderia um listener preso ao elemento
+// antigo.
+let _agbAjustaRaf=null;
+function _agbAjustaAgendada(){
+  if(_agbAjustaRaf) cancelAnimationFrame(_agbAjustaRaf);
+  _agbAjustaRaf=requestAnimationFrame(agbAjustaAlturaAtiva);
+}
+document.addEventListener('scroll', function(e){
+  if(e.target.closest&&e.target.closest('.agb-wrap')) _agbAjustaAgendada();
+}, true);
+window.addEventListener('resize', _agbAjustaAgendada);
 
 // ── Painéis de barra do resumo: previsto × recebido na mesma linha ──
 // Agrupa os lançamentos do mês por uma chave qualquer (dono, tipo, forma,
