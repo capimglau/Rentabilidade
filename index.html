@@ -620,11 +620,15 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
      embaixo do texto dos cards estáticos (Previsto, Recebido…) do que em
      cima. Encolher só o mínimo do stage (pro texto menor caber igual)
      encolhe a fileira toda, sem cortar a animação do carrossel. */
-  /* 52→44px junto com o padding acima: é o stage do card giratório que
-     define o piso de altura da fileira inteira (grid com align-items
-     stretch), então sem baixar ele os cards estáticos encolhem e a fileira
-     não. 44px ainda cabe rótulo+valor+legenda no tamanho atual. */
-  #res-m .mc-cycle-stage { min-height: 44px; }
+  /* [altura-paineis-resumo] 52→44px (comentário antigo) já não cabia:
+     essa conta foi feita ANTES da fonte da fileira crescer +1px (label
+     11→12, legenda 9→10, ver #res-m .mc-label/.mc-sub logo acima) — sem
+     ninguém reajustar o min-height junto, ficou raspando 6px curto do
+     que o texto atual (rótulo+valor+legenda, com os respiros 5px/4px
+     desta mesma regra) realmente precisa. Medido isolado, fora do
+     stage/clip, num <div> comum: 50px de conteúdo. 44 → 54px (medido +4px
+     de folga, mesmo critério usado no ajuste do mobile logo abaixo). */
+  #res-m .mc-cycle-stage { min-height: 54px; }
 }
 
 /* ─── BAIXAS LAYOUT ─── */
@@ -3030,29 +3034,39 @@ details[open] summary::before { transform: rotate(90deg); }
   /* Rótulo/valor/legenda: SEM override aqui também — mesmo tamanho da
      Estilo (11/15/9px, ver base .mc-label/.mc-value/.mc-sub) em qualquer
      tela, inclusive nesse breakpoint mais estreito (2 colunas). */
-  /* [texto-cortado-mobile] Os cards que cyclam (Locação, A receber/
+  /* [altura-paineis-resumo] Padding e respiros internos mais apertados SÓ
+     na fileira do Resumo (#res-m: Previsto/Locação/Recebido/A receber),
+     pedido do usuário ("diminua a altura dos 4 painéis sem cortar
+     texto") — as outras .mrow do app (Baixas, Lançamentos) continuam nos
+     10px/7px/6px de sempre. Mesmos valores já usados e comprovados no
+     bloco desktop (min-width:761px, ver mais abaixo — padding:7px 18px,
+     label margin-bottom:5px, sub margin-top:4px), só que agora também
+     no mobile. O .mc-cycle-stage logo abaixo é remedido pra esse
+     respiro novo, não pro antigo. */
+  #res-m .mc { padding: 7px 14px; }
+  #res-m .mc-label { margin-bottom: 5px; }
+  #res-m .mc-sub { margin-top: 4px; }
+  /* [altura-paineis-resumo] Os cards que cyclam (Locação, A receber/
      Atrasado) reservam um min-height só pra bater com a altura natural
-     dos cards estáticos (Previsto/Recebido). O comentário antigo aqui
-     dizia que "o card cresce sozinho pra acomodar" um texto maior — não
+     dos cards estáticos (Previsto/Recebido). O comentário antigo dizia
+     que "o card cresce sozinho pra acomodar" um texto maior — não
      cresce: .mc-cycle-slide é position:absolute + inset:0 (ver a regra
      base), e um elemento absoluto NÃO empurra o tamanho do próprio pai —
      ele só preenche exatamente a caixa que o pai já tem. Então o que de
      fato limita a altura visível é este min-height (mais o overflow:
      hidden do próprio stage/slide, que cortam qualquer coisa além dele).
-     O +2px mobile-only da fonte (#res-m .mc-label/.mc-value/.mc-sub logo
-     acima) foi revertido — mobile volta a usar os mesmos 12/14/10 do PC.
-     Mesmo assim este min-height segue calibrado por medição direta (não
-     de cabeça): com 12/14/10, o conteúdo real (rótulo+valor+legenda)
-     precisa de 60px num Chromium de mesa. Contra os 52px de antes, 8px a
-     mais já não fecham sem cortar SÓ com esse tamanho de fonte — antes
-     mesmo do +2px que foi revertido, então 52px já estava raspando.
-     +4px de folga (60 → 64px) em cima do medido: da vez passada usei só
-     +1px sobre o medido no Chromium, e mesmo assim a legenda sumiu por
-     inteiro (não só cortou) num WebKit real — motores diferentes não
-     calculam a altura do MESMO texto de forma idêntica, principalmente a
-     caixa de linha (line-box) da fonte. Uma folga maior aqui é o preço de
-     não caçar esse mesmo bug pela terceira vez. */
-  .mc-cycle-stage { min-height: 64px; }
+     Remedido do zero pro padding/margens NOVOS de cima (7px/14px, label
+     5px, sub 4px — pedido do usuário: "diminua a altura dos 4 painéis
+     sem cortar texto"): medido ISOLADO, fora do stage/clip, num <div>
+     comum com o mesmo padding/margens/fonte, o conteúdo (rótulo+valor+
+     legenda) precisa de 50px. +4px de folga (50 → 54px) em vez de medir
+     rente ao osso: da vez passada usei só +1px sobre o medido no
+     Chromium, e mesmo assim a legenda sumiu por inteiro (não só cortou)
+     num WebKit real — motores diferentes não calculam a altura do MESMO
+     texto de forma idêntica, principalmente a caixa de linha (line-box)
+     da fonte. Uma folga maior aqui é o preço de não caçar esse mesmo bug
+     pela terceira vez. */
+  .mc-cycle-stage { min-height: 54px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (agenda/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
