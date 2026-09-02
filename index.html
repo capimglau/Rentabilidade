@@ -1590,18 +1590,22 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .rc-view-toggle.fr-basistoggle { width: auto; box-sizing: border-box; margin: 0; flex: 0 0 auto; }
 .rc-view-toggle button { flex: 1; }
 /* [alinhado-com-a-busca] O seletor Agenda/Calendário fica na MESMA altura
-   da barra de busca ao lado (22px): 14px de ícone + 1px de respiro no botão
-   = 16px, mais 2px de padding do trilho de cada lado e 1px de borda = 22px.
-   Antes eram 43px (ícone de 18 + 8px de padding + trilho de 3px + borda de
-   1,5px), o que deixava os dois ícones visivelmente mais altos que o campo
-   de busca e desalinhados na linha. */
+   da barra de busca ao lado. Antes eram 43px (ícone de 18 + 8px de padding
+   + trilho de 3px + borda de 1,5px), o que o deixava bem mais alto que o
+   campo e desalinhado na linha.
+   Na primeira passada o trilho fechou em 22px e o ícone de 14px ficou
+   espremido contra a borda — "deformado". Agora: ícone 14px (−20% do
+   original, como pedido) + 3px de respiro no botão = 20px, mais 2px de
+   padding do trilho de cada lado e 1px de borda = 26px de trilho (+18%
+   sobre os 22px). A busca ao lado sobe pro mesmo 26px (ver .agb-busca) pra
+   as duas continuarem alinhadas. */
 /* Classe repetida de propósito (.rc-view-toggle-ico.rc-view-toggle-ico):
    .fr-basistoggle e .fr-basistoggle button são declarados MAIS ABAIXO neste
    mesmo arquivo, então com especificidade igual eles venciam por ordem de
    cascata e o padding/borda daqui nunca chegavam a valer. Dobrar a classe
    sobe a especificidade sem precisar de !important. */
 .rc-view-toggle-ico.rc-view-toggle-ico { width: auto; display: inline-flex; align-items: center; padding: 2px; border-width: 1px; }
-.rc-view-toggle-ico.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 1px 9px; }
+.rc-view-toggle-ico.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 3px 9px; }
 .rc-view-toggle-ico.rc-view-toggle-ico svg { width: 14px; height: 14px; display: block; }
 /* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
 /* Vão entre a Agenda e o painel de Boletos logo abaixo: 42 → 24 → 12px, em
@@ -1641,12 +1645,14 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    filtra o que não filtra no modo Calendário. flex:1 com min-width:0 pra
    encolher no mobile em vez de estourar a topbar. */
 /* Barra menor (pedido do usuário): mais estreita (280 -> 200px de teto,
-   base 120 -> 96px), mais baixa (6 -> 4px de respiro vertical, borda 1,5 ->
-   1px) e com tipo/ícone um ponto menores. Continua elástica entre o teto e
-   a base — quem manda na largura é o espaço que sobra na linha do seletor
-   Agenda/Calendário. */
+   base 120 -> 96px) e com tipo/ícone um ponto menores. Continua elástica
+   entre o teto e a base — quem manda na largura é o espaço que sobra na
+   linha do seletor Agenda/Calendário.
+   Altura: o respiro vertical foi 6 -> 4px e voltou pra 6px quando o seletor
+   ao lado subiu pra 26px (o de 22px espremia os ícones dele). Os dois têm
+   que fechar no MESMO valor — ver .rc-view-toggle-ico. */
 .agb-busca{ display:flex; align-items:center; gap:5px; flex:1 1 96px; min-width:0; max-width:200px;
-  background:var(--card); border:1px solid var(--line); border-radius:999px; padding:4px 9px; }
+  background:var(--card); border:1px solid var(--line); border-radius:999px; padding:6px 9px; }
 .agb-busca-ic{ width:12px; height:12px; flex-shrink:0; color:var(--ink3); }
 .agb-busca-input{ flex:1; min-width:0; border:none; background:none; outline:none; font-family:inherit; font-size:11px; font-weight:600; color:var(--ink); }
 .agb-busca-input::placeholder{ color:var(--ink3); font-weight:500; }
@@ -2074,14 +2080,16 @@ html[data-theme="dark"] .agb-ev-ghost{
 /* Halo em volta do traço: o borrão com espalhamento faz a cor sair da linha e
    se dissolver para fora, como no print — não é sombra embaixo, é gradiente
    nas duas bordas. */
-.rb-f-prev { background: var(--bar-rec); box-shadow: 0 0 7px 2px rgba(242,176,30,.30); }
-.rb-f-atr { background: var(--pastel-red); box-shadow: 0 0 7px 2px rgba(191,37,24,.24); }
-.rb-f-rec { background: var(--pastel-green); box-shadow: 0 0 7px 2px rgba(10,100,57,.22); }
-html[data-theme="dark"] .rb-f-prev { box-shadow: 0 0 8px 2px rgba(247,201,72,.24); }
-html[data-theme="dark"] .rb-f-atr { box-shadow: 0 0 8px 2px rgba(255,107,107,.24); }
-html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22); }
+/* [paleta-da-agenda] As tres faixas na mesma familia pastel do resto da
+   Dashboard — "previsto" era a unica que ainda usava o amarelo vivo
+   (--bar-rec). O halo deixa de ser um rgba fixo da cor antiga e passa a ser
+   derivado da propria cor da faixa, senao ele continuaria espalhando o tom
+   vivo em volta de um traco pastel. */
+.rb-f-prev { background: var(--pastel-amber); box-shadow: 0 0 7px 2px color-mix(in srgb, var(--pastel-amber) 30%, transparent); }
+.rb-f-atr { background: var(--pastel-red); box-shadow: 0 0 7px 2px color-mix(in srgb, var(--pastel-red) 26%, transparent); }
+.rb-f-rec { background: var(--pastel-green); box-shadow: 0 0 7px 2px color-mix(in srgb, var(--pastel-green) 24%, transparent); }
 .rb-pt { position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%;
-  background: var(--green); border: 2px solid var(--card); transform: translate(-50%, -50%);
+  background: var(--pastel-green); border: 2px solid var(--card); transform: translate(-50%, -50%);
   box-shadow: 0 0 0 1px rgba(0,0,0,.05); transition: left .6s ease; }
 .rb-v2 { width: 176px; display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; white-space: nowrap; }
 .rb-v2 .rb-rec { color: var(--pastel-green); font-weight: 700; }
@@ -7065,7 +7073,7 @@ function rbDuplo(itens,{rank=false,top=0,label=k=>k}={}){
   // painéis tinha atraso); ele segue visível como faixa vermelha na própria
   // linha, e o hover detalha o valor.
   const leg=`<div class="rb rb-cab"><div class="rb-l"></div><div class="rb-bg rb-bg-vazio"></div>
-    <div class="rb-v rb-v2"><span class="rb-rec"><i style="background:var(--green)"></i>Recebido</span><span class="rb-sep">/</span><span class="rb-prev"><i style="background:var(--bar-rec)"></i>Previsto</span></div></div>`;
+    <div class="rb-v rb-v2"><span class="rb-rec"><i style="background:var(--pastel-green)"></i>Recebido</span><span class="rb-sep">/</span><span class="rb-prev"><i style="background:var(--pastel-amber)"></i>Previsto</span></div></div>`;
   return leg+lista.map(([k,o],i)=>{
     const pct=o.prev>0?Math.min(100,o.rec/o.prev*100):(o.rec>0?100:0);
     const tAtr=o.atr>0?` · atrasado ${fR(o.atr)}`:'';
@@ -7261,12 +7269,20 @@ function renderBoletosPainel(rows){
 // ═══════════════════════════════════════════════════════════════════════
 const FR_ORDER=['dono','tipo'];
 // Paleta categórica fixa (não segue o tema) — mesmo esquema de cores do
-// gráfico "Receita por cliente × Despesa por categoria" do AutoGuest
-// (paleta "Freepik Flat": teal, dourado, carmesim, verde-limão, roxo,
-// terracota, azul-marinho, oliva). "Outros" usa o mesmo tom acastanhado
-// daquele gráfico.
-const FR_PALETTE=['#009DA0','#D9A000','#A32B45','#7FAF3A','#5A3D8C','#B54A1E','#2E5F9A','#916A1F'];
-const FR_OUTROS='#8b7a86';
+// [paleta-da-agenda] As oito cores sao as MESMAS que a Agenda pinta na
+// bandeira dos cards (agbFlagColor: AGB_FLAG_LIGHT pro indigo/vermelho,
+// AGB_TONE.light[fam].d pro resto) — a paleta sage/greige dessaturada que
+// veio do Sistema Estilo. Substitui a "Freepik Flat" vivida (teal, dourado,
+// carmesim, verde-limao, roxo, terracota, azul-marinho, oliva), que era o
+// unico ponto da Dashboard ainda fora da familia.
+// A ORDEM nao e a das familias: as fatias sao coloridas por rank, entao os
+// tons ficam intercalados por matiz (petroleo -> terracota -> azul-cinza ->
+// ambar -> ciano -> areia -> salvia -> indigo) pra duas fatias vizinhas
+// nunca cairem em tons proximos demais.
+const FR_PALETTE=['#6f9089','#8f5060','#808B98','#A0876E','#70989E','#B29E84','#7F9079','#8484A0'];
+// "Outros" no cinza neutro da familia (_flagCorPastel gray do Sistema
+// Estilo) — nao concorre com nenhuma das oito.
+const FR_OUTROS='#7a7d84';
 const FRT=newFilterState();
 let frBasis='comp'; // 'comp' previsto | 'caixa' recebido
 
