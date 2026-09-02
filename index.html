@@ -522,6 +522,10 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
 /* Valor 14px (era 15px, −1px) SÓ na fileira do Resumo: as outras .mrow do
    app (Baixas, Lançamentos) continuam em 15px, que é o padrão da Estilo. */
 #res-m .mc-value { font-size: 14px; }
+/* +1px nos TEXTOS (rótulo e legenda, não o valor — esse já tem seu próprio
+   ajuste acima) da fileira do Resumo: pedido do usuário. */
+#res-m .mc-label { font-size: 12px; }
+#res-m .mc-sub { font-size: 10px; }
 .mc-label {
   font-size: 11px;
   font-weight: 600;
@@ -1634,10 +1638,15 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    quando o toggle some no PC (o seletor de tipo continua à direita). */
 .rc-cal-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .rc-cal-topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+/* Mesma altura do trilho Agenda/Calendário e da busca ao lado (29px):
+   media 28px antes (border 1,5 + padding 6+6 + a caixa de linha do texto de
+   12px/700) — 1px mais baixo que os outros dois, "menor que os outros do
+   lado" (pedido do usuário). +0,5px de cada lado no padding vertical fecha
+   a conta. */
 .rc-cal-tipo-sel {
   font-family: inherit; font-size: 12px; font-weight: 700; color: var(--ink2);
   background: var(--card); border: 1.5px solid var(--line); border-radius: 999px;
-  padding: 6px 26px 6px 12px; cursor: pointer;
+  padding: 6.5px 26px 6.5px 12px; cursor: pointer;
   appearance: none; -webkit-appearance: none;
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
   background-repeat: no-repeat; background-position: right 8px center; background-size: 13px;
@@ -1878,8 +1887,9 @@ html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in s
 /* Chip de total do dia — .agk2-dh-in/.agk2-dh-out da Estilo. Aqui todo
    lançamento da agenda é a RECEBER, então só a versão "entrada" (verde) é
    usada; a de saída fica definida pra não divergir do original. */
+/* +2px (pedido do usuário): 10,5 -> 12,5px. */
 .agb-dh-in, .agb-dh-out{
-  font-size:10.5px; font-weight:800; letter-spacing:-0.1px; padding:1px 7px; border-radius:99px;
+  font-size:12.5px; font-weight:800; letter-spacing:-0.1px; padding:1px 7px; border-radius:99px;
   white-space:nowrap; font-variant-numeric:tabular-nums; flex-shrink:0;
 }
 .agb-dh-in{ background:rgba(52,199,89,0.15); color:#2C7A46; }
@@ -4929,7 +4939,22 @@ async function openLoginModal(){
   // de senha continua ali, intacta — nunca trava o app.
   if(podeBio) setTimeout(()=>tentarBiometriaLogin(true),400);
 }
-function closeLoginModal(){ document.getElementById('mLogin').classList.remove('on'); }
+// [topo-pos-login] "Ao abrir o sistema, não aparece do topo" (pedido do
+// usuário): o campo de senha tem autofocus, e em celular o teclado
+// virtual some empurrando/recolhendo o viewport quando o login termina —
+// o documento pode ficar rolado alguns px mesmo com o overlay do login
+// sendo position:fixed (que por si só não devia afetar o scroll da
+// página por trás). Mesma lógica já aplicada em outros pontos do app pra
+// esse tipo de corrida entre teclado/layout e scroll (ver o
+// window.scrollTo(0,0) no fim do boot() — "o navegador pode tentar
+// restaurar a rolagem anterior assim que a altura da página muda"): reforça
+// na hora E de novo depois da animação de recolher o teclado (~300ms),
+// que corre DEPOIS do fechamento do modal.
+function closeLoginModal(){
+  document.getElementById('mLogin').classList.remove('on');
+  window.scrollTo(0,0);
+  setTimeout(()=>window.scrollTo(0,0),320);
+}
 // silencioso=true na tentativa automática (não mostra erro se cancelar/falhar,
 // já que a tela de senha continua disponível normalmente).
 async function tentarBiometriaLogin(silencioso){
@@ -7766,13 +7791,13 @@ function renderResumo(){
   // recebido/a vencer/atrasado mesmo quando algum deles é bem fino.
   const segGapBorder={borderColor:cardBgCol(),borderWidth:{top:2,left:0,right:0,bottom:0}};
   const dsMes = resBase==='caixa'
-    ? [{label:'Recebido',data:recA,backgroundColor:'#34c759',borderRadius:6,borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92}]
+    ? [{label:'Recebido',data:recA,backgroundColor:pastelGreen(),borderRadius:6,borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92}]
     : resBase==='pend'
-    ? [...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:'#bf2518',stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
-       {label:'A vencer',data:pendA,backgroundColor:'#f0b429',stack:'s',borderRadius:temAtrsMes?{topLeft:6,topRight:6}:6,borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...(temAtrsMes?segGapBorder:{})}]
-    : [{label:'Recebido',data:recA,backgroundColor:'#34c759',stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder},
-       ...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:'#bf2518',stack:'s',borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
-       {label:'A vencer',data:pendA,backgroundColor:'#f0b429',stack:'s',borderRadius:{topLeft:6,topRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}];
+    ? [...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:pastelRed(),stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
+       {label:'A vencer',data:pendA,backgroundColor:pastelAmber(),stack:'s',borderRadius:temAtrsMes?{topLeft:6,topRight:6}:6,borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...(temAtrsMes?segGapBorder:{})}]
+    : [{label:'Recebido',data:recA,backgroundColor:pastelGreen(),stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder},
+       ...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:pastelRed(),stack:'s',borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
+       {label:'A vencer',data:pendA,backgroundColor:pastelAmber(),stack:'s',borderRadius:{topLeft:6,topRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}];
   mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:dsMes},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},plugins:{legend:{display:true,position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},barLabels:{display:true,size:window.innerWidth<=760?14:10,fmt:v=>'R$'+Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>items.length>1?'Total: '+fR(items.reduce((a,it)=>a+(it.raw||0),0)):''}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   // Os painéis de barra mostram previsto E recebido juntos, então não seguem
   // o seletor previsto/recebido (que continua valendo para os gráficos).
@@ -9552,6 +9577,15 @@ function swEnd(e){
 function isDark(){return document.documentElement.getAttribute('data-theme')==='dark';}
 function gridCol(){return isDark()?'rgba(255,255,255,.08)':'#eeece8';}
 function cardBgCol(){return isDark()?'#1e2738':'#ffffff';}
+/* [paleta-da-agenda] Mesmas cores dos --pastel-* (CSS) resolvidas em JS —
+   Canvas/Chart.js não lê custom properties no backgroundColor, então
+   repete os hex aqui, igual gridCol()/cardBgCol() acima. Usadas no
+   gráfico "Faturamento mensal" (cMes: Recebido/Atrasado/A vencer), que
+   era o último gráfico do Resumo ainda nas cores vivas do sistema
+   (#34c759/#bf2518/#f0b429) — pedido do usuário. */
+function pastelGreen(){return isDark()?'#8FCBA3':'#5a8a63';}
+function pastelRed(){return isDark()?'#F2A6A0':'#8f5060';}
+function pastelAmber(){return isDark()?'#F4C78C':'#c08a4a';}
 // Três temas em ciclo: claro (padrão) → escuro → branco total (fundo
 // 100% branco, botões/filtros em vidro cinza — o inverso do claro, onde
 // o fundo é acinzentado e os botões são brancos).
@@ -11161,6 +11195,12 @@ async function boot(){
   // tentar restaurar a rolagem anterior de novo assim que a altura da
   // página muda com os dados carregados).
   window.scrollTo(0,0);
+  // As fontes do Google Fonts podem terminar de carregar DEPOIS deste
+  // ponto e trocar a métrica do texto (fonte de reserva → fonte real) —
+  // esse reflow é outro gatilho pro navegador "restaurar" a rolagem
+  // antiga, igual ao dos dados carregando (comentário acima). document.
+  // fonts.ready cobre esse caso; sem suporte, é um no-op inofensivo.
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>window.scrollTo(0,0));
 }
 // O fundo escurecido (body.tip-pinned::before) é compartilhado por
 // qualquer popup fixado por clique nesta página (barras do Resumo — .rb —
