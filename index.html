@@ -1956,7 +1956,13 @@ html[data-theme="dark"] .rc-cal-wrap .cal-cell, html[data-theme="dark"] .rc-cal-
    bandeira diagonal) sobrava ~130px de texto e cortava quase todo nome de
    cliente em "Mar…", "Trans…". */
 @media (max-width:760px){
-  .agb-wrap{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+  /* touch-action:pan-x trava o gesto de toque só no eixo horizontal —
+     sem isso, um arraste levemente na diagonal (comum no toque) também
+     disparava rolagem vertical junto, fazendo os cartões "balançarem"
+     (pedido do usuário: rolagem só horizontal). overflow continua auto:
+     um dia expandido (baralho aberto) ainda rola verticalmente por
+     mouse/trackpad, só o toque direto no cartão fica travado no eixo X. */
+  .agb-wrap{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; touch-action:pan-x; }
   .agb-col{ flex-basis:100%; scroll-snap-align:center; }
 }
 
