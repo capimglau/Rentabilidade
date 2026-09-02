@@ -223,8 +223,8 @@ body::before {
   flex-shrink: 0;
 }
 .logo em { color: var(--blue); font-style: normal; }
-/* 28 -> 24px (-4px, pedido do usuário). */
-.logo-img { height: 24px; width: auto; display: block; }
+/* 28 -> 24px -> 22px (-2px, pedido do usuário). */
+.logo-img { height: 22px; width: auto; display: block; }
 /* Data ao lado do logo — tamanhos/pesos iguais aos da barra do topo do
    Sistema Estilo (13px/700 no dia da semana, 12px/500 em cinza no resto). */
 /* line-height:1 + flex: com o logo menor, a data precisa se apoiar no
@@ -3082,7 +3082,7 @@ details[open] summary::before { transform: rotate(90deg); }
     gap: 8px;
   }
   .logo { margin: 0 6px 0 0; font-size: 17px; }
-  .logo-img { height: 22px; flex-shrink: 0; }
+  .logo-img { height: 20px; flex-shrink: 0; }
   /* Modo compacto: corta a logo pra mostrar só o "a" (marca), sem o texto
      "AGI Locadora" — abre mais espaço garantido pro mês ao lado. */
   .header.hdr-compact .logo { width: 27px; overflow: hidden; }
