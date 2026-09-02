@@ -4016,23 +4016,23 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
     <div class="cw-scroll"><div class="cw" style="height:260px"><canvas id="cMes" role="img" aria-label="mensal"></canvas></div></div>
   </div>
   <div class="card">
-    <div class="card-hd" id="hdClientes">Top 10 clientes</div>
+    <div class="card-hd" id="hdClientes">Top 5 clientes</div>
     <div id="resClientes"></div>
   </div>
   <div class="card">
-    <div class="card-hd" id="hdRecDono">Por proprietário — previsto × recebido</div>
+    <div class="card-hd" id="hdRecDono">Top 5 proprietários</div>
     <div id="resRecDono"></div>
   </div>
   <div class="card">
-    <div class="card-hd" id="hdTipo">Por tipo</div>
+    <div class="card-hd" id="hdTipo">Top 5 tipos</div>
     <div id="resTipo"></div>
   </div>
   <div class="card">
-    <div class="card-hd" id="hdForma">Por forma de recebimento</div>
+    <div class="card-hd" id="hdForma">Top 5 formas de recebimento</div>
     <div id="resForma"></div>
   </div>
   <div class="card">
-    <div class="card-hd" id="hdVeic">Top 10 veículos</div>
+    <div class="card-hd" id="hdVeic">Top 5 veículos</div>
     <div id="resVeic"></div>
   </div>
   <div class="card">
@@ -7431,6 +7431,23 @@ function rbDuplo(itens,{rank=false,top=0,label=k=>k}={}){
     </div>`;
   }).join('');
 }
+// ── "Ver mais" padrão dos painéis de barra (rbDuplo) ──
+// Todo painel de barras horizontais do Resumo (tipo, proprietário, forma,
+// veículo, cliente) mostra só os RB_TOP_PADRAO primeiros por padrão — o
+// resto só aparece se o usuário clicar em "Ver mais". Um helper só, em vez
+// de repetir a mesma lógica de contar/comparar/montar o botão em cada
+// painel (eram 5 pontos diferentes se algum dia mudasse o número padrão).
+const RB_TOP_PADRAO=5;
+function rbDuploComVerMais(itens,opts,expandido,toggleFnName){
+  const total=itens.filter(([,o])=>o.prev>0||o.rec>0).length;
+  let html=rbDuplo(itens,{...opts,top:expandido?0:RB_TOP_PADRAO});
+  if(total>RB_TOP_PADRAO){
+    html+=`<div style="text-align:center;margin-top:6px">
+      <button class="btn btn-sm" onclick="${toggleFnName}()">${expandido?'Ver menos ▲':`Ver mais (${total-RB_TOP_PADRAO}) ▼`}</button>
+    </div>`;
+  }
+  return html;
+}
 
 // ── Boletos do mês: resumo (a emitir × emitidos) primeiro, lista só ao expandir ──
 // O painel abre como dois números — quantidade e valor de cada lado — e só
@@ -7442,8 +7459,15 @@ let bolVerMais=false;  // "ver mais" dentro da lista (que começa mostrando só 
 // uma vez — depois disso o usuário controla a seta normalmente, sem o painel
 // forçar reabertura toda vez que algo é re-renderizado.
 let bolAutoInit=false;
-let clientesExpandido=false;  // "Ver mais" do painel Top 10 clientes
+let clientesExpandido=false;  // "Ver mais" do painel Top 5 clientes
 function toggleClientesExpand(){clientesExpandido=!clientesExpandido;renderResumo();}
+// "Ver mais" dos outros painéis de barra do Resumo (tipo, proprietário,
+// forma, veículo) — mesmo padrão do de clientes acima, ver rbDuploComVerMais.
+let tipoExpandido=false, recDonoExpandido=false, formaExpandido=false, veicExpandido=false;
+function toggleTipoExpand(){tipoExpandido=!tipoExpandido;renderResumo();}
+function toggleRecDonoExpand(){recDonoExpandido=!recDonoExpandido;renderResumo();}
+function toggleFormaExpand(){formaExpandido=!formaExpandido;renderResumo();}
+function toggleVeicExpand(){veicExpandido=!veicExpandido;renderResumo();}
 function toggleBoletosExpand(){bolExpandido=!bolExpandido;bolVerMais=false;renderResumo();}
 // Clicar em "a emitir" ou "emitidos" abre a lista já filtrada só por aquele
 // grupo; clicar de novo no mesmo grupo (já aberto) fecha. O botão "Ver
@@ -8064,12 +8088,12 @@ function renderResumo(){
   // Os painéis de barra mostram previsto E recebido juntos, então não seguem
   // o seletor previsto/recebido (que continua valendo para os gráficos).
   const hd=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
-  hd('hdTipo','Por tipo — previsto × recebido');
-  hd('hdRecDono','Por proprietário — previsto × recebido');
-  hd('hdForma','Por forma de recebimento — previsto × recebido');
-  hd('hdVeic','Top 10 veículos — previsto × recebido');
-  hd('hdClientes','Top 10 clientes — previsto × recebido');
-  document.getElementById('resTipo').innerHTML=rbDuplo(agrupaPrevRec(rows,r=>r.tipo));
+  hd('hdTipo','Top 5 tipos — previsto × recebido');
+  hd('hdRecDono','Top 5 proprietários — previsto × recebido');
+  hd('hdForma','Top 5 formas de recebimento — previsto × recebido');
+  hd('hdVeic','Top 5 veículos — previsto × recebido');
+  hd('hdClientes','Top 5 clientes — previsto × recebido');
+  document.getElementById('resTipo').innerHTML=rbDuploComVerMais(agrupaPrevRec(rows,r=>r.tipo),{},tipoExpandido,'toggleTipoExpand');
 
   // ── Previsto × Recebido × Atrasado (linhas) — respeita seletor previsto/recebido ──
   // Mesmas cores do resto do resumo: amarelo previsto, verde recebido. Atrasado
@@ -8109,20 +8133,12 @@ function renderResumo(){
     ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false,font:{size:11,family:'IBM Plex Sans'}}},y:{beginAtZero:true,grace:'10%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}}); 
   }
 
-  document.getElementById('resRecDono').innerHTML=rbDuplo(agrupaPrevRec(rows,r=>r.dono),{rank:true});
-  document.getElementById('resForma').innerHTML=rbDuplo(agrupaPrevRec(rows,r=>r.forma));
-  document.getElementById('resVeic').innerHTML=rbDuplo(agrupaPrevRec(rows,r=>r.placa),{rank:true,top:10,label:p=>`<span class="placa">${p}</span>`});
+  document.getElementById('resRecDono').innerHTML=rbDuploComVerMais(agrupaPrevRec(rows,r=>r.dono),{rank:true},recDonoExpandido,'toggleRecDonoExpand');
+  document.getElementById('resForma').innerHTML=rbDuploComVerMais(agrupaPrevRec(rows,r=>r.forma),{},formaExpandido,'toggleFormaExpand');
+  document.getElementById('resVeic').innerHTML=rbDuploComVerMais(agrupaPrevRec(rows,r=>r.placa),{rank:true,label:p=>`<span class="placa">${p}</span>`},veicExpandido,'toggleVeicExpand');
   {
     const clientesAg=agrupaPrevRec(rows,r=>(r.cliente||'').trim()||'—');
-    const totClientesComDados=clientesAg.filter(([,o])=>o.prev>0||o.rec>0).length;
-    const nTop=clientesExpandido?0:10;
-    let htmlClientes=rbDuplo(clientesAg,{rank:true,top:nTop,label:nomeDuplo});
-    if(totClientesComDados>10){
-      htmlClientes+=`<div style="text-align:center;margin-top:6px">
-        <button class="btn btn-sm" onclick="toggleClientesExpand()">${clientesExpandido?'Ver menos ▲':`Ver mais (${totClientesComDados-10}) ▼`}</button>
-      </div>`;
-    }
-    document.getElementById('resClientes').innerHTML=htmlClientes;
+    document.getElementById('resClientes').innerHTML=rbDuploComVerMais(clientesAg,{rank:true,label:nomeDuplo},clientesExpandido,'toggleClientesExpand');
   }
   renderBoletosPainel(rows);
   // ── Projeção 90 dias: uma barra por dia COM vencimento ──
