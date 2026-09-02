@@ -3134,14 +3134,7 @@ details[open] summary::before { transform: rotate(90deg); }
     backface-visibility: hidden;
     /* reset sidebar styles */
     top: auto; height: auto; overflow: visible;
-    /* Sem transition contínua (o dock "derivaria" durante o scroll elástico
-       do iOS) — o JS liga a classe dock-anim só durante os ~250ms da
-       animação de esconder/mostrar e depois tira de novo. */
-    transition: none;
   }
-  /* Esconde o dock ao rolar para cima; ele desliza pra baixo da tela. */
-  .nav-tabs.dock-anim { transition: transform .22s ease; }
-  .nav-tabs.dock-hide { transform: translateY(140%) translateZ(0); }
   /* dock-main volta a ser horizontal no mobile */
   #dock-main {
     flex-direction: row !important;
@@ -11492,7 +11485,6 @@ function go(id){
     if(dMain&&dMais){const isMais=maisPages.includes(id);dMain.style.display=isMais?'none':'flex';dMais.style.display=isMais?'flex':'none';}
   }
   document.querySelectorAll('#mainDock .ntab').forEach(t=>t.classList.toggle('on', t.dataset.pg===id));
-  setDockHidden(false);
   renderAll();
   // Padroniza: toda troca de página deve abrir no topo, não na posição de
   // scroll deixada pela página anterior (o scroll é da janela, comum a
@@ -11795,20 +11787,7 @@ document.addEventListener('wheel',e=>{
 // tratamento. O listener de 'scroll' que a acompanhava por transform saiu
 // junto com o CSS de sticky/fundo dela.
 
-// Dock mobile: some deslizando pra baixo enquanto o usuário rola a página
-// para baixo (lendo o conteúdo), e volta ao rolar para cima — evita ficar
-// tampando conteúdo. A transition (classe dock-anim) só fica ligada durante
-// a própria animação de esconder/mostrar; o resto do tempo o dock não tem
-// transition nenhuma, senão ele "deriva" durante o scroll elástico do iOS.
-function setDockHidden(hidden){
-  const dock=document.getElementById('mainDock');
-  if(!dock||dock.classList.contains('dock-hide')===hidden)return;
-  dock.classList.add('dock-anim');
-  dock.classList.toggle('dock-hide',hidden);
-  clearTimeout(dock._dockAnimT);
-  dock._dockAnimT=setTimeout(()=>dock.classList.remove('dock-anim'),260);
-}
-// Mesma ideia do dock: ao rolar pra baixo, o header entra em modo compacto
+// Ao rolar pra baixo, o header entra em modo compacto
 // (mês/tema/sair encolhem e os valores sobem pra linha da logo); ao rolar
 // pra cima ou voltar ao topo, desfaz.
 function setHeaderCompact(hidden){
@@ -11822,8 +11801,8 @@ function setHeaderCompact(hidden){
     ticking=false;
     if(window.innerWidth>760)return;
     const y=window.scrollY;
-    if(y<=8){setDockHidden(false);setHeaderCompact(false);lastY=y;return;}
-    if(Math.abs(y-lastY)>4){setDockHidden(y>lastY);setHeaderCompact(y>lastY);lastY=y;}
+    if(y<=8){setHeaderCompact(false);lastY=y;return;}
+    if(Math.abs(y-lastY)>4){setHeaderCompact(y>lastY);lastY=y;}
   }
   window.addEventListener('scroll',()=>{
     if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
