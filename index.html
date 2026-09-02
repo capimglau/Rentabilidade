@@ -1589,9 +1589,20 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    (o de tipo fica à direita — ver .rc-cal-topbar). */
 .rc-view-toggle.fr-basistoggle { width: auto; box-sizing: border-box; margin: 0; flex: 0 0 auto; }
 .rc-view-toggle button { flex: 1; }
-.rc-view-toggle-ico { width: auto; display: inline-flex; }
-.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 12px; }
-.rc-view-toggle-ico svg { width: 18px; height: 18px; }
+/* [alinhado-com-a-busca] O seletor Agenda/Calendário fica na MESMA altura
+   da barra de busca ao lado (22px): 14px de ícone + 1px de respiro no botão
+   = 16px, mais 2px de padding do trilho de cada lado e 1px de borda = 22px.
+   Antes eram 43px (ícone de 18 + 8px de padding + trilho de 3px + borda de
+   1,5px), o que deixava os dois ícones visivelmente mais altos que o campo
+   de busca e desalinhados na linha. */
+/* Classe repetida de propósito (.rc-view-toggle-ico.rc-view-toggle-ico):
+   .fr-basistoggle e .fr-basistoggle button são declarados MAIS ABAIXO neste
+   mesmo arquivo, então com especificidade igual eles venciam por ordem de
+   cascata e o padding/borda daqui nunca chegavam a valer. Dobrar a classe
+   sobe a especificidade sem precisar de !important. */
+.rc-view-toggle-ico.rc-view-toggle-ico { width: auto; display: inline-flex; align-items: center; padding: 2px; border-width: 1px; }
+.rc-view-toggle-ico.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 1px 9px; }
+.rc-view-toggle-ico.rc-view-toggle-ico svg { width: 14px; height: 14px; display: block; }
 /* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
 /* Vão entre a Agenda e o painel de Boletos logo abaixo: 42 → 24 → 12px, em
    dois pedidos sucessivos do usuário ("suba o painel de boletos para mais
@@ -1629,13 +1640,18 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    renderRecebHoje) quando recebViewMode==='board', pra não sugerir que
    filtra o que não filtra no modo Calendário. flex:1 com min-width:0 pra
    encolher no mobile em vez de estourar a topbar. */
-.agb-busca{ display:flex; align-items:center; gap:6px; flex:1 1 120px; min-width:0; max-width:280px;
-  background:var(--card); border:1.5px solid var(--line); border-radius:999px; padding:6px 10px; }
-.agb-busca-ic{ width:14px; height:14px; flex-shrink:0; color:var(--ink3); }
-.agb-busca-input{ flex:1; min-width:0; border:none; background:none; outline:none; font-family:inherit; font-size:12px; font-weight:600; color:var(--ink); }
+/* Barra menor (pedido do usuário): mais estreita (280 -> 200px de teto,
+   base 120 -> 96px), mais baixa (6 -> 4px de respiro vertical, borda 1,5 ->
+   1px) e com tipo/ícone um ponto menores. Continua elástica entre o teto e
+   a base — quem manda na largura é o espaço que sobra na linha do seletor
+   Agenda/Calendário. */
+.agb-busca{ display:flex; align-items:center; gap:5px; flex:1 1 96px; min-width:0; max-width:200px;
+  background:var(--card); border:1px solid var(--line); border-radius:999px; padding:4px 9px; }
+.agb-busca-ic{ width:12px; height:12px; flex-shrink:0; color:var(--ink3); }
+.agb-busca-input{ flex:1; min-width:0; border:none; background:none; outline:none; font-family:inherit; font-size:11px; font-weight:600; color:var(--ink); }
 .agb-busca-input::placeholder{ color:var(--ink3); font-weight:500; }
-.agb-busca-clear{ flex-shrink:0; width:16px; height:16px; border:none; border-radius:50%; padding:0; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--ink) 12%, transparent); color:var(--ink3); font-size:10px; line-height:1; }
+.agb-busca-clear{ flex-shrink:0; width:14px; height:14px; border:none; border-radius:50%; padding:0; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--ink) 12%, transparent); color:var(--ink3); font-size:9px; line-height:1; }
 /* Popup do dia do calendário de vencidos/hoje: clicar numa célula com
    movimento mostra todos os lançamentos do dia, os valores por cliente e
    os totais, com baixa em lote — ali mesmo, sem sair da página. Fica
