@@ -4,8 +4,8 @@
   "description": "Controle de rentabilidade e recebimentos da AGI Locadora",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#dfe7f2",
-  "theme_color": "#dfe7f2",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "orientation": "portrait-primary",
   "icons": [
     {
