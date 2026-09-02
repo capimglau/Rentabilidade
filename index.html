@@ -298,8 +298,10 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
 }
 .stat-pill .lbl { color: var(--ink3); }
 .stat-pill .val { font-weight: 700; }
-.stat-pill .val.r { color: var(--red); }
-.stat-pill .val.g { color: var(--green); }
+/* [paleta-pastel-paineis] Os chips do cabecalho mostram os MESMOS numeros
+   dos paineis do Resumo — vao na mesma familia pastel. */
+.stat-pill .val.r { color: var(--pastel-red); }
+.stat-pill .val.g { color: var(--pastel-green); }
 
 /* ─── BTN ─── */
 /* ─── LIQUID GLASS (iOS 26) — material padrão de todos os botões/filtros:
@@ -1423,9 +1425,9 @@ body.tip-pinned::before {
 .card:has(.rb.tip-on) { position: relative; z-index: 495; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .rb-tip-hd { font-weight: 700; margin: 0 0 12px; font-size: 18px; }
 .swipe + .rb-tip-hd, .rb-tip-mais + .rb-tip-hd { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
-.rb-tip-hd.t-atr, .rb-tip-d.t-atr { color: var(--red); }
-.rb-tip-hd.t-ven, .rb-tip-d.t-ven { color: var(--amber); }
-.rb-tip-hd.t-rec, .rb-tip-d.t-rec { color: var(--green); }
+.rb-tip-hd.t-atr, .rb-tip-d.t-atr { color: var(--pastel-red); }
+.rb-tip-hd.t-ven, .rb-tip-d.t-ven { color: var(--pastel-amber); }
+.rb-tip-hd.t-rec, .rb-tip-d.t-rec { color: var(--pastel-green); }
 /* Cada linha vira um swipe (Baixar/Reverter/Editar) — .rb-tip-l é a classe
    do .pcard dentro do wrapper .swipe, não mais um filho direto de .rb-tip. */
 .rb-tip .swipe { margin: 0 -6px; }
@@ -1438,7 +1440,7 @@ body.tip-pinned::before {
 .rb-tip-c { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rb-tip-c small { color: var(--ink3); font-size: 13px; margin-left: 7px; }
 .rb-tip-v { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.rb-tip-mais { color: var(--blue); font-size: 14px; padding-top: 10px; font-weight: 600; cursor: pointer; }
+.rb-tip-mais { color: var(--pastel-blue); font-size: 14px; padding-top: 10px; font-weight: 600; cursor: pointer; }
 .rb-tip-mais:hover { text-decoration: underline; }
 /* Botões de swipe compactos (só ícone) — a linha do popup é baixa demais
    pro tamanho normal (76px, ícone + rótulo) usado em Recebimentos. */
@@ -1468,7 +1470,7 @@ body.tip-pinned::before {
   display: inline-flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 800; color: #fff; background: var(--card);
 }
-.bol-feito .bol-ck { background: var(--green); border-color: var(--green); }
+.bol-feito .bol-ck { background: var(--pastel-green); border-color: var(--pastel-green); }
 .bol-feito .bol-nome { color: var(--ink3); text-decoration: line-through; }
 /* Emitido sai de cena: linha inteira esmaecida — traço, valor e visto junto. */
 .rb-bol.bol-feito { opacity: .42; }
@@ -1481,19 +1483,19 @@ body.tip-pinned::before {
    placa+vencimento) — ex.: "Locação R$ 1.000,00 + Avarias R$ 250,00". */
 .bol-composto { font-size: 9.5px; color: var(--ink3); opacity: .85; overflow-wrap: break-word; }
 .bol-feito .bol-composto { text-decoration: line-through; }
-.bol-venc { font-size: 10px; font-weight: 700; color: var(--red); opacity: .55; }
+.bol-venc { font-size: 10px; font-weight: 700; color: var(--pastel-red); opacity: .55; }
 /* Vencimento a 20 dias ou menos (e ainda não emitido): pisca em vermelho pra
    chamar atenção — animação simples de opacidade, sem exagerar no efeito. */
 .bol-venc-blink { opacity: 1; animation: bolBlink 1s step-start infinite; }
 @keyframes bolBlink { 50% { opacity: .3; } }
-.bol-valor { flex-shrink: 0; font-size: 13px; font-weight: 800; color: var(--red); white-space: nowrap; padding-top: 1px; font-variant-numeric: tabular-nums; }
+.bol-valor { flex-shrink: 0; font-size: 13px; font-weight: 800; color: var(--pastel-red); white-space: nowrap; padding-top: 1px; font-variant-numeric: tabular-nums; }
 .bol-feito .bol-valor { color: var(--ink3); }
 .bol-toggle, .bol-vermais { margin-left: 10px; background: none; border: 0; padding: 0; cursor: pointer;
-  color: var(--blue); font-weight: 700; font-size: 10.5px; font-family: inherit; }
+  color: var(--pastel-blue); font-weight: 700; font-size: 10.5px; font-family: inherit; }
 .bol-toggle:hover, .bol-vermais:hover { text-decoration: underline; }
 .bol-vermais-row { text-align: center; padding: 8px 0 2px; }
-.bol-rodape { margin-top: 9px; font-size: 10.5px; font-weight: 700; color: var(--red); }
-.bol-rodape.ok { color: var(--green); }
+.bol-rodape { margin-top: 9px; font-size: 10.5px; font-weight: 700; color: var(--pastel-red); }
+.bol-rodape.ok { color: var(--pastel-green); }
 /* No celular a lista sobe meio ponto em relação ao PC (mesma ideia do
    ledger, que também cresce um pouco lá) — mas continua bem abaixo dos
    14,5/12/15px de antes. */
@@ -1635,15 +1637,15 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .cal-full-day-hd { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .cal-full-day-hd b { font-size: 16px; }
 .cal-full-day-tot { display: flex; gap: 12px; font-size: 13px; font-weight: 700; }
-.cal-full-day-tot .t-rec { color: var(--green); }
-.cal-full-day-tot .t-pend { color: var(--amber); }
+.cal-full-day-tot .t-rec { color: var(--pastel-green); }
+.cal-full-day-tot .t-pend { color: var(--pastel-amber); }
 .cal-full-day-hd .btn { padding: 8px 14px; border-radius: 999px; font-size: 12.5px; }
 .cal-full-day-hd .mcl { margin-left: auto; }
 .cal-full-day-list { display: flex; flex-direction: column; gap: 12px; }
 .cal-full-cli { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .cal-full-cli-hd { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 .cal-full-cli-nome { font-weight: 700; font-size: 13.5px; }
-.cal-full-cli-pago { color: var(--green); font-size: 12px; font-weight: 600; }
+.cal-full-cli-pago { color: var(--pastel-green); font-size: 12px; font-weight: 600; }
 .cal-full-bulk-pay { margin-left: auto; padding: 6px 12px; font-size: 12px; border-radius: 999px; }
 @media(max-width:760px){
   .cal-full-day-hd b { font-size: 14px; }
@@ -1691,7 +1693,7 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 }
 /* Dia com pago + vencido misturados: a parte pendente fica vermelha (não
    âmbar), já que também está atrasada — não é só "a receber" normal. */
-.rc-cal-wrap .cal-mix-item.pend.venc { color: var(--red); }
+.rc-cal-wrap .cal-mix-item.pend.venc { color: var(--pastel-red); }
 /* Dias já concluídos (tudo recebido) ficam bem esmaecidos — fundo bem
    clarinho (var(--surface), quase se misturando ao fundo da página) e fonte
    também apagada (var(--ink3)) — pra não competir visualmente com o que
@@ -1702,7 +1704,7 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    ficava translúcido e ilegível por cima da grade. Cor/fundo em vez de
    opacity resolve sem esse efeito colateral. */
 .rc-cal-wrap .cal-cell.cal-ok { background: color-mix(in srgb, var(--green-soft) 35%, var(--surface) 65%); }
-.rc-cal-wrap .cal-cell.cal-ok .cal-val { color: color-mix(in srgb, var(--green) 40%, var(--card) 60%); }
+.rc-cal-wrap .cal-cell.cal-ok .cal-val { color: color-mix(in srgb, var(--pastel-green) 40%, var(--card) 60%); }
 /* Contorno bem discreto (em vez de sumir com border-color: transparent),
    só pra manter a célula com uma borda visível — sem chamar atenção como
    antes (não é mais na cor do verde). */
@@ -1713,9 +1715,9 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
    pouco abaixo do verde cheio/original (que ficava escuro demais), pra
    cada estado ficar na proporção certa em vez de dois extremos. */
 .rc-cal-wrap .cal-cell.cal-pend { background: color-mix(in srgb, var(--green-soft) 85%, var(--green) 15%); border-color: color-mix(in srgb, var(--green) 30%, transparent); }
-.rc-cal-wrap .cal-cell.cal-pend .cal-val { color: color-mix(in srgb, var(--green) 80%, var(--ink3) 20%); }
-.rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--red) 45%, transparent); }
-.rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--purple) 45%, transparent); }
+.rc-cal-wrap .cal-cell.cal-pend .cal-val { color: color-mix(in srgb, var(--pastel-green) 80%, var(--ink3) 20%); }
+.rc-cal-wrap .cal-cell.cal-venc { border-color: color-mix(in srgb, var(--pastel-red) 45%, transparent); }
+.rc-cal-wrap .cal-cell.cal-mix { border-color: color-mix(in srgb, var(--pastel-purple) 45%, transparent); }
 /* Fundo vermelho (vencido), verde (vence hoje) e roxo (misto) também um
    pouco mais escuros que o padrão do app, no mesmo espírito do fundo dos
    recebidos — mesmo padrão de borda+fundo pra todos os estados coloridos. */
@@ -1743,7 +1745,7 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 }
 .rc-cal-wrap .cal-cell.rc-blink { animation: rcBlinkRed 3.4s ease-in-out infinite; }
 .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: rcBlinkGreen 3s ease-in-out infinite; }
-.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-val { color: var(--green); }
+.rc-cal-wrap .cal-cell.rc-hoje-mov .cal-val { color: var(--pastel-green); }
 @media (prefers-reduced-motion: reduce) {
   .rc-cal-wrap .cal-cell.rc-blink { animation: none; }
   .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
@@ -2031,8 +2033,8 @@ html[data-theme="dark"] .agb-ev-ghost{
    se dissolver para fora, como no print — não é sombra embaixo, é gradiente
    nas duas bordas. */
 .rb-f-prev { background: var(--bar-rec); box-shadow: 0 0 7px 2px rgba(242,176,30,.30); }
-.rb-f-atr { background: var(--red); box-shadow: 0 0 7px 2px rgba(191,37,24,.24); }
-.rb-f-rec { background: var(--green); box-shadow: 0 0 7px 2px rgba(10,100,57,.22); }
+.rb-f-atr { background: var(--pastel-red); box-shadow: 0 0 7px 2px rgba(191,37,24,.24); }
+.rb-f-rec { background: var(--pastel-green); box-shadow: 0 0 7px 2px rgba(10,100,57,.22); }
 html[data-theme="dark"] .rb-f-prev { box-shadow: 0 0 8px 2px rgba(247,201,72,.24); }
 html[data-theme="dark"] .rb-f-atr { box-shadow: 0 0 8px 2px rgba(255,107,107,.24); }
 html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22); }
@@ -2040,10 +2042,10 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
   background: var(--green); border: 2px solid var(--card); transform: translate(-50%, -50%);
   box-shadow: 0 0 0 1px rgba(0,0,0,.05); transition: left .6s ease; }
 .rb-v2 { width: 176px; display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; white-space: nowrap; }
-.rb-v2 .rb-rec { color: var(--green); font-weight: 700; }
+.rb-v2 .rb-rec { color: var(--pastel-green); font-weight: 700; }
 /* Texto usa o --amber (amarelo escurecido no tema claro): o --bar-rec das
    barras é claro demais para ler sobre fundo branco. */
-.rb-v2 .rb-prev { color: var(--amber); font-weight: 700; }
+.rb-v2 .rb-prev { color: var(--pastel-amber); font-weight: 700; }
 .rb-v2 .rb-sep { color: var(--ink3); font-weight: 400; }
 /* Cabeçalho da coluna de valores — legenda em cima do que ela nomeia. */
 .rb-cab { margin-bottom: 8px; }
@@ -2068,8 +2070,8 @@ html[data-theme="dark"] .rb-f-rec { box-shadow: 0 0 8px 2px rgba(54,211,153,.22)
 }
 .rb-rank { display: none; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 5px; background: var(--surface); font-size: 10px; font-weight: 700; color: var(--ink3); margin-right: 6px; flex-shrink: 0; }
 .mc-delta { font-weight: 700; }
-.mc-delta.up { color: var(--green); }
-.mc-delta.down { color: var(--red); }
+.mc-delta.up { color: var(--pastel-green); }
+.mc-delta.down { color: var(--pastel-red); }
 
 /* Resumo: métricas em 3 colunas */
 /* +30% na distância até o header (que já dá 20px via .page): 20*1.3=26,
@@ -3084,8 +3086,8 @@ details[open] summary::before { transform: rotate(90deg); }
   .month-nav { background: #fff; border: none; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
   .mn-today { background: rgba(0,122,255,.12); color: #1f5fa8; }
   .stat-pill { background: #fff; border: none; box-shadow: 0 1px 2px rgba(0,0,0,.05); border-radius: 12px; }
-  .stat-pill .val.r { color: #ff3b30; }
-  .stat-pill .val.g { color: #34c759; }
+  .stat-pill .val.r { color: var(--pastel-red); }
+  .stat-pill .val.g { color: var(--pastel-green); }
 
   /* Dock translúcido estilo iOS 26 (liquid glass).
      O blur fica num ::before (position:absolute), NÃO no elemento fixo —
