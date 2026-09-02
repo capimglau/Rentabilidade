@@ -110,7 +110,7 @@ body, body *:not(.placa):not(.lc-ro-hora):not(.prem-input){ font-family:'IBM Ple
 html { overflow-x: clip; }
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #eef0f6;
+  background: #caccd1;
   min-height: 100vh;
   color: var(--ink);
   /* O anel de "Faturamento por categoria" sangra até a borda da tela no
@@ -147,8 +147,13 @@ body::before {
   /* Mesmo cinza chapado do fundo claro do Sistema Estilo/AutoGest (--c-bg/
      body{background} de lá, #eef0f6) — pedido do usuário. Era um degradê
      diagonal (azulado/lilás nas pontas); o body já tinha #eef0f6 sólido por
-     baixo (ver body{background} acima), então bastava tirar o degradê. */
-  background: #eef0f6;
+     baixo (ver body{background} acima), então bastava tirar o degradê.
+     Depois o usuário pediu o fundo 15% mais escuro: #eef0f6
+     (238,240,246) × 0,85 = #caccd1 (202,204,209). Aplicado nos TRÊS
+     lugares que pintam o fundo (body, body::before e o fallback de
+     impressão) — mudar um só deixa uma faixa da cor antiga aparecendo
+     em alguma tela. */
+  background: #caccd1;
   pointer-events: none;
   font-size: 14px;
   line-height: 1.5;
@@ -1554,11 +1559,13 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 12px; }
 .rc-view-toggle-ico svg { width: 18px; height: 18px; }
 /* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
-/* 42→24px: é este o vão entre a Agenda e o painel de Boletos logo abaixo
-   (pedido do usuário: "suba o painel de boletos para mais perto da
-   agenda"). 24px é o mesmo respiro que a Estilo usa entre seções distintas
-   do Dashboard. */
-.rc-side-by-side { margin-bottom: 24px; }
+/* Vão entre a Agenda e o painel de Boletos logo abaixo: 42 → 24 → 12px, em
+   dois pedidos sucessivos do usuário ("suba o painel de boletos para mais
+   perto da agenda" e depois "suba mais o painel"). Fica abaixo dos 24px de
+   respiro entre seções da Estilo de propósito: aqui os dois blocos leem
+   como um par (o que vence e o que falta emitir), não como duas seções
+   independentes. */
+.rc-side-by-side { margin-bottom: 12px; }
 .rc-block { display: none; }
 .rc-block .rc-cal-wrap { margin-bottom: 0; }
 .rc-mode-cal .rc-block-cal { display: block; }
@@ -3056,7 +3063,7 @@ details[open] summary::before { transform: rotate(90deg); }
   .pcard-value { font-size: 16px; }
 
   /* ═══════ Estética iOS (minimalista) ═══════ */
-  body { background: #eef0f6; color: #1c1c1e; }
+  body { background: #caccd1; color: #1c1c1e; }
 
   /* Barras translúcidas (vidro fosco) */
   /* NÃO usar backdrop-filter aqui: criaria um containing block e jogaria
@@ -3584,7 +3591,6 @@ body.modo-boletos #mainDock { display: none !important; }
 body.modo-boletos .header-right { display: none; }
 body.modo-boletos #page-resumo > * { display: none; }
 body.modo-boletos #page-resumo > #cardBoletos { display: block; }
-body.modo-boletos #btnLinkBoletos { display: none; }
 
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css">
@@ -3729,10 +3735,15 @@ body.modo-boletos #btnLinkBoletos { display: none; }
   <div class="mrow" id="res-m"></div>
   <div id="recebHoje"></div>
   <div class="card" id="cardBoletos">
-    <div class="card-hd" id="hdBoletos">
-      <span id="hdBoletosTxt" style="flex:1">Boletos do mês</span>
-      <button class="btn btn-xs" id="btnLinkBoletos" onclick="compartilharLinkBoletos()" title="Copiar um link de acesso só a este painel (mesma senha do app)" aria-label="Link para compartilhar" style="font-weight:600">🔗</button>
-    </div>
+    <!-- Sem cabeçalho (pedido do usuário): saíram o título "Boletos do mês"
+         e o botão de link compartilhável ao lado. As duas linhas do ledger
+         já dizem o que o painel é ("Boletos a emitir"/"Boletos emitidos"),
+         e era o cabeçalho que empurrava o conteúdo pra baixo.
+         renderBoletosPainel ainda procura #hdBoletosTxt, mas sempre atrás
+         de um if(hd) — sem o elemento, ele só não escreve título nenhum.
+         compartilharLinkBoletos()/body.modo-boletos continuam existindo: um
+         link já gerado segue abrindo o painel sozinho, só não há mais botão
+         para gerar um novo. -->
     <div id="resBoletos"></div>
   </div>
   <div class="card card-donut">
