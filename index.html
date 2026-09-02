@@ -2513,7 +2513,19 @@ html[data-theme="dark"] .agb-ev-ghost{
 }
 .res-ctrls > * { flex: 1 1 0; min-width: 0; }
 .res-ctrls .rf-bar { margin-bottom: 0; display: flex; gap: 8px; }
-.res-ctrls .rf-single { flex: 1; }
+/* min-width:0 aqui é indispensável, não só decorativo: .rf-bar É flex
+   (linha acima) e .rf-single é o ÚNICO filho dela, com flex:1 nesse
+   contexto — sem min-width:0, o padrão do flexbox (min-width:auto) trava
+   o botão "Filtros" no tamanho do próprio conteúdo (texto+selo+seta) e
+   ele recusa encolher junto com os outros 3 controles no mobile. Como
+   .rf-bar não tem largura própria (só o que o filho pede), o botão acaba
+   VAZANDO pra fora da caixa encolhida — visualmente grudado/sobrepondo o
+   controle "Previsto" ao lado (bug reportado por foto: "os dois primeiros
+   grudam um no outro"). Cada nível de flex aninhado precisa do próprio
+   min-width:0 — o da linha 2514 só resolve pra .rf-bar (filha direta de
+   .res-ctrls), não alcança .rf-single (neta). */
+.res-ctrls .rf-single { flex: 1; min-width: 0; }
+.res-ctrls .rf-single > summary { overflow: hidden; text-overflow: ellipsis; }
 /* Os 4 controles (Filtros + os 3 <select>) UNIFICADOS num só estilo —
    mesma pílula lisa var(--card)/var(--line) que .rc-cal-tipo-sel já usa
    na barra da Agenda, sem o vidro fosco (backdrop-filter/gradiente
