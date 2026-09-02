@@ -2428,31 +2428,56 @@ html[data-theme="dark"] .agb-ev-ghost{
 }
 
 /* ─── CONTROLES DO RESUMO (período · base · acumulado) ─── */
+/* [filtros-padrao-sistema] Pedido do usuário: "unifique esses filtros...
+   retire o fundo cinza... faça com que fique no padrão do sistema". A
+   caixa cinza (gradiente #e6e8ee→#d6d8e1 + borda + sombra + padding) era
+   um resquício do visual "vidro fosco sobre bandeja cinza" antigo — some
+   por completo, os 4 controles ficam soltos na página como uma linha só,
+   igual à barra Agenda/Calendário + busca + tipo (.rc-cal-topbar) que já
+   segue esse padrão. */
 .res-ctrls {
   display: flex;
   align-items: stretch;
-  gap: 10px;
+  gap: 8px;
   margin-top: 10px;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #e6e8ee 0%, #d6d8e1 100%);
-  border: 1px solid rgba(255,255,255,.7);
-  border-radius: 16px;
-  padding: 12px 14px;
-  box-shadow: var(--card-shadow);
 }
 .res-ctrls > * { flex: 1 1 0; min-width: 0; }
 .res-ctrls .rf-bar { margin-bottom: 0; display: flex; gap: 8px; }
 .res-ctrls .rf-single { flex: 1; }
-.res-ctrls .rf-single > summary { width: 100%; justify-content: center; gap: 4px; padding: 9px 6px; font-size: 11.5px; font-weight: 700; border: 1.5px solid rgba(255,255,255,.8); }
-.res-ctrls .rf-single > summary,
-.res-ctrls .rc-sel {
-  background: rgba(255,255,255,.85);
-  box-shadow: 0 1px 3px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.6);
+/* Os 4 controles (Filtros + os 3 <select>) UNIFICADOS num só estilo —
+   mesma pílula lisa var(--card)/var(--line) que .rc-cal-tipo-sel já usa
+   na barra da Agenda, sem o vidro fosco (backdrop-filter/gradiente
+   branco) do padrão antigo. Antes o botão "Filtros" (11.5px, padding
+   9px 6px) e os <select> (12px, padding 9px 8px 9px 10px) nem batiam
+   entre si; agora os dois lados desta regra saem idênticos. var(--card)/
+   var(--line)/var(--ink2) já trocam de valor sozinhos no tema escuro
+   (mesmo mecanismo de .rc-cal-tipo-sel, que não precisa de override
+   dark nenhum) — por isso o bloco html[data-theme="dark"] .res-ctrls...
+   que existia aqui foi removido.
+   Classe .res-ctrls dobrada nos DOIS seletores (não só no .rc-sel): as
+   bases html[data-theme="dark"] .rf > summary e html[data-theme="dark"]
+   .rc-sel (mantidas mais abaixo — ainda servem o botão "Filtros" e o
+   <select> da Auditoria fora daqui) têm especificidade maior que uma
+   classe só de .res-ctrls (atributo de tema + classe > duas classes) e
+   venceriam esta regra no escuro, reintroduzindo o vidro fosco antigo só
+   ali — mesmo problema, mesma solução do trilho Agenda/Calendário
+   (.rc-view-toggle-ico.rc-view-toggle-ico) mais acima neste arquivo.
+   backdrop-filter:none também precisa ser explícito: sem ele, o blur do
+   .rc-sel base (nenhuma regra daqui tocava essa propriedade) continuava
+   passando por baixo mesmo com fundo sólido — o "vidro" ainda embaçava o
+   que tivesse atrás do controle. */
+.res-ctrls.res-ctrls .rf-single > summary,
+.res-ctrls.res-ctrls .rc-sel {
+  width: 100%; justify-content: center;
+  padding: 6.5px 12px; font-size: 12px; font-weight: 700;
+  background: var(--card); border: 1px solid var(--line); color: var(--ink2);
+  box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
 }
-.res-ctrls .rf-single > summary:hover,
-.res-ctrls .rc-sel:hover {
-  background: rgba(255,255,255,.96);
-  border-color: #fff;
+.res-ctrls.res-ctrls .rf-single > summary:hover,
+.res-ctrls.res-ctrls .rc-sel:hover {
+  background: var(--surface);
+  border-color: var(--line);
 }
 .rc-sel {
   width: 100%;
@@ -2481,11 +2506,11 @@ html[data-theme="dark"] .agb-ev-ghost{
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(31,95,168,.16);
 }
-html[data-theme="dark"] .res-ctrls {
-  background: rgba(120,140,170,.12);
-  border: 1px solid rgba(255,255,255,.07);
-  box-shadow: 0 2px 10px rgba(0,0,0,.15);
-}
+/* .res-ctrls não precisa mais de bloco dark próprio: a regra nova (ver
+   [filtros-padrao-sistema] acima) já usa var(--card)/var(--line)/
+   var(--ink2), que trocam de valor sozinhos no tema escuro. Só o <select>
+   "Ação" da Auditoria (fora do .res-ctrls, ainda no visual antigo) segue
+   precisando do override abaixo. */
 html[data-theme="dark"] .rc-sel {
   background: rgba(255, 255, 255, 0.08);
   color: var(--ink);
@@ -2493,16 +2518,6 @@ html[data-theme="dark"] .rc-sel {
 }
 html[data-theme="dark"] .rc-sel:hover {
   background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255,255,255,.22);
-}
-html[data-theme="dark"] .res-ctrls .rf-single > summary,
-html[data-theme="dark"] .res-ctrls .rc-sel {
-  background: rgba(255,255,255,.14);
-  border-color: rgba(255,255,255,.14);
-}
-html[data-theme="dark"] .res-ctrls .rf-single > summary:hover,
-html[data-theme="dark"] .res-ctrls .rc-sel:hover {
-  background: rgba(255,255,255,.2);
   border-color: rgba(255,255,255,.22);
 }
 
