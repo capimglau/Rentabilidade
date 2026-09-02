@@ -1615,13 +1615,16 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .rc-view-toggle-ico.rc-view-toggle-ico button { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 4.3px 9px; }
 .rc-view-toggle-ico.rc-view-toggle-ico svg { width: 14px; height: 14px; display: block; }
 /* Só a vista ativa (Agenda OU Calendário) fica visível por vez. */
-/* Vão entre a Agenda e o painel de Boletos logo abaixo: 42 → 24 → 12px, em
-   dois pedidos sucessivos do usuário ("suba o painel de boletos para mais
-   perto da agenda" e depois "suba mais o painel"). Fica abaixo dos 24px de
-   respiro entre seções da Estilo de propósito: aqui os dois blocos leem
-   como um par (o que vence e o que falta emitir), não como duas seções
-   independentes. */
-.rc-side-by-side { margin-bottom: 12px; }
+/* Vão entre a Agenda e o painel de Boletos logo abaixo: passou por
+   42 → 24 → 12px (pedidos sucessivos pra aproximar as duas seções), mas o
+   usuário reverteu — quis o mesmo espaçamento PADRÃO usado entre os
+   demais painéis do Resumo, sem tratamento especial pra este par. O
+   padrão do resto do Dashboard é o .card{margin-bottom:27px} (ver acima) —
+   é ele que separa, por exemplo, o próprio painel de Boletos do
+   "Faturamento por categoria" logo abaixo. .rc-side-by-side não é um
+   .card (é só o wrapper da Agenda, sem fundo/borda próprios), então
+   precisa do mesmo valor aqui, à parte. */
+.rc-side-by-side { margin-bottom: 27px; }
 .rc-block { display: none; }
 .rc-block .rc-cal-wrap { margin-bottom: 0; }
 .rc-mode-cal .rc-block-cal { display: block; }
