@@ -3566,8 +3566,11 @@ details[open] summary::before { transform: rotate(90deg); }
   box-shadow: 0 1px 6px rgba(60,70,120,.06);
 }
 .month-nav { border: none; border-radius: 999px; }
+/* Fundo sólido (var(--card)), igual aos outros painéis — pedido do
+   usuário: estava translúcido (rgba(255,255,255,.6)), destoando do
+   branco puro do resto. */
 .mc, .mc.blue, .mc.green, .mc.red, .mc.amber, .mc.purple {
-  background: rgba(255,255,255,.6);
+  background: var(--card);
   border: 1px solid rgba(255,255,255,.8);
   box-shadow: 0 4px 16px rgba(60,70,120,.07), 0 1px 3px rgba(0,0,0,.03);
 }
