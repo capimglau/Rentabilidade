@@ -11787,6 +11787,27 @@ function setHeaderCompact(hidden){
 })();
 
 iniciarApp();
+
+// [DEBUG TEMPORÁRIO] diagnóstico do vão embaixo do dock — remover depois.
+(function(){
+  if(window.innerWidth>760)return;
+  const b=document.createElement('div');
+  b.style.cssText='position:fixed;left:4px;bottom:0;z-index:99999;background:#ff0000;color:#fff;font:11px monospace;padding:3px 6px;border-radius:4px 4px 0 0;pointer-events:none;white-space:pre;';
+  document.body.appendChild(b);
+  const probe=document.createElement('div');
+  probe.style.cssText='position:fixed;bottom:0;height:0;padding-bottom:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none;';
+  document.body.appendChild(probe);
+  function upd(){
+    const dock=document.getElementById('mainDock');
+    const r=dock?dock.getBoundingClientRect():null;
+    const sab=getComputedStyle(probe).paddingBottom;
+    b.textContent='innerH:'+window.innerHeight+' dockBottom:'+(r?Math.round(r.bottom):'-')+' sab:'+sab+' gap:'+(r?Math.round(window.innerHeight-r.bottom):'-');
+  }
+  window.addEventListener('resize',upd);
+  window.addEventListener('scroll',upd,{passive:true});
+  upd();
+  setInterval(upd,500);
+})();
 </script>
 
 <!-- ─── DOCK / SIDEBAR (posição fixa, fora do header) ─── -->
