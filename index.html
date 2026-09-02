@@ -2895,7 +2895,11 @@ details[open] summary::before { transform: rotate(90deg); }
 
 /* ════════════════ MOBILE ════════════════ */
 @media (max-width: 760px) {
-  body { font-size: 15px; -webkit-text-size-adjust: 100%; padding-bottom: calc(74px + env(safe-area-inset-bottom)); }
+  /* 74 -> 86px: sobe junto com o dock (ver .nav-tabs abaixo, 4 -> 16px de
+     respiro do fundo) — a mesma folga de 15px entre o pé do dock e o fim
+     da reserva continua igual, só desloca tudo 12px pra cima junto com o
+     dock. */
+  body { font-size: 15px; -webkit-text-size-adjust: 100%; padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
 
   /* Header: logo + mês + botões numa linha; Previsto/Pendente/Recebido
      numa segunda linha logo abaixo (dedicada, centralizada) — não cabe
@@ -2932,7 +2936,11 @@ details[open] summary::before { transform: rotate(90deg); }
   .nav-tabs {
     position: fixed;
     left: calc(1.5vw + 16px); right: calc(1.5vw + 16px);
-    bottom: calc(4px + env(safe-area-inset-bottom));
+    /* 4 -> 16px (pedido do usuário: "dê um espaço padrão de Dock" — ele
+       estava colado no fim da tela). 16px é a mesma folga que outros
+       elementos flutuantes deste app usam no rodapé (ver .modal bottom
+       sheets/padding). */
+    bottom: calc(16px + env(safe-area-inset-bottom));
     width: auto;
     margin: 0;
     display: flex;
