@@ -56,6 +56,10 @@ body, body *:not(.placa):not(.lc-ro-hora):not(.prem-input){ font-family:'IBM Ple
      estas aqui são só a família "sóbria" dos painéis, na mesma proporção de
      matiz das cores da Agenda. */
   --pastel-blue: #4a6f8a;
+  /* Azul petróleo dos ícones/rótulos do dock do Sistema Estilo — o mesmo
+     #4c6a63 que a sidebar de lá usa nos temas claros (nos escuros ela vai
+     pro dourado; aqui a mesma família só clareia, ver o bloco dark). */
+  --dock-petroleo: #4c6a63;
   --pastel-green: #5a8a63;
   --pastel-red: #8f5060;
   --pastel-amber: #c08a4a;
@@ -164,8 +168,11 @@ body::before {
 .header {
   background: var(--card);
   border-bottom: 1px solid var(--line);
-  padding: 0 24px;
-  height: 58px;
+  padding: 0 20px;
+  /* 58 -> 46px (pedido do usuário: "deixe o cabeçalho menos alto"). Cabe
+     folgado: o item mais alto da barra é o seletor de mês (.month-nav,
+     ~30px), e o logo caiu pra 24px. */
+  height: 46px;
   display: flex;
   align-items: center;
   gap: 0;
@@ -195,11 +202,15 @@ body::before {
   flex-shrink: 0;
 }
 .logo em { color: var(--blue); font-style: normal; }
-.logo-img { height: 28px; width: auto; display: block; }
+/* 28 -> 24px (-4px, pedido do usuário). */
+.logo-img { height: 24px; width: auto; display: block; }
 /* Data ao lado do logo — tamanhos/pesos iguais aos da barra do topo do
    Sistema Estilo (13px/700 no dia da semana, 12px/500 em cinza no resto). */
-.hdr-data { font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.hdr-data .hdr-data-dm { font-weight: 500; color: var(--ink3); margin-left: 4px; font-size: 12px; }
+/* line-height:1 + flex: com o logo menor, a data precisa se apoiar no
+   MESMO eixo central dele — sem isso a caixa de linha da fonte (1.5 do
+   body) descia o texto alguns px em relação à imagem. */
+.hdr-data { display: flex; align-items: baseline; gap: 4px; line-height: 1; font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hdr-data .hdr-data-dm { font-weight: 500; color: var(--ink3); font-size: 12px; }
 @media (max-width: 760px){ .hdr-data { display: none; } }
 
 /* Month nav — the MAIN filter. Fica encostado no canto direito do header,
@@ -269,14 +280,16 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   cursor: pointer;
   font-size: 13.5px;
   font-weight: 500;
-  color: var(--ink3);
+  /* Ícone (stroke=currentColor) e rótulo no azul petróleo do dock da
+     Estilo — pedido do usuário. */
+  color: var(--dock-petroleo);
   border-radius: 8px;
   transition: all .03s;
   white-space: nowrap;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
-.ntab:hover { background: var(--surface); color: var(--ink); }
-.ntab.on { background: var(--ink); color: #fff; }
+.ntab:hover { background: var(--surface); color: var(--dock-petroleo); }
+.ntab.on { background: var(--dock-petroleo); color: #fff; }
 .ntab-back { color: var(--ink3) !important; }
 .nt-ico, .nt-short { display: none; }
 
@@ -286,14 +299,18 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
   align-items: center;
   gap: 10px;
 }
+/* Sem pílula (pedido do usuário: "tire os badges ao redor dos campos com
+   valores no cabeçalho") — rótulo e número soltos na barra, sem fundo,
+   borda nem raio. O padding some junto; sobra só o respiro lateral que o
+   gap do .header-right já dá. */
 .stat-pill {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 5px 12px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
   font-size: 12.5px;
 }
 .stat-pill .lbl { color: var(--ink3); }
@@ -445,7 +462,7 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
     transition: background 160ms;
   }
   .ntab:hover { background: var(--surface); }
-  .ntab.on { background: var(--blue-soft); color: var(--blue); }
+  .ntab.on { background: color-mix(in srgb, var(--dock-petroleo) 12%, transparent); color: var(--dock-petroleo); }
   .nt-ico { display: flex; align-items: center; flex-shrink: 0; }
   .nt-ico svg { width: 20px; height: 20px; }
   .nt-short { display: block; font-size: 13px; font-weight: 500; overflow: hidden; }
@@ -1461,7 +1478,7 @@ body.tip-pinned::before {
    Agora a lista usa a MESMA escala do ledger — nome 12.5px, valor 13px,
    apoio entre 9,5 e 10px — e o respiro vertical acompanha. */
 .rb-bol {
-  cursor: pointer; padding: 7px 6px; border-radius: 10px; transition: background .12s;
+  cursor: pointer; padding: 5px 6px; border-radius: 10px; transition: background .12s;
   display: flex; align-items: flex-start; gap: 9px;
 }
 .rb-bol:hover { background: var(--surface); }
@@ -1493,8 +1510,8 @@ body.tip-pinned::before {
 .bol-toggle, .bol-vermais { margin-left: 10px; background: none; border: 0; padding: 0; cursor: pointer;
   color: var(--pastel-blue); font-weight: 700; font-size: 10.5px; font-family: inherit; }
 .bol-toggle:hover, .bol-vermais:hover { text-decoration: underline; }
-.bol-vermais-row { text-align: center; padding: 8px 0 2px; }
-.bol-rodape { margin-top: 9px; font-size: 10.5px; font-weight: 700; color: var(--pastel-red); }
+.bol-vermais-row { text-align: center; padding: 5px 0 1px; }
+.bol-rodape { margin-top: 6px; font-size: 10.5px; font-weight: 700; color: var(--pastel-red); }
 .bol-rodape.ok { color: var(--pastel-green); }
 /* No celular a lista sobe meio ponto em relação ao PC (mesma ideia do
    ledger, que também cresce um pouco lá) — mas continua bem abaixo dos
@@ -1521,24 +1538,31 @@ body.tip-pinned::before {
    no painel de baixo (bug reportado por foto). O respiro horizontal também
    sai: o padding de 22px do .card já é o respiro certo, e sem ele o filete
    entre as linhas alinha com a borda do painel, como na Estilo. */
+/* [compacto] Este card especifico usa metade do padding do .card padrao
+   (20px 22px): sem cabecalho, o painel e so as duas linhas do ledger, e o
+   respiro cheio do card sozinho ja custava 40px de altura. */
+#cardBoletos{ padding:10px 16px; }
 .bol-ledger{
   --bol-org:#9C5400; --bol-grn:#0F7A3D;
   background:none; border:0; border-radius:0; box-shadow:none; padding:0;
 }
 html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
-.bol-lrow{ display:flex; align-items:center; gap:12px; padding:10px 0; cursor:pointer; }
+/* [compacto] Respiro e icone menores (10->6px de padding, 34->28px de
+   caixa): as duas linhas do ledger carregavam ~54px cada so de moldura,
+   mais que o proprio texto precisa. */
+.bol-lrow{ display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; }
 .bol-lic{
-  width:34px; height:34px; border-radius:11px; flex-shrink:0;
+  width:28px; height:28px; border-radius:9px; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
   background:rgba(120,120,128,0.12); color:var(--ink3);
 }
-.bol-lic svg{ width:16px; height:16px; }
+.bol-lic svg{ width:14px; height:14px; }
 .bol-lrow.on.afazer .bol-lic{ background:color-mix(in srgb, var(--bol-org) 12%, transparent); color:var(--bol-org); }
 .bol-lrow.on.feitos .bol-lic{ background:color-mix(in srgb, var(--bol-grn) 12%, transparent); color:var(--bol-grn); }
 .bol-ltxt{ flex:1; min-width:0; }
 .bol-ltit{ font-size:12px; font-weight:700; color:var(--ink3); }
 .bol-lrow.on .bol-ltit{ color:var(--ink); }
-.bol-lsub{ font-size:9.5px; color:var(--ink3); margin-top:2px; }
+.bol-lsub{ font-size:9.5px; color:var(--ink3); margin-top:1px; }
 .bol-lval{ text-align:right; flex-shrink:0; font-size:13px; font-weight:800; color:var(--ink3); font-variant-numeric:tabular-nums; }
 .bol-lrow.on.afazer .bol-lval{ color:var(--bol-org); }
 .bol-lrow.on.feitos .bol-lval{ color:var(--bol-grn); }
@@ -1546,8 +1570,8 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 /* No celular tudo sobe um pouco (mesmo "_cp" da Estilo): caixa e respiro
    menores, mas título/subtítulo/valor um pouco maiores que no PC. */
 @media (max-width:760px){
-  .bol-lrow{ padding:8px 0; }
-  .bol-lic{ width:30px; height:30px; }
+  .bol-lrow{ padding:5px 0; }
+  .bol-lic{ width:26px; height:26px; }
   .bol-ltit{ font-size:13px; }
   .bol-lsub{ font-size:10.5px; }
   .bol-lval{ font-size:14px; }
@@ -1813,7 +1837,9 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .agb-dow{ font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; }
 .agb-dom{ font-size:11.5px; color:var(--ink3); font-weight:700; white-space:nowrap; }
 /* Contagem SEM pílula de fundo (a Estilo é só o número em cinza). */
-.agb-count{ min-width:20px; height:20px; padding:0 6px; font-size:11px; font-weight:700; color:var(--ink3); display:flex; align-items:center; justify-content:center; flex-shrink:0; background:none; border-radius:0; }
+/* .agb-count removido: a contagem de lançamentos saiu do lado da data
+   (pedido do usuário) — o cabeçalho do dia fica só com a data à esquerda e
+   o chip do total à direita. */
 /* "Hoje" tinge de AZUL — a Estilo usa dourado aqui, mas o azul é pedido
    explícito do usuário pra este app (a cor de destaque dele é azul, não
    dourado). Mesma estrutura do .agk2-today: só o fundo do cabeçalho e o
@@ -2912,8 +2938,8 @@ details[open] summary::before { transform: rotate(90deg); }
     font-size: 10px;
     font-weight: 500;
   }
-  .ntab:hover { background: none; color: var(--ink3); }
-  .ntab.on { background: var(--blue-soft); color: var(--blue); }
+  .ntab:hover { background: none; color: var(--dock-petroleo); }
+  .ntab.on { background: color-mix(in srgb, var(--dock-petroleo) 12%, transparent); color: var(--dock-petroleo); }
   .nt-ico { display: block; font-size: 18px; line-height: 1; }
   .nt-full { display: none; }
   .nt-short { display: block; font-size: 10px; font-weight: 600; letter-spacing: -.01em; }
@@ -3085,7 +3111,7 @@ details[open] summary::before { transform: rotate(90deg); }
   }
   .month-nav { background: #fff; border: none; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
   .mn-today { background: rgba(0,122,255,.12); color: #1f5fa8; }
-  .stat-pill { background: #fff; border: none; box-shadow: 0 1px 2px rgba(0,0,0,.05); border-radius: 12px; }
+  .stat-pill { background: none; border: none; box-shadow: none; border-radius: 0; }
   .stat-pill .val.r { color: var(--pastel-red); }
   .stat-pill .val.g { color: var(--pastel-green); }
 
@@ -3115,8 +3141,8 @@ details[open] summary::before { transform: rotate(90deg); }
     z-index: -1;
     pointer-events: none;
   }
-  .ntab { color: #55555a; }
-  .ntab.on { background: rgba(255,255,255,.55); color: #1f5fa8; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .ntab { color: var(--dock-petroleo); }
+  .ntab.on { background: rgba(255,255,255,.55); color: var(--dock-petroleo); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .nt-ico { display: flex; }
   .nt-ico svg { width: 25px; height: 25px; display: block; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .nt-short { font-weight: 500; }
@@ -3306,7 +3332,7 @@ details[open] summary::before { transform: rotate(90deg); }
   border-bottom: 1px solid rgba(255,255,255,.6);
   box-shadow: 0 1px 8px rgba(60,70,120,.05);
 }
-.month-nav, .stat-pill {
+.month-nav {
   background: rgba(255,255,255,.6);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
@@ -3390,6 +3416,7 @@ html[data-theme="dark"] {
      os pastéis do claro sumiriam contra o fundo. Hex de C_BASE_DARK do
      Sistema Estilo, o par escuro exato da mesma paleta. */
   --pastel-blue: #9FBDE6;
+  --dock-petroleo: #8FB0A8;
   --pastel-green: #8FCBA3;
   --pastel-red: #F2A6A0;
   --pastel-amber: #F4C78C;
@@ -3437,14 +3464,14 @@ html[data-theme="dark"] .mn-btn { background: transparent; color: var(--ink2); }
 html[data-theme="dark"] .mn-btn:hover { background: rgba(255,255,255,.06); color: var(--ink); }
 html[data-theme="dark"] .mn-label { color: var(--ink); }
 html[data-theme="dark"] .nav-tabs { background: rgba(24,33,52,.96); border: .5px solid rgba(255,255,255,.07); box-shadow: 0 10px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter: none; backdrop-filter: none; }
-html[data-theme="dark"] .ntab { color: #93a1b8; transition: background .18s ease, color .18s ease; }
-html[data-theme="dark"] .ntab.on { color: var(--blue); background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+html[data-theme="dark"] .ntab { color: var(--dock-petroleo); transition: background .18s ease, color .18s ease; }
+html[data-theme="dark"] .ntab.on { color: var(--dock-petroleo); background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 /* Dark + mobile: dock translúcido sem o "drift" do iOS (blur no ::before) */
 @media (max-width: 760px) {
   html[data-theme="dark"] .nav-tabs { background: transparent; }
   html[data-theme="dark"] .nav-tabs::before { background: rgba(24,33,52,.15); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
 }
-html[data-theme="dark"] .stat-pill { background: var(--surface2); }
+/* .stat-pill sem fundo também no escuro (ver a regra base). */
 html[data-theme="dark"] .owner-select-wrap { background-color: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }
 html[data-theme="dark"] .owner-select-wrap:hover { background-color: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
 html[data-theme="dark"] .card,
@@ -6691,7 +6718,7 @@ function agbColHtml(cls,dow,dom,itens,dia){
   return `<div class="agb-col ${cls}">
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
-        <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}<span class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</span></div>
+        <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
         ${total>0.005?`<span class="agb-dh-in" title="A receber no dia">${agbMoedaCurta(total,'+')}</span>`:''}
       </div>
     </div>
