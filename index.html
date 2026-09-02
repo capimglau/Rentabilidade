@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AGI Locadora</title>
 <meta name="theme-color" content="#dfe7f2" id="metaTheme">
-<script>try{var t=localStorage.getItem('agi-theme');var sd=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t==null&&sd)){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('agi-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -9952,21 +9952,9 @@ function toggleTheme(){
   applyThemeChrome();
   renderAll();
 }
-// Acompanha o modo escuro do sistema (iPhone/Android/desktop): ao alternar no
-// dispositivo, o app alterna junto.
-function syncSystemTheme(){
-  if(!window.matchMedia) return;
-  const mq=window.matchMedia('(prefers-color-scheme: dark)');
-  const apply=e=>{
-    const dark=e.matches;
-    document.documentElement.setAttribute('data-theme',dark?'dark':'light');
-    try{localStorage.setItem('agi-theme',dark?'dark':'light');}catch(_){}
-    applyThemeChrome();
-    try{renderAll();}catch(_){}
-  };
-  if(mq.addEventListener)mq.addEventListener('change',apply);
-  else if(mq.addListener)mq.addListener(apply);
-}
+// Tema claro é sempre o padrão: o app não acompanha mais o modo escuro do
+// sistema — só muda para escuro se o usuário escolher manualmente (toggleTheme).
+function syncSystemTheme(){}
 // Generalizado pra funcionar em qualquer lista de lançamentos (Recebimentos,
 // Lançamentos, resultado da busca) — os cartões usam sempre a mesma marcação
 // (.swipe > .pcard + .swipe-actions), então o mesmo gesto de arrastar já
