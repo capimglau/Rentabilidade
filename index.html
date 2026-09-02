@@ -1658,9 +1658,13 @@ body.tip-pinned::before {
   .rc-cal-wrap .cal-cell.rc-hoje-mov { animation: none; background: color-mix(in srgb, var(--green-soft) 78%, var(--green) 22%); }
 }
 
-/* ── Agenda (board) — mesmo padrão da Agenda Mensal do AutoGest: colunas
-   por dia, "Atrasados" fixa à esquerda, cabeçalho de cada coluna fixo no
-   topo enquanto os cards rolam por baixo. ──
+/* ── Agenda (board) — MESMO tratamento visual da Agenda Mensal do Sistema
+   Estilo/AutoGest (.agk2-* lá), portado 1:1: cartão branco com a BANDEIRA
+   DIAGONAL colorida à esquerda (não mais o cartão inteiro tingido), duas
+   linhas de conteúdo (quem+valor / categoria+detalhe), sombra 3D dupla em
+   preto puro, baralho com fantasmas recortados e cabeçalho de dia em duas
+   linhas. Mapa de variáveis: --c-card→--card, --c-border→--line,
+   --c-text→--ink, --c-sub→--ink3. ──
    O scroll (vertical E horizontal) mora TODO em .agb-wrap — não em
    .agb-board. Um elemento com overflow-x diferente de "visible" já vira,
    sozinho, o "scroll container" mais próximo pra fins de position:sticky,
@@ -1669,162 +1673,230 @@ body.tip-pinned::before {
    rolar verticalmente — foi exatamente esse bug que apareceu (e foi
    corrigido) na versão original do AutoGest. */
 .agb-wrap{ max-height:min(560px,70vh); overflow:auto; border-radius:14px; }
-.agb-board{ display:flex; flex-wrap:nowrap; gap:12px; align-items:flex-start; padding:2px 2px 4px; }
+/* gap 14px e padding 4px 0 2px (era 12px / 2px 2px 4px) — valores da
+   .agk2-board da Estilo. */
+.agb-board{ display:flex; flex-wrap:nowrap; gap:14px; align-items:flex-start; padding:4px 0 2px 0; }
 /* min-width:0 é obrigatório: sem ele, um flex item com flex-shrink:0 ainda
    pode ser empurrado mais largo que o flex-basis quando o conteúdo tem
    texto longo sem quebra — foi o que deixava a coluna "Atrasados" mais
    larga que as outras no AutoGest antes da correção. */
 .agb-col{ flex:0 0 208px; min-width:0; display:flex; flex-direction:column; }
-/* 3 colunas cabem por vez na tela (o resto rola) — no PC a largura vira
-   fração do próprio board (que ocupa 100% do .agb-wrap), não um px fixo,
-   pra sempre fechar em exatamente 3 nessa faixa de tela. Mesma contagem da
-   Agenda Mensal do Sistema Estilo/AutoGest (.agk2-day-col lá, 3 colunas +
-   "Atrasados" fixa) — pedido do usuário pra igualar a aparência entre os
-   dois apps. Dois gaps de 12px (ver .agb-board) entre 3 colunas = 24px. */
-@media (min-width:761px){ .agb-board{ width:100%; } .agb-col{ flex-basis:calc((100% - 24px)/3); } }
-/* Fundo do cabeçalho de cada coluna: branco liso (var(--card)) por padrão —
-   inclusive "Atrasados", que fica só com o texto em vermelho (ver .agb-dow
-   mais abaixo), igual à Agenda Mensal do Sistema Estilo/AutoGest (o
-   cabeçalho lá nunca tinge de vermelho, só o rótulo "Atrasados"). Só "Hoje"
-   mantém o tingido azul — pedido do usuário: "painéis de datas com fundo
-   totalmente branco, com exceção de hoje que mantenha azul". */
-.agb-col-hd{ display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 11px; border-radius:12px; background:var(--card); border:1px solid var(--line); margin-bottom:9px; position:sticky; top:0; z-index:2; }
+/* 3 colunas por tela, igual à .agk2-day-col da Estilo
+   (flex:0 0 calc((100% - 28px)/3) — dois gaps de 14px = 28px). */
+@media (min-width:761px){ .agb-board{ width:100%; } .agb-col{ flex-basis:calc((100% - 28px)/3); } }
+/* No celular a coluna ocupa a LARGURA INTEIRA e o board vira um carrossel
+   com encaixe (scroll-snap) — mesmo comportamento do .agk2-board-mobile da
+   Estilo. Com os 208px fixos de antes, o cartão novo (que reserva 66px pra
+   bandeira diagonal) sobrava ~130px de texto e cortava quase todo nome de
+   cliente em "Mar…", "Trans…". */
+@media (max-width:760px){
+  .agb-wrap{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; }
+  .agb-col{ flex-basis:100%; scroll-snap-align:center; }
+}
+
+/* ── Cabeçalho do dia — .agk2-day-col-head da Estilo, em duas linhas: a de
+   sempre (dia + contagem) e, quando o dia move dinheiro, a do total. Em
+   coluna (e não tudo na mesma linha) porque no board do PC cada dia ocupa
+   1/3 da largura — total + data + contagem não caberiam lado a lado. */
+.agb-col-hd{ display:flex; flex-direction:column; align-items:stretch; gap:5px; padding:10px 12px; border-radius:14px; background:var(--card); border:1px solid var(--line); margin-bottom:10px; flex-shrink:0; position:sticky; top:0; z-index:2; }
 .agb-col-hd[onclick]{ cursor:pointer; }
-.agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 10%, var(--card)); border-color:color-mix(in srgb, var(--blue) 30%, transparent); }
-.agb-col-hd-l{ display:flex; align-items:baseline; gap:5px; min-width:0; overflow:hidden; flex-shrink:0; }
-.agb-col-hd-r{ display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; }
-.agb-col-total{ font-size:12px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.agb-col.agb-atrasados .agb-col-total{ color:var(--red); }
-.agb-col.agb-hoje .agb-col-total{ color:var(--blue); }
-.agb-dow{ font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap; }
-.agb-col.agb-atrasados .agb-dow{ color:var(--red); }
-.agb-col.agb-hoje .agb-dow{ color:var(--blue); }
-.agb-dom{ font-size:12.5px; color:var(--ink3); font-weight:500; white-space:nowrap; } /* +2px (era 10.5px), pedido do usuário */
-.agb-count{ flex-shrink:0; min-width:19px; height:19px; padding:0 6px; border-radius:99px; background:color-mix(in srgb, var(--ink) 10%, transparent); font-size:10.5px; font-weight:700; color:var(--ink3); display:flex; align-items:center; justify-content:center; }
-/* Coluna "Atrasados" fixa à esquerda enquanto o board rola de lado — as
-   demais colunas passam por baixo dela. position:sticky sozinho falha aqui
-   perto do fim do scroll (Chromium desgruda a coluna passado ~85% do
-   scroll máximo, num flex row largo — bug observado, não é limitação de
-   spec: um repro mínimo sem nenhum CSS deste app reproduz igual). Por
-   isso o acompanhamento é feito via JS (listener de 'scroll' do document,
-   só ativo a partir de 761px — ver innerWidth<761 lá), que sempre acerta a
-   posição — o position:relative aqui só existe pra dar contexto ao
-   transform. Só no PC: no mobile a coluna rola junto com as outras (tela
-   estreita demais pra sobrar espaço com ela fixa ocupando um pedaço fixo
-   da largura o tempo todo). */
-@media (min-width:761px){ .agb-board>.agb-col.agb-atrasados{ position:relative; z-index:3; background:var(--bg); box-shadow:10px 0 12px -8px rgba(0,0,0,0.12); } }
-.agb-col-body{ display:flex; flex-direction:column; gap:7px; }
-.agb-empty{ border:1.5px dashed var(--line); border-radius:12px; padding:14px 8px; text-align:center; color:var(--ink3); font-size:11px; font-weight:500; }
+.agb-dh-main{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
+.agb-col-hd-l{ display:flex; align-items:baseline; gap:6px; min-width:0; overflow:hidden; }
+.agb-dow{ font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; }
+.agb-dom{ font-size:11.5px; color:var(--ink3); font-weight:700; white-space:nowrap; }
+/* Contagem SEM pílula de fundo (a Estilo é só o número em cinza). */
+.agb-count{ min-width:20px; height:20px; padding:0 6px; font-size:11px; font-weight:700; color:var(--ink3); display:flex; align-items:center; justify-content:center; flex-shrink:0; background:none; border-radius:0; }
+/* "Hoje" tinge de DOURADO (#C99A46), não mais de azul — é a cor que a
+   Estilo usa pro dia corrente (.agk2-today), tanto no fundo do cabeçalho
+   (5% no claro, 10% no escuro) quanto no rótulo do dia (#A87A2E). */
+.agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, #C99A46 5%, var(--card)); border-color:transparent; }
+html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, #C99A46 10%, var(--card)); }
+.agb-col.agb-hoje .agb-dow{ color:#A87A2E; }
+/* "Atrasados" segue no MESMO padrão branco/neutro dos demais dias — só os
+   dizeres ficam em vermelho, igual à Estilo. */
+.agb-col.agb-atrasados .agb-dow{ color:#FF3B30; }
+/* Chip de total do dia — .agk2-dh-in/.agk2-dh-out da Estilo. Aqui todo
+   lançamento da agenda é a RECEBER, então só a versão "entrada" (verde) é
+   usada; a de saída fica definida pra não divergir do original. */
+.agb-dh-tot{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.agb-dh-in, .agb-dh-out{
+  font-size:10.5px; font-weight:800; letter-spacing:-0.1px; padding:1px 7px; border-radius:99px;
+  white-space:nowrap; font-variant-numeric:tabular-nums;
+}
+.agb-dh-in{ background:rgba(52,199,89,0.15); color:#2C7A46; }
+.agb-dh-out{ background:rgba(255,149,0,0.17); color:#8F5600; }
+html[data-theme="dark"] .agb-dh-in{ background:rgba(52,199,89,0.20); color:#8FE0A8; }
+html[data-theme="dark"] .agb-dh-out{ background:rgba(255,149,0,0.22); color:#F0C489; }
+/* A coluna "Atrasados" NÃO fica mais presa à esquerda enquanto o board rola
+   (nem com fundo/sombra próprios): a Estilo removeu esse comportamento a
+   pedido do usuário e a coluna rola junto com as outras. O acompanhamento
+   por transform no listener de 'scroll' saiu junto (ver JS). */
+.agb-board>.agb-col.agb-atrasados{ position:static; z-index:auto; background:transparent; box-shadow:none; }
+/* gap 9px + padding-bottom 9px — .agk2-day-col-body da Estilo: o respiro de
+   baixo tem que ser IGUAL ao gap entre cartões, senão a sombra do último
+   parece "flutuando", destacada do cartão. */
+.agb-col-body{ display:flex; flex-direction:column; gap:9px; padding-bottom:9px; }
+.agb-empty{ border:1.5px dashed var(--line); border-radius:14px; padding:18px 10px; text-align:center; color:var(--ink3); font-size:11.5px; font-weight:500; }
 /* Coluna do dia mostra só os primeiros AGB_COL_LIMITE cards (hoje 4); o
    resto fica escondido atrás do último, que ganha o efeito de baralho
    (fantasmas espiando atrás, ver .agb-baralho-wrap/.agb-ev-ghost abaixo) e
    um selo "+N" que abre a lista completa. Vale em QUALQUER tela — igual à
-   Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (pedido
-   do usuário: "ainda são exibidos mais de 4 cards numa data e eles não
-   ficam agrupados, quero o mesmo estilo da Estilo" — antes só valia no
-   mobile; no PC (>=761px) um CSS à parte forçava todos os cards abertos,
-   removido agora). */
-.agb-col-more{ display:none; flex-direction:column; gap:7px; margin-top:14px; }
+   Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC. */
+.agb-col-more{ display:none; flex-direction:column; gap:9px; margin-top:14px; }
 .agb-col.agb-col-open .agb-col-more{ display:flex; }
-/* Baralho: MESMO efeito (e mesmo CSS, portado 1:1) do
-   .agk2-ev-baralho-wrap/.agk2-ev-ghost da Agenda Mensal do Sistema
-   Estilo/AutoGest — fantasmas IRMÃOS reais no DOM (não box-shadow em
-   camadas, que era a versão anterior deste arquivo), colocados ANTES do
-   cartão de verdade (topo do baralho) dentro de um wrapper com
-   overflow:visible. Sendo irmãos anteriores no DOM, sem z-index em nenhum
-   dos dois, o cartão real (que vem depois) pinta por cima naturalmente. */
-.agb-baralho-wrap{ position:relative; overflow:visible; margin-bottom:12px; }
-.agb-ev-ghost{
-  position:absolute; inset:0; border-radius:12px; pointer-events:none;
-  background:linear-gradient(165deg, color-mix(in srgb, var(--ev-l) 70%, var(--ev-d) 30%), color-mix(in srgb, var(--ev-l) 25%, var(--ev-d) 75%));
-  border:1px solid color-mix(in srgb, var(--ev-d) 30%, var(--line));
-  box-shadow:0 6px 12px -8px color-mix(in srgb, var(--ev-d) 30%, transparent);
+
+/* ── Cartão — .agk2-ev-card da Estilo, 1:1 ──
+   [bandeira-diagonal-clara] O cartão NÃO é mais tingido inteiro pelo par
+   pastel --ev-l/--ev-d: agora é var(--card) (branco/quase-branco) com a cor
+   da categoria concentrada só na bandeira diagonal (::before) à esquerda —
+   padding-left:66px abre espaço pra ela. Duas linhas de conteúdo em vez de
+   título/etiqueta/rodapé: linha 1 = quem + valor, linha 2 = categoria +
+   detalhe (+ selo de atraso e selo "+N" do baralho). Altura fixa de 64px
+   (68.5px no mobile) com overflow:hidden.
+   A sombra é preto PURO (nunca color-mix de --ev-d): se o color-mix falhar
+   em resolver a custom property no primeiro paint, o box-shadow inteiro é
+   invalidado e o cartão fica chapado. */
+.agb-card{
+  position:relative;
+  border-radius:14px; padding:8px 12px 8px 66px; height:64px; box-sizing:border-box; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center; gap:5px;
+  cursor:pointer; transition:transform .15s ease, opacity .2s ease, box-shadow .15s ease; flex-shrink:0;
+  background:var(--card);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.8), 0 2px 4px rgba(0,0,0,.08), 0 14px 20px -14px rgba(0,0,0,.28), 0 5px 7px -6px rgba(0,0,0,.14);
 }
-/* Sem rotação nem deslocamento lateral: só desce e estreita, como carta
-   espiando por baixo (rotação + card largo lê como cunha torta, não pilha). */
-.agb-ev-ghost-1{ transform:translateY(5px) scaleX(0.965); opacity:0.9; }
-.agb-ev-ghost-2{ transform:translateY(10px) scaleX(0.93); opacity:0.55; }
-html[data-theme="dark"] .agb-ev-ghost{
-  border-color:rgba(255,255,255,0.18);
-  box-shadow:0 6px 14px -6px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.10);
+/* Faixa reservada à direita só quando o cartão tem a lapiseira de edição
+   (que a Agenda da Estilo não tem) — sem isso ela cobriria o valor. */
+.agb-card.agb-card-edit-on{ padding-right:30px; }
+/* Bandeira: recorte diagonal (78% na base) com degradê BEM leve — ~10% de
+   branco no topo, ~10% de preto na base, tom sobre tom de --flag-mid. */
+.agb-card::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:58px;
+  clip-path:polygon(0 0, 100% 0, 78% 100%, 0% 100%);
+  background: var(--flag-icon) no-repeat 21px center/16px 16px, linear-gradient(165deg, color-mix(in srgb, white 10%, var(--flag-mid)), color-mix(in srgb, black 10%, var(--flag-mid)));
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.35), inset 0 -4px 7px rgba(0,0,0,.18);
 }
-.agb-col.agb-col-open .agb-ev-ghost{ display:none; }
-.agb-col.agb-col-open .agb-baralho-wrap{ margin-bottom:0; }
-.agb-card-stack-badge{ position:absolute; right:10px; bottom:-9px; z-index:2; padding:2px 8px; border-radius:99px;
-  font-size:10.5px; font-weight:800; color:#fff; background:color-mix(in srgb, var(--ink) 88%, transparent);
-  box-shadow:0 2px 5px rgba(0,0,0,.18); cursor:pointer; }
-.agb-col.agb-col-open .agb-card-stack-badge{ display:none; }
-/* Fundo pastel + relevo "3d" EXATAMENTE iguais aos cards da Agenda Mensal do
-   Sistema Estilo/AutoGest (.agk2-ev-card): mesmas duas fórmulas de degradê
-   (claro/escuro, com o "+5% de branco" nas pontas) e mesma sombra dupla
-   (inset de brilho no topo + sombra de contato + sombra de queda tingida da
-   cor da família) — pedido do usuário pra igualar a aparência entre os dois
-   apps, não só imitar. --ev-l/--ev-d setados inline por card, conforme o
-   tipo do lançamento (ver agbTipoTone/agbCardHtml). Sem eles (não deveria
-   acontecer, sempre setados) cai no cinza neutro do --card. */
-.agb-card{ position:relative; border-radius:12px; padding:8px 26px 7px 10px; cursor:pointer; transition:transform .1s ease, box-shadow .15s ease;
-  background:linear-gradient(165deg, color-mix(in srgb, white 5%, color-mix(in srgb, white 22%, var(--ev-l,var(--card)))), color-mix(in srgb, white 5%, color-mix(in srgb, var(--ev-l,var(--card)) 40%, var(--ev-d,var(--card)) 60%)));
-  border:1px solid color-mix(in srgb, var(--ev-d,var(--line)) 24%, transparent);
-  box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--ev-d,#000) 45%, transparent); }
+/* Costura tracejada seguindo o ÂNGULO REAL do corte acima (58px de largura
+   sobre a altura do cartão ⇒ ~11°). top:0/bottom:0 faz a linha se esticar
+   sozinha pro cartão de 64px (PC) ou 68.5px (mobile). */
+.agb-card::after{
+  content:''; position:absolute; left:51.6px; top:0; bottom:0; width:0;
+  border-left:1.6px dashed rgba(0,0,0,.3);
+  transform:rotate(11deg); transform-origin:center;
+}
+/* 761px = breakpoint de "PC" já usado no resto deste arquivo (a Estilo usa
+   767px; o cartão cresce um pouco no celular, onde a agenda não tem teto). */
+@media (max-width:760px){
+  .agb-card{ height:68.5px; padding:9px 12px 9px 66px; }
+  .agb-card.agb-card-edit-on{ padding-right:30px; }
+}
+/* Temas escuros ganham o MESMO tratamento do claro — só muda a intensidade:
+   bandeira mais clara/viva no topo (escurecer na base sumiria contra o fundo
+   escuro), costura tracejada BRANCA (preta sumiria) e o valor na cor "cheia"
+   da bandeira (--flag-mid) em vez do "ink" escurecido do claro. */
 html[data-theme="dark"] .agb-card{
-  background:linear-gradient(165deg, color-mix(in srgb, white 5%, color-mix(in srgb, var(--ev-l,var(--card)) 88%, black 12%)), color-mix(in srgb, white 5%, var(--ev-d,var(--card))));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--ev-d,#000) 70%, transparent);
+  background:var(--card);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 1px 3px rgba(0,0,0,.4), 0 14px 20px -14px rgba(0,0,0,.45);
 }
-.agb-card:active{ transform:scale(.97); }
-.agb-card.agb-card-atrasado{ background:color-mix(in srgb, var(--red-soft) 82%, var(--card) 18%); border-color:color-mix(in srgb, var(--red) 28%, transparent); }
-/* Atrasado pulsa forte (chama atenção pro atraso); hoje pulsa bem mais
-   sutil (só um lembrete leve, não é urgência) — o anel cresce e desaparece
-   por cima da sombra normal do card, sem trocar o fundo/degradê. */
-@keyframes agbPulseAtrasado{
-  0%,100%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--red) 45%, transparent), 0 0 0 0 color-mix(in srgb, var(--red) 45%, transparent); }
-  50%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--red) 45%, transparent), 0 0 0 6px transparent; }
+html[data-theme="dark"] .agb-card::before{
+  background: var(--flag-icon) no-repeat 21px center/16px 16px, linear-gradient(165deg, color-mix(in srgb, white 20%, var(--flag-mid)), var(--flag-mid));
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.25), inset 0 -3px 6px rgba(0,0,0,.35);
 }
-.agb-card.agb-card-atrasado{ animation:agbPulseAtrasado 1.7s ease-in-out infinite; }
-@keyframes agbPulseHoje{
-  0%,100%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--ev-d,#000) 45%, transparent), 0 0 0 0 color-mix(in srgb, var(--blue) 22%, transparent); }
-  50%{ box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.10), 0 10px 18px -12px color-mix(in srgb, var(--ev-d,#000) 45%, transparent), 0 0 0 4px transparent; }
+html[data-theme="dark"] .agb-card::after{ border-left:1.6px dashed rgba(255,255,255,.4); }
+.agb-card:active{ transform:scale(0.97); }
+/* Vencido/hoje: só o pulso sutil de brightness (nunca opacity — senão parece
+   que o cartão está sumindo). Os degradês da bandeira continuam iguais: eles
+   dizem CATEGORIA, não urgência. Substitui os anéis de box-shadow que este
+   app usava antes (agbPulseAtrasado/agbPulseHoje). */
+.agb-card.agb-card-pulsa{ animation:agbEvPulse 3.4s ease-in-out infinite; }
+@keyframes agbEvPulse{
+  0%,100%{ filter:brightness(1); }
+  50%{ filter:brightness(0.88); }
 }
-.agb-card.agb-card-hoje:not(.agb-card-atrasado){ animation:agbPulseHoje 2.8s ease-in-out infinite; }
-/* Mesmas duas animações, só com a sombra-base do tema escuro (ver
-   html[data-theme="dark"] .agb-card acima) — sem isso o pulso ficava com a
-   sombra "clara" (ambiente rgba(0,0,0,.10)) mesmo no escuro, destoando um
-   pouco dos cards vizinhos parados. */
-@keyframes agbPulseAtrasadoDark{
-  0%,100%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--red) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--red) 45%, transparent); }
-  50%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--red) 70%, transparent), 0 0 0 6px transparent; }
-}
-@keyframes agbPulseHojeDark{
-  0%,100%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--ev-d,#000) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--blue) 22%, transparent); }
-  50%{ box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 3px rgba(0,0,0,0.45), 0 10px 20px -10px color-mix(in srgb, var(--ev-d,#000) 70%, transparent), 0 0 0 4px transparent; }
-}
-html[data-theme="dark"] .agb-card.agb-card-atrasado{ animation-name:agbPulseAtrasadoDark; }
-html[data-theme="dark"] .agb-card.agb-card-hoje:not(.agb-card-atrasado){ animation-name:agbPulseHojeDark; }
-@media (prefers-reduced-motion: reduce) {
-  .agb-card.agb-card-atrasado, .agb-card.agb-card-hoje{ animation:none; }
+@media (prefers-reduced-motion: reduce){
+  .agb-card.agb-card-pulsa{ animation:none; }
 }
 /* Lapiseira de edição completa: canto superior direito, sem disputar
    clique com o card inteiro (que baixa/confirma) — só existe pra cards de
    1 lançamento, ver agbCardHtml. */
-.agb-card-edit{ position:absolute; top:6px; right:6px; width:20px; height:20px; padding:0; border:none; border-radius:6px;
-  display:flex; align-items:center; justify-content:center; cursor:pointer;
-  background:color-mix(in srgb, var(--ev-d,var(--ink)) 14%, transparent); color:var(--ev-tag,var(--ink3)); }
+.agb-card-edit{ position:absolute; top:5px; right:5px; width:20px; height:20px; padding:0; border:none; border-radius:6px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2;
+  background:color-mix(in srgb, var(--ink) 8%, transparent); color:var(--ink3); }
 .agb-card-edit svg{ width:12px; height:12px; }
 .agb-card-edit:active{ transform:scale(.9); }
-/* Tamanhos iguais aos do cartão da Agenda Mensal do Sistema Estilo
-   (.agk2-ev-title/.agk2-ev-val/.agk2-ev-sub) — título/valor 13px, detalhe
-   11px (eram 12.5/12.5/10.5). */
-.agb-card-title{ margin:0 0 4px; font-size:13px; font-weight:600; color:var(--ink); line-height:1.25; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
-.agb-card-tags{ display:flex; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
+/* As duas linhas do cartão — .agk2-ev-l1/.agk2-ev-l2 da Estilo. */
+.agb-ev-l1{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-width:0; }
+.agb-ev-l2{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; }
+.agb-card-title{ font-size:13px; font-weight:600; line-height:1.25; margin:0; letter-spacing:-0.1px; color:var(--ink); flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* tabular-nums: os valores de dias diferentes ficam alinhados na vertical
+   (o "R$" e as casas não dançam de um cartão pro outro). Cor vem da
+   bandeira (--flag-ink no claro, --flag-mid no escuro). */
+.agb-card-val{ font-size:13px; font-weight:700; line-height:1.25; letter-spacing:-0.2px; color:var(--flag-ink,var(--ink)); flex-shrink:0; font-variant-numeric:tabular-nums; }
+html[data-theme="dark"] .agb-card-val{ color:var(--flag-mid,var(--ink)); }
+.agb-card-sub{ font-size:11px; color:var(--ink3); font-weight:500; flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* Categoria em negrito com a cor do título (já comprovada legível neste
+   cartão) e o detalhe na mesma cor com opacidade menor, pra manter a
+   hierarquia — igual ao .agk2-ev-cat da Estilo. */
+.agb-ev-cat{ font-weight:700; color:var(--ink); }
+.agb-ev-det{ color:var(--ink); opacity:0.62; }
+/* Único sinal de atraso no cartão (.agk2-ev-atraso da Estilo). */
+.agb-ev-atraso{
+  flex-shrink:0; font-size:11px; font-weight:800; padding:2px 7px; border-radius:99px;
+  white-space:nowrap; background:rgba(255,59,48,0.16); color:#A8322A;
+}
+html[data-theme="dark"] .agb-ev-atraso{ background:rgba(255,120,110,0.22); color:#FFD9D5; }
+/* Selo "+N" deixa de ser absoluto no canto e passa a ser o último item da
+   linha 2: no cartão de 64px não há canto livre — em cima cobriria o valor,
+   embaixo brigaria com o selo de atraso. */
+.agb-card-stack-badge{
+  flex-shrink:0; background:var(--ink); color:var(--card);
+  font-size:11px; font-weight:800; padding:2px 7px; border-radius:99px; opacity:0.85; cursor:pointer;
+}
+.agb-col.agb-col-open .agb-card-stack-badge{ display:none; }
+/* Baralho: quando há mais lançamentos escondidos no dia, o ÚLTIMO cartão
+   visível ganha duas cópias fantasmas de si mesmo espiando atrás.
+   Os fantasmas são IRMÃOS reais no DOM (.agb-ev-ghost), ANTES do cartão —
+   um pseudo-elemento com z-index:-1 só fica atrás do CONTEÚDO do próprio
+   elemento, mas ainda pinta por CIMA do fundo/borda dele, então acabava
+   cobrindo o cartão da frente com o próprio contorno.
+   Um fantasma é uma CÓPIA do cartão da frente, então usa o mesmo fundo dele
+   (var(--card)) — não mais o degradê tingido --ev-l/--ev-d: atrás de um
+   cartão branco, duas barras escuras acastanhadas não leem como carta
+   nenhuma, leem como SOMBRA DUPLA. A profundidade quem dá é a borda + a
+   sombra. clip-path deixa de cada fantasma só a faixa que realmente deve
+   aparecer embaixo do cartão (5px no 1º, 10px no 2º — o próprio
+   deslocamento de cada um); sem isso o contorno atravessa o cartão da
+   frente nos temas escuros, onde --card não é 100% opaco em toda tela. */
+.agb-baralho-wrap{ position:relative; overflow:visible; margin-bottom:12px; }
+.agb-ev-ghost{
+  position:absolute; inset:0; border-radius:14px; pointer-events:none;
+  background:var(--card,#fff);
+  /* Borda/sombra em preto puro: nos temas claros --ev-d é um tom pálido
+     (paleta dessaturada de propósito) e o contorno sumia contra o fundo
+     claro — a pilha deixava de ler como pilha. */
+  border:1.5px solid rgba(0,0,0,0.30);
+  /* Contato bem próximo: o que aparece de cada fantasma é só a fatia de
+     5px/10px que sobra embaixo do cartão da frente, então qualquer blur
+     maior que essa fatia borra o próprio contorno que deveria definir a
+     carta. */
+  box-shadow:0 2px 3px -1px rgba(0,0,0,0.20);
+}
+/* Sem rotação nem deslocamento lateral: só desce e estreita, como carta
+   espiando por baixo (rotação + card largo lê como cunha torta, não pilha). */
+.agb-ev-ghost-1{ transform:translateY(5px) scaleX(0.965); opacity:0.9; clip-path:inset(calc(100% - 5px) 0 0 0); }
+/* 0.68 (não 0.55): a opacidade também apaga a BORDA, e mais fraco que isso
+   a carta de baixo virava um borrão sem contorno em vez da 3ª da pilha. */
+.agb-ev-ghost-2{ transform:translateY(10px) scaleX(0.93); opacity:0.68; clip-path:inset(calc(100% - 10px) 0 0 0); }
+html[data-theme="dark"] .agb-ev-ghost{
+  border-color:rgba(255,255,255,0.32);
+  box-shadow:0 2px 4px -2px rgba(0,0,0,0.60), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+.agb-col.agb-col-open .agb-ev-ghost{ display:none; }
+.agb-col.agb-col-open .agb-baralho-wrap{ margin-bottom:0; }
+/* Selo de parcela (2/3 etc.) — o cartão da agenda não usa mais etiquetas
+   (a parcela virou texto do detalhe), mas a lista de "irmãos" da edição
+   ainda usa .tag.agb-tag-parc; a regra fica por causa dela. */
 .agb-tag{ padding:2px 7px; border-radius:99px; font-size:9.5px; font-weight:700; background:color-mix(in srgb, var(--ev-d,var(--blue)) 16%, var(--card)); color:var(--ev-tag,var(--blue)); white-space:nowrap; }
-/* Selo de parcela (2/3 etc.): vazado em vez de preenchido, pra não brigar
-   visualmente com a cor do tipo — é outra informação (qual parcela, de um
-   grupo identificado por semelhança, ver agbParcelaSiblings), não outra
-   categoria de cor. */
 .agb-tag-parc{ background:transparent; border:1px solid color-mix(in srgb, var(--ev-tag,var(--blue)) 55%, transparent); }
-.agb-card-foot{ display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
-.agb-card-sub{ font-size:11px; font-weight:500; color:var(--ink3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.agb-card-val{ font-size:13px; font-weight:700; color:var(--ink); white-space:nowrap; }
-.agb-card.agb-card-atrasado .agb-card-val{ color:var(--red); }
 
 /* A Agenda (ou o calendário do mês) ocupa a largura toda do conteúdo em
    qualquer tamanho de tela — só uma vista por vez, trocada pelo seletor
@@ -6276,6 +6348,48 @@ function agbTipoTone(tipo){
   const t=(dark?AGB_TONE.dark:AGB_TONE.light)[fam];
   return {l:t.l,d:t.d,tag:dark?t.l:t.d};
 }
+// [bandeira-diagonal-clara] Cor + ícone da BANDEIRA do cartão — portado de
+// AGK2_FLAG_LIGHT/AGK2_FLAG_ICON/_agk2FlagColor do Sistema Estilo. Duas
+// famílias têm cor própria mais viva (indigo = petróleo, vermelho =
+// terracota); as demais usam o próprio tom "d" da paleta clara (mais
+// saturado que o par --ev-l/--ev-d, intencionalmente lavado). A cor da
+// bandeira sai SEMPRE da paleta clara, inclusive no tema escuro — lá o que
+// muda é o degradê (ver CSS), não a matiz.
+// As aspas do SVG vão como %22: aqui o valor entra num atributo style="..."
+// de HTML montado à mão (na Estilo é um objeto de style do React, que não
+// tem esse problema) e uma aspa dupla crua fecharia o atributo.
+const AGB_FLAG_ICON_CAR="url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M5 17h14M5 17a2 2 0 1 0 4 0M5 17a2 2 0 1 1 4 0M15 17a2 2 0 1 0 4 0M15 17a2 2 0 1 1 4 0M5 17V9l2-4h10l2 4v8%22/%3E%3C/svg%3E')";
+const AGB_FLAG_ICON_ALERT="url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1 1 0 0 0 .9 1.5h17.2a1 1 0 0 0 .9-1.5L13.7 3.9a1 1 0 0 0-1.4 0Z%22/%3E%3C/svg%3E')";
+const AGB_FLAG_ICON_DOC="url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 3h9l5 5v13H6z%22/%3E%3Cpath d=%22M15 3v5h5%22/%3E%3C/svg%3E')";
+const AGB_FLAG_LIGHT={ indigo:{mid:'#6f9089',ink:'#3c5a53'}, vermelho:{mid:'#8f5060',ink:'#6b3a45'} };
+const AGB_FLAG_ICON={ indigo:AGB_FLAG_ICON_CAR, vermelho:AGB_FLAG_ICON_ALERT };
+function agbFlagColor(tipo){
+  const fam=AGB_TIPO_FAMILIA[tipo]||'azul';
+  if(AGB_FLAG_LIGHT[fam])return {mid:AGB_FLAG_LIGHT[fam].mid,ink:AGB_FLAG_LIGHT[fam].ink,icon:AGB_FLAG_ICON[fam]};
+  const t=AGB_TONE.light[fam]||AGB_TONE.light.azul;
+  return {mid:t.d,ink:t.d,icon:AGB_FLAG_ICON_DOC};
+}
+// Selo de atraso do cartão — mesma redação do _agk2Atraso da Estilo.
+function agbAtrasoTxt(dataISO,hojeISO){
+  if(!dataISO||!hojeISO||dataISO>=hojeISO)return null;
+  const d=Math.round((new Date(hojeISO+'T12:00:00')-new Date(dataISO+'T12:00:00'))/86400000);
+  if(d<=0)return null;
+  if(d===1)return 'há 1 dia';
+  if(d<30)return 'há '+d+' dias';
+  const m=Math.floor(d/30);
+  return m===1?'há 1 mês':'há '+m+' meses';
+}
+// Valor do chip de total do cabeçalho — centavos só quando existem de
+// verdade (",00" não informa nada e come 3 caracteres numa coluna estreita),
+// com os centavos em corpo menor/esmaecido. Mesmo critério do _agk2Moeda/
+// _agk2MoedaEl da Estilo.
+function agbMoedaCurta(v,prefix){
+  const n=parseFloat(v)||0;
+  const temCent=Math.abs(n*100-Math.round(n)*100)>0.5;
+  const s=Math.abs(n).toLocaleString('pt-BR',{minimumFractionDigits:temCent?2:0,maximumFractionDigits:temCent?2:0});
+  const p=s.split(',');
+  return (prefix||'')+(n<0?'-':'')+'R$ '+p[0]+(p[1]?`<span style="opacity:.6;font-size:.72em">,${p[1]}</span>`:'');
+}
 // ── NÚMERO DO LANÇAMENTO PRINCIPAL (lanc_num) ──
 // Cada item lançado (a locação, a lavagem, a avaria...) ganha um número
 // próprio no momento em que é gravado, e TODAS as parcelas que ele gerar
@@ -6359,8 +6473,19 @@ function agbCardHtml(grp,dia,hiddenCount){
   // senão duplica com o selo de parcela logo abaixo (agbParcelaInfo).
   const ref=(grp.recs[0].obs||'').replace(/\s*·?\s*Parcela\s+\d+\s*\/\s*\d+.*$/i,'').trim();
   const parc=n===1?agbParcelaInfo(grp.recs[0]):null;
-  const sub=[n>1?`${n} lançamentos`:esc(grp.recs[0].placa||''),esc(forma),ref?`REF ${esc(ref)}`:''].filter(Boolean).join(' · ');
+  // Linha 2 do cartão = categoria + detalhe. O tipo saiu da etiqueta própria
+  // (o cartão de 2 linhas da Estilo não tem etiquetas) e virou o .agb-ev-cat
+  // em negrito; a parcela, que era um selo, virou texto do detalhe.
+  const detalhe=[n>1?`${n} lançamentos`:esc(grp.recs[0].placa||''),esc(forma),parc?`${parc.atual}/${parc.total}`:'',ref?`REF ${esc(ref)}`:''].filter(Boolean).join(' · ');
   const tone=agbTipoTone(tipo);
+  const flag=agbFlagColor(tipo);
+  // Selo de atraso: vencimento mais antigo do grupo (um card agrupa vários
+  // lançamentos do mesmo cliente, que podem ter vencido em dias diferentes).
+  const atrasoTxt=atrasado?agbAtrasoTxt(grp.recs.map(r=>r.prev_pgto).filter(Boolean).sort()[0],td()):null;
+  // animation-delay ancorado no relógio, não no instante em que o card
+  // montou: sem isso dois cards atrasados pulsam fora de fase (um claro,
+  // outro escuro na mesma hora) e parecem ter cores diferentes.
+  const pulseDelay=(atrasado||hoje)?`;animation-delay:${-(Date.now()%3400)/1000}s`:'';
   // Edição completa: só faz sentido pra 1 lançamento (o card agrupado
   // representa vários registros diferentes) — reaproveita o mesmo
   // openEdit(idx) do swipe "✏ Editar" já usado em Lançamentos/Recebimentos,
@@ -6376,20 +6501,21 @@ function agbCardHtml(grp,dia,hiddenCount){
   // Estilo/AutoGest (.agk2-ev-baralho-wrap/.agk2-ev-ghost lá), trocado da
   // sombra em camadas que este app usava antes — mais um selo "+N" clicável
   // que abre o resto. Sem criar nenhum card novo só pra representar a pilha.
+  // Selo "+N" agora é o último item da linha 2 (era absoluto no canto): num
+  // cartão de 64px não sobra canto livre — em cima cobriria o valor, embaixo
+  // brigaria com o selo de atraso.
   const stackBadge=hiddenCount?`<span class="agb-card-stack-badge" onclick="event.stopPropagation();toggleAgbDeck(this)" title="Ver mais ${hiddenCount} lançamento(s)">+${hiddenCount}</span>`:'';
-  const cardHtml=`<div class="agb-card${atrasado?' agb-card-atrasado':''}${hoje?' agb-card-hoje':''}" role="button" tabindex="0"
-      style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag}"
+  const cardHtml=`<div class="agb-card${(atrasado||hoje)?' agb-card-pulsa':''}${editBtn?' agb-card-edit-on':''}" role="button" tabindex="0"
+      style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag};--flag-mid:${flag.mid};--flag-ink:${flag.ink};--flag-icon:${flag.icon}${pulseDelay}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
-      title="Toque para baixar${n>1?' (todos os lançamentos deste cliente no dia)':''}">
+      title="Toque para baixar${n>1?' (todos os lançamentos deste cliente no dia)':''}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''}">
     ${editBtn}
-    <p class="agb-card-title">${esc(grp.cliente||'—')}</p>
-    ${(tipo||parc)?`<div class="agb-card-tags">${tipo?`<span class="agb-tag">${esc(tipo)}</span>`:''}${parc?`<span class="agb-tag agb-tag-parc" title="Parcela ${parc.atual} de ${parc.total} do mesmo lançamento — as outras aparecem em dias diferentes">◐ ${parc.atual}/${parc.total}</span>`:''}</div>`:''}
-    <div class="agb-card-foot"><span class="agb-card-sub">${sub}</span><span class="agb-card-val">${fRH(grp.total)}</span></div>
-    ${stackBadge}
+    <div class="agb-ev-l1"><p class="agb-card-title">${esc(grp.cliente||'—')}</p><span class="agb-card-val">${fRH(grp.total)}</span></div>
+    <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${atrasoTxt?`<span class="agb-ev-atraso">${atrasoTxt}</span>`:''}${stackBadge}</div>
   </div>`;
   if(!hiddenCount)return cardHtml;
-  return `<div class="agb-baralho-wrap" style="--ev-l:${tone.l};--ev-d:${tone.d}">
+  return `<div class="agb-baralho-wrap">
     <div class="agb-ev-ghost agb-ev-ghost-1"></div>
     <div class="agb-ev-ghost agb-ev-ghost-2"></div>
     ${cardHtml}
@@ -6410,13 +6536,17 @@ function agbColHtml(cls,dow,dom,itens,dia){
   const cardsHtml=visiveis.map((g,i)=>agbCardHtml(g,dia,(temResto&&i===visiveis.length-1)?resto.length:0)).join('');
   const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia)).join('')}</div>`:'';
   const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
+  // Cabeçalho em DUAS linhas, igual ao .agk2-day-col-head da Estilo: a de
+  // sempre (dia + contagem) e, quando o dia move dinheiro, o chip do total.
+  // Numa linha só, no board do PC (cada dia ocupa 1/3 da largura), data +
+  // total + contagem não cabem lado a lado.
   return `<div class="agb-col ${cls}">
     <div class="agb-col-hd"${hdClick}>
-      <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
-      <div class="agb-col-hd-r">
-        <span class="agb-col-total">${fR(total)}</span>
+      <div class="agb-dh-main">
+        <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
         <span class="agb-count" title="${itens.length} lançamento(s)">${itens.length}</span>
       </div>
+      ${total>0.005?`<div class="agb-dh-tot"><span class="agb-dh-in" title="A receber no dia">${agbMoedaCurta(total,'+')}</span></div>`:''}
     </div>
     <div class="agb-col-body">${grupos.length?cardsHtml:'<div class="agb-empty">Sem lançamentos</div>'}${moreHtml}</div>
   </div>`;
@@ -10898,23 +11028,11 @@ document.addEventListener('wheel',e=>{
   e.preventDefault();
   wrap.scrollLeft+=e.deltaY;
 },{passive:false});
-// Mantém a coluna "Atrasados" fixa acompanhando o scroll horizontal do
-// board via transform em vez de confiar só no position:sticky — em boards
-// bem largos o sticky solta a coluna perto do fim do scroll (bug do
-// Chromium, reproduzido isolado sem nenhum CSS deste app). Delegado no
-// document (o board é redesenhado a cada renderAll, perderia um listener
-// direto), com scroll:true pro evento de scroll (que não faz bubble por
-// padrão, só é capturado na fase de captura).
-document.addEventListener('scroll',e=>{
-  const wrap=e.target.closest&&e.target.closest('.agb-wrap');
-  if(!wrap)return;
-  const atrasados=wrap.querySelector('.agb-atrasados');
-  if(!atrasados)return;
-  // No mobile ela rola junto com as outras colunas (fica sem transform,
-  // igual as demais) — só fica fixa a partir de 761px, mesma faixa das
-  // 4 colunas por tela (ver .agb-col flex-basis).
-  atrasados.style.transform=window.innerWidth<761?'':`translateX(${wrap.scrollLeft}px)`;
-},true);
+// A coluna "Atrasados" NÃO fica mais presa à esquerda enquanto o board rola:
+// a Agenda da Estilo removeu esse comportamento (a coluna rola junto com as
+// outras, sem fundo nem sombra próprios) e este app segue o mesmo
+// tratamento. O listener de 'scroll' que a acompanhava por transform saiu
+// junto com o CSS de sticky/fundo dela.
 
 // Dock mobile: some deslizando pra baixo enquanto o usuário rola a página
 // para baixo (lendo o conteúdo), e volta ao rolar para cima — evita ficar
