@@ -3112,9 +3112,9 @@ details[open] summary::before { transform: rotate(90deg); }
   .nav-tabs {
     position: fixed;
     left: calc(1.5vw + 16px); right: calc(1.5vw + 16px);
-    /* 4 -> 16 -> 10 -> 4px (pedido do usuário: continua flutuante, mas
-       com uma folga bem menor até a borda). */
-    bottom: calc(4px + env(safe-area-inset-bottom));
+    /* 4 -> 16 -> 10 -> 4 -> 0px (pedido do usuário: "diminuir muito" —
+       só a área do home indicator, sem folga extra nenhuma). */
+    bottom: env(safe-area-inset-bottom);
     width: auto;
     margin: 0;
     display: flex;
