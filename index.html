@@ -3112,10 +3112,9 @@ details[open] summary::before { transform: rotate(90deg); }
   .nav-tabs {
     position: fixed;
     left: calc(1.5vw + 16px); right: calc(1.5vw + 16px);
-    /* 4 -> 16 -> ~10px (pedido do usuário: "desça ele uns 40%" — a
-       distância até o fim da tela, não o padding interno). 16 × 0,6 =
-       9,6px. */
-    bottom: calc(10px + env(safe-area-inset-bottom));
+    /* 4 -> 16 -> 10 -> 4px (pedido do usuário: continua flutuante, mas
+       com uma folga bem menor até a borda). */
+    bottom: calc(4px + env(safe-area-inset-bottom));
     width: auto;
     margin: 0;
     display: flex;
@@ -11785,27 +11784,6 @@ function setHeaderCompact(hidden){
   window.addEventListener('scroll',()=>{
     if(!ticking){ticking=true;requestAnimationFrame(onScroll);}
   },{passive:true});
-})();
-
-// Dock mobile: no Safari do iPhone, position:fixed;bottom:0 é relativo ao
-// viewport de LAYOUT, não ao visual — quando a barra de endereço/abas some
-// (o usuário rola a página), o viewport visual cresce mas o dock fica
-// "grudado" na posição de quando a barra estava visível, sobrando um vão
-// vazio embaixo dele até a borda real da tela. Corrige compensando com a
-// diferença entre innerHeight (layout) e visualViewport.height+offsetTop
-// (visível de fato).
-(function(){
-  if(!window.visualViewport||window.innerWidth>760)return;
-  const vv=window.visualViewport;
-  function fix(){
-    const dock=document.getElementById('mainDock');
-    if(!dock)return;
-    const gap=window.innerHeight-(vv.height+vv.offsetTop);
-    dock.style.transform=gap>0?`translateY(-${gap}px) translateZ(0)`:'translateZ(0)';
-  }
-  vv.addEventListener('resize',fix);
-  vv.addEventListener('scroll',fix);
-  fix();
 })();
 
 iniciarApp();
