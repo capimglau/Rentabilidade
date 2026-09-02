@@ -3357,34 +3357,16 @@ details[open] summary::before { transform: rotate(90deg); }
   .stat-pill .val.r { color: var(--pastel-red); }
   .stat-pill .val.g { color: var(--pastel-green); }
 
-  /* Dock translúcido estilo iOS 26 (liquid glass).
-     O blur fica num ::before (position:absolute), NÃO no elemento fixo —
-     senão o iOS faz o dock "derivar" para cima durante o scroll. */
+  /* Dock com fundo sólido (sem vidro fosco/blur, pedido do usuário — mesmo
+     motivo do .header em applyThemeChrome: o blur deixava conteúdo de trás
+     aparecendo por baixo do dock). */
   .nav-tabs {
-    background: transparent;
-    border: .5px solid rgba(255,255,255,.7);
+    background: var(--card);
+    border: .5px solid rgba(0,0,0,.07);
     box-shadow: 0 10px 34px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.65);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-  .nav-tabs::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: rgba(255,255,255,.15);
-    -webkit-backdrop-filter: blur(28px) saturate(190%);
-    backdrop-filter: blur(28px) saturate(190%);
-    /* Camada própria de composição: sem isso, o Safari no iPhone às vezes
-       simplesmente não pinta o blur num pseudo-elemento dentro de um pai
-       position:fixed (fica sólido/opaco em vez de translúcido). */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    z-index: -1;
-    pointer-events: none;
   }
   .ntab { color: var(--dock-petroleo); }
-  .ntab.on { background: rgba(255,255,255,.55); color: var(--dock-petroleo); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .ntab.on { background: color-mix(in srgb, var(--dock-petroleo) 12%, transparent); color: var(--dock-petroleo); }
   .nt-ico { display: flex; }
   .nt-ico svg { width: 25px; height: 25px; display: block; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .nt-short { font-weight: 500; }
@@ -3707,12 +3689,7 @@ html[data-theme="dark"] .mn-btn:hover { background: rgba(255,255,255,.06); color
 html[data-theme="dark"] .mn-label { color: var(--ink); }
 html[data-theme="dark"] .nav-tabs { background: rgba(24,33,52,.96); border: .5px solid rgba(255,255,255,.07); box-shadow: 0 10px 34px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05); -webkit-backdrop-filter: none; backdrop-filter: none; }
 html[data-theme="dark"] .ntab { color: var(--dock-petroleo); transition: background .18s ease, color .18s ease; }
-html[data-theme="dark"] .ntab.on { color: var(--dock-petroleo); background: rgba(255,255,255,.08); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-/* Dark + mobile: dock translúcido sem o "drift" do iOS (blur no ::before) */
-@media (max-width: 760px) {
-  html[data-theme="dark"] .nav-tabs { background: transparent; }
-  html[data-theme="dark"] .nav-tabs::before { background: rgba(24,33,52,.15); -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
-}
+html[data-theme="dark"] .ntab.on { color: var(--dock-petroleo); background: rgba(255,255,255,.08); }
 /* .stat-pill sem fundo também no escuro (ver a regra base). */
 html[data-theme="dark"] .owner-select-wrap { background-color: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); }
 html[data-theme="dark"] .owner-select-wrap:hover { background-color: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
