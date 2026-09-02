@@ -3112,11 +3112,10 @@ details[open] summary::before { transform: rotate(90deg); }
   .nav-tabs {
     position: fixed;
     left: calc(1.5vw + 16px); right: calc(1.5vw + 16px);
-    /* 4 -> 16px (pedido do usuário: "dê um espaço padrão de Dock" — ele
-       estava colado no fim da tela). 16px é a mesma folga que outros
-       elementos flutuantes deste app usam no rodapé (ver .modal bottom
-       sheets/padding). */
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    /* 4 -> 16 -> ~10px (pedido do usuário: "desça ele uns 40%" — a
+       distância até o fim da tela, não o padding interno). 16 × 0,6 =
+       9,6px. */
+    bottom: calc(10px + env(safe-area-inset-bottom));
     width: auto;
     margin: 0;
     display: flex;
@@ -3126,8 +3125,7 @@ details[open] summary::before { transform: rotate(90deg); }
     border: .5px solid rgba(0,0,0,.07);
     border-radius: 999px;
     box-shadow: 0 8px 32px rgba(0,0,0,.18);
-    /* 3px 6px -> 2px 5px (pedido do usuário: "está altíssimo"). */
-    padding: 2px 5px;
+    padding: 3px 6px;
     z-index: 300;
     transform: translateZ(0);
     will-change: transform;
@@ -3147,9 +3145,8 @@ details[open] summary::before { transform: rotate(90deg); }
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    /* 4px 2px -> 3px 2px (pedido do usuário: "está altíssimo"). */
-    padding: 3px 2px;
+    gap: 3px;
+    padding: 4px 2px;
     border-radius: 999px;
     font-size: 10px;
     font-weight: 500;
@@ -3372,8 +3369,7 @@ details[open] summary::before { transform: rotate(90deg); }
   .ntab { color: var(--dock-petroleo); }
   .ntab.on { background: color-mix(in srgb, var(--dock-petroleo) 12%, transparent); color: var(--dock-petroleo); }
   .nt-ico { display: flex; }
-  /* 25px -> 21px (pedido do usuário: "está altíssimo"). */
-  .nt-ico svg { width: 21px; height: 21px; display: block; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nt-ico svg { width: 25px; height: 25px; display: block; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .nt-short { font-weight: 500; }
 
   /* Painéis / cards minimalistas (sem borda, fundo branco) */
