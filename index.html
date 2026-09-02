@@ -1449,50 +1449,58 @@ body.tip-pinned::before {
   .rb-tip-hd { font-size: 16px; }
   .pcard.rb-tip-l { grid-template-columns: 56px 1fr auto; font-size: 14px; }
 }
-/* Boletos do mês: cartão maior por boleto — nome do cliente em destaque,
-   placa + período de locação embaixo, vencimento numa linha própria em
-   vermelho e o valor grande à direita. Estilo replicado de outro sistema
-   a pedido (fontes maiores, mais respiro entre as linhas). */
+/* Boletos do mês: uma linha por boleto — nome do cliente, placa + período
+   de locação embaixo, vencimento em vermelho e o valor à direita.
+   [fonte-compacta] As fontes eram bem maiores (nome 16px, valor 17px, de
+   quando este bloco foi copiado de outro sistema "com fontes maiores") e
+   destoavam do resto do painel: no ledger logo acima o título tem 12px e o
+   valor 13px, então a lista lia como se fosse outra tela colada ali
+   (pedido do usuário: "diminua bastante a fonte da lista dos boletos").
+   Agora a lista usa a MESMA escala do ledger — nome 12.5px, valor 13px,
+   apoio entre 9,5 e 10px — e o respiro vertical acompanha. */
 .rb-bol {
-  cursor: pointer; padding: 10px 6px; border-radius: 10px; transition: background .12s;
-  display: flex; align-items: flex-start; gap: 10px;
+  cursor: pointer; padding: 7px 6px; border-radius: 10px; transition: background .12s;
+  display: flex; align-items: flex-start; gap: 9px;
 }
 .rb-bol:hover { background: var(--surface); }
 .bol-ck {
-  width: 17px; height: 17px; flex-shrink: 0; margin-top: 3px; border-radius: 5px; border: 1.5px solid var(--line);
+  width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; border-radius: 4px; border: 1.5px solid var(--line);
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 800; color: #fff; background: var(--card);
+  font-size: 10px; font-weight: 800; color: #fff; background: var(--card);
 }
 .bol-feito .bol-ck { background: var(--green); border-color: var(--green); }
 .bol-feito .bol-nome { color: var(--ink3); text-decoration: line-through; }
 /* Emitido sai de cena: linha inteira esmaecida — traço, valor e visto junto. */
 .rb-bol.bol-feito { opacity: .42; }
 .rb-bol.bol-feito:hover { opacity: .72; }
-.bol-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.bol-nome { font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.25; overflow-wrap: break-word; }
-.rb-bol-leg { color: var(--ink3); font-weight: 500; font-size: 10.5px; }
-.bol-meta { font-size: 13px; color: var(--ink3); }
+.bol-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bol-nome { font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.3; overflow-wrap: break-word; }
+.rb-bol-leg { color: var(--ink3); font-weight: 500; font-size: 9.5px; }
+.bol-meta { font-size: 10px; color: var(--ink3); }
 /* Composição do valor quando o boleto junta mais de um lançamento (mesma
    placa+vencimento) — ex.: "Locação R$ 1.000,00 + Avarias R$ 250,00". */
-.bol-composto { font-size: 11.5px; color: var(--ink3); opacity: .85; overflow-wrap: break-word; }
+.bol-composto { font-size: 9.5px; color: var(--ink3); opacity: .85; overflow-wrap: break-word; }
 .bol-feito .bol-composto { text-decoration: line-through; }
-.bol-venc { font-size: 13px; font-weight: 700; color: var(--red); opacity: .55; }
+.bol-venc { font-size: 10px; font-weight: 700; color: var(--red); opacity: .55; }
 /* Vencimento a 20 dias ou menos (e ainda não emitido): pisca em vermelho pra
    chamar atenção — animação simples de opacidade, sem exagerar no efeito. */
 .bol-venc-blink { opacity: 1; animation: bolBlink 1s step-start infinite; }
 @keyframes bolBlink { 50% { opacity: .3; } }
-.bol-valor { flex-shrink: 0; font-size: 17px; font-weight: 800; color: var(--red); white-space: nowrap; padding-top: 1px; }
+.bol-valor { flex-shrink: 0; font-size: 13px; font-weight: 800; color: var(--red); white-space: nowrap; padding-top: 1px; font-variant-numeric: tabular-nums; }
 .bol-feito .bol-valor { color: var(--ink3); }
 .bol-toggle, .bol-vermais { margin-left: 10px; background: none; border: 0; padding: 0; cursor: pointer;
-  color: var(--blue); font-weight: 700; font-size: 12px; font-family: inherit; }
+  color: var(--blue); font-weight: 700; font-size: 10.5px; font-family: inherit; }
 .bol-toggle:hover, .bol-vermais:hover { text-decoration: underline; }
 .bol-vermais-row { text-align: center; padding: 8px 0 2px; }
-.bol-rodape { margin-top: 9px; font-size: 12px; font-weight: 700; color: var(--red); }
+.bol-rodape { margin-top: 9px; font-size: 10.5px; font-weight: 700; color: var(--red); }
 .bol-rodape.ok { color: var(--green); }
+/* No celular a lista sobe meio ponto em relação ao PC (mesma ideia do
+   ledger, que também cresce um pouco lá) — mas continua bem abaixo dos
+   14,5/12/15px de antes. */
 @media (max-width: 560px) {
-  .bol-nome { font-size: 14.5px; }
-  .bol-meta, .bol-venc { font-size: 12px; }
-  .bol-valor { font-size: 15px; }
+  .bol-nome { font-size: 13px; }
+  .bol-meta, .bol-venc { font-size: 10.5px; }
+  .bol-valor { font-size: 13.5px; }
 }
 /* Resumo compacto do painel de boletos: dois números, some na lista só ao expandir. */
 /* ── [ESTILO LEDGER] Painel de Boletos igual ao do Dashboard do Sistema
