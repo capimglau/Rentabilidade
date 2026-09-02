@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AGI Locadora</title>
 <meta name="theme-color" content="#dfe7f2" id="metaTheme">
 <script>try{var t=localStorage.getItem('agi-theme');var sd=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(t==null&&sd)){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}</script>
@@ -11,6 +11,15 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-title" content="AGI Locadora">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<!-- black-translucent: o conteúdo passa a ocupar a tela inteira, por
+     baixo da barra de status/notch (junto com viewport-fit=cover acima)
+     — sem isso o iOS reserva aquela faixa como uma barra opaca própria,
+     de cor fixa do sistema, sem relação nenhuma com o cabeçalho do app
+     (era exatamente o que causava a faixa cinza destoando do cabeçalho
+     branco/escuro logo abaixo). Ver padding-top:env(safe-area-inset-top)
+     no .header, que estende o FUNDO do cabeçalho pra preencher essa
+     faixa — não uma cor fixa à parte, então já acompanha claro/escuro. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -168,11 +177,23 @@ body::before {
 .header {
   background: var(--card);
   border-bottom: 1px solid var(--line);
-  padding: 0 20px;
+  /* padding-top some no lugar do "0" fixo: estende o FUNDO do cabeçalho
+     por baixo do notch/barra de status no iOS (junto com viewport-fit=
+     cover e apple-mobile-web-app-status-bar-style=black-translucent no
+     <head>) — antes essa faixa ficava com a cor "crua" do sistema, sem
+     relação com o cabeçalho (branco/escuro conforme o tema escolhido). Em
+     telas sem notch (desktop, a maioria dos Android) env() resolve pra
+     0px — nada muda aí. */
+  padding: env(safe-area-inset-top) 20px 0;
   /* 58 -> 46px (pedido do usuário: "deixe o cabeçalho menos alto"). Cabe
      folgado: o item mais alto da barra é o seletor de mês (.month-nav,
-     ~30px), e o logo caiu pra 24px. */
-  height: 46px;
+     ~30px), e o logo caiu pra 24px.
+     height -> min-height: com o padding-top do notch acima, uma altura
+     FIXA espremeria o conteúdo pra caber nos mesmos 46px totais (o
+     box-sizing:border-box global conta o padding dentro da altura) — vira
+     min-height pra a caixa CRESCER com o padding extra, sem nunca ficar
+     menor que 46px de conteúdo. */
+  min-height: 46px;
   display: flex;
   align-items: center;
   gap: 0;
@@ -3041,7 +3062,11 @@ details[open] summary::before { transform: rotate(90deg); }
   .header {
     height: auto;
     flex-wrap: wrap;
-    padding: 10px 14px;
+    /* calc(...) some no lugar do 10px fixo do topo: soma a folga de
+       sempre com o notch/barra de status (ver padding-top do .header
+       base, mesmo motivo — aqui o breakpoint mobile é quem realmente
+       tem notch pra valer). */
+    padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
     gap: 8px;
   }
   .logo { margin: 0 6px 0 0; font-size: 17px; }
