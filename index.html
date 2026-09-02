@@ -178,6 +178,11 @@ body::before {
 }
 .logo em { color: var(--blue); font-style: normal; }
 .logo-img { height: 28px; width: auto; display: block; }
+/* Data ao lado do logo — tamanhos/pesos iguais aos da barra do topo do
+   Sistema Estilo (13px/700 no dia da semana, 12px/500 em cinza no resto). */
+.hdr-data { font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.hdr-data .hdr-data-dm { font-weight: 500; color: var(--ink3); margin-left: 4px; font-size: 12px; }
+@media (max-width: 760px){ .hdr-data { display: none; } }
 
 /* Month nav — the MAIN filter. Fica encostado no canto direito do header,
    depois dos chips de Previsto/Pendente/Recebido. */
@@ -1453,22 +1458,52 @@ body.tip-pinned::before {
   .bol-valor { font-size: 15px; }
 }
 /* Resumo compacto do painel de boletos: dois números, some na lista só ao expandir. */
-.bol-resumo { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; cursor: pointer; padding: 2px; border-radius: 14px; }
-.bol-resumo-stat { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; padding: 12px 16px; border-radius: 14px; background: var(--surface); }
-.bol-resumo-stat.afazer { background: var(--amber-soft); }
-.bol-resumo-stat.feitos { background: var(--green-soft); }
-.bol-resumo-n { font-size: 21px; font-weight: 800; letter-spacing: -.02em; line-height: 1; color: var(--ink); }
-.bol-resumo-stat.afazer .bol-resumo-n { color: var(--amber); }
-.bol-resumo-stat.feitos .bol-resumo-n { color: var(--green); }
-.bol-resumo-lbl { font-size: 10.5px; font-weight: 700; color: var(--ink3); letter-spacing: .04em; }
-.bol-resumo-v { font-size: 13px; font-weight: 700; color: var(--ink2); }
+/* ── [ESTILO LEDGER] Painel de Boletos igual ao do Dashboard do Sistema
+   Estilo: duas linhas compactas, tipo extrato ("Boletos a emitir" /
+   "Boletos emitidos"), cada uma com um ícone de traço num quadrado
+   arredondado, título + contagem e o valor à direita, separadas por um
+   filete. Sem os dois blocos coloridos de antes e sem o botão "ver
+   boletos": tocar na própria linha já abre a lista daquele lado (era o que
+   os blocos sempre fizeram, o botão só duplicava isso).
+   Cores exatamente as da Estilo (C_BASE_LIGHT/C_BASE_DARK): laranja
+   #9C5400 / #F4C78C, verde #0F7A3D / #8FCBA3. ── */
+.bol-ledger{
+  --bol-org:#9C5400; --bol-grn:#0F7A3D;
+  background:var(--card); border:1px solid var(--line); border-radius:18px;
+  overflow:hidden; box-shadow:0 1px 12px rgba(0,0,0,0.05); padding:4px 16px 8px;
+}
+html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
+.bol-lrow{ display:flex; align-items:center; gap:12px; padding:10px 0; cursor:pointer; }
+.bol-lic{
+  width:34px; height:34px; border-radius:11px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(120,120,128,0.12); color:var(--ink3);
+}
+.bol-lic svg{ width:16px; height:16px; }
+.bol-lrow.on.afazer .bol-lic{ background:color-mix(in srgb, var(--bol-org) 12%, transparent); color:var(--bol-org); }
+.bol-lrow.on.feitos .bol-lic{ background:color-mix(in srgb, var(--bol-grn) 12%, transparent); color:var(--bol-grn); }
+.bol-ltxt{ flex:1; min-width:0; }
+.bol-ltit{ font-size:12px; font-weight:700; color:var(--ink3); }
+.bol-lrow.on .bol-ltit{ color:var(--ink); }
+.bol-lsub{ font-size:9.5px; color:var(--ink3); margin-top:2px; }
+.bol-lval{ text-align:right; flex-shrink:0; font-size:13px; font-weight:800; color:var(--ink3); font-variant-numeric:tabular-nums; }
+.bol-lrow.on.afazer .bol-lval{ color:var(--bol-org); }
+.bol-lrow.on.feitos .bol-lval{ color:var(--bol-grn); }
+.bol-lsep{ height:1px; background:color-mix(in srgb, var(--line) 40%, transparent); }
+/* No celular tudo sobe um pouco (mesmo "_cp" da Estilo): caixa e respiro
+   menores, mas título/subtítulo/valor um pouco maiores que no PC. */
+@media (max-width:760px){
+  .bol-ledger{ padding:4px 14px 6px; }
+  .bol-lrow{ padding:8px 0; }
+  .bol-lic{ width:30px; height:30px; }
+  .bol-ltit{ font-size:13px; }
+  .bol-lsub{ font-size:10.5px; }
+  .bol-lval{ font-size:14px; }
+}
 /* flex-basis:100% força a nova linha (fica sempre abaixo dos dois números). */
-.bol-resumo-arrow { flex-basis: 100%; text-align: right; font-size: 12px; font-weight: 700; color: var(--blue); white-space: nowrap; padding: 0 2px; }
+
 .bol-lista { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 @media (max-width: 560px) {
-  .bol-resumo-n { font-size: 18px; }
-  .bol-resumo-v { font-size: 11.5px; }
-  .bol-resumo-arrow { font-size: 11px; text-align: right; }
 }
 /* Resumo de vencidos: quanto, de quem e de quando, sem listar lançamento. */
 .vc-datas { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; color: var(--ink3); }
@@ -1706,12 +1741,13 @@ body.tip-pinned::before {
 .agb-dom{ font-size:11.5px; color:var(--ink3); font-weight:700; white-space:nowrap; }
 /* Contagem SEM pílula de fundo (a Estilo é só o número em cinza). */
 .agb-count{ min-width:20px; height:20px; padding:0 6px; font-size:11px; font-weight:700; color:var(--ink3); display:flex; align-items:center; justify-content:center; flex-shrink:0; background:none; border-radius:0; }
-/* "Hoje" tinge de DOURADO (#C99A46), não mais de azul — é a cor que a
-   Estilo usa pro dia corrente (.agk2-today), tanto no fundo do cabeçalho
-   (5% no claro, 10% no escuro) quanto no rótulo do dia (#A87A2E). */
-.agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, #C99A46 5%, var(--card)); border-color:transparent; }
-html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, #C99A46 10%, var(--card)); }
-.agb-col.agb-hoje .agb-dow{ color:#A87A2E; }
+/* "Hoje" tinge de AZUL — a Estilo usa dourado aqui, mas o azul é pedido
+   explícito do usuário pra este app (a cor de destaque dele é azul, não
+   dourado). Mesma estrutura do .agk2-today: só o fundo do cabeçalho e o
+   rótulo do dia mudam de cor, sem borda colorida. */
+.agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 8%, var(--card)); border-color:transparent; }
+html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 14%, var(--card)); }
+.agb-col.agb-hoje .agb-dow{ color:var(--blue); }
 /* "Atrasados" segue no MESMO padrão branco/neutro dos demais dias — só os
    dizeres ficam em vermelho, igual à Estilo. */
 .agb-col.agb-atrasados .agb-dow{ color:#FF3B30; }
@@ -3503,6 +3539,11 @@ body.modo-boletos #btnLinkBoletos { display: none; }
 <div class="header">
   <div class="logo" onclick="go('resumo')" style="cursor:pointer" title="Ir para o início">
     <img class="logo-img" src="logo-agi.png" alt="AGI Locadora">
+    <!-- Data no MESMO esquema da barra do topo do Sistema Estilo: dia da
+         semana em negrito e, logo ao lado, "N de mês" em corpo menor e
+         cinza. Preenchida por renderHdrData() (não dá pra ser estática:
+         muda a cada dia). -->
+    <span class="hdr-data" id="hdrData"></span>
   </div>
 
   <div class="header-right">
@@ -6362,12 +6403,33 @@ const AGB_FLAG_ICON_CAR="url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.o
 const AGB_FLAG_ICON_ALERT="url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1 1 0 0 0 .9 1.5h17.2a1 1 0 0 0 .9-1.5L13.7 3.9a1 1 0 0 0-1.4 0Z%22/%3E%3C/svg%3E')";
 const AGB_FLAG_ICON_DOC="url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M6 3h9l5 5v13H6z%22/%3E%3Cpath d=%22M15 3v5h5%22/%3E%3C/svg%3E')";
 const AGB_FLAG_LIGHT={ indigo:{mid:'#6f9089',ink:'#3c5a53'}, vermelho:{mid:'#8f5060',ink:'#6b3a45'} };
-const AGB_FLAG_ICON={ indigo:AGB_FLAG_ICON_CAR, vermelho:AGB_FLAG_ICON_ALERT };
+// Ícone da bandeira POR TIPO de lançamento (pedido do usuário: "que as
+// imagens do colorido dos cards sejam de acordo com a descrição") — antes
+// quase todo tipo caía no documento genérico. Traço branco, 24x24, mesmo
+// peso dos ícones da Estilo. A cor continua vindo da família do tipo.
+const _agbIc=d=>"url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E"+d+"%3C/svg%3E')";
+// $ (Locação) · gota (Lavagem) · triângulo de alerta (Avarias) · círculo de
+// alerta (Multas) · cone (Pedágio) · escudo (Franquia) · pessoa (Taxas) ·
+// prédio público (Imposto) · documento (Outros e qualquer tipo novo).
+const AGB_FLAG_ICON_TIPO={
+  'Locação':      _agbIc('%3Cpath d=%22M12 2v20%22/%3E%3Cpath d=%22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6%22/%3E'),
+  'Lavagem':      _agbIc('%3Cpath d=%22M12 2.7 6.6 8.1a7.6 7.6 0 1 0 10.8 0Z%22/%3E'),
+  'Avarias':      _agbIc('%3Cpath d=%22M12 9v4M12 17h.01M10.3 3.9 2.5 17.5a1 1 0 0 0 .9 1.5h17.2a1 1 0 0 0 .9-1.5L13.7 3.9a1 1 0 0 0-1.4 0Z%22/%3E'),
+  'Multas':       _agbIc('%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpath d=%22M12 7v5M12 16h.01%22/%3E'),
+  'Pedágio':      _agbIc('%3Cpath d=%22M9.3 4h5.4l3.3 15H6z%22/%3E%3Cpath d=%22M4 19h16M7.9 13h8.2%22/%3E'),
+  'Franquia':     _agbIc('%3Cpath d=%22M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z%22/%3E'),
+  'Taxa Mario':   _agbIc('%3Ccircle cx=%2212%22 cy=%228%22 r=%224%22/%3E%3Cpath d=%22M4 21a8 8 0 0 1 16 0%22/%3E'),
+  'Imposto':      _agbIc('%3Cpath d=%22M12 2 3 8h18zM3 21h18M5.5 21V10M9.5 21V10M14.5 21V10M18.5 21V10%22/%3E')
+};
+AGB_FLAG_ICON_TIPO['Taxa Alfredo']=AGB_FLAG_ICON_TIPO['Taxa Mario'];
+AGB_FLAG_ICON_TIPO['Taxa Paulinho']=AGB_FLAG_ICON_TIPO['Taxa Mario'];
 function agbFlagColor(tipo){
   const fam=AGB_TIPO_FAMILIA[tipo]||'azul';
-  if(AGB_FLAG_LIGHT[fam])return {mid:AGB_FLAG_LIGHT[fam].mid,ink:AGB_FLAG_LIGHT[fam].ink,icon:AGB_FLAG_ICON[fam]};
+  const icon=AGB_FLAG_ICON_TIPO[tipo]
+    || (fam==='indigo'?AGB_FLAG_ICON_CAR:fam==='vermelho'?AGB_FLAG_ICON_ALERT:AGB_FLAG_ICON_DOC);
+  if(AGB_FLAG_LIGHT[fam])return {mid:AGB_FLAG_LIGHT[fam].mid,ink:AGB_FLAG_LIGHT[fam].ink,icon};
   const t=AGB_TONE.light[fam]||AGB_TONE.light.azul;
-  return {mid:t.d,ink:t.d,icon:AGB_FLAG_ICON_DOC};
+  return {mid:t.d,ink:t.d,icon};
 }
 // Selo de atraso do cartão — mesma redação do _agk2Atraso da Estilo.
 function agbAtrasoTxt(dataISO,hojeISO){
@@ -6945,6 +7007,16 @@ function agruparBoletos(bol){
 // Grupos do último render — a lista clica de volta neles pelo índice, mesmo
 // esquema já usado em allD().indexOf(r) noutras listas do app.
 let BOL_GRUPOS=[];
+// Data ao lado do logo, no esquema da barra do topo do Sistema Estilo:
+// "Terça 2 de setembro" — dia da semana em negrito + "N de mês" em cinza.
+const HDR_DOW=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const HDR_MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+function renderHdrData(){
+  const el=document.getElementById('hdrData');
+  if(!el)return;
+  const d=new Date();
+  el.innerHTML=`${HDR_DOW[d.getDay()]}<span class="hdr-data-dm">${d.getDate()} de ${HDR_MES[d.getMonth()]}</span>`;
+}
 function renderBoletosPainel(rows){
   const el=document.getElementById('resBoletos');
   if(!el)return;
@@ -6961,25 +7033,44 @@ function renderBoletosPainel(rows){
   const feitosG=grupos.filter(g=>g.feito), afazerG=grupos.filter(g=>!g.feito);
   const feitos=feitosG.length, afazer=afazerG.length;
   const totFeitos=feitosG.reduce((a,g)=>a+g.totalPago+g.totalSaldo,0), totFazer=afazerG.reduce((a,g)=>a+g.totalPago+g.totalSaldo,0);
-  if(hd)hd.textContent=`Boletos do mês — ${feitos} de ${grupos.length} emitidos`;
+  // Contagem saiu do título da seção: as duas linhas do ledger já dizem
+  // quantos são de cada lado (mesma decisão da Estilo, que removeu o
+  // "Boletos de {mês} — X de Y emitidos" ao adotar esse desenho).
+  if(hd)hd.textContent='Boletos do mês';
 
   // Boleto a emitir vencendo em 20 dias ou menos (ou já vencido): abre a
   // lista sozinho na primeira vez que aparece, pra não passar batido.
   const temUrgente=afazerG.some(g=>diasAteVenc(g.prev_pgto)<=20);
   if(!bolAutoInit&&temUrgente){bolExpandido=true;bolFiltro='afazer';bolAutoInit=true;}
 
-  const resumo=`<div class="bol-resumo" role="button" tabindex="0">
-    <div class="bol-resumo-stat afazer" onclick="event.stopPropagation();verBoletosFiltro('afazer')" title="Ver só os boletos a emitir">
-      <span class="bol-resumo-n">${afazer}</span>
-      <span class="bol-resumo-lbl">a emitir</span>
-      <span class="bol-resumo-v">${fRH(totFazer)}</span>
+  // [ESTILO LEDGER] Duas linhas tipo extrato, iguais às do painel de Boletos
+  // do Dashboard do Sistema Estilo — o próprio nome de cada linha já diz o
+  // que ela é, então some o botão "ver boletos" (tocar na linha abre a lista
+  // daquele lado, que é o que os blocos coloridos sempre fizeram) e o ícone
+  // de traço substitui o número solto que funcionava como "selo".
+  const icRelogio='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>';
+  const icCheck='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  const plural=n=>n+' boleto'+(n===1?'':'s');
+  const resumo=`<div class="bol-ledger">
+    <div class="bol-lrow afazer${afazer>0?' on':''}" role="button" tabindex="0"
+        onclick="event.stopPropagation();verBoletosFiltro('afazer')" title="Ver só os boletos a emitir">
+      <div class="bol-lic">${icRelogio}</div>
+      <div class="bol-ltxt">
+        <div class="bol-ltit">Boletos a emitir</div>
+        <div class="bol-lsub">${afazer>0?plural(afazer):'nenhum pendente'}</div>
+      </div>
+      <div class="bol-lval">${fRH(totFazer)}</div>
     </div>
-    <div class="bol-resumo-stat feitos" onclick="event.stopPropagation();verBoletosFiltro('feitos')" title="Ver só os boletos emitidos">
-      <span class="bol-resumo-n">${feitos}</span>
-      <span class="bol-resumo-lbl">emitidos</span>
-      <span class="bol-resumo-v">${fRH(totFeitos)}</span>
+    <div class="bol-lsep"></div>
+    <div class="bol-lrow feitos${feitos>0?' on':''}" role="button" tabindex="0"
+        onclick="event.stopPropagation();verBoletosFiltro('feitos')" title="Ver só os boletos emitidos">
+      <div class="bol-lic">${icCheck}</div>
+      <div class="bol-ltxt">
+        <div class="bol-ltit">Boletos emitidos</div>
+        <div class="bol-lsub">${plural(feitos)}</div>
+      </div>
+      <div class="bol-lval">${fRH(totFeitos)}</div>
     </div>
-    <div class="bol-resumo-arrow" onclick="toggleBoletosExpand()" title="${bolExpandido?'Ocultar':'Ver'} os boletos, um a um">${bolExpandido?'▲ ocultar':'▼ ver boletos'}</div>
   </div>`;
 
   if(!bolExpandido){ el.innerHTML=resumo; return; }
@@ -10698,7 +10789,7 @@ function paginaSalva(){
 // placa/cliente/dono/tipo/forma), pra nenhum painel, gráfico ou modal
 // aberto ficar mostrando dado desatualizado.
 function renderAll(){
-  updateHeader();buildOwnerPills();buildMiniSummary();
+  renderHdrData();updateHeader();buildOwnerPills();buildMiniSummary();
   // A tabela "Novos lançamentos" também é alimentada por aqui: uma edição
   // que reparcela pode CRIAR parcela (vai pra NOVOS) ou EXCLUIR uma que
   // estava listada nela. Repintando junto com o resto, a tabela nunca fica
