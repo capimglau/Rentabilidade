@@ -526,6 +526,19 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
    ajuste acima) da fileira do Resumo: pedido do usuário. */
 #res-m .mc-label { font-size: 12px; }
 #res-m .mc-sub { font-size: 10px; }
+/* +2px em cima do que já está acima (12/14/10 → 14/16/12), SÓ no mobile
+   (pedido do usuário): rótulo, valor e legenda dos 4 painéis do Resumo
+   ficam maiores só na tela pequena, onde a leitura de relance pede mais
+   corpo — no PC os três continuam nos valores de sempre. Vem DEPOIS das
+   regras acima (mesma especificidade — #res-m .mc-x nos dois casos —
+   então quem decide é a ordem de cascata) e nenhuma outra regra de
+   mobile mais abaixo no arquivo mexe nesses três font-size, então este é
+   o valor final para telas ≤760px. */
+@media (max-width: 760px) {
+  #res-m .mc-label { font-size: 14px; }
+  #res-m .mc-value { font-size: 16px; }
+  #res-m .mc-sub { font-size: 12px; }
+}
 .mc-label {
   font-size: 11px;
   font-weight: 600;
