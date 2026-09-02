@@ -526,19 +526,19 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
    ajuste acima) da fileira do Resumo: pedido do usuário. */
 #res-m .mc-label { font-size: 12px; }
 #res-m .mc-sub { font-size: 10px; }
-/* +2px em cima do que já está acima (12/14/10 → 14/16/12), SÓ no mobile
-   (pedido do usuário): rótulo, valor e legenda dos 4 painéis do Resumo
-   ficam maiores só na tela pequena, onde a leitura de relance pede mais
-   corpo — no PC os três continuam nos valores de sempre. Vem DEPOIS das
-   regras acima (mesma especificidade — #res-m .mc-x nos dois casos —
-   então quem decide é a ordem de cascata) e nenhuma outra regra de
-   mobile mais abaixo no arquivo mexe nesses três font-size, então este é
-   o valor final para telas ≤760px. */
-@media (max-width: 760px) {
-  #res-m .mc-label { font-size: 14px; }
-  #res-m .mc-value { font-size: 16px; }
-  #res-m .mc-sub { font-size: 12px; }
-}
+/* [revertido] O +2px mobile-only (12/14/10 → 14/16/12) que existia aqui
+   foi desfeito — o usuário achou que tinha "aumentado 2x" e pediu −2px de
+   volta. Mobile e PC voltam a usar os MESMOS 12/14/10 de cima, sem split
+   — que era o comportamento de sempre desta fileira ("a Estilo não
+   diferencia PC/mobile aqui", ver comentário lá em cima). Esse +2px
+   também era a causa direta de dois problemas: precisou de um
+   .mc-cycle-stage mais alto pra não cortar a legenda dos cards
+   giratórios (Locação/A receber — "aumentou a altura do painel"), e o
+   valor exato calibrado no Chromium pra essa fonte maior não sobrava
+   margem suficiente num WebKit real, onde a legenda ficava
+   INTEIRAMENTE fora da caixa em vez de só cortada ("não aparece o texto
+   abaixo do valor que alterna") — a fonte menor de volta tira as duas
+   causas ao mesmo tempo. */
 .mc-label {
   font-size: 11px;
   font-weight: 600;
@@ -3039,13 +3039,20 @@ details[open] summary::before { transform: rotate(90deg); }
      ele só preenche exatamente a caixa que o pai já tem. Então o que de
      fato limita a altura visível é este min-height (mais o overflow:
      hidden do próprio stage/slide, que cortam qualquer coisa além dele).
-     Ficou curto quando a fonte da fileira do Resumo cresceu 2px só no
-     mobile (#res-m .mc-label/.mc-value/.mc-sub logo acima) sem que este
-     valor acompanhasse — a legenda ("Locação · set/26", "67 pendentes")
-     saía cortada pela metade, reportado por foto do usuário. Medido: o
-     conteúdo real precisa de 59px com as fontes atuais; 52 → 60px dá 1px
-     de folga sem sobrar espaço morto. */
-  .mc-cycle-stage { min-height: 60px; }
+     O +2px mobile-only da fonte (#res-m .mc-label/.mc-value/.mc-sub logo
+     acima) foi revertido — mobile volta a usar os mesmos 12/14/10 do PC.
+     Mesmo assim este min-height segue calibrado por medição direta (não
+     de cabeça): com 12/14/10, o conteúdo real (rótulo+valor+legenda)
+     precisa de 60px num Chromium de mesa. Contra os 52px de antes, 8px a
+     mais já não fecham sem cortar SÓ com esse tamanho de fonte — antes
+     mesmo do +2px que foi revertido, então 52px já estava raspando.
+     +4px de folga (60 → 64px) em cima do medido: da vez passada usei só
+     +1px sobre o medido no Chromium, e mesmo assim a legenda sumiu por
+     inteiro (não só cortou) num WebKit real — motores diferentes não
+     calculam a altura do MESMO texto de forma idêntica, principalmente a
+     caixa de linha (line-box) da fonte. Uma folga maior aqui é o preço de
+     não caçar esse mesmo bug pela terceira vez. */
+  .mc-cycle-stage { min-height: 64px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (agenda/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
