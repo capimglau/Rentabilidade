@@ -3030,14 +3030,22 @@ details[open] summary::before { transform: rotate(90deg); }
   /* Rótulo/valor/legenda: SEM override aqui também — mesmo tamanho da
      Estilo (11/15/9px, ver base .mc-label/.mc-value/.mc-sub) em qualquer
      tela, inclusive nesse breakpoint mais estreito (2 colunas). */
-  /* Os cards que cyclam (Locação, A receber/Atrasado) reservam um
-     min-height só pra bater com a altura natural dos cards estáticos
-     (Previsto/Recebido) — não precisa de folga extra pra fonte grande de
-     acessibilidade: como o slide agora trava com inset:0 no stage, se o
-     texto precisar de mais espaço o card cresce sozinho pra acomodar (não
-     corta nem vaza) — ver o fix do vazamento mais acima. Um min-height
-     maior que o necessário só sobra como espaço morto embaixo do texto. */
-  .mc-cycle-stage { min-height: 52px; }
+  /* [texto-cortado-mobile] Os cards que cyclam (Locação, A receber/
+     Atrasado) reservam um min-height só pra bater com a altura natural
+     dos cards estáticos (Previsto/Recebido). O comentário antigo aqui
+     dizia que "o card cresce sozinho pra acomodar" um texto maior — não
+     cresce: .mc-cycle-slide é position:absolute + inset:0 (ver a regra
+     base), e um elemento absoluto NÃO empurra o tamanho do próprio pai —
+     ele só preenche exatamente a caixa que o pai já tem. Então o que de
+     fato limita a altura visível é este min-height (mais o overflow:
+     hidden do próprio stage/slide, que cortam qualquer coisa além dele).
+     Ficou curto quando a fonte da fileira do Resumo cresceu 2px só no
+     mobile (#res-m .mc-label/.mc-value/.mc-sub logo acima) sem que este
+     valor acompanhasse — a legenda ("Locação · set/26", "67 pendentes")
+     saía cortada pela metade, reportado por foto do usuário. Medido: o
+     conteúdo real precisa de 59px com as fontes atuais; 52 → 60px dá 1px
+     de folga sem sobrar espaço morto. */
+  .mc-cycle-stage { min-height: 60px; }
 
   /* Espaçamento padrão entre os blocos do Resumo (agenda/boletos/
      gráficos) — ainda ficava apertado empilhado no mobile mesmo em 20px. */
