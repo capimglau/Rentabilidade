@@ -3112,9 +3112,11 @@ details[open] summary::before { transform: rotate(90deg); }
   .nav-tabs {
     position: fixed;
     left: calc(1.5vw + 16px); right: calc(1.5vw + 16px);
-    /* 4 -> 16 -> 10 -> 4 -> 0px (pedido do usuário: "diminuir muito" —
-       só a área do home indicator, sem folga extra nenhuma). */
-    bottom: env(safe-area-inset-bottom);
+    /* Medido com debug real no iPhone: env(safe-area-inset-bottom) = 34px
+       (~0,9cm). Pedido do usuário: "deixe 0,5cm" — metade do valor do
+       aparelho (calc(...*.5)), em vez de fixar um px cravado que erraria
+       em telas com área segura diferente. */
+    bottom: calc(env(safe-area-inset-bottom) * .5);
     width: auto;
     margin: 0;
     display: flex;
@@ -11787,27 +11789,6 @@ function setHeaderCompact(hidden){
 })();
 
 iniciarApp();
-
-// [DEBUG TEMPORÁRIO] diagnóstico do vão embaixo do dock — remover depois.
-(function(){
-  if(window.innerWidth>760)return;
-  const b=document.createElement('div');
-  b.style.cssText='position:fixed;left:4px;bottom:0;z-index:99999;background:#ff0000;color:#fff;font:11px monospace;padding:3px 6px;border-radius:4px 4px 0 0;pointer-events:none;white-space:pre;';
-  document.body.appendChild(b);
-  const probe=document.createElement('div');
-  probe.style.cssText='position:fixed;bottom:0;height:0;padding-bottom:env(safe-area-inset-bottom);visibility:hidden;pointer-events:none;';
-  document.body.appendChild(probe);
-  function upd(){
-    const dock=document.getElementById('mainDock');
-    const r=dock?dock.getBoundingClientRect():null;
-    const sab=getComputedStyle(probe).paddingBottom;
-    b.textContent='innerH:'+window.innerHeight+' dockBottom:'+(r?Math.round(r.bottom):'-')+' sab:'+sab+' gap:'+(r?Math.round(window.innerHeight-r.bottom):'-');
-  }
-  window.addEventListener('resize',upd);
-  window.addEventListener('scroll',upd,{passive:true});
-  upd();
-  setInterval(upd,500);
-})();
 </script>
 
 <!-- ─── DOCK / SIDEBAR (posição fixa, fora do header) ─── -->
