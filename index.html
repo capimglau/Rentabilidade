@@ -271,6 +271,28 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
 }
 .mn-today:hover { background: #dde3ff; }
 
+/* Puxar-pra-atualizar (mobile) — só o ícone, sem pílula/fundo atrás dele
+   (mesmo espírito do resto do app: cor/forma do próprio elemento já basta
+   de sinal). Fica oculto (opacity:0, um pouco acima do lugar de repouso)
+   até o primeiro toque; o "top" é escrito em JS a cada gesto porque a
+   altura do cabeçalho muda entre desktop (46px) e mobile (auto/2 linhas).
+   z-index acima do header (100) pra nunca ficar escondido atrás dele. */
+.ptr-ico-wrap {
+  position: fixed; left: 50%; top: 46px; z-index: 110;
+  transform: translate(-50%, -22px) scale(.5); opacity: 0;
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--blue); pointer-events: none;
+}
+.ptr-ico-wrap.ptr-anim { transition: transform .2s ease, opacity .2s ease; }
+.ptr-ico { width: 20px; height: 20px; transition: transform .15s ease; }
+.ptr-ico-wrap.ptr-ready .ptr-ico { transform: rotate(180deg); }
+.ptr-ico-wrap.ptr-loading .ptr-ico { animation: ptrSpin .7s linear infinite; }
+@keyframes ptrSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .ptr-ico-wrap.ptr-loading .ptr-ico { animation: none; }
+}
+
 /* Nav tabs */
 .nav-tabs {
   display: flex;
@@ -3864,6 +3886,14 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
     <button class="mn-btn" onclick="navMes(1)" title="Próximo mês">›</button>
   </div>
   <button class="icon-btn theme-btn-hdr" onclick="toggleTheme()" title="Tema" aria-label="Tema" id="themeBtnHdr"></button>
+</div>
+
+<!-- Puxar-pra-atualizar: só o ícone, ver initPullRefresh() no JS. Fica
+     logo abaixo do cabeçalho (posição calculada ali, a altura do
+     cabeçalho muda entre desktop e mobile) e nunca troca de página —
+     só recarrega os dados da página em que o usuário já está. -->
+<div class="ptr-ico-wrap" id="ptrIcoWrap">
+  <svg class="ptr-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
 </div>
 
 <!-- ─── PAGES ─── -->
@@ -9912,6 +9942,69 @@ function initSwipe(containerId){
   bc.addEventListener('touchcancel',swEnd);
   bc.addEventListener('mousedown',swStart);
 }
+// ── PUXAR-PRA-ATUALIZAR ──
+// body tem overscroll-behavior-y:contain (ver CSS) de propósito, pra um
+// arraste que vaza de dentro de um modal curto não disparar o
+// puxar-pra-atualizar NATIVO do navegador (que recarrega a página inteira
+// e derruba uma edição em andamento — bug já corrigido antes). Esse gesto
+// aqui é outro: só ativa deliberadamente do TOPO da página, com nenhum
+// modal aberto, e nunca dá reload — chama pullRefresh(), que busca os
+// dados de novo e redesenha em cima da mesma aba (curPage não muda).
+function initPullRefresh(){
+  const PTR_LIMIAR=64, PTR_TETO=110;
+  const icoWrap=document.getElementById('ptrIcoWrap');
+  if(!icoWrap)return;
+  let startX=0,startY=0,curPull=0,arrastando=false,atualizando=false;
+  const modalAberto=()=>!!document.querySelector('.overlay.on');
+  const headerBottom=()=>{const h=document.querySelector('.header');return h?h.getBoundingClientRect().bottom:0;};
+  function posiciona(pull,anim){
+    icoWrap.classList.toggle('ptr-anim',!!anim);
+    icoWrap.style.top=(headerBottom()+8)+'px';
+    icoWrap.style.opacity=Math.min(1,pull/PTR_LIMIAR);
+    icoWrap.style.transform=`translate(-50%, ${pull-22}px) scale(${.5+.5*Math.min(1,pull/PTR_LIMIAR)})`;
+    icoWrap.classList.toggle('ptr-ready',pull>=PTR_LIMIAR);
+  }
+  function reset(){arrastando=false;curPull=0;posiciona(0,true);}
+  function onStart(e){
+    if(atualizando||modalAberto()||window.scrollY>0)return;
+    const t=e.touches[0];
+    startX=t.clientX;startY=t.clientY;curPull=0;arrastando=true;
+    icoWrap.classList.remove('ptr-anim');
+  }
+  function onMove(e){
+    if(!arrastando||atualizando)return;
+    const t=e.touches[0];
+    const dy=t.clientY-startY, dx=t.clientX-startX;
+    // Só entra em ação se for CLARAMENTE pra baixo (não confunde com o
+    // swipe horizontal de Baixar/Editar das listas, que também escuta
+    // touchmove nos mesmos containers).
+    if(dy<=8||Math.abs(dx)>Math.abs(dy)||window.scrollY>0){arrastando=false;posiciona(0,true);return;}
+    // Resistência: puxar o dobro sobe só metade — achata perto do teto,
+    // igual ao puxar-pra-atualizar nativo do iOS/Android.
+    curPull=Math.min(PTR_TETO,dy*.5);
+    posiciona(curPull,false);
+    e.preventDefault();
+  }
+  async function onEnd(){
+    if(!arrastando)return;
+    arrastando=false;
+    if(curPull>=PTR_LIMIAR&&!atualizando){
+      atualizando=true;
+      icoWrap.classList.add('ptr-anim','ptr-loading');
+      posiciona(PTR_LIMIAR,true);
+      try{await pullRefresh();}
+      finally{
+        atualizando=false;
+        icoWrap.classList.remove('ptr-loading');
+        reset();
+      }
+    } else reset();
+  }
+  document.addEventListener('touchstart',onStart,{passive:true});
+  document.addEventListener('touchmove',onMove,{passive:false});
+  document.addEventListener('touchend',onEnd);
+  document.addEventListener('touchcancel',onEnd);
+}
 
 // ── BAIXA EM LOTE ──
 let _todosOn=false;
@@ -11285,6 +11378,29 @@ function aposMudancaExterna(){
   else if(editRec)renderIrmaos();
   rNovos();popSel();renderAll();
 }
+// Puxar-pra-atualizar (ver initPullRefresh): recarrega TUDO que o app lê
+// do banco (lançamentos, despesas, saldos, veículos), não só a tabela
+// principal — outro dispositivo pode ter mexido em qualquer uma delas.
+// Reaproveita os mesmos loaders do boot() e termina chamando
+// recarregarLancamentos(), que já faz popSel()+renderAll() no final —
+// sem isso, aqui, a tela ficaria com o array certo mas a tela desenhada
+// com os dados antigos. Nunca troca de página: renderAll() sempre
+// redesenha em cima do curPage atual (ver comentário em "ROUTING" logo
+// abaixo — a mesma garantia que já vale pro F5).
+async function pullRefresh(){
+  if(!SB)return;
+  try{
+    const [desp,sal,veics]=await Promise.all([despLoad(),saldoLoad(),veicLoad()]);
+    DESPESAS=desp;
+    SALDOS=sal;
+    // null/vazio aqui costuma ser falha de rede, não "a frota ficou vazia"
+    // — não sobrescreve o que já está na tela (mesmo espírito do catch
+    // silencioso de recarregarLancamentos: atualização de fundo nunca
+    // troca dado bom por dado ausente).
+    if(veics!=null&&veics.length>0)VEICULOS=veics;
+  }catch(e){}
+  await recarregarLancamentos();
+}
 
 // ── ROUTING ──
 let curPage='resumo';
@@ -11421,6 +11537,7 @@ async function boot(){
   ['resTipo','resRecDono','resForma','resVeic','resClientes'].forEach(initSwipe);
   // Atalhos "vencidos"/"hoje" da tela inicial (Resumo).
   initSwipe('recebHoje');
+  initPullRefresh();
   showSkeleton();
   let rows = await dbLoad();
   DATA = rows.map(r=>({...r}));
