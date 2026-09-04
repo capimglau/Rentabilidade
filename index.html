@@ -1938,6 +1938,10 @@ html[data-theme="dark"] .rc-cal-wrap .cal-cell, html[data-theme="dark"] .rc-cal-
    painel de Boletos pra fora da tela do notebook (bug reportado por foto);
    agora a coluna rola por dentro e a página não cresce junto. */
 .agb-wrap{ max-height:min(400px,46vh); overflow:auto; border-radius:14px; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch; }
+/* Abrir o baralho de um dia (+N) não deve ficar preso ao teto de sempre —
+   o painel da Agenda expande pra caber os cards revelados, em vez de só
+   rolar por dentro de uma janela pequena. */
+.agb-wrap:has(.agb-col-open){ max-height:min(900px,88vh); }
 .agb-wrap::-webkit-scrollbar{ display:none; }
 /* gap 14px e padding 4px 0 2px (era 12px / 2px 2px 4px) — valores da
    .agk2-board da Estilo. */
@@ -2001,7 +2005,8 @@ html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in s
   font-size:12.5px; font-weight:800; letter-spacing:-0.1px; padding:1px 7px; border-radius:99px;
   white-space:nowrap; font-variant-numeric:tabular-nums; flex-shrink:0;
 }
-.agb-dh-in{ background:rgba(52,199,89,0.15); color:#2C7A46; }
+.agb-dh-in{ background:rgba(52,199,89,0.15); color:#2C7A46; cursor:pointer; }
+.agb-dh-in:active{ transform:scale(0.94); }
 .agb-dh-out{ background:rgba(255,149,0,0.17); color:#8F5600; }
 html[data-theme="dark"] .agb-dh-in{ background:rgba(52,199,89,0.20); color:#8FE0A8; }
 html[data-theme="dark"] .agb-dh-out{ background:rgba(255,149,0,0.22); color:#F0C489; }
@@ -4363,7 +4368,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
         <div style="font-size:14px;font-weight:600;color:var(--ink)">Modo Noturno</div>
         <div style="font-size:12px;color:var(--ink3)">Alterna entre tema claro e escuro</div>
       </div>
-      <button class="icon-btn" onclick="toggleTheme()" title="Tema" aria-label="Tema" id="themeBtn" style="width:40px;height:24px;border-radius:12px;padding:0;position:relative;flex-shrink:0"></button>
+      <button class="icon-btn theme-btn-hdr" onclick="toggleTheme()" title="Tema" aria-label="Tema" id="themeBtn" style="margin-left:0;flex-shrink:0"></button>
     </div>
 
     <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--surface);border-radius:14px;margin-bottom:24px">
@@ -5814,10 +5819,31 @@ function agbMatchQ(r){
   const hay=semAcento([r.cliente,r.placa,r.dono,r.tipo,r.forma,r.obs,fR(r.saldo),fR(r.valor),fDM(r.prev_pgto)].filter(Boolean).join(' ')).toLowerCase();
   return hay.includes(q);
 }
+// O <select> de tipo também esconde, num optgroup próprio, o filtro por
+// proprietário — sem abrir um segundo seletor visível na topbar da Agenda,
+// as duas opções (tipo/proprietário) moram no mesmo controle compacto.
+// Valores de proprietário levam o prefixo "dono:" pra não colidir com os
+// nomes dos tipos de lançamento.
+function setTipoOuDonoCal(v){
+  if(v.indexOf('dono:')===0){
+    selTipoCal='';
+    setDono(v.slice(5));
+    return;
+  }
+  selDono='';
+  document.querySelectorAll('.owner-pill').forEach(b=>b.classList.remove('on'));
+  const primeiroPill=document.querySelector('.owner-pill');
+  if(primeiroPill)primeiroPill.classList.add('on');
+  const ownerSel=document.getElementById('ownerSelectMobile');
+  if(ownerSel)ownerSel.value='';
+  setTipoCal(v);
+}
 function tipoCalSelectHtml(){
-  return `<select class="rc-cal-tipo-sel" onchange="setTipoCal(this.value)">
-    <option value=""${selTipoCal===''?' selected':''}>Todos os tipos</option>
+  const donos=[...new Set(allD().map(r=>r.dono).filter(Boolean))].sort();
+  return `<select class="rc-cal-tipo-sel" onchange="setTipoOuDonoCal(this.value)">
+    <option value=""${(selTipoCal===''&&selDono==='')?' selected':''}>Todos os tipos</option>
     ${LANC_TIPOS.map(t=>`<option value="${escHtml(t)}"${selTipoCal===t?' selected':''}>${escHtml(t)}</option>`).join('')}
+    ${donos.length?`<optgroup label="Proprietário">${donos.map(d=>`<option value="dono:${escHtml(d)}"${selDono===d?' selected':''}>${escHtml(d)}</option>`).join('')}</optgroup>`:''}
   </select>`;
 }
 
@@ -7058,7 +7084,7 @@ function agbCardHtml(grp,dia,hiddenCount){
 // agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir. Igual
 // à Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (antes
 // só valia no mobile; o CSS que forçava tudo aberto no PC foi removido).
-const AGB_COL_LIMITE=4;
+const AGB_COL_LIMITE=3;
 function agbColHtml(cls,dow,dom,itens,dia){
   const grupos=agruparPorCliente(itens);
   const total=itens.reduce((a,r)=>a+fN(r.saldo),0);
@@ -7077,7 +7103,7 @@ function agbColHtml(cls,dow,dom,itens,dia){
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
         <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
-        ${total>0.005?`<span class="agb-dh-in" title="A receber no dia">${agbMoedaCurta(total,'+')}</span>`:''}
+        ${total>0.005?`<span class="agb-dh-in" role="button" tabindex="0" onclick="event.stopPropagation();baixarTudoDia('${dia}')" onkeydown="if(event.key==='Enter'){event.stopPropagation();baixarTudoDia('${dia}')}" title="Baixar todos os lançamentos do dia">${agbMoedaCurta(total,'+')}</span>`:''}
       </div>
     </div>
     <div class="agb-col-body">${grupos.length?cardsHtml:'<div class="agb-empty">Sem lançamentos</div>'}${moreHtml}</div>
@@ -7259,10 +7285,13 @@ function baixarTudoCliente(dia,cliente){
   _baixarLoteConfirmado(alvos,cliente);
 }
 function baixarTudoDia(dia){
-  const alvos=allD().filter(r=>(r.prev_pgto||'').slice(0,10)===dia&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  const atrasados=dia==='atrasados';
+  const hoje=td();
+  const alvos=allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
   if(!alvos.length) return;
-  if(!confirm(`Confirmar a baixa de TODOS os ${alvos.length} lançamento(s) pendentes de ${fDM(dia)} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
-  _baixarLoteConfirmado(alvos,fDM(dia));
+  const quando=atrasados?'em atraso':`de ${fDM(dia)}`;
+  if(!confirm(`Confirmar a baixa de TODOS os ${alvos.length} lançamento(s) pendentes ${quando} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
+  _baixarLoteConfirmado(alvos,atrasados?'Atrasados':fDM(dia));
 }
 
 function renderRecebHoje(){
@@ -8132,7 +8161,24 @@ function renderResumo(){
     : [{label:'Recebido',data:recA,backgroundColor:pastelGreen(),stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder},
        ...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:pastelRed(),stack:'s',borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
        {label:'A vencer',data:pendA,backgroundColor:pastelAmber(),stack:'s',borderRadius:{topLeft:6,topRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}];
-  mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:dsMes},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},plugins:{legend:{display:true,position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},barLabels:{display:true,size:window.innerWidth<=760?14:10,fmt:v=>'R$'+Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>items.length>1?'Total: '+fR(items.reduce((a,it)=>a+(it.raw||0),0)):''}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
+  // Uma linha por proprietário, com a variação SÓ da Locação (o produto
+  // principal) mês a mês — sobreposta às barras de Recebido/A vencer/Atrasado
+  // do total. Só faz sentido comparar proprietários quando o filtro de
+  // proprietário (selDono) não está travado num só; com 1 filtrado, a linha
+  // dele coincidiria com a leitura das barras e só poluiria o gráfico.
+  const locRowsMes=baseRows.filter(r=>r.tipo==='Locação');
+  const donosLocMes=[...new Set(locRowsMes.map(r=>r.dono).filter(Boolean))].sort();
+  const valorLocMes=r=>resBase==='caixa'?fN(r.valor_pago):resBase==='pend'?(isPend(r)&&!isVenc(r)?fN(r.saldo):0):liq(r);
+  const donoLineCoresFallback=['#1f5fa8','#0d6e3e','#92600a','#c42b1c','#5b35d5','#0a7272','#b5539c','#555'];
+  const dsDonoLocMes=(!selDono&&donosLocMes.length>1)?donosLocMes.map((d,i)=>{
+    const byM={};
+    locRowsMes.filter(r=>r.dono===d).forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(!m)return;byM[m]=(byM[m]||0)+valorLocMes(r);});
+    let arr=mShown.map(k=>byM[k]||0);
+    if(resAcum)arr=cumArr(arr);
+    const col=DC[d]||donoLineCoresFallback[i%donoLineCoresFallback.length];
+    return {type:'line',label:`${d} · Locação`,data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:2,tension:.35,pointRadius:2,pointHoverRadius:4,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc-'+i};
+  }):[];
+  mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:[...dsMes,...dsDonoLocMes]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},plugins:{legend:{display:true,position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},barLabels:{display:true,size:window.innerWidth<=760?14:10,fmt:v=>'R$'+Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const barItems=items.filter(it=>it.dataset.type!=='line');return barItems.length>1?'Total: '+fR(barItems.reduce((a,it)=>a+(it.raw||0),0)):'';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   // Os painéis de barra mostram previsto E recebido juntos, então não seguem
   // o seletor previsto/recebido (que continua valendo para os gráficos).
   const hd=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
