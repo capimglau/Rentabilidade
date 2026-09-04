@@ -8170,8 +8170,10 @@ function renderResumo(){
   const dsDonoLocMes=(!selDono||selDono==='Silvio')&&locRowsMes.length?(()=>{
     const byM={};
     locRowsMes.forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(!m)return;byM[m]=(byM[m]||0)+valorLocMes(r);});
-    let arr=mShown.map(k=>byM[k]||0);
-    if(resAcum)arr=cumArr(arr);
+    // Sempre o valor ISOLADO do mês, mesmo com o toggle "Acumulado" ligado
+    // (que soma os meses nas barras) — a linha do Silvio não acompanha essa
+    // soma, senão deixa de mostrar a variação mês a mês pedida.
+    const arr=mShown.map(k=>byM[k]||0);
     const col=DC['Silvio']||'#1f5fa8';
     return [{type:'line',label:'Silvio · Locação',data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:1,tension:.35,pointRadius:1,pointHoverRadius:3,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc'}];
   })():[];
