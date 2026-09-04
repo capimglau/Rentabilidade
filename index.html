@@ -8161,23 +8161,20 @@ function renderResumo(){
     : [{label:'Recebido',data:recA,backgroundColor:pastelGreen(),stack:'s',borderRadius:{bottomLeft:6,bottomRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder},
        ...(temAtrsMes?[{label:'Atrasado',data:atrsA,backgroundColor:pastelRed(),stack:'s',borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}]:[]),
        {label:'A vencer',data:pendA,backgroundColor:pastelAmber(),stack:'s',borderRadius:{topLeft:6,topRight:6},borderSkipped:false,maxBarThickness:46,categoryPercentage:.62,barPercentage:.92,...segGapBorder}];
-  // Uma linha por proprietário, com a variação SÓ da Locação (o produto
-  // principal) mês a mês — sobreposta às barras de Recebido/A vencer/Atrasado
-  // do total. Só faz sentido comparar proprietários quando o filtro de
-  // proprietário (selDono) não está travado num só; com 1 filtrado, a linha
-  // dele coincidiria com a leitura das barras e só poluiria o gráfico.
-  const locRowsMes=baseRows.filter(r=>r.tipo==='Locação');
-  const donosLocMes=[...new Set(locRowsMes.map(r=>r.dono).filter(Boolean))].sort();
+  // Só a linha do Silvio, com a variação da Locação mês a mês — traço fino
+  // (era espessa e uma por proprietário; pedido do usuário reduziu a UM só,
+  // pra não poluir o gráfico) sobreposta às barras de Recebido/A vencer/
+  // Atrasado do total.
+  const locRowsMes=baseRows.filter(r=>r.tipo==='Locação'&&r.dono==='Silvio');
   const valorLocMes=r=>resBase==='caixa'?fN(r.valor_pago):resBase==='pend'?(isPend(r)&&!isVenc(r)?fN(r.saldo):0):liq(r);
-  const donoLineCoresFallback=['#1f5fa8','#0d6e3e','#92600a','#c42b1c','#5b35d5','#0a7272','#b5539c','#555'];
-  const dsDonoLocMes=(!selDono&&donosLocMes.length>1)?donosLocMes.map((d,i)=>{
+  const dsDonoLocMes=(!selDono||selDono==='Silvio')&&locRowsMes.length?(()=>{
     const byM={};
-    locRowsMes.filter(r=>r.dono===d).forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(!m)return;byM[m]=(byM[m]||0)+valorLocMes(r);});
+    locRowsMes.forEach(r=>{const m=(r.prev_pgto||'').slice(0,7);if(!m)return;byM[m]=(byM[m]||0)+valorLocMes(r);});
     let arr=mShown.map(k=>byM[k]||0);
     if(resAcum)arr=cumArr(arr);
-    const col=DC[d]||donoLineCoresFallback[i%donoLineCoresFallback.length];
-    return {type:'line',label:`${d} · Locação`,data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:2,tension:.35,pointRadius:2,pointHoverRadius:4,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc-'+i};
-  }):[];
+    const col=DC['Silvio']||'#1f5fa8';
+    return [{type:'line',label:'Silvio · Locação',data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:1,tension:.35,pointRadius:1,pointHoverRadius:3,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc'}];
+  })():[];
   mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:[...dsMes,...dsDonoLocMes]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},plugins:{legend:{display:true,position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},barLabels:{display:true,size:window.innerWidth<=760?14:10,fmt:v=>'R$'+Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const barItems=items.filter(it=>it.dataset.type!=='line');return barItems.length>1?'Total: '+fR(barItems.reduce((a,it)=>a+(it.raw||0),0)):'';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   // Os painéis de barra mostram previsto E recebido juntos, então não seguem
   // o seletor previsto/recebido (que continua valendo para os gráficos).
