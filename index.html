@@ -2123,16 +2123,21 @@ html[data-theme="dark"] .agb-card::after{ border-left:1.6px dashed rgba(255,255,
    usuário, em duas etapas). A lapiseira ao lado fica neutra, então a cor é o
    que separa as duas ações empilhadas: verde recebe, cinza edita. Cinza, o
    tique dependia do hover pra se identificar.
+   A BORDA é o mesmo verde diluído a 38% (pedido do usuário: "deixe a borda
+   mais clara") — continua dizendo "receber", só para de competir com o
+   símbolo, que é o que se lê. Diluir o próprio verde, e não trocar por um
+   cinza, é o que mantém a leitura; e o hover volta a ter o que escurecer.
    `var(--green)` resolve nos dois temas (#0a6439 no claro, #36d399 no
    escuro) — por isso o bloco do tema escuro abaixo NÃO redefine `color` nem
    `border-color`. */
 .agb-card-check{ width:24px; height:24px; padding:0; margin:0; border-radius:8px;
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  border:1.5px solid var(--green,#0a6439); background:var(--card,#fff); color:var(--green,#0a6439);
+  border:1.5px solid color-mix(in srgb, var(--green,#0a6439) 38%, transparent);
+  background:var(--card,#fff); color:var(--green,#0a6439);
   cursor:pointer; -webkit-tap-highlight-color:transparent;
   transition:background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease; }
 .agb-card-check svg{ width:14px; height:14px; }
-.agb-card-check:hover{ background:color-mix(in srgb, var(--green) 12%, transparent); }
+.agb-card-check:hover{ border-color:var(--green,#0a6439); background:color-mix(in srgb, var(--green) 12%, transparent); }
 .agb-card-check:active{ transform:scale(.88); }
 /* Tema escuro: só o FUNDO muda. Borda e símbolo continuam saindo de
    `var(--green)` (#36d399 lá), então este bloco não pode redefinir nenhum dos
