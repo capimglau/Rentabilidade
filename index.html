@@ -2004,6 +2004,15 @@ html[data-theme="dark"] .agb-col.agb-pago .agb-col-hd{ background:color-mix(in s
 /* "Atrasados" segue no MESMO padrão branco/neutro dos demais dias — só os
    dizeres ficam em vermelho, igual à Estilo. */
 .agb-col.agb-atrasados .agb-dow{ color:#FF3B30; }
+/* [agenda-dia-a-dia-pago] A setinha antes de "Atrasados" também é o botão
+   que revela/esconde o histórico pago (oculto por padrão). Só ganha
+   cursor/hit-area quando é de fato clicável (agbColHtml só bota a classe
+   -btn quando há pagos na janela) — decorativa, ela continua só um enfeite,
+   sem tabindex nem cursor. Gira 180° quando aberta, mesmo padrão do
+   .day-chevron desta tela. */
+.agb-atrasados-seta-btn{ display:inline-block; cursor:pointer; padding:2px 4px; margin:-2px -4px; border-radius:6px; transition:transform .2s; }
+.agb-atrasados-seta-btn:hover{ background:var(--surface2); }
+.agb-atrasados-seta-btn.on{ transform:rotate(-180deg); }
 /* Chip de total do dia — .agk2-dh-in/.agk2-dh-out da Estilo. Aqui todo
    lançamento da agenda é a RECEBER, então só a versão "entrada" (verde) é
    usada; a de saída fica definida pra não divergir do original. */
@@ -5934,6 +5943,17 @@ function agbMatchQ(r){
   const hay=semAcento([r.cliente,r.placa,r.dono,r.tipo,r.forma,r.obs,fR(r.saldo),fR(r.valor),fDM(r.prev_pgto)].filter(Boolean).join(' ')).toLowerCase();
   return hay.includes(q);
 }
+// [agenda-dia-a-dia-pago] A base do board é Atrasados + Hoje (em diante) —
+// os dias já baixados (histórico, até 7 dias pra trás) ficam OCULTOS por
+// padrão e só aparecem tocando a setinha antes de "Atrasados". Pedido do
+// usuário, corrigindo a versão anterior que já entrava com essas colunas
+// sempre visíveis: o board tem que abrir enxuto, no que ainda pesa e no que
+// vem por aí — o histórico é consulta, não algo pra rolar toda vez.
+let agbMostrarPagos = false;
+function toggleAgbPagos(){
+  agbMostrarPagos = !agbMostrarPagos;
+  renderRecebHoje();
+}
 // O <select> de tipo também esconde, num optgroup próprio, o filtro por
 // proprietário — sem abrir um segundo seletor visível na topbar da Agenda,
 // as duas opções (tipo/proprietário) moram no mesmo controle compacto.
@@ -7276,7 +7296,7 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
 // à Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (antes
 // só valia no mobile; o CSS que forçava tudo aberto no PC foi removido).
 const AGB_COL_LIMITE=3;
-function agbColHtml(cls,dow,dom,itens,dia,pago){
+function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   const grupos=agruparPorCliente(itens);
   // [agenda-dia-a-dia-pago] Numa coluna paga, saldo é 0 em todo mundo — o
   // total do cabeçalho soma valor_pago (o que entrou naquele dia), mesma
@@ -7302,7 +7322,18 @@ function agbColHtml(cls,dow,dom,itens,dia,pago){
   // Dentro do PRÓPRIO .agb-dow (não um span à parte) pra herdar cor e peso
   // sem precisar de CSS novo — o vermelho de `.agb-col.agb-atrasados
   // .agb-dow` já pinta os dois.
-  const dowHtml=dia==='atrasados'?`<span class="agb-atrasados-seta" aria-hidden="true">‹</span> ${dow}`:dow;
+  // [agenda-dia-a-dia-pago] A mesma setinha virou também o botão que revela
+  // o histórico pago (oculto por padrão) — pendurada na coluna "Atrasados"
+  // quando ela existe (o de sempre), mas `renderAgendaBoardHtml` também
+  // pode pendurar em OUTRA coluna (primeira da esquerda) quando não há
+  // nenhum atrasado: sem isso, mês sem dívida em aberto não teria onde
+  // clicar pra ver o que foi recebido. `pagosInfo` só chega preenchido pra
+  // quem deve hospedar a seta; sem ele, "Atrasados" mantém a seta puramente
+  // decorativa de sempre (aria-hidden, sem onclick).
+  const setaHtml=(pagosInfo&&pagosInfo.qtd)
+    ? `<span class="agb-atrasados-seta agb-atrasados-seta-btn${pagosInfo.aberto?' on':''}" role="button" tabindex="0" aria-expanded="${pagosInfo.aberto?'true':'false'}" title="${pagosInfo.aberto?'Ocultar':'Ver'} os últimos ${pagosInfo.qtd} dia${pagosInfo.qtd>1?'s':''} já recebido${pagosInfo.qtd>1?'s':''}" onclick="event.stopPropagation();toggleAgbPagos()" onkeydown="if(event.key==='Enter'){event.stopPropagation();toggleAgbPagos()}">‹</span>`
+    : (dia==='atrasados'?`<span class="agb-atrasados-seta" aria-hidden="true">‹</span>`:'');
+  const dowHtml=(dia==='atrasados'||setaHtml)?`${setaHtml} ${dow}`:dow;
   return `<div class="agb-col ${cls}${pago?' agb-pago':''}">
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
@@ -7353,22 +7384,47 @@ function renderAgendaBoardHtml(){
   pagos.forEach(r=>{(porDiaPago[r.data_pagamento]=porDiaPago[r.data_pagamento]||[]).push(r);});
   const diasPago=Object.keys(porDiaPago).sort();
   const cols=[];
-  if(vencidos.length) cols.push(agbColHtml('agb-atrasados','Atrasados','',vencidos,'atrasados'));
+  // [agenda-dia-a-dia-pago] Base do board = Atrasados + Hoje em diante. O
+  // histórico pago fica ESCONDIDO por padrão (`agbMostrarPagos`) — só entra
+  // no array de colunas quando o usuário abre pela setinha. `pagosInfo` só é
+  // passado pra coluna que vai HOSPEDAR a seta: "Atrasados" quando ela
+  // existe (o de sempre); sem nenhum atrasado, a primeira coluna que sobrar
+  // — paga (se já aberto) ou futura — assume a seta, senão um mês sem
+  // dívida em aberto ficaria sem clicar em lugar nenhum pra ver o que foi
+  // recebido.
+  const pagosInfo=diasPago.length?{qtd:diasPago.length,aberto:agbMostrarPagos}:null;
+  let setaPendente=!!pagosInfo;
+  if(vencidos.length){
+    cols.push(agbColHtml('agb-atrasados','Atrasados','',vencidos,'atrasados',false,pagosInfo));
+    setaPendente=false;
+  }
   // Dias pagos entram DEPOIS de Atrasados (que fica sempre primeiro — é o
   // que pede ação) e ANTES dos dias futuros, do mais antigo pro mais
   // recente: lendo da esquerda pra direita, o board conta "o que ainda pesa
-  // · o que já foi resolvido há pouco · o que vem por aí".
-  diasPago.forEach(dia=>{
+  // · o que já foi resolvido há pouco · o que vem por aí". Só entram de
+  // fato quando `agbMostrarPagos` está ligado.
+  if(agbMostrarPagos) diasPago.forEach(dia=>{
     const dt=new Date(dia+'T12:00:00');
     const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
-    cols.push(agbColHtml('',dow,dom,porDiaPago[dia],dia,true));
+    const hospeda=setaPendente; setaPendente=false;
+    cols.push(agbColHtml('',dow,dom,porDiaPago[dia],dia,true,hospeda?pagosInfo:null));
   });
   dias.forEach(dia=>{
     const dt=new Date(dia+'T12:00:00');
     const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
-    cols.push(agbColHtml(dia===hoje?'agb-hoje':'',dow,dom,porDia[dia],dia));
+    const hospeda=setaPendente; setaPendente=false;
+    cols.push(agbColHtml(dia===hoje?'agb-hoje':'',dow,dom,porDia[dia],dia,false,hospeda?pagosInfo:null));
   });
-  if(!cols.length) return '<div class="agb-empty" style="margin:4px 0">Nenhum lançamento pendente nos próximos 90 dias, nem recebido nos últimos 7 ✓</div>';
+  if(!cols.length){
+    // Sem Atrasados e sem futuros não sobra onde pendurar a setinha — se
+    // ainda assim há histórico pago escondido na janela, oferece um link
+    // direto aqui pra não deixar aquele pagamento inacessível.
+    const verLink=(!agbMostrarPagos&&diasPago.length)
+      ? ` <button type="button" onclick="toggleAgbPagos()" style="background:none;border:none;padding:0;color:var(--blue);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer">Ver os últimos ${diasPago.length} dia${diasPago.length>1?'s':''} recebido${diasPago.length>1?'s':''}</button>`
+      : '';
+    const msg=agbMostrarPagos?'Nenhum lançamento pendente nos próximos 90 dias, nem recebido nos últimos 7':'Nenhum lançamento pendente nos próximos 90 dias';
+    return `<div class="agb-empty" style="margin:4px 0">${msg} ✓${verLink}</div>`;
+  }
   return `<div class="agb-wrap"><div class="agb-board">${cols.join('')}</div></div>`;
 }
 function renderRecCalGridHtml(){
