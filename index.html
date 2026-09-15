@@ -7240,10 +7240,20 @@ function agbColHtml(cls,dow,dom,itens,dia){
   // canto direito — o total tinha caído pra uma segunda linha. Mesmo
   // arranjo do .agk2-dh-main da Estilo, que também põe data e valor do dia
   // nos dois cantos da mesma linha.
+  // A coluna "Atrasados" agrega TUDO que já venceu, sem limite de tempo pra
+  // trás (ver o filtro de `vencidos` em renderAgendaBoardHtml — nenhum corte
+  // por data). A setinha antes do rótulo (pedido do usuário) é só o que
+  // marca visualmente isso pro usuário: "o que vem aqui é passado, veio de
+  // datas anteriores" — mesmo símbolo (‹ / ›) que .day-chevron já usa nesta
+  // tela pra indicar direção, só espelhado pra "antes" em vez de "expandir".
+  // Dentro do PRÓPRIO .agb-dow (não um span à parte) pra herdar cor e peso
+  // sem precisar de CSS novo — o vermelho de `.agb-col.agb-atrasados
+  // .agb-dow` já pinta os dois.
+  const dowHtml=dia==='atrasados'?`<span class="agb-atrasados-seta" aria-hidden="true">‹</span> ${dow}`:dow;
   return `<div class="agb-col ${cls}">
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
-        <div class="agb-col-hd-l"><span class="agb-dow">${dow}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
+        <div class="agb-col-hd-l"><span class="agb-dow">${dowHtml}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
         ${total>0.005?`<span class="agb-dh-in" role="button" tabindex="0" onclick="event.stopPropagation();baixarTudoDia('${dia}')" onkeydown="if(event.key==='Enter'){event.stopPropagation();baixarTudoDia('${dia}')}" title="Baixar todos os lançamentos do dia">${agbMoedaCurta(total,'+')}</span>`:''}
       </div>
     </div>
