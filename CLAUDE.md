@@ -94,12 +94,47 @@ lá é dívida em aberto que não pode se perder de vista nunca; aqui é
 histórico já resolvido, e uma semana já responde "o que entrou nos
 últimos dias" sem o board crescer sem parar com o tempo.
 
-**Ordem das colunas**: `[Atrasados] [dias pagos, do mais antigo pro mais
-recente] [dias futuros pendentes]`. Atrasados continua **sempre primeiro**
-— é o que pede ação, e essa posição já era uma decisão repetida ao longo
-deste projeto. Os dias pagos entram DEPOIS dele: lendo da esquerda pra
-direita, o board conta *"o que ainda pesa · o que já foi resolvido há
-pouco · o que vem por aí"*.
+**Ordem das colunas, quando visíveis**: `[Atrasados] [dias pagos, do mais
+antigo pro mais recente] [dias futuros pendentes]`. Atrasados continua
+**sempre primeiro** — é o que pede ação, e essa posição já era uma decisão
+repetida ao longo deste projeto. Os dias pagos entram DEPOIS dele: lendo da
+esquerda pra direita, o board conta *"o que ainda pesa · o que já foi
+resolvido há pouco · o que vem por aí"*.
+
+### O histórico pago fica OCULTO por padrão — revela na setinha
+
+Correção do usuário à primeira versão desta feature (que entrava com as
+colunas pagas sempre visíveis): *"a base para exibição na tela é atrasado e
+hoje no centro, esses antigos ficam ocultos clicando na seta."* A base do
+board é **Atrasados + hoje em diante** — histórico é consulta, não algo pra
+rolar toda vez que o board abre.
+
+- **`agbMostrarPagos`** (padrão `false`) é o único estado que decide se as
+  colunas de `diasPago` entram no array `cols` de `renderAgendaBoardHtml`.
+  Fechado, elas nem são geradas em HTML — só o cálculo (`pagos`/`porDiaPago`/
+  `diasPago`) roda sempre, pra saber SE existe algo pra revelar.
+- **`toggleAgbPagos()`** inverte o estado e chama `renderRecebHoje()` (o
+  mesmo re-render que `setAgbQ`/`setTipoCal` já usam) — sem isso a troca de
+  estado não aparece na tela.
+- **A setinha que já existia antes de "Atrasados"** (a decorativa, pedida
+  antes só pra marcar "isso é passado") virou o próprio botão: `agbColHtml`
+  recebe um `pagosInfo` (`{qtd, aberto}`) só na coluna que deve HOSPEDAR a
+  seta interativa; girada 180°
+  (`.agb-atrasados-seta-btn.on`, mesmo padrão de `.day-chevron`) quando
+  aberta. Sem pagos na janela, a seta de "Atrasados" volta a ser só o
+  enfeite decorativo de sempre (`aria-hidden`, sem `onclick`).
+- **Quem hospeda a seta é sempre a coluna mais à esquerda do board**, não
+  fixo em "Atrasados": `renderAgendaBoardHtml` tem um flag
+  (`setaPendente`) que anda coluna a coluna e entrega `pagosInfo` pra
+  primeira que for de fato renderizada — "Atrasados" quando existe; sem
+  atrasado nenhum, a primeira coluna paga (se já aberto) ou a primeira
+  futura (se fechado). **Sem essa generalização, um período sem nenhum
+  atrasado ficaria sem QUALQUER jeito de abrir o histórico** — a seta some
+  junto com a coluna "Atrasados" quando `vencidos.length` é zero.
+- **Sem nenhuma coluna pra mostrar** (nem atrasado, nem futuro em 90 dias)
+  e ainda assim há pago escondido na janela: o texto de "tudo em dia"
+  ganha um link "Ver os últimos N dias recebidos" no lugar da seta — senão
+  aquele histórico ficaria inacessível de vez.
 
 **Coluna paga é uma coluna própria, mesmo quando cai no mesmo dia de uma
 coluna pendente.** Se algo foi pago HOJE e também tem algo pendente
@@ -144,7 +179,9 @@ suíte de testes própria) — conferido no navegador com backend dublê:
 card único paga → edita; card agrupado pago → não faz nada; lápis no card
 pago → edita; nenhuma mudança no comportamento dos cards PENDENTES (tick
 abre confirmar baixa, toque abre parcial, "baixar tudo do dia" continua
-funcionando).
+funcionando); board abre com as colunas pagas ocultas; clicar na seta
+revela (e gira 180°); clicar de novo esconde; sem atrasado nenhum a seta
+migra pra primeira coluna futura/paga da esquerda, não some.
 
 ## Toda confirmação de lançamento ou baixa abre banner de Desfazer — `[desfazer-sistema]`
 
