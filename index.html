@@ -2047,9 +2047,9 @@ html[data-theme="dark"] .agb-dh-out{ background:rgba(255,149,0,0.22); color:#F0C
   background:var(--card);
   box-shadow: inset 0 1.5px 0 rgba(255,255,255,.8), 0 2px 4px rgba(0,0,0,.08), 0 14px 20px -14px rgba(0,0,0,.28), 0 5px 7px -6px rgba(0,0,0,.14);
 }
-/* Faixa reservada à direita só quando o cartão tem a lapiseira de edição
-   (que a Agenda da Estilo não tem) — sem isso ela cobriria o valor. */
-.agb-card.agb-card-edit-on{ padding-right:30px; }
+/* [agenda-acoes-empilhadas] A faixa reservada à direita agora vem de
+   .agb-card-check-on (a coluna de ícones), que todo cartão tem. A regra
+   antiga, só da lapiseira, virava um segundo padding competindo com ela. */
 /* Bandeira: recorte diagonal (78% na base) com degradê BEM leve — ~10% de
    branco no topo, ~10% de preto na base, tom sobre tom de --flag-mid. */
 .agb-card::before{
@@ -2105,20 +2105,28 @@ html[data-theme="dark"] .agb-card::after{ border-left:1.6px dashed rgba(255,255,
    O cartão agrupa os lançamentos do cliente no dia ("Kablan · 6
    lançamentos"), e tocá-lo em qualquer lugar baixava OS SEIS de uma vez.
    Agora o toque abre a lista deles, pra marcar só o que entrou; quem baixa
-   tudo é este tick. 36px de alvo dentro de um cartão de 64px. */
-.agb-card.agb-card-check-on{ padding-right:52px; }
-/* O lápis de editar mora no canto superior direito — sai da frente do tick
-   quando os dois aparecem no mesmo cartão (só acontece com 1 lançamento). */
-.agb-card.agb-card-check-on .agb-card-edit{ right:52px; }
-.agb-card-check{ position:absolute; right:8px; top:50%; transform:translateY(-50%);
-  width:36px; height:36px; padding:0; margin:0; border-radius:11px;
-  display:flex; align-items:center; justify-content:center;
-  border:1.6px solid var(--line,#e3e3e8); background:var(--card,#fff); color:var(--ink3,#8a8a8e);
+   tudo é este tick.
+
+   [agenda-acoes-empilhadas] Os dois ícones do cartão — editar e baixar tudo —
+   ficam numa COLUNA à direita, um sobre o outro, nunca lado a lado. Na
+   primeira versão o tick tomou o canto direito e empurrou a lapiseira pra
+   dentro do cartão, bem em cima do valor ("R$ 550,00" com o lápis por cima).
+   Empilhados, os dois moram na mesma faixa estreita e o valor fica livre;
+   é também por isso que o tick encolheu de 36px para 24px — dois de 36
+   não cabem na altura de 64px do cartão. */
+.agb-card-acts{ position:absolute; right:7px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:4px; z-index:2; }
+/* Só a faixa dos ícones — 24px + respiro dos dois lados. O valor da linha 1
+   termina antes dela, que era exatamente o conflito relatado. */
+.agb-card.agb-card-check-on{ padding-right:40px; }
+.agb-card-check{ width:24px; height:24px; padding:0; margin:0; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  border:1.5px solid var(--line,#e3e3e8); background:var(--card,#fff); color:var(--ink3,#8a8a8e);
   cursor:pointer; -webkit-tap-highlight-color:transparent;
   transition:background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease; }
-.agb-card-check svg{ width:18px; height:18px; }
+.agb-card-check svg{ width:14px; height:14px; }
 .agb-card-check:hover{ border-color:var(--green,#34C759); color:var(--green,#34C759); }
-.agb-card-check:active{ transform:translateY(-50%) scale(.88); }
+.agb-card-check:active{ transform:scale(.88); }
 html[data-theme="dark"] .agb-card-check{ background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.22); color:rgba(255,255,255,.72); }
 
 /* Linhas da janela de detalhe do grupo — uma por lançamento, marcada = entra
@@ -2143,10 +2151,15 @@ html[data-theme="dark"] .agb-card-check{ background:rgba(255,255,255,.07); borde
   border-radius:9px; padding:5px 8px; font-size:11.5px; font-weight:700; cursor:pointer; }
 .agbg-parcial:hover{ color:var(--blue,#007AFF); border-color:var(--blue,#007AFF); }
 
-.agb-card-edit{ position:absolute; top:5px; right:5px; width:20px; height:20px; padding:0; border:none; border-radius:6px;
-  display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2;
-  background:color-mix(in srgb, var(--ink) 8%, transparent); color:var(--ink3); }
-.agb-card-edit svg{ width:12px; height:12px; }
+/* [agenda-acoes-empilhadas] Sem posição própria: quem posiciona é a coluna
+   .agb-card-acts. Um `position:absolute` aqui a tiraria da pilha e o lápis
+   voltaria a flutuar sobre o valor. */
+.agb-card-edit{ position:static; width:24px; height:24px; padding:0; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;
+  border:1.5px solid var(--line,#e3e3e8); background:var(--card,#fff); color:var(--ink3);
+  transition:background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease; }
+.agb-card-edit:hover{ border-color:var(--blue,#007AFF); color:var(--blue,#007AFF); }
+.agb-card-edit svg{ width:13px; height:13px; }
 .agb-card-edit:active{ transform:scale(.9); }
 /* As duas linhas do cartão — .agk2-ev-l1/.agk2-ev-l2 da Estilo. */
 .agb-ev-l1{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; min-width:0; }
@@ -7180,8 +7193,8 @@ function agbCardHtml(grp,dia,hiddenCount){
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag};--flag-mid:${flag.mid};--flag-ink:${flag.ink};--flag-icon:${flag.icon}${pulseDelay}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
-      title="Toque para ${n>1?`ver os ${n} lançamentos e escolher o que baixar`:'registrar o recebimento'}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''} — o tique à direita baixa tudo">
-    ${editBtn}${checkBtn}
+      title="Toque para ${n>1?`ver os ${n} lançamentos e escolher o que baixar`:'registrar o recebimento'}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''} — o tique baixa tudo">
+    <div class="agb-card-acts">${editBtn}${checkBtn}</div>
     <div class="agb-ev-l1"><p class="agb-card-title">${esc(grp.cliente||'—')}</p><span class="agb-card-val">${fRH(grp.total)}</span></div>
     <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${atrasoTxt?`<span class="agb-ev-atraso">${atrasoTxt}</span>`:''}${stackBadge}</div>
   </div>`;

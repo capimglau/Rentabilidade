@@ -24,6 +24,33 @@ Agora são duas ações com alvos diferentes:
 | **tick** (`.agb-card-check`, à direita) | baixa **cheia** de todos (`baixarTudoCliente`, com o confirm de sempre) | `abrirParcial(idx,true)` — valor cheio já preenchido |
 | **toque no cartão** | abre o **detalhe** (`abrirAgbGrupo`): a lista dos lançamentos, cada um com seu tique | `abrirParcial(idx,false)` — o modal de parcial, valor em branco |
 
+### Os dois ícones do cartão ficam EMPILHADOS — `[agenda-acoes-empilhadas]`
+
+O cartão tem duas ações no canto direito: **editar** (lapiseira, só em cartão
+de 1 lançamento) e **baixar tudo** (o tick). Na primeira versão o tick de 36px
+tomou o canto e empurrou a lapiseira para dentro do cartão — bem **em cima do
+valor** (`R$ 550,00` com o lápis por cima). Relato do usuário: *"a edição e o
+pagamento ficaram em conflito"*.
+
+Eles moram numa **coluna** (`.agb-card-acts`), um sobre o outro, nunca lado a
+lado:
+
+- **24px cada** — dois de 36px não cabem na altura de 64px do cartão, e foi por
+  isso que o tick encolheu.
+- **A faixa reservada é uma só** (`.agb-card-check-on { padding-right:40px }`).
+  A regra antiga que reservava faixa só para a lapiseira foi removida: duas
+  regras de `padding-right` competindo é como o conflito nasceu.
+- **`.agb-card-edit` é `position:static`** — quem posiciona é a coluna. Um
+  `position:absolute` ali o tira da pilha e o lápis volta a flutuar sobre o
+  valor.
+- **A caixa dos dois é a mesma** (borda + fundo do cartão, raio 8px).
+  Empilhados eles viram um par; um cheio e um vazado pareciam controles de
+  sistemas diferentes.
+- Com **um ícone só** (cartão agrupado, sem lapiseira) a coluna centraliza
+  sozinha — nada a fazer.
+- Os dois continuam com **`event.stopPropagation()`**: sem isso o clique sobe
+  para o cartão e abre o detalhe por baixo da ação.
+
 Regras do detalhe (`#mAgbGrupo`):
 
 - **A lista é recalculada a cada render** a partir de `(dia, cliente)` —
