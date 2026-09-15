@@ -2101,6 +2101,48 @@ html[data-theme="dark"] .agb-card::after{ border-left:1.6px dashed rgba(255,255,
 /* Lapiseira de edição completa: canto superior direito, sem disputar
    clique com o card inteiro (que baixa/confirma) — só existe pra cards de
    1 lançamento, ver agbCardHtml. */
+/* ═══ [agenda-tick] Quem baixa é o TICK; o cartão abre o detalhe ═════════
+   O cartão agrupa os lançamentos do cliente no dia ("Kablan · 6
+   lançamentos"), e tocá-lo em qualquer lugar baixava OS SEIS de uma vez.
+   Agora o toque abre a lista deles, pra marcar só o que entrou; quem baixa
+   tudo é este tick. 36px de alvo dentro de um cartão de 64px. */
+.agb-card.agb-card-check-on{ padding-right:52px; }
+/* O lápis de editar mora no canto superior direito — sai da frente do tick
+   quando os dois aparecem no mesmo cartão (só acontece com 1 lançamento). */
+.agb-card.agb-card-check-on .agb-card-edit{ right:52px; }
+.agb-card-check{ position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  width:36px; height:36px; padding:0; margin:0; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  border:1.6px solid var(--line,#e3e3e8); background:var(--card,#fff); color:var(--ink3,#8a8a8e);
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+  transition:background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease; }
+.agb-card-check svg{ width:18px; height:18px; }
+.agb-card-check:hover{ border-color:var(--green,#34C759); color:var(--green,#34C759); }
+.agb-card-check:active{ transform:translateY(-50%) scale(.88); }
+html[data-theme="dark"] .agb-card-check{ background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.22); color:rgba(255,255,255,.72); }
+
+/* Linhas da janela de detalhe do grupo — uma por lançamento, marcada = entra
+   na baixa. */
+.agbg-item{ display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  padding:10px 12px; border-radius:12px; box-sizing:border-box; margin-bottom:8px;
+  border:1.5px solid var(--line,#e3e3e8); background:var(--card,#fff);
+  cursor:pointer; font:inherit; color:var(--ink,#1c1c1e); }
+.agbg-item.is-on{ border-color:var(--green,#34C759); background:rgba(52,199,89,.09); }
+.agbg-box{ width:22px; height:22px; border-radius:7px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  border:1.6px solid var(--line,#e3e3e8); background:var(--bg,#f5f5f7); color:transparent; }
+.agbg-item.is-on .agbg-box{ background:var(--green,#34C759); border-color:var(--green,#34C759); color:#fff; }
+.agbg-box svg{ width:13px; height:13px; }
+.agbg-txt{ flex:1 1 auto; min-width:0; display:block; }
+.agbg-rot{ display:block; font-size:13.5px; font-weight:700; line-height:1.25; }
+.agbg-det{ display:block; font-size:11.5px; color:var(--ink3,#8a8a8e); line-height:1.3; margin-top:2px; overflow-wrap:break-word; }
+.agbg-val{ font-size:13.5px; font-weight:800; flex-shrink:0; font-variant-numeric:tabular-nums; white-space:nowrap; }
+/* Baixa parcial DE UMA linha (valor quebrado) continua sendo do modal que já
+   existe — este botão só leva até lá, sem duplicar o formulário. */
+.agbg-parcial{ flex-shrink:0; border:1px solid var(--line,#e3e3e8); background:transparent; color:var(--ink3,#8a8a8e);
+  border-radius:9px; padding:5px 8px; font-size:11.5px; font-weight:700; cursor:pointer; }
+.agbg-parcial:hover{ color:var(--blue,#007AFF); border-color:var(--blue,#007AFF); }
+
 .agb-card-edit{ position:absolute; top:5px; right:5px; width:20px; height:20px; padding:0; border:none; border-radius:6px;
   display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2;
   background:color-mix(in srgb, var(--ink) 8%, transparent); color:var(--ink3); }
@@ -4531,6 +4573,29 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
     </div>
     <div id="parcialResto" style="font-size:12.5px;color:var(--ink3);margin:9px 0 2px;min-height:16px"></div>
     <button class="btn btn-blue" style="width:100%;justify-content:center;padding:10px;margin-top:6px" id="parcialBtn" onclick="confirmarParcial()">✓ Registrar parcial</button>
+  </div>
+</div>
+
+<!-- ─── MODAL DETALHE DO GRUPO (agenda) ───
+     O cartão da agenda junta os lançamentos do cliente no dia. Este modal é o
+     que o toque nele abre: a lista dos lançamentos, cada um com seu tique, pra
+     baixar só o que entrou. Quem baixa TODOS continua sendo o tick do cartão. -->
+<div class="overlay" id="mAgbGrupo">
+  <div class="modal" style="max-width:460px">
+    <div class="mhd"><span id="agbGrupoTit">Lançamentos</span> <button class="mcl" onclick="closeAgbGrupo()">✕</button></div>
+    <div id="agbGrupoInfo" style="font-size:13px;color:var(--ink3);margin-bottom:12px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+      <span style="font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--ink3)">Marque os que recebeu</span>
+      <button type="button" id="agbGrupoTodos" onclick="toggleAgbGrupoTodos()"
+        style="border:none;background:transparent;padding:0;cursor:pointer;font-size:12px;font-weight:700;color:var(--ink3);text-decoration:underline">Marcar todos</button>
+    </div>
+    <div id="agbGrupoLista" style="max-height:46vh;overflow:auto"></div>
+    <div class="fg" style="margin-top:4px">
+      <div class="fp s2"><label>Data do pagamento</label><input type="date" id="agb-grp-data"></div>
+    </div>
+    <div id="agbGrupoTotal" style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--line);margin-top:10px"></div>
+    <div id="agbGrupoNota" style="font-size:12.5px;color:var(--ink3);line-height:1.45;margin-top:9px;min-height:16px"></div>
+    <button class="btn btn-blue" style="width:100%;justify-content:center;padding:10px;margin-top:8px" id="agbGrupoBtn" onclick="confirmarAgbGrupo()">✓ Baixar selecionados</button>
   </div>
 </div>
 
@@ -7048,9 +7113,25 @@ function numerarGrupo(grupo){
 function agbCardHtml(grp,dia,hiddenCount){
   const n=grp.recs.length;
   const idx1=allD().indexOf(grp.recs[0]);
+  const cliArg=JSON.stringify(grp.cliente).replace(/"/g,'&quot;');
+  /* [agenda-tick] Duas ações com alvos diferentes, em vez de uma só no cartão
+     inteiro:
+       • TOQUE NO CARTÃO → abre o DETALHE. Com vários lançamentos, a lista
+         deles pra marcar o que entrou (abrirAgbGrupo); com um só, o modal de
+         recebimento parcial que já existia, onde se digita o valor.
+       • TICK → baixa CHEIA, que é o que o toque fazia antes.
+     Antes, tocar em qualquer canto do cartão de "6 lançamentos" quitava os
+     seis — sem escolher, e sem ver o que estava sendo quitado. */
   const onclick=n===1
+    ? `abrirParcial(${idx1},false)`
+    : `abrirAgbGrupo('${dia}',${cliArg})`;
+  const onTick=n===1
     ? `abrirParcial(${idx1},true)`
-    : `baixarTudoCliente('${dia}',${JSON.stringify(grp.cliente).replace(/"/g,'&quot;')})`;
+    : `baixarTudoCliente('${dia}',${cliArg})`;
+  const checkBtn=`<button type="button" class="agb-card-check" title="${n>1?`Baixar os ${n} lançamentos`:'Baixar este lançamento'}" aria-label="Baixar"
+      onclick="event.stopPropagation();${onTick}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </button>`;
   // renderAgendaBoardHtml só bota lançamento vencido na coluna Atrasados
   // (dia==='atrasados') — os dias normais (dia<td()) nunca acontecem, já
   // que "futuros" já vem filtrado por prev_pgto>=hoje.
@@ -7095,12 +7176,12 @@ function agbCardHtml(grp,dia,hiddenCount){
   // cartão de 64px não sobra canto livre — em cima cobriria o valor, embaixo
   // brigaria com o selo de atraso.
   const stackBadge=hiddenCount?`<span class="agb-card-stack-badge" onclick="event.stopPropagation();toggleAgbDeck(this)" title="Ver mais ${hiddenCount} lançamento(s)">+${hiddenCount}</span>`:'';
-  const cardHtml=`<div class="agb-card${(atrasado||hoje)?' agb-card-pulsa':''}${editBtn?' agb-card-edit-on':''}" role="button" tabindex="0"
+  const cardHtml=`<div class="agb-card agb-card-check-on${(atrasado||hoje)?' agb-card-pulsa':''}${editBtn?' agb-card-edit-on':''}" role="button" tabindex="0"
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag};--flag-mid:${flag.mid};--flag-ink:${flag.ink};--flag-icon:${flag.icon}${pulseDelay}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
-      title="Toque para baixar${n>1?' (todos os lançamentos deste cliente no dia)':''}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''}">
-    ${editBtn}
+      title="Toque para ${n>1?`ver os ${n} lançamentos e escolher o que baixar`:'registrar o recebimento'}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''} — o tique à direita baixa tudo">
+    ${editBtn}${checkBtn}
     <div class="agb-ev-l1"><p class="agb-card-title">${esc(grp.cliente||'—')}</p><span class="agb-card-val">${fRH(grp.total)}</span></div>
     <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${atrasoTxt?`<span class="agb-ev-atraso">${atrasoTxt}</span>`:''}${stackBadge}</div>
   </div>`;
@@ -7286,15 +7367,20 @@ function diaBlocoHtml(dia,drows){
 // confirmarParcial), só que em vários lançamentos de uma vez. dbUpdate por
 // item (persiste no banco) + renderAll() no final, com "Desfazer" restaurando
 // o estado anterior de cada um — mesmo padrão de confirmarParcial/swDo.
-function _baixarLoteConfirmado(alvos,label){
+/* `dataPag` é opcional e só existe por causa do detalhe do grupo, onde o
+   usuário informa QUANDO recebeu (o dinheiro pode ter entrado dias antes de
+   ele registrar). Sem ela, continua sendo hoje — que é o que todos os
+   chamadores antigos esperavam. A regra da baixa segue morando aqui, uma vez
+   só: o detalhe não grava por conta própria. */
+function _baixarLoteConfirmado(alvos,label,dataPag){
   if(!alvos.length) return;
-  const hoje=td();
+  const quando=(typeof dataPag==='string'&&dataPag)?dataPag:td();
   const prevs=alvos.map(r=>({r,valor_pago:r.valor_pago,saldo:r.saldo,data_pagamento:r.data_pagamento}));
   const totalVal=alvos.reduce((a,r)=>a+fN(r.saldo),0);
   alvos.forEach(r=>{
     r.valor_pago=fN(r.valor_pago)+fN(r.saldo);
     r.saldo=0;
-    r.data_pagamento=hoje;
+    r.data_pagamento=quando;
     dbUpdate(r);
   });
   renderAll();
@@ -7324,6 +7410,147 @@ function baixarTudoDia(dia){
   const quando=atrasados?'em atraso':`de ${fDM(dia)}`;
   if(!confirm(`Confirmar a baixa de TODOS os ${alvos.length} lançamento(s) pendentes ${quando} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
   _baixarLoteConfirmado(alvos,atrasados?'Atrasados':fDM(dia));
+}
+
+/* ═══ [agenda-detalhe] Os lançamentos por trás de um cartão da agenda ═════
+
+   O cartão junta o que um cliente deve num dia ("Kablan · 6 lançamentos").
+   Tocá-lo abre esta lista — é o "abra todos os outros lançamentos detalhados"
+   do pedido — e a baixa passa a ser do que estiver marcado.
+
+   O alvo é recalculado a cada render a partir de (dia, cliente), nunca
+   guardado: a lista pode mudar embaixo do modal (baixa noutro aparelho
+   chegando pela sincronização), e uma cópia velha baixaria o que já foi
+   baixado. Mesmo espírito de ULTIMO_MSEARCH/refreshMSearch. */
+let AGB_GRUPO=null;        // { dia, cliente }
+let AGB_GRUPO_SEL={};      // chave do lançamento -> marcado?
+
+// Chave estável do lançamento. `id` é o do banco; o que ainda não foi gravado
+// (NOVOS) não tem id, então cai no índice — comparar sempre como String, que
+// id vindo do banco nem sempre é number.
+const agbChaveRec = r => (r && r.id!=null) ? ('id'+String(r.id)) : ('ix'+allD().indexOf(r));
+
+function _agbAlvosCliente(dia,cliente){
+  const atrasados=dia==='atrasados';
+  const hoje=td();
+  return allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)
+    &&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+}
+
+function abrirAgbGrupo(dia,cliente){
+  const alvos=_agbAlvosCliente(dia,cliente);
+  if(!alvos.length) return;
+  AGB_GRUPO={dia,cliente};
+  /* Começa com TUDO marcado: receber o cliente inteiro continua sendo o caso
+     comum, e o trabalho vira desmarcar o que não entrou. */
+  AGB_GRUPO_SEL={};
+  alvos.forEach(r=>{AGB_GRUPO_SEL[agbChaveRec(r)]=true;});
+  document.getElementById('agb-grp-data').value=td();
+  renderAgbGrupo();
+  document.getElementById('mAgbGrupo').classList.add('on');
+}
+
+function closeAgbGrupo(){
+  document.getElementById('mAgbGrupo').classList.remove('on');
+  AGB_GRUPO=null; AGB_GRUPO_SEL={};
+}
+
+function toggleAgbGrupoItem(chave){
+  AGB_GRUPO_SEL[chave]=!AGB_GRUPO_SEL[chave];
+  renderAgbGrupo();
+}
+
+function toggleAgbGrupoTodos(){
+  if(!AGB_GRUPO) return;
+  const alvos=_agbAlvosCliente(AGB_GRUPO.dia,AGB_GRUPO.cliente);
+  const todos=alvos.length>0&&alvos.every(r=>AGB_GRUPO_SEL[agbChaveRec(r)]);
+  AGB_GRUPO_SEL={};
+  if(!todos) alvos.forEach(r=>{AGB_GRUPO_SEL[agbChaveRec(r)]=true;});
+  renderAgbGrupo();
+}
+
+/* Baixa PARCIAL de uma linha (valor quebrado) continua sendo do modal que já
+   existia — este atalho só leva até lá, sem duplicar formulário nem regra. */
+function abrirParcialDoGrupo(idx){
+  closeAgbGrupo();
+  abrirParcial(idx,false);
+}
+
+function renderAgbGrupo(){
+  if(!AGB_GRUPO) return;
+  const {dia,cliente}=AGB_GRUPO;
+  const alvos=_agbAlvosCliente(dia,cliente);
+  if(!alvos.length){ closeAgbGrupo(); return; }
+  const marcados=alvos.filter(r=>AGB_GRUPO_SEL[agbChaveRec(r)]);
+  const soma=marcados.reduce((a,r)=>a+fN(r.saldo),0);
+  const total=alvos.reduce((a,r)=>a+fN(r.saldo),0);
+  const quando=dia==='atrasados'?'em atraso':`em ${fDM(dia)}`;
+
+  document.getElementById('agbGrupoTit').textContent=`${alvos.length} lançamento${alvos.length>1?'s':''} · ${cliente}`;
+  document.getElementById('agbGrupoInfo').innerHTML=
+    `${esc(cliente)} · ${quando} · total em aberto <strong>${fR(total)}</strong>`;
+
+  document.getElementById('agbGrupoLista').innerHTML=alvos.map(r=>{
+    const ch=agbChaveRec(r);
+    const on=!!AGB_GRUPO_SEL[ch];
+    const idx=allD().indexOf(r);
+    const parc=agbParcelaInfo(r);
+    const ref=(r.obs||'').replace(/\s*·?\s*Parcela\s+\d+\s*\/\s*\d+.*$/i,'').trim();
+    /* O cabeçalho do modal já diz de quem é — repetir o nome do cliente em
+       cada linha não distingue nada. O que diferencia um lançamento do outro
+       aqui é o VENCIMENTO, então é ele que vira o título da linha. */
+    const titulo=r.prev_pgto?`Venc. ${fDM(r.prev_pgto)}`:(esc(r.tipo||'')||'Lançamento');
+    const det=[esc(r.placa||''),esc(r.tipo||''),esc(r.forma||''),
+               parc?`parcela ${parc.atual}/${parc.total}`:'',
+               ref?`REF ${esc(ref)}`:''].filter(Boolean).join(' · ');
+    return `<div class="agbg-item${on?' is-on':''}" role="button" tabindex="0"
+        onclick="toggleAgbGrupoItem('${ch}')"
+        onkeydown="if(event.key==='Enter')toggleAgbGrupoItem('${ch}')">
+      <span class="agbg-box">${on?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>':''}</span>
+      <span class="agbg-txt"><span class="agbg-rot">${titulo}</span><span class="agbg-det">${det}</span></span>
+      <span class="agbg-val">${fR(r.saldo)}</span>
+      <button type="button" class="agbg-parcial" title="Recebi só uma parte deste lançamento"
+        onclick="event.stopPropagation();abrirParcialDoGrupo(${idx})">◐ parcial</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('agbGrupoTodos').textContent=
+    (alvos.length>0&&marcados.length===alvos.length)?'Desmarcar todos':'Marcar todos';
+
+  document.getElementById('agbGrupoTotal').innerHTML=
+    `<span style="font-size:12.5px;font-weight:700;color:var(--ink3)">Selecionado</span>`+
+    `<span style="font-size:17px;font-weight:800">${fR(soma)}</span>`;
+
+  document.getElementById('agbGrupoNota').textContent=
+    marcados.length===0 ? 'Marque ao menos um lançamento para baixar.'
+    : marcados.length===alvos.length ? 'Todos serão baixados por inteiro, com esta data.'
+    : `${marcados.length===1?'O marcado é baixado':'Os '+marcados.length+' marcados são baixados'} por inteiro; `+
+      `${alvos.length-marcados.length===1?'o outro continua':'os outros '+(alvos.length-marcados.length)+' continuam'} em aberto.`+
+      ` Recebeu só parte de UM deles? Use o "◐ parcial" da linha.`;
+
+  const btn=document.getElementById('agbGrupoBtn');
+  btn.textContent=`✓ Baixar ${marcados.length} de ${alvos.length} · ${fR(soma)}`;
+  btn.disabled=marcados.length===0;
+  btn.style.opacity=marcados.length===0?'.5':'1';
+}
+
+function confirmarAgbGrupo(){
+  if(!AGB_GRUPO) return;
+  const {dia,cliente}=AGB_GRUPO;
+  const data=document.getElementById('agb-grp-data').value;
+  if(!data){alert('Informe a data de pagamento.');return;}
+  const alvos=_agbAlvosCliente(dia,cliente).filter(r=>AGB_GRUPO_SEL[agbChaveRec(r)]);
+  if(!alvos.length){alert('Marque ao menos um lançamento para baixar.');return;}
+  closeAgbGrupo();
+  /* Quem grava continua sendo _baixarLoteConfirmado — a mesma função do tick
+     e do total do dia. Este modal só escolhe QUAIS e QUANDO. */
+  _baixarLoteConfirmado(alvos,cliente,data);
+}
+
+function refreshAgbGrupo(){
+  if(!AGB_GRUPO)return;
+  if(!document.getElementById('mAgbGrupo')?.classList.contains('on'))return;
+  renderAgbGrupo();
 }
 
 function renderRecebHoje(){
@@ -11524,6 +11751,10 @@ function renderAll(){
   else if(curPage==='fluxo')renderFluxo();
   else if(curPage==='auditoria')renderAuditoria();
   refreshMSearch();
+  /* [agenda-detalhe] O detalhe do grupo lê a lista na hora de desenhar, então
+     repintar aqui basta pra ele nunca mostrar dado velho — inclusive quando a
+     baixa veio de outro aparelho pela sincronização automática. */
+  refreshAgbGrupo();
   refreshCalPrevisto();
   // Uma baixa/edição redesenha a grade do calendário de vencidos/hoje do
   // zero (innerHTML), o que já derruba o popup de um dia que estivesse
