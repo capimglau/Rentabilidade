@@ -78,6 +78,74 @@ e do total do dia. O detalhe só escolhe **quais** e **quando**: o parâmetro
 antes do registro) e é **opcional**, então todos os chamadores antigos
 continuam gravando hoje, como antes.
 
+## O que já foi baixado também aparece no board, dia a dia — `[agenda-dia-a-dia-pago]`
+
+Pedido do usuário: *"eu quero que apareça tudo que já foi baixado também,
+dia a dia."* — dito depois de eu explicar que "Atrasados" já mostra TUDO
+que está em aberto, sem corte de data: o que faltava não era mais
+pendência, era **histórico**. O board (`renderAgendaBoardHtml`) só existia
+pra PENDENTE (`isPend`); assim que um lançamento era baixado, ele **sumia**
+do board por completo — continuava só no Calendário (`renderRecCalGridHtml`,
+que já mistura recebido+pendente por dia, célula a célula).
+
+**Janela: últimos 7 dias** (`addD(hoje,-6)` até `hoje`, escolha do usuário
+entre 7/30/sem-limite). Diferente de "Atrasados", que não tem limite —
+lá é dívida em aberto que não pode se perder de vista nunca; aqui é
+histórico já resolvido, e uma semana já responde "o que entrou nos
+últimos dias" sem o board crescer sem parar com o tempo.
+
+**Ordem das colunas**: `[Atrasados] [dias pagos, do mais antigo pro mais
+recente] [dias futuros pendentes]`. Atrasados continua **sempre primeiro**
+— é o que pede ação, e essa posição já era uma decisão repetida ao longo
+deste projeto. Os dias pagos entram DEPOIS dele: lendo da esquerda pra
+direita, o board conta *"o que ainda pesa · o que já foi resolvido há
+pouco · o que vem por aí"*.
+
+**Coluna paga é uma coluna própria, mesmo quando cai no mesmo dia de uma
+coluna pendente.** Se algo foi pago HOJE e também tem algo pendente
+vencendo HOJE, aparecem **duas** colunas "hoje" lado a lado — uma verde
+(pago), uma azul (`agb-hoje`, pendente) — em vez de misturar as duas numa
+só. Juntar as duas exigiria que `agbCardHtml`/`agruparPorCliente` soubessem
+que um GRUPO pode ter parte paga e parte pendente ao mesmo tempo, o que não
+existe hoje — feito assim de propósito, pra não arriscar o card de baixa
+(testado e em produção) por causa de uma feature nova.
+
+### O card pago é outra coisa, não um card pendente cinza
+
+- **Sem tick** — não há nada pra baixar, já foi. `checkBtn=''` quando
+  `pago`.
+- **Sem grupo de baixa** — cartão de 1 lançamento (`n===1`) abre `openEdit`
+  direto (pra corrigir valor/data, ou reverter pelo swipe de lá); grupo de
+  vários (`n>1`) não abre nada — não existe (e não faz sentido criar) um
+  modal de "ver os pagos".
+- **Sem coluna de ícones quando não há ícone nenhum.** `temAcao =
+  !!(editBtn||checkBtn)` decide JUNTOS a classe `.agb-card-check-on` (que
+  reserva o `padding-right`) e o próprio `<div class="agb-card-acts">` — um
+  card pago agrupado (sem tick, sem lápis) não tem NENHUM dos dois, e sem
+  essa checagem sobraria um vão morto do lado direito.
+- **Valor mostrado é `valor_pago`, nunca `saldo`.** `grp.total`
+  (`agruparPorCliente`) soma `saldo` — que é **0 por definição** num
+  lançamento pago (é o próprio `isPago`). Card e cabeçalho da coluna paga
+  somam `valor_pago` à parte (`valorMostrado` no card; o `total` de
+  `agbColHtml` também troca de campo quando `pago`). Sem essa troca, todo
+  card/coluna paga mostraria **R$ 0,00** — mesmo padrão que o painel de
+  Boletos já usa (`g.totalPago` vs `g.totalSaldo`).
+- **Selo verde "✓ Recebido"** no lugar do selo de atraso — mesma classe de
+  forma/tamanho (`.agb-ev-pago`, cor de `.cal-ok` do Calendário), nunca o
+  vermelho de atraso.
+- **Cabeçalho da coluna tinge de verde** (`.agb-col.agb-pago .agb-col-hd`),
+  mesmo padrão que "hoje" (azul) e "Atrasados" (vermelho) já usam — é o que
+  deixa claro, batendo o olho, que aquele dia é passado **resolvido**.
+- **O chip do total no cabeçalho não é clicável** (`.agb-dh-in-pago`) —
+  não existe `baixarTudoDia` pra aplicar num dia que já foi todo pago.
+
+Travado pelo comportamento visual, não por teste automatizado (app sem
+suíte de testes própria) — conferido no navegador com backend dublê:
+card único paga → edita; card agrupado pago → não faz nada; lápis no card
+pago → edita; nenhuma mudança no comportamento dos cards PENDENTES (tick
+abre confirmar baixa, toque abre parcial, "baixar tudo do dia" continua
+funcionando).
+
 ## Toda confirmação de lançamento ou baixa abre banner de Desfazer — `[desfazer-sistema]`
 
 Pedido do usuário: *"para todo o sistema, a opção de desfazer. Ao efetivar
