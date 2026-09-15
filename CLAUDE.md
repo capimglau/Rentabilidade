@@ -78,5 +78,67 @@ e do total do dia. O detalhe só escolhe **quais** e **quando**: o parâmetro
 antes do registro) e é **opcional**, então todos os chamadores antigos
 continuam gravando hoje, como antes.
 
+## Toda confirmação de lançamento ou baixa abre banner de Desfazer — `[desfazer-sistema]`
+
+Pedido do usuário: *"para todo o sistema, a opção de desfazer. Ao efetivar
+qualquer tipo de lançamento, baixa ou afins, na confirmação, abra um banner
+de desfazer durante 5 segundos."*
+
+O app já tinha esse padrão em alguns lugares (`showToast(msg, 'Desfazer',
+fn)`, banner de 5s — `toastTimer` já era 5000ms, não precisou mudar). O que
+faltava era **cobertura**: metade das telas que criam/editam/baixam um
+lançamento não ofereciam Desfazer nenhum. Hoje cobrem:
+
+| ação | função | o que o Desfazer devolve |
+|---|---|---|
+| Novo Lançamento | `addN` → `gravarComDesfazer` | apaga o(s) registro(s) criado(s) |
+| Acrescentar ao contrato (edição) | `addItensContrato` → `gravarComDesfazer` | idem |
+| Câmera/OCR | `confirmAI` → `gravarComDesfazer` | idem |
+| Baixar (dentro da edição) | `confirmarBaixa` | `valor_pago`/`saldo`/`obs`/`data_pagamento` de volta |
+| Baixa em lote (tela de Baixas) | `confirmarLote` → `_baixarLoteConfirmado` | idem, um por lançamento |
+| Recebimento parcial/total (swipe) | `confirmarParcial` | idem *(já existia)* |
+| Reverter pagamento (swipe) | `reverterPagamento` | idem *(já existia)* |
+| Baixa em lote pela Agenda | `baixarTudoCliente`/`baixarTudoDia`/`confirmarAgbGrupo` → `_baixarLoteConfirmado` | idem *(já existia)* |
+| Editar lançamento (sem reparcelar) | `saveEdit` (branch sem `redivide`) | TODOS os campos de `r` + os cadastrais das irmãs |
+| Substituir veículo | `confirmarSubstituicao` | campos do original de volta + apaga o registro novo |
+
+**`gravarComDesfazer(recs,label)`** é a função única para as TRÊS telas que
+criam lançamento do zero (Novo Lançamento, OCR, Acrescentar ao contrato) —
+grava, registra em `NOVOS` e mostra o banner; o Desfazer chama
+`removerLancamento` em cada um. Sem isso seriam três cópias da mesma regra
+divergindo com o tempo — mesmo raciocínio de `_baixarLoteConfirmado` já ser
+a fonte única da baixa em lote.
+
+**`confirmarLote`** (tela de Baixas) reescrevia a conta na mão
+(`valor_pago`/`saldo`/`data_pagamento`) em vez de chamar
+`_baixarLoteConfirmado`, que já existia com exatamente essa lógica pra
+Agenda. Passou a chamar ela — ganhou o Desfazer de graça e parou de ser uma
+segunda cópia da mesma regra. `_baixarLoteConfirmado` ganhou um 4º parâmetro
+opcional (`nota`, só usado por essa tela) pra caber o caso do "obs
+acrescentado ao lote" sem duplicar a função.
+
+**`saveEdit` guarda o objeto `r` inteiro antes de mudar** (`const
+prevR={...r}`), não uma lista de campos — assim o Desfazer sempre devolve
+exatamente como estava, mesmo que a função ganhe um campo novo no futuro e
+alguém esqueça de incluir na lista manual.
+
+### O que continua SEM Desfazer, de propósito
+
+- **`excluirLancamento`** — já não tinha (comentário original: *"não tem
+  como reinserir do jeito que estava com segurança"*), continua sem.
+- **`saveEdit` com reparcelamento** (`redivide`, ou quando `outrosPag`
+  também redivide) — `sincronizarParcelas` cria e apaga parcela de
+  verdade; reconstruir "como estava" com segurança não dá, mesmo motivo do
+  item acima. O aviso continua aparecendo (o usuário vê o total/parcelas
+  novas), só não oferece um desfazer que não teria volta garantida.
+
+Qualquer confirmação nova de lançamento/baixa que este princípio alcançar
+segue o mesmo molde: captura o estado de ANTES (o registro inteiro, quando
+der — `{...r}` — ou os poucos campos que a ação muda, quando o registro
+inteiro não fizer sentido), grava, e só então chama
+`showToast(msg,'Desfazer',fn)` com `fn` restaurando esse estado + `dbUpdate`
++ `renderAll()`. Reservar a ausência de Desfazer só pro caso em que
+restaurar não é seguro — e documentar o porquê, como acima.
+
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.

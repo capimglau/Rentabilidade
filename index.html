@@ -7409,22 +7409,28 @@ function diaBlocoHtml(dia,drows){
    usuário informa QUANDO recebeu (o dinheiro pode ter entrado dias antes de
    ele registrar). Sem ela, continua sendo hoje — que é o que todos os
    chamadores antigos esperavam. A regra da baixa segue morando aqui, uma vez
-   só: o detalhe não grava por conta própria. */
-function _baixarLoteConfirmado(alvos,label,dataPag){
+   só: o detalhe não grava por conta própria.
+   [desfazer-sistema] `nota` também é opcional — só a tela de Baixas/Lote
+   (confirmarLote) manda algo aqui, ACRESCENTADO ao obs de cada lançamento
+   (nunca substitui o que já estava cadastrado). Sem ela, obs nem é tocado —
+   por isso capturar `obs` nos `prevs` de qualquer chamador é sempre seguro:
+   sem nota, o Desfazer só regrava o mesmo valor que já estava lá. */
+function _baixarLoteConfirmado(alvos,label,dataPag,nota){
   if(!alvos.length) return;
   const quando=(typeof dataPag==='string'&&dataPag)?dataPag:td();
-  const prevs=alvos.map(r=>({r,valor_pago:r.valor_pago,saldo:r.saldo,data_pagamento:r.data_pagamento}));
+  const prevs=alvos.map(r=>({r,valor_pago:r.valor_pago,saldo:r.saldo,data_pagamento:r.data_pagamento,obs:r.obs}));
   const totalVal=alvos.reduce((a,r)=>a+fN(r.saldo),0);
   alvos.forEach(r=>{
     r.valor_pago=fN(r.valor_pago)+fN(r.saldo);
     r.saldo=0;
     r.data_pagamento=quando;
+    if(nota)r.obs=[r.obs,nota].filter(Boolean).join(' · ');
     dbUpdate(r);
   });
   renderAll();
   showToast(`✓ ${label}: ${fR(totalVal)} baixado (${alvos.length} lançamento${alvos.length>1?'s':''})`,'Desfazer',()=>{
-    prevs.forEach(({r,valor_pago,saldo,data_pagamento})=>{
-      r.valor_pago=valor_pago; r.saldo=saldo; r.data_pagamento=data_pagamento;
+    prevs.forEach(({r,valor_pago,saldo,data_pagamento,obs})=>{
+      r.valor_pago=valor_pago; r.saldo=saldo; r.data_pagamento=data_pagamento; r.obs=obs;
       dbUpdate(r);
     });
     renderAll();
@@ -9033,6 +9039,10 @@ function confirmarBaixa(){
   const obs=document.getElementById('b-obs').value;
   if(!data){alert('Informe a data de pagamento.');return;}
   const r=lancEditado();
+  // [desfazer-sistema] Estado de ANTES, capturado antes de tocar em r —
+  // mesmo padrão de reverterPagamento/confirmarParcial: o Desfazer do banner
+  // devolve exatamente estes quatro campos, nunca um "estorno" recalculado.
+  const prev={valor_pago:r.valor_pago,saldo:r.saldo,obs:r.obs,data_pagamento:r.data_pagamento};
   // Recebe 'val' (líquido); abate do saldo (líquido a receber) e mantém a
   // competência (prev_pgto). A data do pagamento vai pro campo próprio
   // (data_pagamento) — o obs NUNCA é tocado automaticamente pela baixa, só
@@ -9043,6 +9053,12 @@ function confirmarBaixa(){
   r.data_pagamento=data||null;
   dbUpdate(r);
   closeEdit();renderAll();
+  const quitado=r.saldo<=0.005;
+  showToast(`${quitado?'✓':'◐'} ${r.cliente||r.placa}: ${fR(val)} recebido${quitado?' — quitado':' · falta '+fR(r.saldo)}`,'Desfazer',()=>{
+    r.valor_pago=prev.valor_pago;r.saldo=prev.saldo;r.obs=prev.obs;r.data_pagamento=prev.data_pagamento;
+    dbUpdate(r);renderAll();
+    showToast('Baixa desfeita');
+  });
 }
 // ── LANÇAMENTO PARCELADO NA EDIÇÃO ──
 // Datas de vencimento que o lançamento terá com n parcelas: as que já
@@ -9212,6 +9228,28 @@ function removerLancamento(x){
   const ni=NOVOS.indexOf(x); if(ni>=0)NOVOS.splice(ni,1);
   return dbDelete(x.id);
 }
+// [desfazer-sistema] Grava um ou mais lançamentos NOVOS e oferece "Desfazer"
+// por 5s — usada pelas TRÊS telas que criam lançamento do zero (Novo
+// Lançamento, Câmera/OCR e "Acrescentar ao contrato" na edição). Uma função
+// só grava e mostra o banner, pra não ter três cópias da mesma regra de
+// desfazer divergindo entre si com o tempo (mesmo espírito de
+// _baixarLoteConfirmado, que é a fonte única da baixa em lote).
+// `label` é só o texto do banner — cada chamador continua livre pra manter
+// a própria mensagem inline (nMsg/edMsg) do jeito que já tinha.
+async function gravarComDesfazer(recs,label){
+  const salvos=[];
+  for(const rec of recs){
+    const saved=await dbInsert(rec);
+    registrarNovo(saved);
+    salvos.push(saved);
+  }
+  if(salvos.length)showToast(`✓ ${label}`,'Desfazer',async()=>{
+    for(const s of salvos)await removerLancamento(s);
+    popSel();renderAll();
+    showToast(salvos.length>1?'Lançamentos desfeitos':'Lançamento desfeito');
+  });
+  return salvos;
+}
 // Renumera o "Parcela X/N" do que sobrou depois de excluir uma parcela
 // solta — sem isso ficam 1/3 e 3/3 num lançamento que tem 2 parcelas.
 function renumerarParcelas(recs){
@@ -9273,7 +9311,7 @@ async function addItensContrato(){
   if(erro){msg.innerHTML=`<span style="color:var(--red)">${erro}</span>`;return;}
   const btn=document.getElementById('ed-submit');
   if(btn)btn.disabled=true;
-  try{ for(const rec of recs){const saved=await dbInsert(rec);registrarNovo(saved);} }
+  try{ await gravarComDesfazer(recs,(recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados')+' ao contrato'); }
   finally{ if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados'} ao contrato!</span>`;
   resetItems('ed');
@@ -9394,6 +9432,16 @@ async function saveEdit(){
   document.getElementById('e-com-on').checked=false;
   document.getElementById('e-com').value='';
   document.getElementById('e-com').disabled=true;
+  // [desfazer-sistema] Cópia de TODOS os campos de r e das irmãs ANTES da
+  // mudança — não só os que `novo` toca. Guardar o objeto inteiro (em vez de
+  // listar campo a campo) é o que garante que o Desfazer devolve r exatamente
+  // como estava, mesmo que esta função ganhe um campo novo no futuro e
+  // alguém esqueça de incluir na lista.
+  // Só serve pro caminho SEM redivisão, mais abaixo: redivisão cria/apaga
+  // parcela de verdade (sincronizarParcelas) e não tem volta segura — mesmo
+  // motivo por que excluirLancamento não tem Desfazer.
+  const prevR={...r};
+  const prevIrmaos=irmaosParcela.map(x=>({x,placa:x.placa,dono:x.dono,cliente:x.cliente,tipo:x.tipo,forma:x.forma,saida:x.saida,retorno:x.retorno}));
   // Confirmado: agora sim o registro aberto recebe o que foi digitado.
   Object.assign(r,novo);
   // Número do lançamento principal: quem ainda não tem (lançamento antigo,
@@ -9402,6 +9450,11 @@ async function saveEdit(){
   // depender do texto do obs.
   numerarGrupo(grupo);
   if(redivide){
+    // [desfazer-sistema] SEM Desfazer de propósito: sincronizarParcelas cria
+    // e apaga parcela de verdade, e reconstruir "como estava" com segurança
+    // não dá — mesmo motivo por que excluirLancamento também não tem banner.
+    // O aviso continua (o usuário vê total/parcelas novas), só não oferece
+    // desfazer uma coisa que não tem volta garantida.
     await sincronizarParcelas(r,grupo,nNovo,total,r.prev_pgto,obsSemParcela(r.obs));
     showToast(nNovo===grupo.length
       ? `✓ Lançamento ${rotuloLanc(r)}: ${nNovo>1?`${nNovo} parcelas ajustadas`:'valor ajustado'} — total ${fR(total)}`
@@ -9415,6 +9468,16 @@ async function saveEdit(){
       x.placa=r.placa; x.dono=r.dono; x.cliente=r.cliente; x.tipo=r.tipo; x.forma=r.forma;
       x.saida=r.saida; x.retorno=r.retorno;
       dbUpdate(x);
+    });
+    showToast(`✓ Lançamento de ${r.cliente||r.placa} editado`,'Desfazer',()=>{
+      Object.assign(r,prevR);
+      dbUpdate(r);
+      prevIrmaos.forEach(({x,placa,dono,cliente,tipo,forma,saida,retorno})=>{
+        x.placa=placa;x.dono=dono;x.cliente=cliente;x.tipo=tipo;x.forma=forma;x.saida=saida;x.retorno=retorno;
+        dbUpdate(x);
+      });
+      renderAll();
+      showToast('Edição desfeita');
     });
   }
   // Os outros lançamentos do mesmo pagamento: forma nova, número de
@@ -10397,22 +10460,19 @@ function baixarSelecionados(){
   document.getElementById('bl-data').value=td();
   document.getElementById('mLote').classList.add('on');
 }
+// [desfazer-sistema] Mesma regra de baixa em lote que a Agenda já usa
+// (_baixarLoteConfirmado) — grava a data escolhida e, se houver, a nota
+// acrescentada ao obs de cada um. Antes esta tela reescrevia a conta na mão
+// (valor_pago/saldo/data_pagamento) sem Desfazer nenhum; reusar a função
+// única dá o banner de graça e tira uma segunda cópia da mesma regra.
 function confirmarLote(){
   const data=document.getElementById('bl-data').value;
   const nota=document.getElementById('bl-obs').value.trim();
   if(!data){alert('Informe a data.');return;}
-  // A data do pagamento vai pro campo próprio; a nota do lote (se houver) só
-  // é ACRESCENTADA ao obs de cada lançamento, nunca substitui o que já
-  // estava cadastrado (ex. final do cartão).
-  loteSel.forEach(i=>{
-    const r=allD()[i];if(!r)return;
-    r.valor_pago=fN(r.valor_pago)+fN(r.saldo);r.saldo=0;
-    if(nota)r.obs=[r.obs,nota].filter(Boolean).join(' · ');
-    r.data_pagamento=data;
-    dbUpdate(r);
-  });
+  const alvos=loteSel.map(i=>allD()[i]).filter(Boolean);
   document.getElementById('mLote').classList.remove('on');
-  loteSel=[];renderAll();
+  loteSel=[];
+  _baixarLoteConfirmado(alvos,'Baixa em lote',data,nota);
 }
 
 // ── PREMISSAS ──
@@ -10925,6 +10985,12 @@ function confirmarSubstituicao(){
     saldo:Math.round(valorB*(1-getTaxaForma(r.forma))*100)/100,
     obs:`Substituição de ${r.placa} em ${fD(dataTroca)}`+(r.obs?` · ${r.obs}`:'')
   };
+  // [desfazer-sistema] Estado de ANTES do original — o Desfazer devolve
+  // r aos quatro campos que a substituição muda E apaga o registro novo
+  // (a placa nova nunca existiu antes desta ação, então "desfazer" aqui É
+  // apagar, sem risco — diferente do excluirLancamento manual, que apaga
+  // um registro que já tinha vida própria antes do toque do usuário).
+  const prev={retorno:r.retorno,valor:r.valor,saldo:r.saldo,obs:r.obs};
   r.retorno=dataTroca;
   r.valor=valorA;
   r.saldo=Math.round(valorA*(1-getTaxaForma(r.forma))*100)/100;
@@ -10935,6 +11001,13 @@ function confirmarSubstituicao(){
     registrarNovo(saved);
     popSel();
     closeEdit();renderAll();
+    showToast(`✓ Substituição: ${r.placa} → ${placaNova} em ${fD(dataTroca)}`,'Desfazer',async()=>{
+      r.retorno=prev.retorno;r.valor=prev.valor;r.saldo=prev.saldo;r.obs=prev.obs;
+      dbUpdate(r);
+      await removerLancamento(saved);
+      popSel();renderAll();
+      showToast('Substituição desfeita');
+    });
   })();
 }
 // Divide um valor em N parcelas de centavos o mais iguais possível, sem
@@ -11130,7 +11203,7 @@ async function addN(){
   const btn=document.getElementById('nf-submit');
   if(btn)btn.disabled=true;
   try{
-    for(const rec of recs){const saved=await dbInsert(rec);registrarNovo(saved);}
+    await gravarComDesfazer(recs,recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados');
   } finally { if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Adicionado':recs.length+' lançamentos adicionados'}!</span>`;
   document.getElementById('novosCard').style.display='block';
@@ -11596,7 +11669,7 @@ async function confirmAI(){
   if(s){const dup=allD().find(x=>x.placa===p&&x.saida===s);if(dup&&!confirm(`Já existe um lançamento para ${p} com saída ${s}.\nLançar mesmo assim?`))return;}
   closeCam();go('novo');
   document.getElementById('novosCard').style.display='block';
-  for(const rec of recs){const saved=await dbInsert(rec);registrarNovo(saved);}
+  await gravarComDesfazer(recs,recs.length===1?'Lançamento lido do contrato':recs.length+' lançamentos lidos do contrato');
   rNovos();popSel();renderAll();
 }
 const dz=document.getElementById('dz');
