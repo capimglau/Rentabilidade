@@ -7383,38 +7383,45 @@ function renderAgendaBoardHtml(){
   const porDiaPago={};
   pagos.forEach(r=>{(porDiaPago[r.data_pagamento]=porDiaPago[r.data_pagamento]||[]).push(r);});
   const diasPago=Object.keys(porDiaPago).sort();
-  const cols=[];
   // [agenda-dia-a-dia-pago] Base do board = Atrasados + Hoje em diante. O
-  // histórico pago fica ESCONDIDO por padrão (`agbMostrarPagos`) — só entra
-  // no array de colunas quando o usuário abre pela setinha. `pagosInfo` só é
-  // passado pra coluna que vai HOSPEDAR a seta: "Atrasados" quando ela
-  // existe (o de sempre); sem nenhum atrasado, a primeira coluna que sobrar
-  // — paga (se já aberto) ou futura — assume a seta, senão um mês sem
-  // dívida em aberto ficaria sem clicar em lugar nenhum pra ver o que foi
-  // recebido.
+  // histórico pago fica ESCONDIDO por padrão (`agbMostrarPagos`) — só vira
+  // colunas quando o usuário abre pela setinha. `pagosInfo` vai pro
+  // "âncora" — a coluna que hospeda a seta —: "Atrasados" quando ela existe
+  // (é o que "a setinha antes de Atrasados" sempre significou); sem nenhum
+  // atrasado, a primeira coluna futura assume a seta, senão um período sem
+  // dívida em aberto ficaria sem clicar em lugar nenhum pra ver o histórico.
   const pagosInfo=diasPago.length?{qtd:diasPago.length,aberto:agbMostrarPagos}:null;
-  let setaPendente=!!pagosInfo;
+  // Correção do usuário: "o ideal é que os lançamentos ficassem antes de
+  // atrasados, ao rolar a página para o outro lado" — os dias pagos, quando
+  // revelados, entram ANTES da âncora (Atrasados, ou a primeira coluna
+  // futura na falta dele), não depois. A seta continua fixa na âncora — ela
+  // é o marcador "tem histórico pra esse lado, role/toque pra ver" — e some
+  // ela mesma pro lado esquerdo do que abriu, coerente com a seta `‹`
+  // apontando nessa direção.
+  const pagoColsHtml=agbMostrarPagos?diasPago.map(dia=>{
+    const dt=new Date(dia+'T12:00:00');
+    const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
+    return agbColHtml('',dow,dom,porDiaPago[dia],dia,true);
+  }):[];
+  const cols=[...pagoColsHtml];
   if(vencidos.length){
     cols.push(agbColHtml('agb-atrasados','Atrasados','',vencidos,'atrasados',false,pagosInfo));
-    setaPendente=false;
+    dias.forEach(dia=>{
+      const dt=new Date(dia+'T12:00:00');
+      const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
+      cols.push(agbColHtml(dia===hoje?'agb-hoje':'',dow,dom,porDia[dia],dia));
+    });
+  }else{
+    // Sem Atrasados, a primeira coluna futura é a âncora (única que sobrou
+    // pra hospedar a seta).
+    let ancoraPendente=!!pagosInfo;
+    dias.forEach(dia=>{
+      const dt=new Date(dia+'T12:00:00');
+      const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
+      const hospeda=ancoraPendente; ancoraPendente=false;
+      cols.push(agbColHtml(dia===hoje?'agb-hoje':'',dow,dom,porDia[dia],dia,false,hospeda?pagosInfo:null));
+    });
   }
-  // Dias pagos entram DEPOIS de Atrasados (que fica sempre primeiro — é o
-  // que pede ação) e ANTES dos dias futuros, do mais antigo pro mais
-  // recente: lendo da esquerda pra direita, o board conta "o que ainda pesa
-  // · o que já foi resolvido há pouco · o que vem por aí". Só entram de
-  // fato quando `agbMostrarPagos` está ligado.
-  if(agbMostrarPagos) diasPago.forEach(dia=>{
-    const dt=new Date(dia+'T12:00:00');
-    const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
-    const hospeda=setaPendente; setaPendente=false;
-    cols.push(agbColHtml('',dow,dom,porDiaPago[dia],dia,true,hospeda?pagosInfo:null));
-  });
-  dias.forEach(dia=>{
-    const dt=new Date(dia+'T12:00:00');
-    const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
-    const hospeda=setaPendente; setaPendente=false;
-    cols.push(agbColHtml(dia===hoje?'agb-hoje':'',dow,dom,porDia[dia],dia,false,hospeda?pagosInfo:null));
-  });
   if(!cols.length){
     // Sem Atrasados e sem futuros não sobra onde pendurar a setinha — se
     // ainda assim há histórico pago escondido na janela, oferece um link
