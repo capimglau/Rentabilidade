@@ -94,20 +94,26 @@ lá é dívida em aberto que não pode se perder de vista nunca; aqui é
 histórico já resolvido, e uma semana já responde "o que entrou nos
 últimos dias" sem o board crescer sem parar com o tempo.
 
-**Ordem das colunas, quando visíveis**: `[Atrasados] [dias pagos, do mais
-antigo pro mais recente] [dias futuros pendentes]`. Atrasados continua
-**sempre primeiro** — é o que pede ação, e essa posição já era uma decisão
-repetida ao longo deste projeto. Os dias pagos entram DEPOIS dele: lendo da
-esquerda pra direita, o board conta *"o que ainda pesa · o que já foi
-resolvido há pouco · o que vem por aí"*.
+**Ordem das colunas, base (sempre visível)**: `[Atrasados] [dias futuros
+pendentes]`. Atrasados continua **sempre primeiro** entre as colunas
+visíveis por padrão — é o que pede ação, decisão repetida ao longo deste
+projeto.
 
-### O histórico pago fica OCULTO por padrão — revela na setinha
+### O histórico pago fica OCULTO por padrão — revela na setinha, e entra ANTES de Atrasados
 
 Correção do usuário à primeira versão desta feature (que entrava com as
-colunas pagas sempre visíveis): *"a base para exibição na tela é atrasado e
-hoje no centro, esses antigos ficam ocultos clicando na seta."* A base do
-board é **Atrasados + hoje em diante** — histórico é consulta, não algo pra
-rolar toda vez que o board abre.
+colunas pagas sempre visíveis, DEPOIS de Atrasados): *"a base para exibição
+na tela é atrasado e hoje no centro, esses antigos ficam ocultos clicando
+na seta."* A base do board é **Atrasados + hoje em diante** — histórico é
+consulta, não algo pra rolar toda vez que o board abre.
+
+Segunda correção, sobre POR ONDE o histórico aparece quando revelado:
+*"o ideal é que os lançamentos ficassem antes de atrasados, ao rolar a
+página para o outro lado."* Os dias pagos, quando abertos, entram ANTES de
+"Atrasados" (à esquerda dele), não depois — rolando o board pro lado
+**oposto** ao dos dias futuros é que se chega no histórico. Ordem final,
+quando tudo revelado: `[dias pagos, do mais antigo pro mais recente]
+[Atrasados] [hoje em diante]`.
 
 - **`agbMostrarPagos`** (padrão `false`) é o único estado que decide se as
   colunas de `diasPago` entram no array `cols` de `renderAgendaBoardHtml`.
@@ -118,19 +124,19 @@ rolar toda vez que o board abre.
   estado não aparece na tela.
 - **A setinha que já existia antes de "Atrasados"** (a decorativa, pedida
   antes só pra marcar "isso é passado") virou o próprio botão: `agbColHtml`
-  recebe um `pagosInfo` (`{qtd, aberto}`) só na coluna que deve HOSPEDAR a
-  seta interativa; girada 180°
-  (`.agb-atrasados-seta-btn.on`, mesmo padrão de `.day-chevron`) quando
-  aberta. Sem pagos na janela, a seta de "Atrasados" volta a ser só o
-  enfeite decorativo de sempre (`aria-hidden`, sem `onclick`).
-- **Quem hospeda a seta é sempre a coluna mais à esquerda do board**, não
-  fixo em "Atrasados": `renderAgendaBoardHtml` tem um flag
-  (`setaPendente`) que anda coluna a coluna e entrega `pagosInfo` pra
-  primeira que for de fato renderizada — "Atrasados" quando existe; sem
-  atrasado nenhum, a primeira coluna paga (se já aberto) ou a primeira
-  futura (se fechado). **Sem essa generalização, um período sem nenhum
-  atrasado ficaria sem QUALQUER jeito de abrir o histórico** — a seta some
-  junto com a coluna "Atrasados" quando `vencidos.length` é zero.
+  recebe um `pagosInfo` (`{qtd, aberto}`) só na coluna ÂNCORA — a que
+  hospeda a seta; girada 180° (`.agb-atrasados-seta-btn.on`, mesmo padrão de
+  `.day-chevron`) quando aberta. Sem pagos na janela, a seta de "Atrasados"
+  volta a ser só o enfeite decorativo de sempre (`aria-hidden`, sem
+  `onclick`).
+- **A âncora é sempre "Atrasados", quando ela existe** — é literalmente o
+  que "a setinha antes de Atrasados" sempre quis dizer, e ela **não se
+  move** mesmo depois que os dias pagos aparecem à esquerda dela (a seta é
+  o marcador fixo "role pra esse lado", não a borda literal do que está
+  visível). Sem NENHUM atrasado (`vencidos.length===0`), a âncora passa a
+  ser a primeira coluna futura, pelo mesmo motivo de sempre: sem isso, um
+  período sem dívida em aberto ficaria sem QUALQUER jeito de abrir o
+  histórico.
 - **Sem nenhuma coluna pra mostrar** (nem atrasado, nem futuro em 90 dias)
   e ainda assim há pago escondido na janela: o texto de "tudo em dia"
   ganha um link "Ver os últimos N dias recebidos" no lugar da seta — senão
@@ -180,8 +186,9 @@ card único paga → edita; card agrupado pago → não faz nada; lápis no card
 pago → edita; nenhuma mudança no comportamento dos cards PENDENTES (tick
 abre confirmar baixa, toque abre parcial, "baixar tudo do dia" continua
 funcionando); board abre com as colunas pagas ocultas; clicar na seta
-revela (e gira 180°); clicar de novo esconde; sem atrasado nenhum a seta
-migra pra primeira coluna futura/paga da esquerda, não some.
+revela (gira 180°) os dias pagos ANTES de Atrasados (nunca depois); clicar
+de novo esconde; sem atrasado nenhum a âncora migra pra primeira coluna
+futura, e os dias pagos revelados continuam entrando antes dela.
 
 ## Toda confirmação de lançamento ou baixa abre banner de Desfazer — `[desfazer-sistema]`
 
