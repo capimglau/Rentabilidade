@@ -1994,6 +1994,13 @@ html[data-theme="dark"] .rc-cal-wrap .cal-cell, html[data-theme="dark"] .rc-cal-
 .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 8%, var(--card)); border-color:transparent; }
 html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb, var(--blue) 14%, var(--card)); }
 .agb-col.agb-hoje .agb-dow{ color:var(--blue); }
+/* [agenda-dia-a-dia-pago] Coluna de dia JÁ PAGO — mesmo tingimento do
+   cabeçalho que "hoje" (azul) e "Atrasados" (vermelho) já usam, em verde:
+   é o que deixa claro, batendo o olho, que aquele dia é passado resolvido
+   e não pendência. */
+.agb-col.agb-pago .agb-col-hd{ background:color-mix(in srgb, var(--green) 8%, var(--card)); border-color:transparent; }
+html[data-theme="dark"] .agb-col.agb-pago .agb-col-hd{ background:color-mix(in srgb, var(--green) 14%, var(--card)); }
+.agb-col.agb-pago .agb-dow{ color:var(--green); }
 /* "Atrasados" segue no MESMO padrão branco/neutro dos demais dias — só os
    dizeres ficam em vermelho, igual à Estilo. */
 .agb-col.agb-atrasados .agb-dow{ color:#FF3B30; }
@@ -2197,6 +2204,21 @@ html[data-theme="dark"] .agb-card-val{ color:var(--flag-mid,var(--ink)); }
   white-space:nowrap; background:rgba(255,59,48,0.16); color:#A8322A;
 }
 html[data-theme="dark"] .agb-ev-atraso{ background:rgba(255,120,110,0.22); color:#FFD9D5; }
+/* ═══ [agenda-dia-a-dia-pago] O que já foi baixado também aparece no board,
+   um dia por coluna — pedido do usuário: "eu quero que apareça tudo que já
+   foi baixado também, dia a dia". Antes, o board só mostrava PENDENTE
+   (isPend) — assim que um lançamento era baixado, ele sumia do board por
+   completo (continuava só no Calendário, que já mistura recebido+pendente
+   por dia). Mesmo selo verde que .cal-ok já usa pro "recebido". */
+.agb-ev-pago{
+  flex-shrink:0; font-size:11px; font-weight:800; padding:2px 7px; border-radius:99px;
+  white-space:nowrap; background:var(--green-soft); color:var(--green);
+}
+.agb-card-val-pago{ color:var(--green)!important; }
+html[data-theme="dark"] .agb-card-val-pago{ color:var(--green)!important; }
+/* Chip do cabeçalho da coluna paga: mesma forma do "+R$X" de baixar tudo,
+   mas SEM onclick (não há nada pra baixar) — cursor normal, não de botão. */
+.agb-dh-in-pago{ cursor:default; }
 /* Selo "+N" deixa de ser absoluto no canto e passa a ser o último item da
    linha 2: no cartão de 64px não há canto livre — em cima cobriria o valor,
    embaixo brigaria com o selo de atraso. */
@@ -7138,7 +7160,7 @@ function numerarGrupo(grupo){
   grupo.forEach(x=>{x.lanc_num=num;});
   return num;
 }
-function agbCardHtml(grp,dia,hiddenCount){
+function agbCardHtml(grp,dia,hiddenCount,pago){
   const n=grp.recs.length;
   const idx1=allD().indexOf(grp.recs[0]);
   const cliArg=JSON.stringify(grp.cliente).replace(/"/g,'&quot;');
@@ -7149,22 +7171,27 @@ function agbCardHtml(grp,dia,hiddenCount){
          recebimento parcial que já existia, onde se digita o valor.
        • TICK → baixa CHEIA, que é o que o toque fazia antes.
      Antes, tocar em qualquer canto do cartão de "6 lançamentos" quitava os
-     seis — sem escolher, e sem ver o que estava sendo quitado. */
-  const onclick=n===1
-    ? `abrirParcial(${idx1},false)`
-    : `abrirAgbGrupo('${dia}',${cliArg})`;
+     seis — sem escolher, e sem ver o que estava sendo quitado.
+     [agenda-dia-a-dia-pago] Card de PAGO não tem nada disso: já foi
+     recebido, não há baixa pra fazer. Um lançamento só (n===1) abre a
+     edição (pra corrigir valor/data ou reverter pelo swipe de lá); um grupo
+     de vários não abre nada — não existe modal de "ver os pagos", só o de
+     escolher o que baixar (que não se aplica aqui). */
+  const onclick=pago?(n===1?`openEdit(${idx1})`:'')
+    :(n===1?`abrirParcial(${idx1},false)`:`abrirAgbGrupo('${dia}',${cliArg})`);
   const onTick=n===1
     ? `abrirParcial(${idx1},true)`
     : `baixarTudoCliente('${dia}',${cliArg})`;
-  const checkBtn=`<button type="button" class="agb-card-check" title="${n>1?`Baixar os ${n} lançamentos`:'Baixar este lançamento'}" aria-label="Baixar"
+  const checkBtn=pago?'':`<button type="button" class="agb-card-check" title="${n>1?`Baixar os ${n} lançamentos`:'Baixar este lançamento'}" aria-label="Baixar"
       onclick="event.stopPropagation();${onTick}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
     </button>`;
   // renderAgendaBoardHtml só bota lançamento vencido na coluna Atrasados
   // (dia==='atrasados') — os dias normais (dia<td()) nunca acontecem, já
-  // que "futuros" já vem filtrado por prev_pgto>=hoje.
-  const atrasado=dia==='atrasados';
-  const hoje=dia===td();
+  // que "futuros" já vem filtrado por prev_pgto>=hoje. Card pago nunca é
+  // "atrasado" (já foi resolvido) nem pulsa (não é urgente).
+  const atrasado=!pago&&dia==='atrasados';
+  const hoje=!pago&&dia===td();
   const tipo=grp.recs[0].tipo||'';
   const forma=grp.recs[0].forma||'';
   // O obs de uma parcela vem como "[ref do usuário] · Parcela X/N" (mais
@@ -7180,7 +7207,13 @@ function agbCardHtml(grp,dia,hiddenCount){
   const flag=agbFlagColor(tipo);
   // Selo de atraso: vencimento mais antigo do grupo (um card agrupa vários
   // lançamentos do mesmo cliente, que podem ter vencido em dias diferentes).
-  const atrasoTxt=atrasado?agbAtrasoTxt(grp.recs.map(r=>r.prev_pgto).filter(Boolean).sort()[0],td()):null;
+  // [agenda-dia-a-dia-pago] Card pago troca o selo de atraso por "✓
+  // Recebido" — mesma classe .agb-ev-pago do resto (verde, igual ao
+  // .cal-ok do Calendário), só pra confirmar visualmente que aquele card já
+  // está resolvido (o board inteiro é "coisa a fazer" por padrão; este é o
+  // único tipo de card aqui que não é).
+  const atrasoTxt=atrasado?agbAtrasoTxt(grp.recs.map(r=>r.prev_pgto).filter(Boolean).sort()[0],td())
+    :pago?'✓ Recebido':null;
   // animation-delay ancorado no relógio, não no instante em que o card
   // montou: sem isso dois cards atrasados pulsam fora de fase (um claro,
   // outro escuro na mesma hora) e parecem ter cores diferentes.
@@ -7204,14 +7237,31 @@ function agbCardHtml(grp,dia,hiddenCount){
   // cartão de 64px não sobra canto livre — em cima cobriria o valor, embaixo
   // brigaria com o selo de atraso.
   const stackBadge=hiddenCount?`<span class="agb-card-stack-badge" onclick="event.stopPropagation();toggleAgbDeck(this)" title="Ver mais ${hiddenCount} lançamento(s)">+${hiddenCount}</span>`:'';
-  const cardHtml=`<div class="agb-card agb-card-check-on${(atrasado||hoje)?' agb-card-pulsa':''}${editBtn?' agb-card-edit-on':''}" role="button" tabindex="0"
+  // [agenda-dia-a-dia-pago] A faixa de ícones (.agb-card-acts) só existe
+  // quando tem ícone dentro — card pago em grupo (n>1) não tem tick nem
+  // lápis, e reservar o padding-right pra uma faixa vazia deixava um vão
+  // morto do lado direito. `temAcao` decide os dois juntos: a classe que
+  // reserva espaço e o próprio conteúdo da faixa.
+  const temAcao=!!(editBtn||checkBtn);
+  // [agenda-dia-a-dia-pago] grp.total soma r.saldo (o que FALTA receber) —
+  // pra um grupo pago, saldo é 0 por definição (é o próprio isPago). O
+  // valor a mostrar aqui é o que ENTROU, então soma valor_pago só neste
+  // caso; mesmo padrão já usado no painel de Boletos (ver g.totalPago vs
+  // g.totalSaldo, "Boletos a emitir"/"Boletos emitidos").
+  const valorMostrado=pago?grp.recs.reduce((a,r)=>a+fN(r.valor_pago),0):grp.total;
+  // Título da classe .agb-ev-atraso não serve mais sozinho pro badge verde
+  // — reaproveita a MESMA classe (cor/forma) trocando só o texto, exceto
+  // pago, que usa a classe própria .agb-ev-pago (verde, não vermelho).
+  const badgeHtml=pago?(atrasoTxt?`<span class="agb-ev-pago">${atrasoTxt}</span>`:'')
+    :(atrasoTxt?`<span class="agb-ev-atraso">${atrasoTxt}</span>`:'');
+  const cardHtml=`<div class="agb-card${temAcao?' agb-card-check-on':''}${(atrasado||hoje)?' agb-card-pulsa':''}${editBtn?' agb-card-edit-on':''}${pago?' agb-card-pago':''}" role="button" tabindex="0"
       style="--ev-l:${tone.l};--ev-d:${tone.d};--ev-tag:${tone.tag};--flag-mid:${flag.mid};--flag-ink:${flag.ink};--flag-icon:${flag.icon}${pulseDelay}"
       onclick="event.stopPropagation();${onclick}"
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
-      title="Toque para ${n>1?`ver os ${n} lançamentos e escolher o que baixar`:'registrar o recebimento'}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''} — o tique baixa tudo">
-    <div class="agb-card-acts">${editBtn}${checkBtn}</div>
-    <div class="agb-ev-l1"><p class="agb-card-title">${esc(grp.cliente||'—')}</p><span class="agb-card-val">${fRH(grp.total)}</span></div>
-    <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${atrasoTxt?`<span class="agb-ev-atraso">${atrasoTxt}</span>`:''}${stackBadge}</div>
+      title="${pago?(n===1?'Toque para ver/editar este lançamento já recebido':`${n} lançamentos já recebidos`):`Toque para ${n>1?`ver os ${n} lançamentos e escolher o que baixar`:'registrar o recebimento'}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''} — o tique baixa tudo`}">
+    ${temAcao?`<div class="agb-card-acts">${editBtn}${checkBtn}</div>`:''}
+    <div class="agb-ev-l1"><p class="agb-card-title">${esc(grp.cliente||'—')}</p><span class="agb-card-val${pago?' agb-card-val-pago':''}">${fRH(valorMostrado)}</span></div>
+    <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${badgeHtml}${stackBadge}</div>
   </div>`;
   if(!hiddenCount)return cardHtml;
   return `<div class="agb-baralho-wrap">
@@ -7226,14 +7276,17 @@ function agbCardHtml(grp,dia,hiddenCount){
 // à Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (antes
 // só valia no mobile; o CSS que forçava tudo aberto no PC foi removido).
 const AGB_COL_LIMITE=3;
-function agbColHtml(cls,dow,dom,itens,dia){
+function agbColHtml(cls,dow,dom,itens,dia,pago){
   const grupos=agruparPorCliente(itens);
-  const total=itens.reduce((a,r)=>a+fN(r.saldo),0);
+  // [agenda-dia-a-dia-pago] Numa coluna paga, saldo é 0 em todo mundo — o
+  // total do cabeçalho soma valor_pago (o que entrou naquele dia), mesma
+  // troca de campo que o card individual já faz (ver valorMostrado).
+  const total=pago?itens.reduce((a,r)=>a+fN(r.valor_pago),0):itens.reduce((a,r)=>a+fN(r.saldo),0);
   const temResto=grupos.length>AGB_COL_LIMITE;
   const visiveis=grupos.slice(0,AGB_COL_LIMITE);
   const resto=temResto?grupos.slice(AGB_COL_LIMITE):[];
-  const cardsHtml=visiveis.map((g,i)=>agbCardHtml(g,dia,(temResto&&i===visiveis.length-1)?resto.length:0)).join('');
-  const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia)).join('')}</div>`:'';
+  const cardsHtml=visiveis.map((g,i)=>agbCardHtml(g,dia,(temResto&&i===visiveis.length-1)?resto.length:0,pago)).join('');
+  const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia,0,pago)).join('')}</div>`:'';
   const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
   // Cabeçalho de UMA linha só (pedido do usuário): data à esquerda com a
   // contagem de lançamentos logo ao lado, e o chip do total a receber no
@@ -7250,11 +7303,14 @@ function agbColHtml(cls,dow,dom,itens,dia){
   // sem precisar de CSS novo — o vermelho de `.agb-col.agb-atrasados
   // .agb-dow` já pinta os dois.
   const dowHtml=dia==='atrasados'?`<span class="agb-atrasados-seta" aria-hidden="true">‹</span> ${dow}`:dow;
-  return `<div class="agb-col ${cls}">
+  return `<div class="agb-col ${cls}${pago?' agb-pago':''}">
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
         <div class="agb-col-hd-l"><span class="agb-dow">${dowHtml}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
-        ${total>0.005?`<span class="agb-dh-in" role="button" tabindex="0" onclick="event.stopPropagation();baixarTudoDia('${dia}')" onkeydown="if(event.key==='Enter'){event.stopPropagation();baixarTudoDia('${dia}')}" title="Baixar todos os lançamentos do dia">${agbMoedaCurta(total,'+')}</span>`:''}
+        ${total>0.005?(pago
+          ? `<span class="agb-dh-in agb-dh-in-pago" title="Total recebido neste dia">${agbMoedaCurta(total,'+')}</span>`
+          : `<span class="agb-dh-in" role="button" tabindex="0" onclick="event.stopPropagation();baixarTudoDia('${dia}')" onkeydown="if(event.key==='Enter'){event.stopPropagation();baixarTudoDia('${dia}')}" title="Baixar todos os lançamentos do dia">${agbMoedaCurta(total,'+')}</span>`
+        ):''}
       </div>
     </div>
     <div class="agb-col-body">${grupos.length?cardsHtml:'<div class="agb-empty">Sem lançamentos</div>'}${moreHtml}</div>
@@ -7282,14 +7338,37 @@ function renderAgendaBoardHtml(){
   const porDia={};
   futuros.forEach(r=>{(porDia[r.prev_pgto]=porDia[r.prev_pgto]||[]).push(r);});
   const dias=Object.keys(porDia).sort();
+  // [agenda-dia-a-dia-pago] O que já foi baixado, um dia por coluna — pedido
+  // do usuário: "eu quero que apareça tudo que já foi baixado também, dia a
+  // dia". Antes, o board só existia pro que falta receber; assim que baixado,
+  // o lançamento sumia daqui por completo (só continuava no Calendário, que
+  // já mistura recebido+pendente por dia). Janela de 7 dias pra trás (fixa,
+  // pedida pelo usuário) — diferente de "Atrasados", que não tem limite: lá é
+  // dívida em aberto que não pode se perder de vista nunca; aqui é histórico
+  // já resolvido, então uma semana já responde "o que entrou nos últimos
+  // dias" sem o board crescer sem parar com o tempo.
+  const tP=addD(hoje,-6);
+  const pagos=allD().filter(r=>isPago(r)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&r.data_pagamento&&r.data_pagamento>=tP&&r.data_pagamento<=hoje&&agbMatchQ(r));
+  const porDiaPago={};
+  pagos.forEach(r=>{(porDiaPago[r.data_pagamento]=porDiaPago[r.data_pagamento]||[]).push(r);});
+  const diasPago=Object.keys(porDiaPago).sort();
   const cols=[];
   if(vencidos.length) cols.push(agbColHtml('agb-atrasados','Atrasados','',vencidos,'atrasados'));
+  // Dias pagos entram DEPOIS de Atrasados (que fica sempre primeiro — é o
+  // que pede ação) e ANTES dos dias futuros, do mais antigo pro mais
+  // recente: lendo da esquerda pra direita, o board conta "o que ainda pesa
+  // · o que já foi resolvido há pouco · o que vem por aí".
+  diasPago.forEach(dia=>{
+    const dt=new Date(dia+'T12:00:00');
+    const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
+    cols.push(agbColHtml('',dow,dom,porDiaPago[dia],dia,true));
+  });
   dias.forEach(dia=>{
     const dt=new Date(dia+'T12:00:00');
     const dow=DOW_PT[dt.getDay()], dom=dt.getDate()+' '+MES_PT[dt.getMonth()];
     cols.push(agbColHtml(dia===hoje?'agb-hoje':'',dow,dom,porDia[dia],dia));
   });
-  if(!cols.length) return '<div class="agb-empty" style="margin:4px 0">Nenhum lançamento pendente nos próximos 90 dias ✓</div>';
+  if(!cols.length) return '<div class="agb-empty" style="margin:4px 0">Nenhum lançamento pendente nos próximos 90 dias, nem recebido nos últimos 7 ✓</div>';
   return `<div class="agb-wrap"><div class="agb-board">${cols.join('')}</div></div>`;
 }
 function renderRecCalGridHtml(){
