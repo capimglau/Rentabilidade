@@ -2472,32 +2472,67 @@ html[data-theme="dark"] .agb-ev-ghost{
 .toast button { background: none; border: none; color: #5fa0e0; font-weight: 700; font-size: 13.5px; cursor: pointer; padding: 0; white-space: nowrap; }
 
 /* PROG */
-.prog { height: 3px; background: var(--line); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-.prog-f { height: 100%; border-radius: 2px; transition: width .5s ease; }
+.prog { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.prog-f { height: 100%; border-radius: 3px; transition: width .5s ease; }
 
-/* OWNER CARD */
-.oc { background: var(--card); border: 1px solid var(--line); border-radius: var(--rl); padding: 18px; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
+/* ─── ABA DONOS: GRADE E CARTÃO DO PROPRIETÁRIO ─── [donos-paineis-respiro]
+   A grade era .g3 — TRÊS colunas fixas de 961px pra cima, uma só abaixo
+   disso. Entre ~960 e ~1250px cada cartão sobrava com ~300px, e dentro dele
+   os quatro valores em quadradinhos 2×2 ficavam com ~120px cada: "R$
+   111.364,42" a 15px enchia a caixa inteira, encostando nas bordas. Agora:
+   - a grade conta quantas colunas CABEM (auto-fill + minmax), então nunca
+     espreme três num espaço de duas;
+   - o cartão virou um bloco vertical — previsto em destaque (com a barra de
+     participação logo abaixo) e Recebido/Pendente/Despesas em três linhas
+     rótulo→valor, cada valor com a largura inteira do cartão pra respirar,
+     e alinhados à direita um sobre o outro, fáceis de comparar. */
+.prop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+.prop-hd { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 2px 16px; }
+.prop-hd-tt { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+.prop-hd-sub { font-size: 12px; font-weight: 600; color: var(--ink3); margin-top: 3px; }
+/* Em tela estreita o subtítulo do card (margin-left:auto) espremia o título
+   "Evolução mensal" em duas linhas — aqui ele desce pra linha de baixo. */
+#page-proprietarios .card-hd { flex-wrap: wrap; }
+/* O gráfico é o último bloco do modal: os 27px de margem de .card sobravam
+   como um vão morto no fim da rolagem. */
+.modal-dono .card:last-child { margin-bottom: 0; }
+
+.oc { background: var(--card); border: 1px solid var(--line); border-radius: var(--rl); padding: 20px; box-shadow: var(--shadow-sm); cursor: pointer; display: flex; flex-direction: column; gap: 16px; transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease; }
 .oc:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); border-color: var(--blue); }
 .oc:active { transform: translateY(0); }
-.oc-saldo { display: flex; align-items: center; justify-content: space-between; margin-top: 11px; padding-top: 10px; border-top: 1px dashed var(--line); }
-.oc-saldo span { font-size: 11.5px; font-weight: 700; color: var(--ink2); }
-.oc-saldo strong { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
-.oc-more { font-size: 11px; color: var(--blue); font-weight: 700; margin-top: 12px; display: flex; align-items: center; gap: 4px; }
-.oc-hd { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.oc-hd { display: flex; align-items: center; gap: 11px; }
 .oc-av { width: 42px; height: 42px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
-.oc-g { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.oc-s { background: var(--surface); border-radius: 10px; padding: 10px 12px; }
-.oc-sl { font-size: 10px; color: var(--ink3); letter-spacing: .05em; font-weight: 700; }
-.oc-sv { font-size: 15px; font-weight: 700; margin-top: 3px; letter-spacing: -.02em; }
+.oc-id { min-width: 0; }
+.oc-nm { font-weight: 700; font-size: 14.5px; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.oc-meta { font-size: 11.5px; color: var(--ink3); margin-top: 2px; }
+.oc-share { margin-left: auto; flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--ink3); background: var(--surface); border-radius: 999px; padding: 4px 9px; }
+.oc-hero-l { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--ink3); }
+.oc-hero-v { font-size: 24px; font-weight: 800; letter-spacing: -.03em; margin: 5px 0 11px; }
+.oc-list { display: flex; flex-direction: column; }
+.oc-li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; }
+.oc-li + .oc-li { border-top: 1px solid var(--line); }
+.oc-li span { font-size: 12px; font-weight: 600; color: var(--ink3); }
+.oc-li b { font-size: 14px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; }
+/* margin-top:auto gruda o rodapé embaixo: numa mesma linha da grade os
+   cartões têm a altura do mais alto, e sem isso o "Saldo final" de cada um
+   parava numa altura diferente. */
+.oc-saldo { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.oc-saldo span { font-size: 11.5px; font-weight: 700; color: var(--ink2); }
+.oc-saldo strong { font-size: 16px; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
+.oc-more { font-size: 11px; color: var(--blue); font-weight: 700; display: flex; align-items: center; gap: 4px; margin-top: -4px; }
+@media (max-width: 420px) {
+  .oc { padding: 17px; gap: 14px; }
+  .oc-hero-v { font-size: 22px; }
+}
 
 /* EXTRATO DO DONO (modal) */
 .dn-mesnav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px; font-weight: 700; font-size: 14px; }
 .dn-mesnav .btn { padding: 4px 12px; }
-.dn-kpis { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.dn-kpi { background: var(--surface); border-radius: 12px; padding: 12px 14px; }
+.dn-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px; }
+.dn-kpi { background: var(--surface); border-radius: 12px; padding: 14px 16px; }
 .dn-kpi-l { font-size: 10px; letter-spacing: .05em; font-weight: 700; color: var(--ink3); }
 .dn-kpi-v { font-size: 18px; font-weight: 700; margin-top: 4px; letter-spacing: -.02em; }
-.dn-saldo { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; }
+.dn-saldo { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; margin-bottom: 18px; }
 .dn-saldo-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .dn-saldo-row + .dn-saldo-row { margin-top: 8px; }
 .dn-saldo-row label { font-size: 12.5px; font-weight: 700; color: var(--ink2); }
@@ -2508,13 +2543,17 @@ html[data-theme="dark"] .agb-ev-ghost{
 .dn-saldo-final > span { font-size: 13px; font-weight: 700; color: var(--ink2); }
 .dn-saldo-final small { font-weight: 600; color: var(--ink3); font-size: 11px; }
 .dn-saldo-final strong { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
-.dn-extrato { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
-.dn-col { background: var(--surface); border-radius: 14px; padding: 13px; display: flex; flex-direction: column; min-height: 170px; }
-.dn-col-hd { font-size: 12px; font-weight: 700; margin-bottom: 11px; display: flex; justify-content: space-between; align-items: center; }
+.dn-extrato { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.dn-col { background: var(--surface); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; min-height: 190px; }
+/* O total do lado direito nunca quebra linha: era ele que empurrava o
+   título ("Receitas previstas do mês") pra duas linhas quando a coluna
+   ficava estreita. */
+.dn-col-hd { font-size: 12px; font-weight: 700; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.dn-col-hd > span:last-child { white-space: nowrap; }
 .dn-hd-green { color: var(--green); }
 .dn-hd-red { color: var(--red); }
-.dn-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; max-height: 280px; }
-.dn-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 12.5px; }
+.dn-list { display: flex; flex-direction: column; gap: 7px; overflow-y: auto; max-height: 340px; }
+.dn-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; }
 .dn-row.pago { opacity: .6; }
 .dn-row.pago:hover { opacity: 1; }
 .dn-row .r-main { font-weight: 600; }
@@ -2522,15 +2561,19 @@ html[data-theme="dark"] .agb-ev-ghost{
 .dn-row .r-val { font-weight: 700; white-space: nowrap; }
 .dn-del { border: none; background: none; color: var(--ink3); cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1; }
 .dn-del:hover { color: var(--red); }
-.dn-add { display: flex; flex-direction: column; gap: 6px; margin-bottom: 11px; padding-bottom: 11px; border-bottom: 1px dashed var(--line); }
-.dn-add .dn-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dn-add { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
+.dn-add .dn-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .dn-add select, .dn-add input { font-size: 13px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--card); color: var(--ink); width: 100%; }
 .dn-add select:focus, .dn-add input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,95,168,.08); outline: none; }
 .dn-empty { font-size: 12px; color: var(--ink3); text-align: center; padding: 20px 6px; }
 @media (max-width: 680px) {
   .dn-extrato { grid-template-columns: 1fr; }
-  .dn-kpis { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .dn-kpi-v { font-size: 15px; }
+  /* Três colunas no celular davam ~100px pra cada KPI: "Receitas
+     previstas" quebrava em duas linhas e o valor em mais duas. Viram três
+     linhas rótulo→valor, a mesma leitura do cartão da aba. */
+  .dn-kpis { grid-template-columns: 1fr; gap: 8px; }
+  .dn-kpi { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .dn-kpi-v { font-size: 16px; margin-top: 0; white-space: nowrap; }
   .dn-add .dn-row2 { grid-template-columns: 1fr; }
 }
 
@@ -2936,6 +2979,11 @@ html[data-theme="dark"] .rc-sel:hover {
    numa tela de celular ficaria estreito demais, sem o fallback de 100%. */
 @media (min-width: 761px) {
   .modal-busca { width: 80vw; max-width: 80vw; max-height: 80vh; }
+  /* Extrato do dono: o modal tinha max-width:860px, mas o .modal base
+     manda width:min(560px,100%) — e width vence max-width maior. Resultado:
+     as duas colunas do extrato ficavam com ~250px, título quebrando em duas
+     linhas e cada lançamento em três. Aqui a LARGURA é que muda. */
+  .modal-dono { width: min(1040px, 100%); }
 }
 .mhd {
   font-size: 16px;
@@ -4240,10 +4288,16 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
 
 <!-- PROPRIETÁRIOS -->
 <div class="page" id="page-proprietarios">
-  <div class="g3" id="propCards" style="margin-bottom:27px"></div>
+  <div class="prop-hd">
+    <div>
+      <div class="prop-hd-tt">Proprietários</div>
+      <div class="prop-hd-sub" id="propHdSub"></div>
+    </div>
+  </div>
+  <div class="prop-grid" id="propCards" style="margin-bottom:27px"></div>
   <div class="card">
-    <div class="card-hd">Evolução mensal</div>
-    <div class="cw" style="height:260px"><canvas id="cEvo" role="img" aria-label="evolução"></canvas></div>
+    <div class="card-hd">Evolução mensal<span class="sub">Previsto líquido por proprietário · até 12 meses</span></div>
+    <div class="cw" style="height:300px"><canvas id="cEvo" role="img" aria-label="evolução"></canvas></div>
   </div>
 </div>
 
@@ -4849,7 +4903,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
 
 <!-- ─── EXTRATO DO DONO ─── -->
 <div class="overlay" id="mDono">
-  <div class="modal" style="max-width:860px">
+  <div class="modal modal-dono">
     <div class="mhd">
       <span style="display:flex;align-items:center;gap:11px">
         <span class="oc-av" id="dnAv"></span>
@@ -8955,19 +9009,30 @@ function renderProp(){
     return`<div class="oc" onclick="openDono('${d.replace(/'/g,"\\'")}')" role="button" tabindex="0" title="Ver extrato de ${d}">
       <div class="oc-hd">
         <div class="oc-av" style="background:${col}18;color:${col}">${ini}</div>
-        <div><div style="font-weight:700;font-size:14px;letter-spacing:-.01em">${d}</div><div style="font-size:11.5px;color:var(--ink3)">${np} veículos · ${dr.length} lançamentos</div></div>
+        <div class="oc-id"><div class="oc-nm" title="${escHtml(d)}">${escHtml(d)}</div><div class="oc-meta">${np} ${np===1?'veículo':'veículos'} · ${dr.length} ${dr.length===1?'lançamento':'lançamentos'}</div></div>
+        <span class="oc-share" title="Participação no previsto do mês">${pct.replace('.',',')}%</span>
       </div>
-      <div class="oc-g">
-        <div class="oc-s"><div class="oc-sl">Previsto</div><div class="oc-sv" style="color:${col}">${fR(tv)}</div></div>
-        <div class="oc-s"><div class="oc-sl">Recebido</div><div class="oc-sv" style="color:var(--green)">${fR(tp)}</div></div>
-        <div class="oc-s"><div class="oc-sl">Pendente</div><div class="oc-sv" style="color:var(--red)">${fR(ts)}</div></div>
-        <div class="oc-s"><div class="oc-sl">Despesas</div><div class="oc-sv" style="color:var(--red)">${fR(tDesp)}</div></div>
+      <div class="oc-hero">
+        <div class="oc-hero-l">Previsto no mês</div>
+        <div class="oc-hero-v" style="color:${col}">${fR(tv)}</div>
+        <div class="prog"><div class="prog-f" style="width:${pct}%;background:${col}"></div></div>
       </div>
-      <div class="prog"><div class="prog-f" style="width:${pct}%;background:${col}"></div></div>
+      <div class="oc-list">
+        <div class="oc-li"><span>Recebido</span><b style="color:${tp>0?'var(--green)':'var(--ink3)'}">${fR(tp)}</b></div>
+        <div class="oc-li"><span>Pendente</span><b style="color:${ts>0?'var(--red)':'var(--ink3)'}">${fR(ts)}</b></div>
+        <div class="oc-li"><span>Despesas</span><b style="color:${tDesp>0?'var(--red)':'var(--ink3)'}">${fR(tDesp)}</b></div>
+      </div>
       <div class="oc-saldo"><span>Saldo final</span><strong style="color:${saldoFim>=0?'var(--green)':'var(--red)'}">${fR(saldoFim)}</strong></div>
       <div class="oc-more">Ver extrato (receitas × despesas) →</div>
     </div>`;
   }).join('');
+  // Cabeçalho da aba: quantos proprietários o mês tem e quanto somam — a
+  // página começava direto nos cartões, sem dizer de que mês eles são.
+  const propSub=document.getElementById('propHdSub');
+  if(propSub){
+    const [hy,hm]=curMes.split('-');
+    propSub.textContent=`${donos.length} ${donos.length===1?'proprietário':'proprietários'} · previsto ${fR(totG)} · ${MF[parseInt(hm)-1]} ${hy}`;
+  }
   // Evolução: usa TODOS os meses da base (não só o mês vigente), até 12 mais recentes
   const evoBase=allD();
   let meses=[...new Set(evoBase.map(r=>(r.prev_pgto||'').slice(0,7)).filter(Boolean))].sort();
