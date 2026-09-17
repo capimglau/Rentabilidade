@@ -252,5 +252,53 @@ inteiro não fizer sentido), grava, e só então chama
 + `renderAll()`. Reservar a ausência de Desfazer só pro caso em que
 restaurar não é seguro — e documentar o porquê, como acima.
 
+## Aba Donos: os painéis respiram — `[donos-paineis-respiro]`
+
+Pedido do usuário: *"dentro da aba donos reorganize os painéis, está tudo
+muito apertado."*
+
+**A grade era `.g3`** — TRÊS colunas fixas de 961px pra cima, UMA só abaixo
+disso. Entre ~960 e ~1250px cada cartão ficava com ~300px, e dentro dele os
+quatro valores em quadradinhos 2×2 sobravam com ~120px cada: `R$ 111.364,42`
+a 15px enchia a caixa de borda a borda. Agora é `.prop-grid`
+(`repeat(auto-fill, minmax(320px,1fr))`): a grade conta quantas colunas
+CABEM — 4 num monitor largo, 2 num notebook estreito, 1 no celular — em vez
+de espremer três num espaço de duas.
+
+**O cartão virou um bloco vertical** em vez de uma matriz 2×2:
+
+| antes | agora |
+|---|---|
+| 4 quadradinhos (Previsto, Recebido, Pendente, Despesas), 2×2 | Previsto em destaque (24px) + barra de participação logo abaixo |
+| valores de 15px espremidos em caixas de ~120px | Recebido/Pendente/Despesas em 3 linhas rótulo→valor, valor alinhado à direita com a largura inteira do cartão |
+
+Os três da lista ficam **um sobre o outro, alinhados à direita** — é o que
+deixa comparar de bater o olho, e nenhum deles quebra linha por mais longo
+que seja o número. O percentual que só existia como barra agora também
+aparece como **chip no cabeçalho** (`.oc-share`), e `R$ 0,00` em Pendente/
+Despesas sai em cinza, não no vermelho de alerta (zero não é problema).
+`.oc-saldo` tem `margin-top:auto`: numa mesma linha da grade os cartões têm
+a altura do mais alto, e sem isso o "Saldo final" de cada um parava numa
+altura diferente.
+
+A página também ganhou **cabeçalho** (`#propHdSub`: "7 proprietários ·
+previsto R$ … · Abril 2026") — ela começava direto nos cartões, sem dizer
+de que mês eram.
+
+### O modal do extrato estava com 560px, não com os 860 que pedia
+
+`#mDono` tinha `max-width:860px` inline, mas `.modal` manda
+`width:min(560px,100%)` — e **`width` vence um `max-width` maior**. Por isso
+as duas colunas do extrato ficavam com ~250px: o título "Receitas previstas
+do mês" quebrava em duas linhas e cada lançamento em três. A classe
+`.modal-dono` troca a **largura** (`min(1040px,100%)`, só de 761px pra cima;
+no celular continua o padrão). No celular os três KPIs deixaram de ser três
+colunas de ~100px e viraram três linhas rótulo→valor, como no cartão.
+
+Conferido no navegador com backend dublê (dados de exemplo do próprio
+`index.html`, Chart.js dublê porque o CDN não abre no ambiente): 1600px →
+4 colunas; 1280px → 3; 1000px → 2 (era 3 espremidas); 390px → 1; tema
+escuro; e o modal do extrato sem nenhuma quebra de linha nos valores.
+
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.
