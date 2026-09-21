@@ -4335,7 +4335,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
     <div class="tw">
       <table><thead><tr>
         <th>Placa</th><th>Dono</th><th>Cliente</th><th>Tipo</th><th>Saída</th>
-        <th class="nr">Valor</th><th>Forma</th><th>Prev. Pgto</th><th></th>
+        <th class="nr">Valor</th><th>Forma</th><th>Vencimento</th><th></th>
       </tr></thead><tbody id="novosBody"></tbody></table>
     </div>
   </div>
@@ -4400,8 +4400,8 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
           </div>
           <div class="prem-divider"></div>
           <div class="prem-info">
-            <strong>Débito</strong> → Prev. Pgto = data de pagamento + <strong id="inf-prazo-deb">1</strong> dia útil<br>
-            <strong>Crédito à vista</strong> → Prev. Pgto = data de pagamento + <strong id="inf-prazo-cr">31</strong> dias<br>
+            <strong>Débito</strong> → Data de vencimento = data de pagamento + <strong id="inf-prazo-deb">1</strong> dia útil<br>
+            <strong>Crédito à vista</strong> → Data de vencimento = data de pagamento + <strong id="inf-prazo-cr">31</strong> dias<br>
             <strong>Parcelado (2× e 3×)</strong> → uma parcela a cada <strong id="inf-prazo-parc">31</strong> dias, cada uma virando um lançamento com baixa própria<br>
             Lançamento antigo (ou importado) sem bandeira informada é calculado pela bandeira padrão: <strong id="inf-bandeira">Mastercard</strong>
           </div>
@@ -4440,7 +4440,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
           </div>
           <div class="prem-divider"></div>
           <div class="prem-info">
-            Prev. Pgto = data do retorno + <strong id="inf-prazo-bol">5</strong> dias<br>
+            Data de vencimento = data do retorno + <strong id="inf-prazo-bol">5</strong> dias<br>
             Sem desconto aplicado no valor
           </div>
         </div>
@@ -4458,7 +4458,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
         <div class="prem-card-body">
           <div class="prem-info">
             Sem taxa de operadora<br>
-            Prev. Pgto = data da saída (mesmo dia)<br>
+            Data de vencimento = data da saída (mesmo dia)<br>
             Valor líquido = valor bruto (sem desconto)
           </div>
         </div>
@@ -4617,7 +4617,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
           </label>
           <input type="text" inputmode="decimal" id="e-com" placeholder="0" disabled title="Abate do Valor acima uma única vez, ao clicar em Salvar." oninput="moneyKeyFilter(this)" onblur="moneyBlur(this)">
         </div>
-        <div class="fp"><label>Prev. Pgto</label><input type="date" id="e-pp"></div>
+        <div class="fp"><label>Data de vencimento</label><input type="date" id="e-pp"></div>
         <div class="fp"><label>Valor pago</label><input type="text" inputmode="decimal" id="e-vp" oninput="moneyKeyFilter(this);recalcSaldoEdit()" onblur="moneyBlur(this)"></div>
         <div class="fp"><label>Data pagamento</label><input type="date" id="e-dtpag"></div>
         <div class="fp"><label>Saldo</label><input type="text" inputmode="decimal" id="e-sl" title="Recalculado sozinho ao mudar Valor/Valor pago/Forma — abate o valor pago do valor líquido da forma. Editar aqui direto sobrescreve o automático." oninput="moneyKeyFilter(this)" onblur="moneyBlur(this)"></div>
@@ -6235,7 +6235,7 @@ function attachSuggest(inputId, getList, fmt){
   input.addEventListener('blur', () => { if (_acInput === input) _acClose(); });
 }
 // Cor da etiqueta de cada tipo de lançamento.
-const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax',Imposto:'tax'};
+const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Comissão':'tax','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax',Imposto:'tax'};
 const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -7097,7 +7097,7 @@ const AGB_TONE={
 };
 const AGB_TIPO_FAMILIA={
   'Locação':'azul', 'Avarias':'ambar', 'Lavagem':'ciano', 'Multas':'roxo',
-  'Pedágio':'ambar', 'Franquia':'indigo', 'Taxa Mario':'rosa',
+  'Pedágio':'ambar', 'Franquia':'indigo', 'Comissão':'rosa', 'Taxa Mario':'rosa',
   'Taxa Alfredo':'rosa', 'Taxa Paulinho':'rosa', 'Imposto':'verde', 'Outros':'azul'
 };
 function agbTipoTone(tipo){
@@ -7138,6 +7138,7 @@ const AGB_FLAG_ICON_TIPO={
   'Taxa Mario':   _agbIc('%3Ccircle cx=%2212%22 cy=%228%22 r=%224%22/%3E%3Cpath d=%22M4 21a8 8 0 0 1 16 0%22/%3E'),
   'Imposto':      _agbIc('%3Cpath d=%22M12 2 3 8h18zM3 21h18M5.5 21V10M9.5 21V10M14.5 21V10M18.5 21V10%22/%3E')
 };
+AGB_FLAG_ICON_TIPO['Comissão']=AGB_FLAG_ICON_TIPO['Taxa Mario'];
 AGB_FLAG_ICON_TIPO['Taxa Alfredo']=AGB_FLAG_ICON_TIPO['Taxa Mario'];
 AGB_FLAG_ICON_TIPO['Taxa Paulinho']=AGB_FLAG_ICON_TIPO['Taxa Mario'];
 function agbFlagColor(tipo){
@@ -9193,7 +9194,7 @@ function openEdit(idx){
       <div><span style="color:var(--ink3)">Pago</span> <strong style="color:var(--green)">${fR(r.valor_pago)}</strong></div>
       <div><span style="color:var(--ink3)">Saldo</span> <strong style="color:${fN(r.saldo)>0?'var(--red)':'var(--green)'}">${fR(r.saldo)}</strong></div>
       <div><span style="color:var(--ink3)">Data pagamento</span> <strong>${fD(r.data_pagamento)}</strong></div>
-      <div><span style="color:var(--ink3)">Prev. Pgto</span> <strong style="color:var(--red)">${fD(r.prev_pgto)}</strong></div>
+      <div><span style="color:var(--ink3)">Data de vencimento</span> <strong style="color:var(--red)">${fD(r.prev_pgto)}</strong></div>
     </div>
     ${r.obs?`<div style="margin-top:8px;font-size:12px;color:var(--ink3)">Ref: ${esc(r.obs)}</div>`:''}
   `;
@@ -9563,7 +9564,7 @@ async function saveEdit(){
   if(_pp){
     const anoPP=+_pp.slice(0,4), anoAtual=new Date().getFullYear();
     if(anoPP<anoAtual-10||anoPP>anoAtual+10){
-      document.getElementById('edMsg').innerHTML=`<span style="color:var(--red)">Prev. Pgto com ano inválido (${_pp}) — confira a data antes de salvar.</span>`;
+      document.getElementById('edMsg').innerHTML=`<span style="color:var(--red)">Data de vencimento com ano inválido (${_pp}) — confira a data antes de salvar.</span>`;
       return;
     }
   }
@@ -10965,7 +10966,7 @@ function getTaxaForma(forma){
 // uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
 // contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
 // de itens é livre.
-const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Outros'];
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Comissão','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Outros'];
 // Só aparece em lançamentos antigos. Não entra na lista de criar, mas precisa
 // existir na edição para continuar selecionável em quem já tem esse tipo.
 const LANC_TIPOS_LEGADO=['Taxa Bruno'];
@@ -11015,7 +11016,7 @@ function itemHTML(pref,full){
         </label>
         <input type="text" inputmode="decimal" data-k="comPct" placeholder="0" disabled>
       </div>
-      ${full?`<div class="fp"><label>Prev. Pgto (auto)</label><input type="date" data-k="prev"></div>
+      ${full?`<div class="fp"><label>Data de vencimento (auto)</label><input type="date" data-k="prev"></div>
       <div class="fp"><label>Valor líquido</label><input type="text" data-k="liq" readonly></div>
       <div class="item-parcelas" data-parcelas style="display:none"></div>`:''}
       <div class="fp s2"><label>Obs / Referência</label><input type="text" data-k="obs" placeholder="ex: ref. 4018"></div>
@@ -11350,47 +11351,74 @@ function coletaItens(pref,base){
     const dp=itemGet(it,'dpago');
     const obsBase=itemGet(it,'obs')||'';
     const taxa=getTaxaForma(forma);
-    // Comissão: só abate quando a caixinha do item foi ticada, antes de
-    // qualquer outro cálculo — o que entra como 'valor' do lançamento já é
-    // o líquido de comissão, então todo painel que soma 'valor' já reflete
-    // o desconto.
+    // Comissão: só abate quando a caixinha do item foi ticada. O 'valor'
+    // deste item continua saindo líquido de comissão (vEf) — mas a diferença
+    // (v-vEf) vira um lançamento PRÓPRIO, tipo 'Comissão', com a mesma placa/
+    // vencimento/forma do item de origem. Assim ele soma de volta no total
+    // do contrato (mesma chave placa+prev_pgto que o boleto já agrupa) e
+    // continua contando no lançamento do cliente, mas aparece separado em
+    // Lançamentos/filtros/Faturamento por categoria — sem lanc_num em comum
+    // com o item de origem, pra não entrar na reconciliação de parcelas dele.
     const pctCom=itemComPct(it);
     const vEf=itemValorComComissao(it,v);
-    const comNota=pctCom?` · Comissão ${pctCom}% (-${fR(v-vEf)})`:'';
+    const comTot=Math.round((v-vEf)*100)/100;
+    const comNota=pctCom?` · Comissão ${pctCom}% (-${fR(comTot)})`:'';
     // Um número por ITEM do formulário: as parcelas que ele gerar herdam o
     // mesmo (são o mesmo lançamento principal); o item seguinte do contrato
     // ganha o seu, próprio e diferente.
     const lancNum=TEM_LANC_NUM?novoLancNum():null;
+    const comLancNum=comTot>0&&TEM_LANC_NUM?novoLancNum():null;
     if(itemVaiParcelar(it,forma,dp)){
       const n=parcelasForma(forma);
+      const comPartes=comTot>0?dividirCentavos(comTot,n):[];
       dividirCentavos(vEf,n).forEach((bruto,k)=>{
+        const ppK=addDUtil(dp,PREM.prazoParcela*(k+1));
         recs.push({...base,
           tipo,forma,lanc_num:lancNum,
           valor:bruto,
-          prev_pgto:addDUtil(dp,PREM.prazoParcela*(k+1)),
+          prev_pgto:ppK,
           valor_pago:0,
           saldo:Math.round(bruto*(1-taxa)*100)/100,
           obs:(obsBase?`${obsBase} · Parcela ${k+1}/${n}`:`Parcela ${k+1}/${n}`)+comNota});
+        if(comPartes[k]>0){
+          recs.push({...base,
+            tipo:'Comissão',forma,lanc_num:comLancNum,
+            valor:comPartes[k],
+            prev_pgto:ppK,
+            valor_pago:0,
+            saldo:Math.round(comPartes[k]*(1-taxa)*100)/100,
+            obs:`Comissão ${pctCom}% sobre ${tipo}${obsBase?` (${obsBase})`:''} · Parcela ${k+1}/${n}`});
+        }
       });
       continue;
     }
-    // Respeita a Prev. Pgto ajustada à mão; só recalcula quando o campo não
-    // existe (modal do OCR) ou está vazio.
+    // Respeita a Data de vencimento ajustada à mão; só recalcula quando o
+    // campo não existe (modal do OCR) ou está vazio.
     const ppRaw=itemGet(it,'prev')||itemPrev(forma,base.retorno||'',dp);
     // Mesma trava do saveEdit: um ano absurdo aqui (campo de data nativo
     // truncando o ano digitado, por ex.) cria um "vencido" fantasma com
     // milhares de dias de atraso.
     if(ppRaw){
       const anoPP=+ppRaw.slice(0,4), anoAtual=new Date().getFullYear();
-      if(anoPP<anoAtual-10||anoPP>anoAtual+10)return{erro:`Prev. Pgto do lançamento ${i+1} com ano inválido (${ppRaw}) — confira a data.`};
+      if(anoPP<anoAtual-10||anoPP>anoAtual+10)return{erro:`Data de vencimento do lançamento ${i+1} com ano inválido (${ppRaw}) — confira a data.`};
     }
+    const pp=ppRaw?proxUtil(ppRaw):null;
     recs.push({...base,
       tipo,forma,lanc_num:lancNum,
       valor:vEf,
-      prev_pgto:ppRaw?proxUtil(ppRaw):null,
+      prev_pgto:pp,
       valor_pago:0,
       saldo:vEf*(1-taxa),
       obs:(obsBase||comNota)?`${obsBase}${comNota}`.replace(/^ · /,''):null});
+    if(comTot>0){
+      recs.push({...base,
+        tipo:'Comissão',forma,lanc_num:comLancNum,
+        valor:comTot,
+        prev_pgto:pp,
+        valor_pago:0,
+        saldo:Math.round(comTot*(1-taxa)*100)/100,
+        obs:`Comissão ${pctCom}% sobre ${tipo}${obsBase?` (${obsBase})`:''}`});
+    }
   }
   if(!recs.length)return{erro:'Informe o valor de pelo menos um lançamento.'};
   return{recs};
