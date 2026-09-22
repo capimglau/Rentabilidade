@@ -6487,16 +6487,24 @@ if(window.Chart){
     afterDatasetsDraw(chart,args,opts){
       if(!opts||!opts.display)return;
       const ctx=chart.ctx, ds=chart.data.datasets, n=ds.length;
-      // dataset visível mais ao topo (para posicionar o rótulo do total)
+      // dataset de BARRA visível mais ao topo (para posicionar o rótulo do
+      // total) — uma linha sobreposta não conta: ela não empilha com as
+      // barras, então usar a posição dela aqui desalinha o rótulo do topo
+      // real da pilha.
       let topMeta=null;
-      for(let d=n-1;d>=0;d--){const m=chart.getDatasetMeta(d);if(!m.hidden){topMeta=m;break;}}
+      for(let d=n-1;d>=0;d--){if(ds[d].type==='line')continue;const m=chart.getDatasetMeta(d);if(!m.hidden){topMeta=m;break;}}
       if(!topMeta)return;
       ctx.save();
       ctx.font=`700 ${opts.size||(opts.vert?9:10)}px "DM Sans", sans-serif`;
       // no tema escuro o cinza-chumbo some no fundo: o rótulo segue o tema
       ctx.fillStyle=isDark()?'#e8ecf4':'#3a3a44'; ctx.textAlign=opts.vert?'left':'center';
       topMeta.data.forEach((bar,i)=>{
-        let tot=0;for(let d=0;d<n;d++){if(chart.getDatasetMeta(d).hidden)continue;tot+=ds[d].data[i]||0;}
+        // Só soma dataset de BARRA — uma linha sobreposta (ex: "Silvio ·
+        // Locação" no Faturamento mensal) não empilha com as barras, é só
+        // um traço por cima; somar ela aqui inflava o total (ex: 227k em
+        // vez dos 129k reais), mesma exclusão que o footer do tooltip já
+        // faz (items.filter(it=>it.dataset.type!=='line')).
+        let tot=0;for(let d=0;d<n;d++){if(ds[d].type==='line')continue;if(chart.getDatasetMeta(d).hidden)continue;tot+=ds[d].data[i]||0;}
         if(!tot)return;
         const txt=(opts.fmt?opts.fmt(tot):tot);
         if(opts.vert){
