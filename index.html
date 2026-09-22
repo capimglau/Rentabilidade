@@ -3045,10 +3045,13 @@ html[data-theme="dark"] .rc-sel:hover {
 /* FORM */
 .fg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 /* min-width:0 é o que impede um item de grid de se recusar a encolher pro
-   tamanho da coluna quando o conteúdo pede mais espaço — sem isso, o
-   <input type="date"> nativo do iOS (que tem uma largura mínima própria,
-   maior que a de um <input type="text"> comum) empurra a caixa pra fora da
-   tela em vez de respeitar o width:100%/box-sizing:border-box do .fg. */
+   tamanho da coluna quando o conteúdo pede mais espaço — mas isso sozinho
+   não resolve o <input type="date"> no iOS: o Safari dá ao controle nativo
+   de data uma largura mínima própria (-webkit-min-logical-width, herdada da
+   folha de estilo do agente do usuário) que IGNORA o width:100%/
+   box-sizing:border-box do elemento — o campo desenha por cima da borda do
+   .fp e vaza pra fora da tela em vez de encolher. Zerar essa propriedade é
+   o único jeito de fazer o Safari respeitar a largura do container. */
 .fp { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .fp.s2 { grid-column: 1/-1; }
 .fp label { font-size: 11px; font-weight: 600; color: var(--ink3); letter-spacing: .05em; }
@@ -3062,7 +3065,13 @@ html[data-theme="dark"] .rc-sel:hover {
   color: var(--ink);
   outline: none;
   width: 100%;
+  max-width: 100%;
   transition: border-color .03s, box-shadow .03s;
+}
+input[type="date"], input[type="time"], input[type="datetime-local"] {
+  -webkit-min-logical-width: 0 !important;
+  min-width: 0;
+  max-width: 100%;
 }
 .fp input:focus, .fp select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(31,95,168,.08); }
 .fp input[readonly] { background: var(--surface); color: var(--ink3); }
