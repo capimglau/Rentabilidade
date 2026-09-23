@@ -9765,12 +9765,33 @@ async function saveEdit(){
     if(comTotalReal<=0)return null;
     const taxaCom=getTaxaForma(r.forma);
     const pago=fN(r.saldo)<=0.005;
-    const rec=await dbInsert({placa:r.placa,dono:r.dono,cliente:r.cliente,tipo:'Comissão',forma:r.forma,
-      saida:r.saida,retorno:r.retorno,valor:comTotalReal,prev_pgto:r.prev_pgto,
-      valor_pago:pago?comTotalReal:0,
-      saldo:pago?0:Math.round(comTotalReal*(1-taxaCom)*100)/100,
-      data_pagamento:pago?r.data_pagamento:null,
-      obs:`Comissão ${pctCom}% sobre ${r.tipo} (edição de ${rotuloLanc(r)||r.cliente||r.placa})`});
+    // dbInsert já mostra um alert() se o Supabase recusar — mas um alert()
+    // é fácil de tocar "OK" sem ler, ou de nem aparecer se algo travar no
+    // meio. Reforço aqui: se o registro que voltou não tem `id` de banco
+    // (SB existe mas o insert não confirmou), a mensagem some do alert()
+    // e fica plantada em #edMsg, que continua na tela depois de fechar o
+    // modal — não dá pra desfazer clicando sem querer.
+    let rec;
+    try{
+      rec=await dbInsert({placa:r.placa,dono:r.dono,cliente:r.cliente,tipo:'Comissão',forma:r.forma,
+        saida:r.saida,retorno:r.retorno,valor:comTotalReal,prev_pgto:r.prev_pgto,
+        valor_pago:pago?comTotalReal:0,
+        saldo:pago?0:Math.round(comTotalReal*(1-taxaCom)*100)/100,
+        data_pagamento:pago?r.data_pagamento:null,
+        obs:`Comissão ${pctCom}% sobre ${r.tipo} (edição de ${rotuloLanc(r)||r.cliente||r.placa})`});
+    }catch(e){
+      console.error('Falha ao criar o lançamento de Comissão:',e);
+      const msg=`⚠ O lançamento foi salvo, mas a Comissão de ${fR(comTotalReal)} NÃO foi gravada (erro: ${e.message||String(e)}). Marque a caixinha de novo e salve outra vez.`;
+      document.getElementById('edMsg').innerHTML=`<span style="color:var(--red)">${escHtml(msg)}</span>`;
+      showToast(msg);
+      return null;
+    }
+    if(SB&&rec.id==null){
+      const msg=`⚠ O lançamento foi salvo, mas a Comissão de ${fR(comTotalReal)} NÃO foi confirmada pelo banco. Confira em Lançamentos (filtro Comissão).`;
+      document.getElementById('edMsg').innerHTML=`<span style="color:var(--red)">${escHtml(msg)}</span>`;
+      showToast(msg);
+      return null;
+    }
     registrarNovo(rec);
     return rec;
   }
