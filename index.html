@@ -8315,15 +8315,21 @@ function frRowsForRing(dim){
 function frValBase(r){return frBasis==='caixa'?fN(r.valor_pago):frBasis==='pend'?fN(r.saldo):liq(r);}
 function frSum(rows){return rows.reduce((s,r)=>s+frValBase(r),0);}
 
-// Top 10 categorias reais + "Outros" só se sobrar alguma além dessas —
-// na prática cobre TODOS os proprietários/tipos/formas (poucos itens em
-// cada), e só agrupa quando é Cliente/Placa (que têm dezenas de valores).
+// Top N categorias reais + "Outros" só se sobrar alguma além dessas — na
+// prática cobre TODOS os proprietários/tipos/formas (poucos itens em cada),
+// e só agrupa quando é Cliente/Placa (que têm dezenas de valores). Pra
+// 'tipo', N é o tamanho do próprio catálogo (LANC_TIPOS + legados): eram só
+// 12 tipos possíveis e o corte fixo de 10 já vivia no limite, então virou
+// bug de verdade quando 'Comissão' entrou como 13º tipo — ela é sempre um
+// valor pequeno (fração de outro lançamento), então é candidata certa a
+// cair no balde "Outros" em vez de aparecer com fatia/cor próprias no anel.
 function frBreakdown(dim,rows,grand){
+  const N=dim==='tipo'?(LANC_TIPOS.length+LANC_TIPOS_LEGADO.length):10;
   const sums={};
   rows.forEach(r=>{const k=(r[dim]||'').trim()||'—';sums[k]=(sums[k]||0)+frValBase(r);});
   let list=Object.keys(sums).map(k=>({key:k,value:sums[k]})).sort((a,b)=>b.value-a.value);
-  const top=list.slice(0,10);
-  const restSum=list.slice(10).reduce((s,it)=>s+it.value,0);
+  const top=list.slice(0,N);
+  const restSum=list.slice(N).reduce((s,it)=>s+it.value,0);
   if(restSum>0.005)top.push({key:'Outros',value:restSum});
   return top.map((it,idx)=>({key:it.key,value:it.value,pct:grand?it.value/grand*100:0,rank:it.key==='Outros'?-1:idx,sel:FRT[dim].has(it.key)}));
 }
