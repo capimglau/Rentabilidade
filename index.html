@@ -4352,7 +4352,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
       <div class="itens" id="nf-itens"></div>
       <button class="btn add-item" type="button" onclick="addItem('nf')" title="Adicionar mais um lançamento a este contrato">＋ Adicionar lançamento</button>
       <div class="itens-total" id="nf-total"></div>
-      <button class="btn btn-blue" id="nf-submit" style="width:100%;justify-content:center;padding:10px;margin-top:12px" onclick="addN()">✓ Adicionar lançamento</button>
+      <button class="btn btn-blue" id="nf-submit" style="width:100%;justify-content:center;padding:10px;margin-top:12px" onclick="addN()">✓ Salvar</button>
       <div id="nMsg" style="margin-top:8px;font-size:13px"></div>
     </div>
   </div>
@@ -4681,7 +4681,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
       <div class="itens" id="ed-itens"></div>
       <button class="btn add-item" type="button" onclick="addItem('ed')" title="Adicionar mais um lançamento a este contrato">＋ Adicionar lançamento</button>
       <div class="itens-total" id="ed-total"></div>
-      <button class="btn btn-blue" id="ed-submit" style="width:100%;justify-content:center;padding:10px;margin-top:12px" onclick="addItensContrato()">✓ Adicionar lançamento</button>
+      <button class="btn btn-blue" id="ed-submit" style="width:100%;justify-content:center;padding:10px;margin-top:12px" onclick="addItensContrato()">✓ Salvar</button>
       <div id="edMsg" style="margin-top:8px;font-size:13px"></div>
     </details>
   </div>
@@ -11422,7 +11422,7 @@ function calcItems(pref){
   const tot=document.getElementById(pref+'-total');
   if(tot)tot.innerHTML=preenchidos?`Total: <strong>${fR(bruto)}</strong> · líquido <strong>${fR(liq)}</strong>${comissao?` · comissão -<strong>${fR(comissao)}</strong>`:''}`:'';
   const btn=document.getElementById(pref+'-submit');
-  if(btn)btn.textContent=totalRecs>1?`✓ Adicionar ${totalRecs} lançamentos`:'✓ Adicionar lançamento';
+  if(btn)btn.textContent=totalRecs>1?`✓ Salvar ${totalRecs} lançamentos`:'✓ Salvar';
 }
 function addItem(pref,focar){
   const box=document.getElementById(pref+'-itens');if(!box)return null;
