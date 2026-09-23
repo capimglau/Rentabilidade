@@ -6307,7 +6307,7 @@ function attachSuggest(inputId, getList, fmt){
   input.addEventListener('blur', () => { if (_acInput === input) _acClose(); });
 }
 // Cor da etiqueta de cada tipo de lançamento.
-const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Km Extra':'ped','Comissão':'tax','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax',Imposto:'tax'};
+const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Comissão':'tax','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax',Imposto:'tax'};
 const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -7177,7 +7177,7 @@ const AGB_TONE={
 };
 const AGB_TIPO_FAMILIA={
   'Locação':'azul', 'Avarias':'ambar', 'Lavagem':'ciano', 'Multas':'roxo',
-  'Pedágio':'ambar', 'Franquia':'indigo', 'Km Extra':'azul', 'Comissão':'rosa', 'Taxa Mario':'rosa',
+  'Pedágio':'ambar', 'Franquia':'indigo', 'Comissão':'rosa', 'Taxa Mario':'rosa',
   'Taxa Alfredo':'rosa', 'Taxa Paulinho':'rosa', 'Imposto':'verde', 'Outros':'azul'
 };
 function agbTipoTone(tipo){
@@ -7215,7 +7215,6 @@ const AGB_FLAG_ICON_TIPO={
   'Multas':       _agbIc('%3Ccircle cx=%2212%22 cy=%2212%22 r=%229%22/%3E%3Cpath d=%22M12 7v5M12 16h.01%22/%3E'),
   'Pedágio':      _agbIc('%3Cpath d=%22M9.3 4h5.4l3.3 15H6z%22/%3E%3Cpath d=%22M4 19h16M7.9 13h8.2%22/%3E'),
   'Franquia':     _agbIc('%3Cpath d=%22M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z%22/%3E'),
-  'Km Extra':     _agbIc('%3Ccircle cx=%2212%22 cy=%2214%22 r=%228%22/%3E%3Cpath d=%22M12 14 16 10%22/%3E%3Cpath d=%22M12 3v2M4.2 8.2l1.4 1.4M19.8 8.2l-1.4 1.4%22/%3E'),
   'Taxa Mario':   _agbIc('%3Ccircle cx=%2212%22 cy=%228%22 r=%224%22/%3E%3Cpath d=%22M4 21a8 8 0 0 1 16 0%22/%3E'),
   'Imposto':      _agbIc('%3Cpath d=%22M12 2 3 8h18zM3 21h18M5.5 21V10M9.5 21V10M14.5 21V10M18.5 21V10%22/%3E')
 };
@@ -8441,7 +8440,6 @@ function frxTypeIcon(key){
   if(k.includes('multa'))return 'alert';
   if(k.includes('pedagio'))return 'toll';
   if(k.includes('franquia'))return 'shield';
-  if(k.includes('km'))return 'car';
   if(k.includes('taxa'))return 'truck';
   if(k.includes('outro'))return 'dots';
   return 'tag';
@@ -11110,7 +11108,7 @@ function getTaxaForma(forma){
 // uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
 // contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
 // de itens é livre.
-const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Km Extra','Comissão','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Outros'];
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Comissão','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Outros'];
 // Só aparece em lançamentos antigos. Não entra na lista de criar, mas precisa
 // existir na edição para continuar selecionável em quem já tem esse tipo.
 const LANC_TIPOS_LEGADO=['Taxa Bruno'];
