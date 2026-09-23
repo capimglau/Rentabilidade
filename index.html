@@ -11980,14 +11980,18 @@ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dov');con
 function popSel(){
   const all=allD();
   const donos=[...new Set([...all.map(r=>r.dono),...VEICULOS.map(v=>v.dono)].filter(Boolean))].sort();
-  const tipos=[...new Set(all.map(r=>r.tipo).filter(Boolean))].sort();
   const formas=[...new Set(all.map(r=>r.forma).filter(Boolean))].sort();
   ['nf-d','e-d','ai-d'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Selecione</option>';donos.forEach(d=>el.innerHTML+=`<option>${d}</option>`);el.value=cv;});
   ['lf-dono','sr-dono'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os proprietários</option>';donos.forEach(d=>el.innerHTML+=`<option>${d}</option>`);el.value=cv;});
-  // Tipo na edição: mesma lista de LANC_TIPOS (+ legados), pra não existir
-  // tipo que dá pra criar mas não dá pra escolher ao editar.
+  // Tipo em TODO filtro/seletor do sistema é sempre o catálogo inteiro
+  // (EDIT_TIPOS = LANC_TIPOS + legados), nunca só os tipos que já têm
+  // lançamento — um tipo novo (ex: Comissão) tem que dar pra filtrar/editar
+  // por ele mesmo antes de existir o primeiro lançamento desse tipo. Padrão:
+  // filtro de Tipo nunca é "o que já tem dado", é sempre "o que existe no
+  // sistema" (mesmo raciocínio de selTipoCal na Agenda, que já usa
+  // LANC_TIPOS direto).
   {const el=document.getElementById('e-t');if(el){const cv=el.value;el.innerHTML=EDIT_TIPOS.map(t=>`<option>${t}</option>`).join('');selVal('e-t',cv);}}
-  ['lf-tipo','sr-tipo'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os tipos</option>';tipos.forEach(t=>el.innerHTML+=`<option>${t}</option>`);el.value=cv;});
+  ['lf-tipo','sr-tipo'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todos os tipos</option>';EDIT_TIPOS.forEach(t=>el.innerHTML+=`<option>${t}</option>`);el.value=cv;});
   ['lf-forma','sr-forma'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cv=el.value;el.innerHTML='<option value="">Todas as formas</option>';formas.forEach(f=>el.innerHTML+=`<option>${f}</option>`);el.value=cv;});
   // Meses do filtro da busca: todo mês que tem algum lançamento por
   // vencimento (prev_pgto) — mesma fonte que agrupa os resultados por mês
