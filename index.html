@@ -4308,6 +4308,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
   <div class="modal" style="max-width:460px">
     <div class="mhd">Detalhe da auditoria <button class="mcl" onclick="document.getElementById('mAuditDet').classList.remove('on')">✕</button></div>
     <div id="auditDetBody"></div>
+    <div id="auditDetAcoes"></div>
   </div>
 </div>
 
@@ -5325,6 +5326,16 @@ function abrirAuditDet(i){
     </div>
     ${d.obs?`<div style="margin-top:10px;font-size:12.5px;color:var(--ink3)">Obs: ${esc(d.obs)}</div>`:''}
   `;
+  // "Abrir lançamento": acha o registro pelo id gravado no evento (exclusão
+  // não tem — registro_id fica vazio ali, e um lançamento apagado depois
+  // também não acha mais nada) e abre a edição de verdade, não só o
+  // resuminho somente-leitura acima — é onde dá pra corrigir o que a
+  // auditoria mostrou errado.
+  const idx=a.registro_id?allD().findIndex(r=>String(r.id)===String(a.registro_id)):-1;
+  const btnWrap=document.getElementById('auditDetAcoes');
+  if(btnWrap)btnWrap.innerHTML=idx>=0
+    ?`<button class="btn btn-blue" style="width:100%;justify-content:center;margin-top:12px" onclick="document.getElementById('mAuditDet').classList.remove('on');openEdit(${idx})">✏️ Abrir e editar este lançamento</button>`
+    :`<div style="margin-top:12px;font-size:12px;color:var(--ink3)">Este lançamento não existe mais (foi excluído, ou é de antes do sistema numerar os registros).</div>`;
   document.getElementById('mAuditDet').classList.add('on');
 }
 
