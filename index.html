@@ -7335,8 +7335,24 @@ function comissaoLancNumDe(r){
 }
 function acharComissaoDe(r){
   const key=comissaoLancNumDe(r);
-  if(!key)return null;
-  return allD().find(x=>x.tipo==='Comissão'&&x.lanc_num===key)||null;
+  if(key){
+    const porId=allD().find(x=>x.tipo==='Comissão'&&x.lanc_num===key);
+    if(porId)return porId;
+  }
+  // Comissões geradas ANTES desta correção não têm o link 'COM-<id>' (não
+  // existia ainda) — sem este 2º jeito de achar, a caixinha continuava
+  // nascendo desmarcada pra elas e não dava pra apagar pela edição, só na
+  // mão pelo banco. Acha pelo texto que toda Comissão dessas grava sozinha
+  // no obs ("... (edição de #L-XXX)", mesmo #L-XXX do lançamento de
+  // origem) — o mesmo texto que criaComissaoEdicao sempre escreveu. Havendo
+  // mais de uma (duplicata antiga ainda não limpa à mão), pega a mais
+  // antiga; a(s) outra(s) continua(m) precisando de limpeza manual (SQL).
+  if(r&&r.lanc_num){
+    const marca=`(edição de ${rotuloLanc(r)})`;
+    const legado=allD().filter(x=>x.tipo==='Comissão'&&String(x.obs||'').includes(marca));
+    if(legado.length)return legado.sort((a,b)=>String(a.id??'').localeCompare(String(b.id??''),undefined,{numeric:true}))[0];
+  }
+  return null;
 }
 function agbCardHtml(grp,dia,hiddenCount,pago){
   const n=grp.recs.length;
@@ -9817,9 +9833,12 @@ async function saveEdit(){
     // Já existe uma Comissão companheira deste lançamento (comAntes, achada
     // por acharComissaoDe): atualiza ela em vez de inserir outra — sem essa
     // checagem, editar de novo com a caixinha ticada duplicava a Comissão a
-    // cada salvar (é exatamente o bug relatado).
+    // cada salvar (é exatamente o bug relatado). Uma achada pelo texto do
+    // obs (comissão de antes da correção, sem o link 'COM-<id>') ganha o
+    // link agora, na primeira vez que passa por aqui — assim da próxima vez
+    // ela é achada pelo id, não precisa mais do 2º jeito (texto do obs).
     if(comAntes){
-      Object.assign(comAntes,campos);
+      Object.assign(comAntes,campos,{lanc_num:comissaoLancNumDe(r)||comAntes.lanc_num});
       dbUpdate(comAntes);
       return comAntes;
     }
