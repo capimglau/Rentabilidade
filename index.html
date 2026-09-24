@@ -6000,6 +6000,11 @@ let NOVOS = [];
 // automática ligada, uma exclusão vinda de fora desloca os índices de allD()
 // e o "Salvar" acabaria gravando em cima do lançamento errado.
 let editRec = null;
+// A Comissão companheira já lançada para editRec (achada em openEdit por
+// acharComissaoDe), só pra inicializar a caixinha "Comissão a abater" — o
+// saveEdit refaz a busca na hora de gravar, não confia neste cache (pode ter
+// ficado velho com o modal aberto).
+let editComRec = null;
 function lancEditado(){ return (editRec && allD().includes(editRec)) ? editRec : null; }
 let loteSel = [];
 let selDono = '';
@@ -7314,6 +7319,24 @@ function numerarGrupo(grupo){
   const num=(grupo.find(x=>x.lanc_num)||{}).lanc_num||novoLancNum();
   grupo.forEach(x=>{x.lanc_num=num;});
   return num;
+}
+// Link entre um lançamento e a Comissão companheira que a edição (caixinha
+// "Comissão a abater") gera para ele: a chave é o PRÓPRIO id do lançamento
+// de origem, guardada no lanc_num da Comissão como 'COM-<id>' — não reaproveita
+// o lanc_num do lançamento de origem porque isso a puxaria pra dentro do
+// grupo de PARCELAS dele (agbParcelaGroupKey/grupoLancamento agrupam por
+// lanc_num igual). Sem esta chave cada edição com a caixinha ticada criava
+// uma Comissão NOVA em vez de achar e atualizar a que já existia — é o bug
+// da comissão duplicando a cada alteração. Só funciona com TEM_LANC_NUM (coluna
+// lanc_num) e com r já gravado (tem id); sem os dois não dá pra achar de
+// novo, e a edição volta a criar uma Comissão nova a cada vez.
+function comissaoLancNumDe(r){
+  return (TEM_LANC_NUM&&r&&r.id!=null)?'COM-'+r.id:null;
+}
+function acharComissaoDe(r){
+  const key=comissaoLancNumDe(r);
+  if(!key)return null;
+  return allD().find(x=>x.tipo==='Comissão'&&x.lanc_num===key)||null;
 }
 function agbCardHtml(grp,dia,hiddenCount,pago){
   const n=grp.recs.length;
@@ -9304,9 +9327,15 @@ function openEdit(idx){
   document.getElementById('e-r').value=r.retorno||'';
   document.getElementById('e-pp').value=r.prev_pgto||'';
   document.getElementById('e-v').value=r.valor?toBR(fN(r.valor)):'';
-  document.getElementById('e-com-on').checked=false;
-  document.getElementById('e-com').value='';
-  document.getElementById('e-com').disabled=true;
+  // Reflete se este lançamento já tem uma Comissão companheira gravada —
+  // sem isso a caixinha sempre nascia desmarcada e salvar de novo (mesmo sem
+  // mexer em nada) recriava a Comissão a cada edição. O % é reconstruído do
+  // valor dela sobre o bruto (Valor atual, já líquido, + valor da Comissão).
+  editComRec=acharComissaoDe(r);
+  const comBruto=fN(r.valor)+fN(editComRec&&editComRec.valor);
+  document.getElementById('e-com-on').checked=!!editComRec;
+  document.getElementById('e-com').value=(editComRec&&comBruto>0)?toBR(Math.round(fN(editComRec.valor)/comBruto*10000)/100):'';
+  document.getElementById('e-com').disabled=!editComRec;
   document.getElementById('e-vp').value=r.valor_pago?toBR(fN(r.valor_pago)):'';
   document.getElementById('e-dtpag').value=r.data_pagamento||'';
   document.getElementById('e-sl').value=r.saldo?toBR(fN(r.saldo)):'';
@@ -9662,11 +9691,12 @@ async function saveEdit(){
   // pra 2x, ou de 2x pra à vista). Mexer só no campo Valor de cima continua
   // sendo edição de UMA parcela — não redistribui nada.
   const redivide=!!(plano&&plano.parcelado&&plano.redivide);
-  // Comissão a abater: só quando a caixinha está ticada, e só uma vez —
-  // abate do Valor que acabou de ser digitado/confirmado acima (ou do total
-  // do lançamento, quando é o lançamento inteiro que está sendo redividido)
-  // e vira nota no Obs. Não fica guardada em campo próprio (não existe
-  // coluna pra isso), por isso a caixinha volta desmarcada a cada edição.
+  // Comissão a abater: só quando a caixinha está ticada — abate do Valor que
+  // acabou de ser digitado/confirmado acima (ou do total do lançamento,
+  // quando é o lançamento inteiro que está sendo redividido) e vira nota no
+  // Obs. A caixinha nasce ticada quando este lançamento já tem uma Comissão
+  // companheira (openEdit, via acharComissaoDe) — desticar ela agora é o
+  // pedido de apagar essa Comissão (removeCom, mais abaixo).
   const pctCom=document.getElementById('e-com-on').checked?fN(document.getElementById('e-com').value):0;
   const desconta=v=>Math.round(v*(1-pctCom/100)*100)/100;
   let total=redivide?(pctCom>0?desconta(plano.total):plano.total):0;
@@ -9675,10 +9705,19 @@ async function saveEdit(){
   // 'Comissão' (mesmo padrão da criação em coletaItens): sem isso o valor
   // some do total do contrato/boleto, em vez de só migrar de categoria.
   let comTotalReal=0;
-  novo.valor=vDigitado;
+  // A Comissão companheira já lançada (achada de novo aqui, não do cache do
+  // openEdit — o modal pode ter ficado aberto por um tempo). Desmarcar a
+  // caixinha com uma já existindo é o pedido de "apagar a comissão".
+  const comAntes=acharComissaoDe(r);
+  const removeCom=!!comAntes&&pctCom<=0;
+  novo.valor=removeCom?Math.round((vDigitado+fN(comAntes.valor))*100)/100:vDigitado;
   if(pctCom>0){
-    const bruto=redivide?plano.total:vDigitado;
-    if(!redivide)novo.valor=desconta(vDigitado);
+    // Com Comissão já lançada, o Valor em tela já saiu líquido dela — soma
+    // de volta antes de aplicar o % de novo. Sem isso cada edição abateria
+    // por cima do que já tinha sido abatido — o bug da Comissão duplicando/
+    // encolhendo o Valor a cada alteração.
+    const bruto=redivide?plano.total:(vDigitado+fN(comAntes&&comAntes.valor));
+    if(!redivide)novo.valor=desconta(bruto);
     comTotalReal=Math.round((bruto-(redivide?total:novo.valor))*100)/100;
     comNota=` · Comissão ${pctCom}% (-${fR(comTotalReal)})`;
   }
@@ -9742,6 +9781,10 @@ async function saveEdit(){
   // motivo por que excluirLancamento não tem Desfazer.
   const prevR={...r};
   const prevIrmaos=irmaosParcela.map(x=>({x,placa:x.placa,dono:x.dono,cliente:x.cliente,tipo:x.tipo,forma:x.forma,saida:x.saida,retorno:x.retorno}));
+  // Cópia da Comissão companheira ANTES de mexer nela — pro Desfazer saber
+  // devolver ela exatamente como estava (existente sendo atualizada) ou
+  // recriá-la (existente sendo apagada por causa da caixinha desmarcada).
+  const prevComR=comAntes?{...comAntes}:null;
   // Confirmado: agora sim o registro aberto recebe o que foi digitado.
   Object.assign(r,novo);
   // Número do lançamento principal: quem ainda não tem (lançamento antigo,
@@ -9765,6 +9808,21 @@ async function saveEdit(){
     if(comTotalReal<=0)return null;
     const taxaCom=getTaxaForma(r.forma);
     const pago=fN(r.saldo)<=0.005;
+    const campos={placa:r.placa,dono:r.dono,cliente:r.cliente,tipo:'Comissão',forma:r.forma,
+      saida:r.saida,retorno:r.retorno,valor:comTotalReal,prev_pgto:r.prev_pgto,
+      valor_pago:pago?comTotalReal:0,
+      saldo:pago?0:Math.round(comTotalReal*(1-taxaCom)*100)/100,
+      data_pagamento:pago?r.data_pagamento:null,
+      obs:`Comissão ${pctCom}% sobre ${r.tipo} (edição de ${rotuloLanc(r)||r.cliente||r.placa})`};
+    // Já existe uma Comissão companheira deste lançamento (comAntes, achada
+    // por acharComissaoDe): atualiza ela em vez de inserir outra — sem essa
+    // checagem, editar de novo com a caixinha ticada duplicava a Comissão a
+    // cada salvar (é exatamente o bug relatado).
+    if(comAntes){
+      Object.assign(comAntes,campos);
+      dbUpdate(comAntes);
+      return comAntes;
+    }
     // dbInsert já mostra um alert() se o Supabase recusar — mas um alert()
     // é fácil de tocar "OK" sem ler, ou de nem aparecer se algo travar no
     // meio. Reforço aqui: se o registro que voltou não tem `id` de banco
@@ -9773,12 +9831,7 @@ async function saveEdit(){
     // modal — não dá pra desfazer clicando sem querer.
     let rec;
     try{
-      rec=await dbInsert({placa:r.placa,dono:r.dono,cliente:r.cliente,tipo:'Comissão',forma:r.forma,
-        saida:r.saida,retorno:r.retorno,valor:comTotalReal,prev_pgto:r.prev_pgto,
-        valor_pago:pago?comTotalReal:0,
-        saldo:pago?0:Math.round(comTotalReal*(1-taxaCom)*100)/100,
-        data_pagamento:pago?r.data_pagamento:null,
-        obs:`Comissão ${pctCom}% sobre ${r.tipo} (edição de ${rotuloLanc(r)||r.cliente||r.placa})`});
+      rec=await dbInsert({...campos,lanc_num:comissaoLancNumDe(r)});
     }catch(e){
       console.error('Falha ao criar o lançamento de Comissão:',e);
       const msg=`⚠ O lançamento foi salvo, mas a Comissão de ${fR(comTotalReal)} NÃO foi gravada (erro: ${e.message||String(e)}). Marque a caixinha de novo e salve outra vez.`;
@@ -9795,15 +9848,23 @@ async function saveEdit(){
     registrarNovo(rec);
     return rec;
   }
+  // Caixinha desmarcada com uma Comissão já lançada (comAntes): apaga ela de
+  // verdade no banco — nunca só some da tela — porque foi exatamente isso
+  // que o usuário pediu ao "esticar o tick" pra trás.
+  async function apagaComissaoEdicao(){
+    if(!removeCom)return;
+    await removerLancamento(comAntes);
+  }
   if(redivide){
     // [desfazer-sistema] SEM Desfazer de propósito: sincronizarParcelas cria
     // e apaga parcela de verdade, e reconstruir "como estava" com segurança
     // não dá — mesmo motivo por que excluirLancamento também não tem banner.
     // O aviso continua (o usuário vê total/parcelas novas), só não oferece
     // desfazer uma coisa que não tem volta garantida — pelo mesmo motivo, o
-    // lançamento de Comissão gerado aqui também não entra no Desfazer.
+    // lançamento de Comissão gerado/apagado aqui também não entra no Desfazer.
     await sincronizarParcelas(r,grupo,nNovo,total,r.prev_pgto,obsSemParcela(r.obs));
     await criaComissaoEdicao();
+    await apagaComissaoEdicao();
     showToast(nNovo===grupo.length
       ? `✓ Lançamento ${rotuloLanc(r)}: ${nNovo>1?`${nNovo} parcelas ajustadas`:'valor ajustado'} — total ${fR(total)}`
       : `✓ Lançamento ${rotuloLanc(r)}: agora ${nNovo>1?`${nNovo} parcelas`:'1 lançamento'} — total ${fR(total)}`);
@@ -9818,6 +9879,7 @@ async function saveEdit(){
       dbUpdate(x);
     });
     const comRec=await criaComissaoEdicao();
+    await apagaComissaoEdicao();
     showToast(`✓ Lançamento de ${r.cliente||r.placa} editado`,'Desfazer',async()=>{
       Object.assign(r,prevR);
       dbUpdate(r);
@@ -9825,7 +9887,18 @@ async function saveEdit(){
         x.placa=placa;x.dono=dono;x.cliente=cliente;x.tipo=tipo;x.forma=forma;x.saida=saida;x.retorno=retorno;
         dbUpdate(x);
       });
-      if(comRec)await removerLancamento(comRec);
+      // Comissão nova criada nesta edição (não existia antes): desfazer apaga.
+      if(comRec&&!prevComR)await removerLancamento(comRec);
+      // Comissão que já existia e foi só atualizada agora: devolve os campos
+      // de antes nela mesma, em vez de apagar um lançamento que já existia
+      // antes desta edição.
+      else if(comRec&&prevComR){ Object.assign(comRec,prevComR); dbUpdate(comRec); }
+      // Comissão que existia e foi apagada agora (caixinha desmarcada):
+      // recria ela com os campos de antes.
+      else if(removeCom&&prevComR){
+        const restaurada=await dbInsert(prevComR);
+        registrarNovo(restaurada);
+      }
       renderAll();
       showToast('Edição desfeita');
     });
