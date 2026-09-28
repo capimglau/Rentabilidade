@@ -359,6 +359,33 @@ com Desfazer. É o conserto de quando a comissão foi abatida DUAS vezes por
 edições antigas (STF1A64: 2.406,60 → 2.334,40 → 2.264,37): aí os dados já
 não dizem qual era o valor original, só quem tem o contrato sabe.
 
+## O cartão de contrato é o MESMO em Lançamentos, Busca e Baixas — `[lanc-cartao-contrato]`
+
+Pedido do usuário: *"faça o mesmo agrupamento que fez em lançamentos na
+busca pela lupa, o mesmo design de todos os lançamentos relacionados ao
+mesmo contrato, em baixar também."*
+
+- **Busca global**: `buscaGroupedHtml` parou de ter uma moldura própria
+  (`buscaContratoHtml`/`lancamentosDoGrupoContrato`, removidas) e passou a
+  chamar `lcItensContratoHtml` direto — a mesma função de Lançamentos, que
+  já resolve grupo de 1 vs vários sozinha. O agrupamento de busca
+  (`agruparResultadosBusca`, por `chaveContrato` — placa+cliente+saída, sem
+  vencimento/forma) continua decidindo o subtotal por mês; dentro de cada
+  grupo, `chaveCartaoContrato` (mais estrita: +retorno+vencimento+forma)
+  decide os cartões — pode gerar mais de um cartão de contrato por resultado
+  de busca quando o contrato tem vencimentos/formas diferentes, o que é
+  correto (cada cartão continua sendo UM boleto).
+- **Baixas**: `bxContratoHtml`/`bxItensContratoHtml` (mesmo agrupamento por
+  `chaveCartaoContrato`) reaproveitam `avisoComissaoContrato`,
+  `parContratoAjustavel`+`ajustarTotalContrato` e `reverterPagamentoLote` de
+  Lançamentos — sem copiar a regra. A diferença pra Lançamentos é só na
+  LINHA: `bxRowHtml(r,dia,isHoje,isVencDia,dentro)` — fora de um cartão é a
+  pcard de sempre (com a checkbox `.chk-b` pra seleção em lote); dentro de
+  um cartão (`dentro=true`) vira compacta (`.lc-ct-item`/`.lc-ct-sw`, sem
+  repetir placa/cliente do cabeçalho) mas **mantém a checkbox** — a seleção
+  em lote e o swipe individual continuam por lançamento, só a moldura em
+  volta agrupa.
+
 ## Baixou sem querer: reverter fica à mão — `[reverter-baixa]`
 
 Pedido do usuário: *"acabei recebendo sem querer; quando baixar, tenha o

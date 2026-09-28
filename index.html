@@ -2419,22 +2419,8 @@ html[data-theme="dark"] .agb-ev-ghost{
    setSearchFiltersVisiveis()), por isso o seletor por id. */
 #srFiltToggleBtn.sr-hide { display: none !important; }
 
-/* Grupo de resultados da busca que são o mesmo contrato (placa+cliente+
-   período) — um lançamento parcelado em N vezes, N tipos lançados juntos
-   (Locação + Avarias + Lavagem), ou os dois ao mesmo tempo. Molduras os
-   cartões individuais sem tirar o swipe de cada um — nada fica escondido
-   atrás de clique, é sempre claro que tudo ali é do mesmo contrato. */
-.busca-grupo { border: 1.5px dashed var(--blue-mid); border-radius: 14px; padding: 10px 10px 2px; margin: 6px 0 14px; }
-.busca-grupo-hd { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 0 4px 10px; }
-.busca-grupo-cli { flex: 1; min-width: 0; font-weight: 700; font-size: 13px; color: var(--ink); overflow-wrap: break-word; }
-.busca-grupo-v { font-weight: 800; font-size: 14px; color: var(--blue); white-space: nowrap; }
-/* Um lançamento parcelado (Crédito 2x/3x) dentro do contrato: faixa com
-   tipo, forma e o total DELE, e as parcelas logo abaixo, sempre abertas. */
-.busca-lanc-wrap { margin: 4px 0 10px; }
-.busca-lanc-hd { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 0 2px 6px; }
-.busca-lanc-v { margin-left: auto; font-weight: 700; font-size: 12.5px; color: var(--ink2); }
-.busca-lanc-itens { display: flex; flex-direction: column; padding-left: 12px; border-left: 2px solid var(--line); }
-.busca-lanc-itens .pcard { margin-bottom: 8px; }
+/* [lanc-cartao-contrato] A busca usa o MESMO cartão de contrato de
+   Lançamentos (.lc-ct, mais abaixo) — não tinha mais um estilo próprio aqui. */
 
 /* [lanc-cartao-contrato] Mesma placa + período + vencimento + forma = um
    cartão só (lcContratoHtml): cabeçalho do contrato, uma linha por
@@ -6873,59 +6859,118 @@ function renderBaixas(){
     const totalStr=dayTotalHtml(dia,'baixas',allDone?'done':'pend',
       allDone?`✓ ${fR(recDia)} recebido`:fR(totDia));
 
-    grp.innerHTML=dayHeaderHtml(dia,items.length,totalStr)+`
-      <div class="day-items"></div>`;
-
-    const dayItems=grp.querySelector('.day-items');
-    items.forEach((r,ii)=>{
-      const gi2=allD().indexOf(r);
-      const col=DC[r.dono]||'#888';
-      const pago=isPago(r);
-      const parcial=isParcial(r);
-      const vencCard=isVencDia&&isPend(r);
-      const hojeCard=isHoje&&isPend(r);
-
-      const wrap=document.createElement('div');
-      wrap.className='swipe';
-      wrap.style.animationDelay=`${gi*0.04+ii*0.02}s`;
-      const card=document.createElement('div');
-      card.className=`pcard${pago?' done':''}${parcial?' parcial':''}${vencCard?' venc':''}${hojeCard?' hoje-card':''}`;
-      card.dataset.gi=gi2;
-      card.dataset.pend=pago?'':'1';
-
-      card.innerHTML=`
-        ${pago
-          ?`<div class="pcard-done-icon">✓</div>`
-          :`<input type="checkbox" class="pcard-chk chk-b" data-idx="${gi2}">`}
-        <div class="pcard-body">
-          <div class="pcard-top">
-            <span class="placa">${r.placa}</span>
-            <span class="pcard-name">${r.cliente||'—'}</span>
-          </div>
-          <div class="pcard-tags">
-            ${tipTag(r.tipo)}
-            <span class="tag tag-forma">${fFormaLabel(r.forma)}</span>
-            ${parcial?`<span class="tag tag-parcial">◐ Parcial</span>`:''}
-          </div>
-          ${(r.data_pagamento||r.obs)?`<div class="pcard-info-row">
-            ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
-            ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝&nbsp;${esc(r.obs)}</span>`:''}
-          </div>`:''}
-          <div class="pcard-meta">
-            <span class="pcard-period">🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
-          </div>
-        </div>
-        <div class="pcard-right">
-          <span class="pcard-value">${fR(isPago(r)?r.valor_pago:r.saldo)}</span>
-          ${parcial?`<span class="pcard-parcial-sub"><b>${fR(r.valor_pago)}</b> já recebido</span>`:''}
-        </div>`;
-      const temPago=fN(r.valor_pago)>0;
-      wrap.innerHTML=`<div class="swipe-actions">${pago?'':`<button class="swipe-act pay" onclick="swDo(${gi2},1)"><span class="ic">✓</span>Baixar</button><button class="swipe-act partial" onclick="swDo(${gi2},2)"><span class="ic">◐</span>Parcial</button>`}${temPago?`<button class="swipe-act revert" onclick="swDo(${gi2},3)"><span class="ic">↺</span>Reverter</button>`:''}<button class="swipe-act del" onclick="swDo(${gi2},4)"><span class="ic">🗑</span>Excluir</button><button class="swipe-act edit" onclick="swDo(${gi2},0)"><span class="ic">✏</span>Editar</button></div>`;
-      wrap.appendChild(card);
-      dayItems.appendChild(wrap);
-    });
+    grp.innerHTML=dayHeaderHtml(dia,items.length,totalStr)+
+      `<div class="day-items">${bxItensContratoHtml(items,dia,isHoje,isVencDia)}</div>`;
     container.appendChild(grp);
   });
+}
+// [lanc-cartao-contrato] Uma linha de Baixas (a mesma de sempre: checkbox de
+// seleção em lote OU ✓ de pago, swipe individual) — extraída pra poder
+// aparecer tanto solta quanto dentro do cartão de contrato (bxContratoHtml,
+// dentro=true). Dentro do cartão a placa/cliente some da linha (o cabeçalho
+// do cartão já diz de quem é) e ela usa o mesmo visual compacto
+// `.lc-ct-item`/`.lc-ct-sw` das linhas de Lançamentos — só a checkbox de
+// lote no lugar do swipe "Baixar" continua sendo o que muda de lá pra cá.
+function bxRowHtml(r,dia,isHoje,isVencDia,dentro){
+  const gi2=allD().indexOf(r);
+  const pago=isPago(r), parcial=isParcial(r);
+  const vencCard=isVencDia&&isPend(r);
+  const hojeCard=isHoje&&isPend(r);
+  const temPago=fN(r.valor_pago)>0;
+  return `<div class="swipe${dentro?' lc-ct-sw':''}" data-dia="${dia}">
+    <div class="swipe-actions">${pago?'':`<button class="swipe-act pay" onclick="swDo(${gi2},1)"><span class="ic">✓</span>Baixar</button><button class="swipe-act partial" onclick="swDo(${gi2},2)"><span class="ic">◐</span>Parcial</button>`}${temPago?`<button class="swipe-act revert" onclick="swDo(${gi2},3)"><span class="ic">↺</span>Reverter</button>`:''}<button class="swipe-act del" onclick="swDo(${gi2},4)"><span class="ic">🗑</span>Excluir</button><button class="swipe-act edit" onclick="swDo(${gi2},0)"><span class="ic">✏</span>Editar</button></div>
+    <div class="pcard${dentro?' lc-ct-item':''}${pago?' done':''}${parcial?' parcial':''}${vencCard?' venc':''}${hojeCard?' hoje-card':''}" data-gi="${gi2}" data-pend="${pago?'':'1'}">
+      ${pago
+        ?`<div class="pcard-done-icon">✓</div>`
+        :`<input type="checkbox" class="pcard-chk chk-b" data-idx="${gi2}">`}
+      <div class="pcard-body">
+        ${dentro?'':`<div class="pcard-top">
+          <span class="placa">${esc(r.placa)}</span>
+          <span class="pcard-name">${esc(r.cliente||'—')}</span>
+        </div>`}
+        <div class="pcard-tags">
+          ${tipTag(r.tipo)}
+          ${dentro?'':`<span class="tag tag-forma">${fFormaLabel(r.forma)}</span>`}
+          ${parcial?`<span class="tag tag-parcial">◐ Parcial</span>`:''}
+        </div>
+        ${(r.data_pagamento||r.obs)?`<div class="pcard-info-row">
+          ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
+          ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝&nbsp;${esc(r.obs)}</span>`:''}
+        </div>`:''}
+        ${dentro?'':`<div class="pcard-meta">
+          <span class="pcard-period">🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
+        </div>`}
+      </div>
+      <div class="pcard-right">
+        <span class="pcard-value">${fR(pago?r.valor_pago:r.saldo)}</span>
+        ${parcial?`<span class="pcard-parcial-sub"><b>${fR(r.valor_pago)}</b> já recebido</span>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+// [lanc-cartao-contrato] Mesmo agrupamento por placa+período+vencimento+
+// forma (chaveCartaoContrato) usado em Lançamentos e na Busca, agora em
+// Baixas: dentro de cada dia, um contrato com mais de um lançamento vira um
+// cartão só. Cada linha continua com a própria checkbox — a seleção em lote
+// (chk-b) e o swipe individual não mudam, só a moldura em volta.
+function bxItensContratoHtml(items,dia,isHoje,isVencDia){
+  const mapa=new Map();
+  items.forEach(r=>{
+    const k=chaveCartaoContrato(r);
+    if(!mapa.has(k))mapa.set(k,[]);
+    mapa.get(k).push(r);
+  });
+  return [...mapa.values()].map(grp=>grp.length<2
+    ?bxRowHtml(grp[0],dia,isHoje,isVencDia)
+    :bxContratoHtml(grp,dia,isHoje,isVencDia)).join('');
+}
+// Cartão de contrato de Baixas: mesmo cabeçalho/rodapé de lcContratoHtml
+// (aviso de comissão errada, ✎ Ajustar total, ↺ Reverter pagamento — todos
+// reaproveitados de lá, sem duplicar regra), com as linhas de Baixas
+// (checkbox de lote) no lugar das linhas de Lançamentos.
+function bxContratoHtml(grp,dia,isHoje,isVencDia){
+  const itens=grp.map(r=>({r,i:allD().indexOf(r)})).sort((a,b)=>ordemTipoContrato(a.r.tipo)-ordemTipoContrato(b.r.tipo)||ordemParcela(a.r,b.r));
+  const r0=itens[0].r, col=DC[r0.dono]||'#888';
+  const total=itens.reduce((a,{r})=>a+liq(r),0);
+  const saldo=itens.reduce((a,{r})=>a+(isPago(r)?0:fN(r.saldo)),0);
+  const pagoTot=itens.reduce((a,{r})=>a+fN(r.valor_pago),0);
+  const todosPagos=itens.every(({r})=>isPago(r));
+  const algumVenc=itens.some(({r})=>isVenc(r)&&!isPago(r));
+  const hojeCard=!todosPagos&&!algumVenc&&isHoje;
+  const donos=[...new Set(itens.map(({r})=>r.dono||'—'))];
+  const ehBoleto=/boleto/i.test(r0.forma||'');
+  const aviso=avisoComissaoContrato(itens);
+  const par=parContratoAjustavel(itens);
+  const pagosIdx=itens.filter(({r})=>fN(r.valor_pago)>0).map(({i})=>i);
+  const linhas=itens.map(({r})=>bxRowHtml(r,dia,isHoje,isVencDia,true)).join('');
+  return `<div class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}">
+    <div class="lc-ct-hd">
+      <div class="pcard-top">
+        <span class="placa">${esc(r0.placa)}</span>
+        <span class="pcard-name">${esc(r0.cliente||'—')}</span>
+      </div>
+      <div class="pcard-tags">
+        <span class="ddot" style="background:${col}"></span>
+        <span style="font-size:11.5px;color:var(--ink3)">${esc(donos.join(' · '))}</span>
+        <span class="tag tag-forma">${fFormaLabel(r0.forma)}</span>
+        <span class="itens-cnt">${itens.length} lançamentos · 1 contrato</span>
+      </div>
+      <div class="pcard-meta">
+        <span>🗓 ${fDM(r0.saida)} → ${fDM(r0.retorno)}</span>${dia&&dia!=='Sem data'?` <span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(dia)}</b></span>`:''}
+      </div>
+    </div>
+    <div class="lc-ct-itens">${linhas}</div>
+    ${aviso}
+    <div class="lc-ct-foot">
+      <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':'Total do contrato'}${par?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${par.loc.i},${par.com.i})">✎ Ajustar total</button>`:''}${pagosIdx.length?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosIdx.join(',')}])">↺ Reverter pagamento</button>`:''}</span>
+      <span class="lc-ct-foot-r">
+        <span class="lc-ct-tot">${fR(total)}</span>
+        ${todosPagos?`<span class="pcard-parcial-sub" style="color:var(--green)">✓ recebido</span>`
+          :(pagoTot>0?`<span class="pcard-parcial-sub"><b>${fR(pagoTot)}</b> pago · <span style="color:var(--red)">saldo ${fR(saldo)}</span></span>`
+          :`<span class="pcard-parcial-sub" style="color:var(--red)">Saldo ${fR(saldo)}</span>`)}
+      </span>
+    </div>
+  </div>`;
 }
 
 function toggleDay(hd){
@@ -10636,66 +10681,11 @@ function buscaGroupedHtml(grupos,fecharBusca){
         <div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div>
       </div>`;
     }
-    if(g.itens.length<2){
-      const{r,i}=g.itens[0];
-      return mesHtml+lcCardHtml(r,i,fecharBusca);
-    }
-    return mesHtml+buscaContratoHtml(g,fecharBusca);
+    // [lanc-cartao-contrato] Mesmo agrupamento/design de Lançamentos — reusa
+    // lcItensContratoHtml direto (ela já resolve grupo de 1 vs vários), em
+    // vez de uma segunda função de cartão só pra Busca.
+    return mesHtml+lcItensContratoHtml(g.itens,fecharBusca);
   }).join('');
-}
-// Separa os itens de UM contrato (já agrupados por chaveContrato — mesma
-// placa+cliente+saída) pelo lançamento principal a que cada um pertence:
-// mesmo lanc_num, ou a inferência por semelhança nos lançamentos antigos
-// (agbParcelaGroupKey) — sem nenhuma das duas coisas, cada item é o seu
-// próprio lançamento (fallback pelo id, nunca junta dois registros por
-// engano). Uma Locação em Crédito 3x vira um lançamento de 3 itens; uma
-// Avaria à vista vira um lançamento de 1 item — os dois dentro do MESMO
-// contrato.
-function lancamentosDoGrupoContrato(g){
-  const porLanc=new Map();
-  g.itens.forEach(item=>{
-    const key=agbParcelaGroupKey(item.r)||('id|'+item.r.id);
-    if(!porLanc.has(key))porLanc.set(key,[]);
-    porLanc.get(key).push(item);
-  });
-  return[...porLanc.values()].map(itens=>itens.sort((a,b)=>ordemParcela(a.r,b.r)));
-}
-// Bloco de UM contrato inteiro: cabeçalho com placa, cliente, quantos
-// lançamentos ele tem e o TOTAL líquido de tudo (Locação + Avarias +
-// Lavagem, parcelado ou não) — deixando claro que tudo ali embaixo é do
-// MESMO contrato. Cada lançamento aparece por completo, sem nada atrás de
-// clique: se for parcelado (Crédito 2x/3x), ganha uma faixa com o tipo, a
-// forma e o total DELE, e as N parcelas ficam logo abaixo, já abertas.
-function buscaContratoHtml(g,fecharBusca){
-  const first=g.itens[0].r;
-  const totLiq=g.itens.reduce((a,{r})=>a+liq(r),0);
-  const lancamentos=lancamentosDoGrupoContrato(g);
-  const cntTxt=lancamentos.length===g.itens.length
-    ?`${lancamentos.length} lançamento${lancamentos.length===1?'':'s'}`
-    :`${lancamentos.length} lançamento${lancamentos.length===1?'':'s'} · ${g.itens.length} parcelas`;
-  const corpo=lancamentos.map(itens=>{
-    if(itens.length<2)return itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
-    const pr=itens[0].r, n=itens.length;
-    const totLanc=itens.reduce((a,{r})=>a+liq(r),0);
-    const cards=itens.map(({r,i})=>lcCardHtml(r,i,fecharBusca)).join('');
-    return `<div class="busca-lanc-wrap">
-      <div class="busca-lanc-hd">
-        ${tipTag(pr.tipo)}
-        <span class="tag tag-forma">${fFormaLabel(pr.forma)} · ${n}x</span>
-        <span class="busca-lanc-v">${fR(totLanc)}</span>
-      </div>
-      <div class="busca-lanc-itens">${cards}</div>
-    </div>`;
-  }).join('');
-  return `<div class="busca-grupo">
-    <div class="busca-grupo-hd">
-      <span class="placa">${esc(first.placa)}</span>
-      <span class="busca-grupo-cli">${esc(first.cliente||'—')}</span>
-      <span class="itens-cnt">${cntTxt}</span>
-      <span class="busca-grupo-v">${fR(totLiq)}</span>
-    </div>
-    ${corpo}
-  </div>`;
 }
 // ── HISTÓRICO: LANÇAMENTOS FEITOS EM CADA DIA (só consulta) ──
 // "Feito em" é a data em que o lançamento ENTROU no sistema (created_at do
