@@ -6962,7 +6962,19 @@ function renderLanc(){
     return;
   }
   const all=allD();
-  body.innerHTML=lancDiasHtml(rows,all);
+  // [contrato-inteiro] Filtrado em Pendentes/Vencidos, o cartão de contrato
+  // ainda mostra as linhas JÁ PAGAS do mesmo contrato — senão uma Locação
+  // baixada (até sem querer) sumia e o cartão ficava só com a Comissão,
+  // sem dar pra ver nem reverter o que aconteceu. Os totais do topo seguem
+  // o filtro; só a lista ganha as irmãs do cartão.
+  let exib=rows;
+  if(status==='pend'||status==='venc'){
+    const chaves=new Set(rows.map(chaveCartaoContrato));
+    const ja=new Set(rows);
+    const extra=all.filter(r=>!ja.has(r)&&chaves.has(chaveCartaoContrato(r)));
+    if(extra.length)exib=rows.concat(extra).sort((a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||''));
+  }
+  body.innerHTML=lancDiasHtml(exib,all);
 }
 // Lançamentos divididos por data de vencimento, com o somatório do dia no
 // cabeçalho — mesma divisão visual dos Recebimentos, pra as duas telas se

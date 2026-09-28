@@ -374,9 +374,12 @@ existia; faltava onde o pago aparece sem swipe:
   `reverterPagamento` (saldo = valor menos a taxa da forma), um Desfazer
   que devolve todos.
 
-Lembrete: Lançamentos abre filtrado em **Pendentes** — o que acabou de ser
-baixado some dali; aparece em "Todos"/"Baixados" e na agenda (setinha antes
-de Atrasados).
+Lançamentos abre filtrado em **Pendentes**, e uma Locação baixada sem
+querer sumia dali, deixando o cartão só com a Comissão (STF1A64). Agora
+**`[contrato-inteiro]`**: em Pendentes/Vencidos, `renderLanc` junta à lista
+as linhas já pagas dos mesmos cartões de contrato (`chaveCartaoContrato`) —
+o contrato aparece inteiro, com o "↺ Reverter pagamento" à mão. Os totais do
+topo continuam seguindo o filtro.
 
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.
