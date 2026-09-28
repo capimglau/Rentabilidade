@@ -11593,6 +11593,8 @@ function itemValorComComissao(it,v){
 }
 function itemHTML(pref,full){
   const ops=arr=>arr.map(o=>`<option>${o}</option>`).join('');
+  // Novo lançamento abre em Boleto (troca à vontade); as outras telas mantêm a 1ª opção.
+  const opsForma=arr=>arr.map(o=>`<option${pref==='nf'&&o==='Boleto'?' selected':''}>${o}</option>`).join('');
   return `<div class="item-card" data-item>
     <div class="item-hd">
       <span class="item-tt">Lançamento <span data-num>1</span></span>
@@ -11600,7 +11602,7 @@ function itemHTML(pref,full){
     </div>
     <div class="fg">
       <div class="fp"><label>Tipo</label><select data-k="tipo">${ops(LANC_TIPOS)}</select></div>
-      <div class="fp"><label>Forma</label><select data-k="forma">${ops(LANC_FORMAS)}</select></div>
+      <div class="fp"><label>Forma</label><select data-k="forma">${opsForma(LANC_FORMAS)}</select></div>
       <div class="fp" data-fp="bandeira"><label>Bandeira</label><select data-k="bandeira"></select></div>
       <div class="fp"><label>Data de pagamento</label><input type="date" data-k="dpago"></div>
       <div class="fp"><label>Valor (R$)</label><input type="text" inputmode="decimal" data-k="valor"></div>
@@ -11893,6 +11895,14 @@ function delItem(pref,btn){
 function resetItems(pref){
   const box=document.getElementById(pref+'-itens');if(!box)return;
   box.innerHTML=itemHTML(pref,ITENS_CFG[pref].full);
+  // Novo lançamento: saída e retorno já vêm com a data de hoje (contratos de
+  // até 30 dias) — o vencimento do boleto sai do retorno + prazo e se ajusta
+  // sozinho quando o retorno muda (ou à mão, no campo de vencimento).
+  if(pref==='nf'){
+    const s=document.getElementById('nf-s'),r=document.getElementById('nf-r');
+    if(s)s.value=td();
+    if(r)r.value=td();
+  }
   calcItems(pref);
 }
 function initItens(pref){
