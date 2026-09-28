@@ -359,5 +359,24 @@ com Desfazer. É o conserto de quando a comissão foi abatida DUAS vezes por
 edições antigas (STF1A64: 2.406,60 → 2.334,40 → 2.264,37): aí os dados já
 não dizem qual era o valor original, só quem tem o contrato sabe.
 
+## Baixou sem querer: reverter fica à mão — `[reverter-baixa]`
+
+Pedido do usuário: *"acabei recebendo sem querer; quando baixar, tenha o
+botão de refazer o pagamento."* O swipe "↺ Reverter" de cada lançamento já
+existia; faltava onde o pago aparece sem swipe:
+
+- **Agenda, card pago**: no lugar do tick entra o **↺** roxo
+  (`.agb-card-rev`). 1 lançamento → `reverterPagamento`; grupo →
+  `reverterPagamentoLote` com os índices do grupo.
+- **Cartão de contrato** (Lançamentos) com alguma linha paga: rodapé ganha
+  **"↺ Reverter pagamento"** → `reverterPagamentoLote` dos pagos do cartão.
+- `reverterPagamentoLote(idxs)`: um confirm, mesma conta do
+  `reverterPagamento` (saldo = valor menos a taxa da forma), um Desfazer
+  que devolve todos.
+
+Lembrete: Lançamentos abre filtrado em **Pendentes** — o que acabou de ser
+baixado some dali; aparece em "Todos"/"Baixados" e na agenda (setinha antes
+de Atrasados).
+
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.
