@@ -339,8 +339,13 @@ então a comissão contava duas vezes (Portland, out/26: R$ 365,96 a mais).
 Agora, com a caixinha ticada (ou desmarcando uma comissão existente) e sem
 redivisão, o saldo é refeito sobre o valor gravado.
 
-Os dados antigos: `locacaoComComissaoErrada(r)` acha Locação sem nada pago,
-com Comissão companheira (`acharComissaoDe`) e saldo ≠ valor menos a taxa.
+Os dados antigos: `correcaoLocacaoComissao(r)` acha Locação sem nada pago,
+com Comissão companheira (`acharComissaoDe`, ou a única Comissão do mesmo
+cartão — `comissaoUnicaDoCartao`) e devolve o `{valor,saldo}` certo. Dois
+casos: **A** valor já líquido e saldo cheio (acerta o saldo); **B** valor e
+saldo cheios, comissão = % do próprio valor (UGJ4J24: 3% de 3.610,50 =
+108,31), que abate a comissão do valor. O % da comissão (obs dela) é o que
+distingue A de B.
 Aparecem num aviso no topo de Lançamentos (corrige todas) e em cada cartão
 (corrige aquela), sempre com Desfazer (`corrigirLocacoesComissao`). Duas
 Comissões no mesmo cartão também geram aviso de duplicata. A nota
