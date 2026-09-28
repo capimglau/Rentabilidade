@@ -2155,6 +2155,8 @@ html[data-theme="dark"] .agb-card::after{ border-left:1.6px dashed rgba(255,255,
 .agb-card-check svg{ width:14px; height:14px; }
 .agb-card-check:hover{ border-color:var(--green,#0a6439); background:color-mix(in srgb, var(--green) 12%, transparent); }
 .agb-card-check:active{ transform:scale(.88); }
+.agb-card-rev{ color:#7c5cbf; }
+.agb-card-rev:hover{ border-color:#7c5cbf; background:color-mix(in srgb, #7c5cbf 12%, transparent); }
 /* Tema escuro: só o FUNDO muda. Borda e símbolo continuam saindo de
    `var(--green)` (#36d399 lá), então este bloco não pode redefinir nenhum dos
    dois — foi o que precisou ser tirado daqui quando o tique virou verde. */
@@ -7407,7 +7409,16 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
   const onTick=n===1
     ? `abrirParcial(${idx1},true)`
     : `baixarTudoCliente('${dia}',${cliArg})`;
-  const checkBtn=pago?'':`<button type="button" class="agb-card-check" title="${n>1?`Baixar os ${n} lançamentos`:'Baixar este lançamento'}" aria-label="Baixar"
+  // [reverter-baixa] Card pago ganha, no lugar do tick, o ↺ de desfazer a
+  // baixa — baixou sem querer, volta a ficar pendente (com confirm e com
+  // Desfazer). 1 lançamento usa o reverterPagamento de sempre; grupo reverte
+  // todos os pagos do grupo de uma vez.
+  const revIdx=pago?grp.recs.map(r=>allD().indexOf(r)).filter(i=>i>=0):[];
+  const revBtn=pago?`<button type="button" class="agb-card-check agb-card-rev" title="${n>1?`Reverter o pagamento dos ${n} lançamentos`:'Reverter o pagamento'}" aria-label="Reverter pagamento"
+      onclick="event.stopPropagation();${n===1?`reverterPagamento(${idx1})`:`reverterPagamentoLote([${revIdx.join(',')}])`}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+    </button>`:'';
+  const checkBtn=pago?revBtn:`<button type="button" class="agb-card-check" title="${n>1?`Baixar os ${n} lançamentos`:'Baixar este lançamento'}" aria-label="Baixar"
       onclick="event.stopPropagation();${onTick}">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
     </button>`;
@@ -10045,6 +10056,31 @@ function showToast(msg,actLabel,actFn){
 // que já tenha algo recebido — total ou parcial — e volta a marcá-lo como
 // pendente pelo valor cheio. O obs nunca é tocado aqui (a data do pagamento
 // vive em data_pagamento, não no texto da observação).
+// [reverter-baixa] Reverte a baixa de vários lançamentos juntos (card pago
+// agrupado da agenda, rodapé do cartão de contrato). Mesma conta do
+// reverterPagamento de 1: valor_pago/data somem e o saldo volta a ser o
+// valor menos a taxa da forma. Um Desfazer só devolve todos.
+function reverterPagamentoLote(idxs){
+  const all=allD();
+  const recs=(idxs||[]).map(i=>all[i]).filter(r=>r&&fN(r.valor_pago)>0);
+  if(!recs.length)return;
+  if(recs.length===1){reverterPagamento(all.indexOf(recs[0]));return;}
+  const tot=recs.reduce((a,r)=>a+fN(r.valor_pago),0);
+  if(!confirm(`Reverter o pagamento de ${recs.length} lançamentos (${fR(tot)})? Voltam a ficar pendentes.`))return;
+  const prev=recs.map(r=>({r,valor_pago:r.valor_pago,saldo:r.saldo,data_pagamento:r.data_pagamento}));
+  recs.forEach(r=>{
+    r.valor_pago=0;
+    r.saldo=Math.round(fN(r.valor)*(1-getTaxaForma(r.forma||''))*100)/100;
+    r.data_pagamento=null;
+    dbUpdate(r);
+  });
+  renderAll();
+  showToast(`↺ ${recs.length} pagamentos revertidos`,'Desfazer',()=>{
+    prev.forEach(({r,valor_pago,saldo,data_pagamento})=>{r.valor_pago=valor_pago;r.saldo=saldo;r.data_pagamento=data_pagamento;dbUpdate(r);});
+    renderAll();
+    showToast('Reversão desfeita');
+  });
+}
 function reverterPagamento(idx){
   const r=allD()[idx];
   if(!r||!(fN(r.valor_pago)>0))return;
@@ -10437,6 +10473,7 @@ function lcContratoHtml(g,fecharBusca){
   const ehBoleto=/boleto/i.test(r0.forma||'');
   const aviso=avisoComissaoContrato(itens);
   const par=parContratoAjustavel(itens);
+  const pagosIdx=itens.filter(({r})=>fN(r.valor_pago)>0).map(({i})=>i);
   const linhas=itens.map(({r,i})=>{
     const pago=isPago(r), parcial=isParcial(r), com=r.tipo==='Comissão';
     return `<div class="swipe lc-ct-sw" data-dia="${r.prev_pgto||''}">
@@ -10477,7 +10514,7 @@ function lcContratoHtml(g,fecharBusca){
     <div class="lc-ct-itens">${linhas}</div>
     ${aviso}
     <div class="lc-ct-foot">
-      <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':'Total do contrato'}${par?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${par.loc.i},${par.com.i})">✎ Ajustar total</button>`:''}</span>
+      <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':'Total do contrato'}${par?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${par.loc.i},${par.com.i})">✎ Ajustar total</button>`:''}${pagosIdx.length?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();${pre}reverterPagamentoLote([${pagosIdx.join(',')}])">↺ Reverter pagamento</button>`:''}</span>
       <span class="lc-ct-foot-r">
         <span class="lc-ct-tot">${fR(total)}</span>
         ${todosPagos?`<span class="pcard-parcial-sub" style="color:var(--green)">✓ recebido</span>`
