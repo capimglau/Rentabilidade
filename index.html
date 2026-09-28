@@ -10294,12 +10294,56 @@ function lcItensContratoHtml(items,fecharBusca){
 // Comissão companheira (acharComissaoDe) e saldo diferente do valor
 // gravado (menos a taxa da forma). corrigirLocacoesComissao acerta o saldo.
 function saldoCertoLocacao(r){
-  return Math.round(fN(r.valor)*(1-getTaxaForma(r.forma))*100)/100;
+  const c=correcaoLocacaoComissao(r);
+  return c?c.saldo:Math.round(fN(r.valor)*(1-getTaxaForma(r.forma))*100)/100;
+}
+const _pctComissao=c=>{const m=/Comissão\s+([\d.,]+)\s*%/i.exec(String(c&&c.obs||''));return m?fN(m[1]):0;};
+// Devolve {valor,saldo} certos pra uma Locação em aberto com Comissão
+// companheira, ou null se ela já está certa. Dois jeitos de estar errada:
+//  A) valor já líquido, saldo cheio (o bug do saveEdit): acerta só o saldo.
+//  B) valor E saldo cheios — a comissão foi calculada sobre o valor da
+//     Locação e nunca abatida dele: 3% de R$ 3.610,50 = R$ 108,31 e a
+//     Locação continua R$ 3.610,50. Abate: valor = 3.610,50 − 108,31.
+// Distingue os dois pelo % da comissão (obs dela): em A a comissão é o %
+// de (valor + comissão); em B é o % do próprio valor.
+function correcaoLocacaoComissao(r){
+  if(!r||r.tipo!=='Locação'||fN(r.valor_pago)>0)return null;
+  const com=acharComissaoDe(r)||comissaoUnicaDoCartao(r); if(!com)return null;
+  const c=fN(com.valor), v=fN(r.valor), taxa=getTaxaForma(r.forma);
+  const pct=_pctComissao(com);
+  const r2=x=>Math.round(x*100)/100;
+  let valor=v;
+  if(pct>0&&c>0){
+    const ehA=Math.abs(r2((v+c)*pct/100)-c)<0.015;
+    const ehB=Math.abs(r2(v*pct/100)-c)<0.015;
+    if(ehB&&!ehA)valor=r2(v-c);
+  }
+  const saldo=r2(valor*(1-taxa));
+  if(Math.abs(valor-v)<0.005&&Math.abs(fN(r.saldo)-saldo)<0.005)return null;
+  return{valor,saldo};
+}
+// Comissão sem link com a Locação (lanc_num COM-<id> nem o texto "edição
+// de #"): vale a do mesmo cartão de contrato, só quando ali há exatamente
+// uma Locação e uma Comissão — sem ambiguidade de quem é de quem.
+// Índice cartão→{locs,coms} montado uma vez por render (renderAll zera):
+// sem ele cada Locação varreria allD() inteiro de novo.
+let _IDX_CARTAO=null;
+function comissaoUnicaDoCartao(r){
+  if(!_IDX_CARTAO){
+    _IDX_CARTAO=new Map();
+    allD().forEach(x=>{
+      if(x.tipo!=='Locação'&&x.tipo!=='Comissão')return;
+      const k=chaveCartaoContrato(x);
+      const o=_IDX_CARTAO.get(k)||{locs:0,coms:[]};
+      if(x.tipo==='Locação')o.locs++;else o.coms.push(x);
+      _IDX_CARTAO.set(k,o);
+    });
+  }
+  const o=_IDX_CARTAO.get(chaveCartaoContrato(r));
+  return (o&&o.locs===1&&o.coms.length===1)?o.coms[0]:null;
 }
 function locacaoComComissaoErrada(r){
-  if(!r||r.tipo!=='Locação'||fN(r.valor_pago)>0)return false;
-  if(Math.abs(fN(r.saldo)-saldoCertoLocacao(r))<0.005)return false;
-  return !!acharComissaoDe(r);
+  return !!correcaoLocacaoComissao(r);
 }
 function locacoesComComissaoErradas(){
   return allD().filter(locacaoComComissaoErrada);
@@ -10307,12 +10351,12 @@ function locacoesComComissaoErradas(){
 function corrigirLocacoesComissao(lista){
   lista=(lista||locacoesComComissaoErradas()).filter(locacaoComComissaoErrada);
   if(!lista.length)return;
-  const prev=lista.map(r=>({r,saldo:r.saldo}));
+  const prev=lista.map(r=>({r,saldo:r.saldo,valor:r.valor}));
   const excesso=lista.reduce((a,r)=>a+fN(r.saldo)-saldoCertoLocacao(r),0);
-  lista.forEach(r=>{r.saldo=saldoCertoLocacao(r);dbUpdate(r);});
+  lista.forEach(r=>{const c=correcaoLocacaoComissao(r);r.valor=c.valor;r.saldo=c.saldo;dbUpdate(r);});
   renderAll();
   showToast(`${lista.length} locaç${lista.length===1?'ão corrigida':'ões corrigidas'} (${fR(excesso)} de comissão contada duas vezes)`,'Desfazer',()=>{
-    prev.forEach(({r,saldo})=>{r.saldo=saldo;dbUpdate(r);});
+    prev.forEach(({r,saldo,valor})=>{r.saldo=saldo;r.valor=valor;dbUpdate(r);});
     renderAll();
   });
 }
@@ -12521,6 +12565,7 @@ function paginaSalva(){
 // placa/cliente/dono/tipo/forma), pra nenhum painel, gráfico ou modal
 // aberto ficar mostrando dado desatualizado.
 function renderAll(){
+  _IDX_CARTAO=null;
   renderHdrData();updateHeader();buildOwnerPills();buildMiniSummary();
   // A tabela "Novos lançamentos" também é alimentada por aqui: uma edição
   // que reparcela pode CRIAR parcela (vai pra NOVOS) ou EXCLUIR uma que
