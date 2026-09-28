@@ -326,19 +326,25 @@ contrato para cobrança do cliente no boleto."*
   exibição, não muda quem grava.
 - Tudo é recalculado a cada render a partir de `allD()` — sem estado próprio.
 
-### Comissão é UMA por contrato — `[comissao-unica]`
+### A Locação ABATE a comissão; a Comissão soma por cima — `[comissao-abate]`
 
-Relato do usuário: o total da Portland em outubro ficou R$ 2,15 abaixo do
-esperado — *"algo relacionado à comissão, ela é única para cada contrato."*
+Regra do usuário: com o tick de Comissão, **a Locação mostra o valor já sem
+a comissão** e o lançamento **Comissão é acrescentado** ao total do contrato.
+Locação líquida + Comissão = total do boleto. A Comissão é **uma por
+contrato**.
 
-- **O cartão confere a comissão a cada render** (`conferenciaComissao`):
-  mais de uma Comissão no mesmo cartão → aviso de duplicada; uma só → tem
-  que valer o % dela (lido do obs, `pctDaComissao`) sobre o `liq()` da
-  Locação. Não batendo, aviso âmbar com o valor certo e **"Corrigir"**
-  (`corrigirComissao`, com Desfazer), só enquanto a Comissão está em aberto.
-- **A nota "· Comissão N% (-R$ X)" do obs da Locação é do app**:
-  `saveEdit` tira a antiga (`tiraNotaComissao`) antes de gravar a nova.
-  Antes cada edição empilhava mais uma nota, parecendo duas comissões.
+O bug: `saveEdit` gravava `valor` líquido, mas o `saldo` vinha do campo, que
+foi calculado sobre o valor cheio. Cartão e totais leem o saldo (`liq()`),
+então a comissão contava duas vezes (Portland, out/26: R$ 365,96 a mais).
+Agora, com a caixinha ticada (ou desmarcando uma comissão existente) e sem
+redivisão, o saldo é refeito sobre o valor gravado.
+
+Os dados antigos: `locacaoComComissaoErrada(r)` acha Locação sem nada pago,
+com Comissão companheira (`acharComissaoDe`) e saldo ≠ valor menos a taxa.
+Aparecem num aviso no topo de Lançamentos (corrige todas) e em cada cartão
+(corrige aquela), sempre com Desfazer (`corrigirLocacoesComissao`). Duas
+Comissões no mesmo cartão também geram aviso de duplicata. A nota
+"· Comissão N% (-R$ X)" do obs é trocada, não empilhada (`tiraNotaComissao`).
 
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.
