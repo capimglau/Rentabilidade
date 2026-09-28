@@ -351,5 +351,13 @@ Aparecem num aviso no topo de Lançamentos (corrige todas) e em cada cartão
 Comissões no mesmo cartão também geram aviso de duplicata. A nota
 "· Comissão N% (-R$ X)" do obs é trocada, não empilhada (`tiraNotaComissao`).
 
+**"✎ Ajustar total"** (`ajustarTotalContrato`, `[comissao-ajustar-total]`):
+cartão com exatamente uma Locação e uma Comissão, as duas em aberto, ganha
+esse botão no rodapé. Pede o total do contrato e refaz as duas: Comissão =
+% × total, Locação = total − Comissão (obs com a nota nova, sem empilhar),
+com Desfazer. É o conserto de quando a comissão foi abatida DUAS vezes por
+edições antigas (STF1A64: 2.406,60 → 2.334,40 → 2.264,37): aí os dados já
+não dizem qual era o valor original, só quem tem o contrato sabe.
+
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.
