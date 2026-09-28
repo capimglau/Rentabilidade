@@ -326,5 +326,19 @@ contrato para cobrança do cliente no boleto."*
   exibição, não muda quem grava.
 - Tudo é recalculado a cada render a partir de `allD()` — sem estado próprio.
 
+### Comissão é UMA por contrato — `[comissao-unica]`
+
+Relato do usuário: o total da Portland em outubro ficou R$ 2,15 abaixo do
+esperado — *"algo relacionado à comissão, ela é única para cada contrato."*
+
+- **O cartão confere a comissão a cada render** (`conferenciaComissao`):
+  mais de uma Comissão no mesmo cartão → aviso de duplicada; uma só → tem
+  que valer o % dela (lido do obs, `pctDaComissao`) sobre o `liq()` da
+  Locação. Não batendo, aviso âmbar com o valor certo e **"Corrigir"**
+  (`corrigirComissao`, com Desfazer), só enquanto a Comissão está em aberto.
+- **A nota "· Comissão N% (-R$ X)" do obs da Locação é do app**:
+  `saveEdit` tira a antiga (`tiraNotaComissao`) antes de gravar a nova.
+  Antes cada edição empilhava mais uma nota, parecendo duas comissões.
+
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.
