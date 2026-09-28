@@ -301,5 +301,30 @@ Conferido no navegador com backend dublê (dados de exemplo do próprio
 4 colunas; 1280px → 3; 1000px → 2 (era 3 espremidas); 390px → 1; tema
 escuro; e o modal do extrato sem nenhuma quebra de linha nos valores.
 
+## Lançamentos: mesma placa + período = um cartão só — `[lanc-cartao-contrato]`
+
+Pedido do usuário: *"tudo que é relacionado a mesma placa e período deve
+aparecer em um único card pra caracterizar que pertence ao mesmo contrato;
+a comissão abate do valor de locação e é acrescentada ao valor final do
+contrato para cobrança do cliente no boleto."*
+
+- **`chaveCartaoContrato(r)`** = `chaveContrato` (placa+cliente+saída) +
+  retorno + vencimento + forma. Mesmo vencimento e forma porque o cartão é
+  **uma cobrança** (um boleto); sem saída nem retorno não agrupa.
+- **`lcItensContratoHtml(items,fecharBusca)`** é quem decide: grupo de 1 →
+  `lcCardHtml` de sempre; grupo de vários → `lcContratoHtml`. Usado em
+  Lançamentos (`lancDiasHtml`), nas listas do modal (`lancListHtml`) e no
+  resumo por forma do dia. Lista nova de lançamentos → passa por ele.
+- **O cartão**: cabeçalho do contrato (placa, cliente, dono, forma, período,
+  vencimento), uma linha por lançamento (Locação primeiro, Comissão logo
+  depois com **"+ R$"** — ela volta pra cobrança do cliente) e o rodapé
+  **"Total do boleto"** = soma de `liq()` de todas as linhas (Locação já
+  líquida + Comissão = o que o cliente paga).
+- **Cada linha continua sendo um `.swipe`** com os mesmos botões
+  (`lcSwipeActsHtml`, compartilhado com `lcCardHtml`) — baixar, parcial,
+  reverter, excluir e editar seguem **por lançamento**; o cartão só agrupa a
+  exibição, não muda quem grava.
+- Tudo é recalculado a cada render a partir de `allD()` — sem estado próprio.
+
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.

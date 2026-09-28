@@ -2434,6 +2434,31 @@ html[data-theme="dark"] .agb-ev-ghost{
 .busca-lanc-itens { display: flex; flex-direction: column; padding-left: 12px; border-left: 2px solid var(--line); }
 .busca-lanc-itens .pcard { margin-bottom: 8px; }
 
+/* [lanc-cartao-contrato] Mesma placa + período + vencimento + forma = um
+   cartão só (lcContratoHtml): cabeçalho do contrato, uma linha por
+   lançamento (cada uma com o próprio swipe) e o total do boleto embaixo. */
+.lc-ct { position: relative; background: var(--card); border-radius: 18px; padding: 14px 14px 12px 18px; margin-bottom: 9px; box-shadow: 0 4px 16px rgba(60,70,120,.07), 0 1px 3px rgba(0,0,0,.03); overflow: hidden; }
+.day-items .lc-ct { background: rgba(255,255,255,.6); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255,255,255,.8); }
+html[data-theme="dark"] .day-items .lc-ct { background: rgba(30,39,56,.88); border: 1px solid rgba(255,255,255,.07); }
+.lc-ct::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--line); }
+.lc-ct.venc::before { background: var(--red); animation: rbPulseBar 2.6s ease-in-out infinite; }
+.lc-ct.hoje-card::before { background: var(--blue); animation: rbPulseBar 2.6s ease-in-out infinite; }
+.lc-ct.done::before { background: var(--green); }
+.lc-ct-hd { display: flex; flex-direction: column; gap: 7px; padding: 0 4px 10px 2px; }
+.lc-ct-itens { display: flex; flex-direction: column; gap: 6px; }
+.lc-ct .swipe.lc-ct-sw, .day-items .lc-ct .swipe.lc-ct-sw { border-radius: 12px; margin: 0; box-shadow: none; }
+.lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item, .day-items .lc-ct .swipe .pcard.lc-ct-item { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; margin: 0; box-shadow: none; gap: 10px; -webkit-backdrop-filter: none; backdrop-filter: none; animation: none; }
+.lc-ct .swipe.dragging .pcard.lc-ct-item, .lc-ct .swipe.open .pcard.lc-ct-item { background: var(--card); }
+.pcard.lc-ct-item::before { display: none; }
+.pcard.lc-ct-item .pcard-body { gap: 5px; }
+.pcard.lc-ct-item .pcard-right { align-self: center; gap: 3px; }
+.pcard.lc-ct-item .pcard-value { font-size: 14.5px; min-width: 0; }
+.lc-ct-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 4px 0 2px; margin-top: 10px; border-top: 1px dashed var(--line); }
+.lc-ct-foot-l { font-size: 12px; font-weight: 700; color: var(--ink2); }
+.lc-ct-foot-r { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.lc-ct-tot { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--blue); white-space: nowrap; }
+.lc-ct.done .lc-ct-tot { color: var(--ink3); }
+
 /* Resumo por forma de pagamento de um dia (clique no somatório do dia) */
 .rfd { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
 .rfd-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
@@ -6951,7 +6976,7 @@ function lancDiasHtml(rows,all){
     const totalStr=dayTotalHtml(dia,'lancamentos','liq'+(allDone?' ok':''),fR(totDia));
     return `<div class="day-group${passado?' passado':''}" data-dia="${dia}">
       ${dayHeaderHtml(dia,items.length,totalStr)}
-      <div class="day-items">${items.map(r=>lcCardHtml(r,all.indexOf(r),false)).join('')}</div>
+      <div class="day-items">${lcItensContratoHtml(items.map(r=>({r,i:all.indexOf(r)})),false)}</div>
     </div>`;
   }).join('');
 }
@@ -10207,23 +10232,121 @@ function runSearch(){
   const moreHtml=grupos.length>shown.length?`<div class="srow-empty">+${grupos.length-shown.length} contrato(s) não exibido(s) — refine a busca</div>`:'';
   box.innerHTML=ownerHtml+buscaGroupedHtml(shown,true)+moreHtml;
 }
+// ── CARTÃO DE CONTRATO — [lanc-cartao-contrato] ──
+// Tudo que é da MESMA placa, mesmo cliente, mesmo período (saída→retorno),
+// mesmo vencimento e mesma forma é uma cobrança só: a Locação (já líquida
+// da Comissão) + a Comissão companheira (que volta pra cobrança do cliente)
+// + Avarias/Lavagem lançadas juntas. Vira UM cartão, com o total que vai no
+// boleto em destaque e cada lançamento numa linha — cada linha continua com
+// o próprio swipe (baixar/parcial/reverter/excluir/editar), nada muda em
+// quem grava. Sem saída nem retorno não dá pra dizer que é o mesmo
+// contrato: cada um fica no seu cartão, como sempre.
+function chaveCartaoContrato(r){
+  if(!r.saida&&!r.retorno)return 'id|'+(r.id??Math.random());
+  return [chaveContrato(r),r.retorno||'',r.prev_pgto||'',r.forma||''].join('|');
+}
+// Ordem das linhas dentro do cartão: a do catálogo (Locação primeiro), com a
+// Comissão logo depois da Locação — é dela que ela saiu.
+function ordemTipoContrato(t){
+  if(t==='Locação')return 0;
+  if(t==='Comissão')return 1;
+  const k=LANC_TIPOS.indexOf(t);
+  return 2+(k<0?LANC_TIPOS.length:k);
+}
+// items: [{r,i}] já na ordem da lista. Mantém a ordem (o grupo entra na
+// posição do primeiro item dele); grupo de 1 continua o cartão de sempre.
+function lcItensContratoHtml(items,fecharBusca){
+  const mapa=new Map();
+  items.forEach(it=>{
+    const k=chaveCartaoContrato(it.r);
+    if(!mapa.has(k))mapa.set(k,[]);
+    mapa.get(k).push(it);
+  });
+  return [...mapa.values()].map(g=>g.length<2
+    ?lcCardHtml(g[0].r,g[0].i,fecharBusca)
+    :lcContratoHtml(g,fecharBusca)).join('');
+}
+function lcContratoHtml(g,fecharBusca){
+  const pre=fecharBusca?'closeSearch();':'';
+  const itens=g.slice().sort((a,b)=>ordemTipoContrato(a.r.tipo)-ordemTipoContrato(b.r.tipo)||ordemParcela(a.r,b.r));
+  const r0=itens[0].r, col=DC[r0.dono]||'#888';
+  const total=itens.reduce((a,{r})=>a+liq(r),0);
+  const saldo=itens.reduce((a,{r})=>a+(isPago(r)?0:fN(r.saldo)),0);
+  const pagoTot=itens.reduce((a,{r})=>a+fN(r.valor_pago),0);
+  const todosPagos=itens.every(({r})=>isPago(r));
+  const algumVenc=itens.some(({r})=>isVenc(r)&&!isPago(r));
+  const hojeCard=!todosPagos&&!algumVenc&&r0.prev_pgto===td();
+  const donos=[...new Set(itens.map(({r})=>r.dono||'—'))];
+  const ehBoleto=/boleto/i.test(r0.forma||'');
+  const linhas=itens.map(({r,i})=>{
+    const pago=isPago(r), parcial=isParcial(r), com=r.tipo==='Comissão';
+    return `<div class="swipe lc-ct-sw" data-dia="${r.prev_pgto||''}">
+      ${lcSwipeActsHtml(r,i,pre)}
+      <div class="pcard lc-card lc-ct-item${pago?' done':''}${parcial?' parcial':''}">
+        <div class="pcard-body">
+          <div class="pcard-tags">
+            ${tipTag(r.tipo)}
+            ${donos.length>1?`<span style="font-size:11px;color:var(--ink3)">${esc(r.dono||'—')}</span>`:''}
+            ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
+          </div>
+          ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝&nbsp;${esc(r.obs)}</span>`:''}
+        </div>
+        <div class="pcard-right">
+          <span class="pcard-value lc-ct-v">${com?'+ ':''}${fR(liq(r))}</span>
+          ${parcial?`<span class="pcard-parcial-sub"><b>${fR(r.valor_pago)}</b> pago</span>`:(pago?'':`<span class="pcard-parcial-sub" style="color:var(--red)">Saldo ${fR(r.saldo)}</span>`)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}" data-dia="${r0.prev_pgto||''}">
+    <div class="lc-ct-hd">
+      <div class="pcard-top">
+        <span class="placa">${esc(r0.placa)}</span>
+        <span class="pcard-name">${esc(r0.cliente||'—')}</span>
+      </div>
+      <div class="pcard-tags">
+        <span class="ddot" style="background:${col}"></span>
+        <span style="font-size:11.5px;color:var(--ink3)">${esc(donos.join(' · '))}</span>
+        <span class="tag tag-forma">${fFormaLabel(r0.forma)}</span>
+        <span class="itens-cnt">${itens.length} lançamentos · 1 contrato</span>
+      </div>
+      <div class="pcard-meta">
+        <span>🗓 ${fDM(r0.saida)} → ${fDM(r0.retorno)}</span>
+        <span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r0.prev_pgto)}</b></span>
+      </div>
+    </div>
+    <div class="lc-ct-itens">${linhas}</div>
+    <div class="lc-ct-foot">
+      <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':'Total do contrato'}</span>
+      <span class="lc-ct-foot-r">
+        <span class="lc-ct-tot">${fR(total)}</span>
+        ${todosPagos?`<span class="pcard-parcial-sub" style="color:var(--green)">✓ recebido</span>`
+          :(pagoTot>0?`<span class="pcard-parcial-sub"><b>${fR(pagoTot)}</b> pago · <span style="color:var(--red)">saldo ${fR(saldo)}</span></span>`
+          :`<span class="pcard-parcial-sub" style="color:var(--red)">Saldo ${fR(saldo)}</span>`)}
+      </span>
+    </div>
+  </div>`;
+}
 // Cartão de lançamento com swipe (arrastar revela Baixar/Parcial/Reverter/
 // Editar) — mesma marcação usada em Recebimentos, reaproveitada aqui pra ter
 // a mesma interação em qualquer lista de lançamentos do app. fecharBusca
 // fecha o modal de busca antes da ação, pra não empilhar dois popups.
-function lcCardHtml(r,gi,fecharBusca){
-  const pre=fecharBusca?'closeSearch();':'';
-  const col=DC[r.dono]||'#888', pago=isPago(r), venc=isVenc(r), parcial=isParcial(r);
-  const temPago=fN(r.valor_pago)>0;
-  const hojeCard=!pago&&!venc&&r.prev_pgto===td();
-  // data-dia: usado por scrollListaParaHoje() pra abrir a lista já no dia de hoje.
-  return `<div class="swipe" data-dia="${r.prev_pgto||''}">
-    <div class="swipe-actions">
+function lcSwipeActsHtml(r,gi,pre){
+  const pago=isPago(r), temPago=fN(r.valor_pago)>0;
+  return `<div class="swipe-actions">
       ${pago?'':`<button class="swipe-act pay" onclick="${pre}swDo(${gi},1)"><span class="ic">✓</span>Baixar</button><button class="swipe-act partial" onclick="${pre}swDo(${gi},2)"><span class="ic">◐</span>Parcial</button>`}
       ${temPago?`<button class="swipe-act revert" onclick="${pre}swDo(${gi},3)"><span class="ic">↺</span>Reverter</button>`:''}
       <button class="swipe-act del" onclick="${pre}swDo(${gi},4)"><span class="ic">🗑</span>Excluir</button>
       <button class="swipe-act edit" onclick="${pre}swDo(${gi},0)"><span class="ic">✏</span>Editar</button>
-    </div>
+    </div>`;
+}
+function lcCardHtml(r,gi,fecharBusca){
+  const pre=fecharBusca?'closeSearch();':'';
+  const col=DC[r.dono]||'#888', pago=isPago(r), venc=isVenc(r), parcial=isParcial(r);
+  const hojeCard=!pago&&!venc&&r.prev_pgto===td();
+  // data-dia: usado por scrollListaParaHoje() pra abrir a lista já no dia de hoje.
+  return `<div class="swipe" data-dia="${r.prev_pgto||''}">
+    ${lcSwipeActsHtml(r,gi,pre)}
     <div class="pcard lc-card${pago?' done':''}${parcial?' parcial':''}${venc&&!pago?' venc':''}${hojeCard?' hoje-card':''}">
       <div class="pcard-body">
         <div class="pcard-top">
@@ -10255,16 +10378,19 @@ function lcCardHtml(r,gi,fecharBusca){
 // Lista de cartões reutilizada pela busca global e pelo clique numa data da
 // Projeção de recebimentos: divide por mês de competência (prev_pgto).
 function lancListHtml(items,fecharBusca){
-  let mesCorrente=undefined;
-  return items.map(({r,i})=>{
-    const mesKey=(r.prev_pgto||'').slice(0,7);
-    let mesHtml='';
-    if(mesKey!==mesCorrente){
-      mesCorrente=mesKey;
-      const lbl=mesKey?MN[parseInt(mesKey.slice(5,7),10)-1]+'/'+mesKey.slice(2,4):'Sem vencimento';
-      mesHtml=`<div class="srow-mes">${lbl}</div>`;
-    }
-    return mesHtml+lcCardHtml(r,i,fecharBusca);
+  // Corta em pedaços de mês seguidos e agrupa por contrato dentro de cada
+  // pedaço — a chave do contrato inclui o vencimento, então um grupo nunca
+  // atravessa dois meses.
+  const blocos=[];
+  items.forEach(it=>{
+    const mesKey=(it.r.prev_pgto||'').slice(0,7);
+    const ult=blocos[blocos.length-1];
+    if(ult&&ult.mesKey===mesKey)ult.itens.push(it);
+    else blocos.push({mesKey,itens:[it]});
+  });
+  return blocos.map(({mesKey,itens})=>{
+    const lbl=mesKey?MN[parseInt(mesKey.slice(5,7),10)-1]+'/'+mesKey.slice(2,4):'Sem vencimento';
+    return `<div class="srow-mes">${lbl}</div>`+lcItensContratoHtml(itens,fecharBusca);
   }).join('');
 }
 // Mesma ideia de lancListHtml (divide por mês), mas para os grupos de
@@ -10544,7 +10670,7 @@ function resumoFormasDia(dia,origem){
   document.getElementById('searchResults').innerHTML=
     `<div class="rfd">${linhas}${totalRow}</div>`+
     `<div class="rfd-hint">Lançamentos do dia</div>`+
-    items.map(({r,i})=>lcCardHtml(r,i,true)).join('');
+    lcItensContratoHtml(items,true);
 }
 // Clique num dia do Fluxo de Caixa Diário: mostra TODOS os lançamentos
 // daquele dia (recebidos e pendentes, não só os pendentes como em
