@@ -6945,12 +6945,12 @@ function renderLanc(){
   const totS=rows.reduce((a,r)=>a+fN(r.saldo),0);
   const totLiq=totP+totS;                         // líquido = pago + saldo (já descontada a taxa de cartão)
   const totEl=document.getElementById('lf-total');
-  totEl.innerHTML=rows.length?`<div class="search-total" style="margin-bottom:10px">
+  totEl.innerHTML=avisoLocacoesComissaoHtml()+(rows.length?`<div class="search-total" style="margin-bottom:10px">
     <div class="st-blk">
       <div class="st-main"><span>${rows.length} lançamento${rows.length===1?'':'s'}</span><span class="st-val">${fR(totLiq)}</span></div>
       <div class="st-sub"><span class="st-pago">Pago ${fR(totP)}</span><span class="st-pend">Saldo ${fR(totS)}</span></div>
     </div>
-  </div>`:'';
+  </div>`:'');
 
   const body=document.getElementById('lancBody');
   if(!rows.length){
@@ -9811,6 +9811,17 @@ async function saveEdit(){
   // Na redivisão quem manda é o rateio (sincronizarParcelas recalcula o
   // saldo de cada parcela pela taxa da forma).
   novo.saldo=fN(document.getElementById('e-sl').value);
+  // [comissao-abate] Com a caixinha de Comissão (ou desmarcando uma que
+  // existia) o Valor gravado NÃO é o que está no campo — é ele menos a
+  // comissão (ou mais, ao desmarcar). O Saldo do campo foi calculado sobre o
+  // Valor do campo, então aqui ele é refeito sobre o Valor que vai ser
+  // gravado. Sem isso a Locação ficava com valor líquido mas saldo CHEIO, e
+  // como o cartão/total leem o saldo, a comissão contava duas vezes: uma
+  // dentro da Locação e outra no lançamento Comissão (R$ 365,96 a mais na
+  // Portland em outubro).
+  if(!redivide&&(pctCom>0||removeCom)){
+    novo.saldo=Math.round((novo.valor*(1-getTaxaForma(novo.forma))-fN(novo.valor_pago))*100)/100;
+  }
   // A nota "· Comissão N% (-R$ X)" é do app, não do usuário: a antiga sai
   // antes de gravar a nova. Sem isso cada edição com a caixinha ticada
   // empilhava mais uma nota no Obs ("Comissão 3% (-R$ 72,20) · Comissão 3%
@@ -10275,49 +10286,57 @@ function lcItensContratoHtml(items,fecharBusca){
     ?lcCardHtml(g[0].r,g[0].i,fecharBusca)
     :lcContratoHtml(g,fecharBusca)).join('');
 }
-// [comissao-unica] A Comissão é UMA por contrato e vale o % dela sobre o
-// valor da Locação que o cliente paga (liq da Locação): UGJ4J24 → 3% de
-// R$ 3.610,50 = R$ 108,31. O cartão confere isso a cada render e avisa
-// quando não bate — duas Comissões no mesmo contrato, ou uma calculada
-// sobre outra base (edição antiga que abateu por cima do que já tinha
-// sido abatido). Com a Comissão ainda em aberto, o aviso traz "Corrigir".
-function pctDaComissao(c){
-  const m=/Comissão\s+([\d.,]+)\s*%/i.exec(String(c&&c.obs||''));
-  return m?fN(m[1]):0;
+// [comissao-abate] A Locação com Comissão (caixinha ticada) ABATE a
+// comissão: Locação líquida + Comissão = total do contrato (o boleto).
+// Edições antigas gravavam a Locação com valor líquido mas saldo CHEIO —
+// e o que aparece e soma é o saldo, então a comissão contava duas vezes.
+// locacaoComComissaoErrada acha essas: Locação ainda sem nada pago, com
+// Comissão companheira (acharComissaoDe) e saldo diferente do valor
+// gravado (menos a taxa da forma). corrigirLocacoesComissao acerta o saldo.
+function saldoCertoLocacao(r){
+  return Math.round(fN(r.valor)*(1-getTaxaForma(r.forma))*100)/100;
 }
-function conferenciaComissao(itens){
-  const locs=itens.filter(({r})=>r.tipo==='Locação');
-  const coms=itens.filter(({r})=>r.tipo==='Comissão');
-  if(!coms.length)return null;
-  if(coms.length>1)return{tipo:'dup',n:coms.length};
-  if(locs.length!==1)return null;
-  const loc=locs[0].r, com=coms[0], pct=pctDaComissao(com.r);
-  if(!(pct>0))return null;
-  const base=liq(loc);
-  const certo=Math.round(base*pct/100*100)/100;
-  const atual=Math.round(fN(com.r.valor)*100)/100;
-  if(Math.abs(certo-atual)<0.005)return null;
-  return{tipo:'valor',pct,base,certo,atual,i:com.i,pago:fN(com.r.valor_pago)>0};
+function locacaoComComissaoErrada(r){
+  if(!r||r.tipo!=='Locação'||fN(r.valor_pago)>0)return false;
+  if(Math.abs(fN(r.saldo)-saldoCertoLocacao(r))<0.005)return false;
+  return !!acharComissaoDe(r);
 }
-function avisoComissaoContrato(itens){
-  const c=conferenciaComissao(itens);
-  if(!c)return '';
-  if(c.tipo==='dup')return `<div class="lc-ct-aviso">⚠ ${c.n} Comissões neste contrato — deve ter só uma. Exclua a que sobra pelo swipe.</div>`;
-  const dif=c.certo-c.atual;
-  return `<div class="lc-ct-aviso"><span>⚠ Comissão ${String(c.pct).replace('.',',')}% da Locação (${fR(c.base)}) = <b>${fR(c.certo)}</b>, mas está lançada ${fR(c.atual)} (${dif>0?'faltam':'sobram'} ${fR(Math.abs(dif))}).</span>
-    ${c.pago?'':`<button type="button" class="lc-ct-fix" onclick="event.stopPropagation();corrigirComissao(${c.i},${c.certo})">Corrigir</button>`}</div>`;
+function locacoesComComissaoErradas(){
+  return allD().filter(locacaoComComissaoErrada);
 }
-function corrigirComissao(idx,certo){
-  const com=allD()[idx]; if(!com||com.tipo!=='Comissão')return;
-  if(fN(com.valor_pago)>0)return;
-  const prev={valor:com.valor,saldo:com.saldo};
-  com.valor=certo;
-  com.saldo=Math.round(certo*(1-getTaxaForma(com.forma))*100)/100;
-  dbUpdate(com);
+function corrigirLocacoesComissao(lista){
+  lista=(lista||locacoesComComissaoErradas()).filter(locacaoComComissaoErrada);
+  if(!lista.length)return;
+  const prev=lista.map(r=>({r,saldo:r.saldo}));
+  const excesso=lista.reduce((a,r)=>a+fN(r.saldo)-saldoCertoLocacao(r),0);
+  lista.forEach(r=>{r.saldo=saldoCertoLocacao(r);dbUpdate(r);});
   renderAll();
-  showToast(`Comissão corrigida para ${fR(certo)}`,'Desfazer',()=>{
-    Object.assign(com,prev); dbUpdate(com); renderAll();
+  showToast(`${lista.length} locaç${lista.length===1?'ão corrigida':'ões corrigidas'} (${fR(excesso)} de comissão contada duas vezes)`,'Desfazer',()=>{
+    prev.forEach(({r,saldo})=>{r.saldo=saldo;dbUpdate(r);});
+    renderAll();
   });
+}
+function corrigirLocacaoComissaoIdx(idx){
+  const r=allD()[idx]; if(r)corrigirLocacoesComissao([r]);
+}
+// Aviso no topo de Lançamentos: o conserto de TODAS de uma vez.
+function avisoLocacoesComissaoHtml(){
+  const lista=locacoesComComissaoErradas();
+  if(!lista.length)return '';
+  const excesso=lista.reduce((a,r)=>a+fN(r.saldo)-saldoCertoLocacao(r),0);
+  return `<div class="lc-ct-aviso" style="margin:0 0 10px"><span>⚠ ${lista.length} locaç${lista.length===1?'ão':'ões'} com Comissão ainda não abatida — o total está ${fR(excesso)} a mais (a comissão conta duas vezes).</span>
+    <button type="button" class="lc-ct-fix" onclick="corrigirLocacoesComissao()">Corrigir</button></div>`;
+}
+// A Comissão é UMA por contrato: duas no mesmo cartão é duplicata.
+function avisoComissaoContrato(itens){
+  const coms=itens.filter(({r})=>r.tipo==='Comissão');
+  let h='';
+  if(coms.length>1)h+=`<div class="lc-ct-aviso"><span>⚠ ${coms.length} Comissões neste contrato — deve ter só uma. Exclua a que sobra pelo swipe.</span></div>`;
+  itens.filter(({r})=>locacaoComComissaoErrada(r)).forEach(({r,i})=>{
+    h+=`<div class="lc-ct-aviso"><span>⚠ Locação ainda com a comissão dentro: mostra ${fR(liq(r))}, o certo é ${fR(saldoCertoLocacao(r))} (a comissão já está somada à parte).</span>
+      <button type="button" class="lc-ct-fix" onclick="event.stopPropagation();corrigirLocacaoComissaoIdx(${i})">Corrigir</button></div>`;
+  });
+  return h;
 }
 function lcContratoHtml(g,fecharBusca){
   const pre=fecharBusca?'closeSearch();':'';
