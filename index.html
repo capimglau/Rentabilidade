@@ -2424,20 +2424,42 @@ html[data-theme="dark"] .agb-ev-ghost{
 
 /* [lanc-cartao-contrato] Mesma placa + período + vencimento + forma = um
    cartão só (lcContratoHtml): cabeçalho do contrato, uma linha por
-   lançamento (cada uma com o próprio swipe) e o total do boleto embaixo. */
-.lc-ct { position: relative; background: var(--card); border-radius: 18px; padding: 14px 14px 12px 18px; margin-bottom: 9px; box-shadow: 0 4px 16px rgba(60,70,120,.07), 0 1px 3px rgba(0,0,0,.03); overflow: hidden; }
-.day-items .lc-ct { background: rgba(255,255,255,.6); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255,255,255,.8); }
-html[data-theme="dark"] .day-items .lc-ct { background: rgba(30,39,56,.88); border: 1px solid rgba(255,255,255,.07); }
+   lançamento (cada uma com o próprio swipe) e o total do boleto embaixo.
+   [lanc-cartao-contraste] Relato do usuário: "melhore o contraste, talvez
+   os cards um pouco cinzas" — a moldura (`var(--card)`, branco) cai sobre um
+   fundo TAMBÉM branco (a página e o modal de busca usam `--card` de fundo),
+   sobrando só a sombra fraca pra separar o cartão do resto; e as linhas de
+   dentro (`var(--surface)`, cinza claro) ficavam mais escuras que a moldura
+   — a hierarquia errada, escurecendo de fora pra dentro em vez do contrário.
+   Agora é o oposto: a MOLDURA é a tintada (`--surface` + borda), as LINHAS
+   de dentro são brancas (`--card`) com sombra própria — cada lançamento
+   destaca por cima do fundo do cartão, do jeito que uma lista agrupada
+   (Ajustes do iOS, por ex.) já resolve esse mesmo problema. */
+.lc-ct { position: relative; background: var(--surface2); border: 1px solid var(--line); border-radius: 18px; padding: 14px 14px 12px 18px; margin-bottom: 9px; box-shadow: 0 4px 16px rgba(60,70,120,.09), 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
+.day-items .lc-ct { background: rgba(255,255,255,.78); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255,255,255,.9); }
+html[data-theme="dark"] .day-items .lc-ct { background: rgba(30,39,56,.94); border: 1px solid rgba(255,255,255,.09); }
 .lc-ct::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--line); }
 .lc-ct.venc::before { background: var(--red); animation: rbPulseBar 2.6s ease-in-out infinite; }
 .lc-ct.hoje-card::before { background: var(--blue); animation: rbPulseBar 2.6s ease-in-out infinite; }
 .lc-ct.done::before { background: var(--green); }
 .lc-ct-hd { display: flex; flex-direction: column; gap: 7px; padding: 0 4px 10px 2px; }
-.lc-ct-itens { display: flex; flex-direction: column; gap: 6px; }
+.lc-ct-itens { display: flex; flex-direction: column; gap: 7px; }
 .lc-ct .swipe.lc-ct-sw, .day-items .lc-ct .swipe.lc-ct-sw { border-radius: 12px; margin: 0; box-shadow: none; }
-.lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item, .day-items .lc-ct .swipe .pcard.lc-ct-item { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; margin: 0; box-shadow: none; gap: 10px; -webkit-backdrop-filter: none; backdrop-filter: none; animation: none; }
-.lc-ct .swipe.dragging .pcard.lc-ct-item, .lc-ct .swipe.open .pcard.lc-ct-item { background: var(--card); }
-.pcard.lc-ct-item::before { display: none; }
+.lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item, .day-items .lc-ct .swipe .pcard.lc-ct-item { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px 9px 14px; margin: 0; box-shadow: 0 1px 3px rgba(0,0,0,.05); gap: 10px; -webkit-backdrop-filter: none; backdrop-filter: none; animation: none; }
+.lc-ct .swipe.dragging .pcard.lc-ct-item, .lc-ct .swipe.open .pcard.lc-ct-item { background: var(--surface); }
+/* Faixa colorida à esquerda de cada linha, na cor do TIPO dela (mesma cor
+   da tag — Locação azul, Comissão roxa…) — some o "::before" cinza-padrão
+   do .pcard e o item.dataset via inline style (ver TIPO_COR/lcCorTipo em
+   JS) põe a cor certa. Sem isso as linhas dentro do cartão perdiam a
+   marcação lateral que todo outro cartão do app tem. */
+.pcard.lc-ct-item::before { display: block !important; width: 3px; background: var(--lc-cor, var(--line)); }
+/* Vencido/hoje/pago continuam ganhando da cor do tipo — são o sinal que
+   pede ação, e por isso têm que vencer o accent decorativo da categoria.
+   Especificidade (3 classes) maior que a regra genérica acima resolve isso
+   sem depender de ordem no arquivo. */
+.pcard.lc-ct-item.venc::before { background: var(--red); }
+.pcard.lc-ct-item.hoje-card::before { background: var(--blue); }
+.pcard.lc-ct-item.done::before { background: var(--green); }
 .pcard.lc-ct-item .pcard-body { gap: 5px; }
 .pcard.lc-ct-item .pcard-right { align-self: center; gap: 3px; }
 .pcard.lc-ct-item .pcard-value { font-size: 14.5px; min-width: 0; }
@@ -6331,6 +6353,13 @@ function attachSuggest(inputId, getList, fmt){
 }
 // Cor da etiqueta de cada tipo de lançamento.
 const TC = {Locação:'loc',Avarias:'ava',Lavagem:'lav',Multas:'mul',Pedágio:'ped',Franquia:'fra',Outros:'out','Comissão':'tax','Taxa Mario':'tax','Taxa Alfredo':'tax','Taxa Paulinho':'tax','Taxa Bruno':'tax',Imposto:'tax'};
+// [lanc-cartao-contraste] Cor da faixa lateral de cada linha dentro do
+// cartão de contrato (lc-ct-item) — a mesma cor da tag do tipo (.tag-loc é
+// azul, .tag-tax é roxo…), só que pintando a lateral da linha em vez do
+// texto/fundo da etiqueta. 'out' fica sem cor própria (cinza padrão do
+// --line) — não tem tom de destaque reservado pra ele nas tags também.
+const TC_COR = {loc:'--blue',ava:'--red',lav:'--green',mul:'--amber',tax:'--purple',ped:'--teal',fra:'--rose'};
+const lcCorTipo = t => { const c=TC_COR[TC[t]]; return c?` style="--lc-cor:var(${c})"`:''; };
 const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -6879,7 +6908,7 @@ function bxRowHtml(r,dia,isHoje,isVencDia,dentro){
   const temPago=fN(r.valor_pago)>0;
   return `<div class="swipe${dentro?' lc-ct-sw':''}" data-dia="${dia}">
     <div class="swipe-actions">${pago?'':`<button class="swipe-act pay" onclick="swDo(${gi2},1)"><span class="ic">✓</span>Baixar</button><button class="swipe-act partial" onclick="swDo(${gi2},2)"><span class="ic">◐</span>Parcial</button>`}${temPago?`<button class="swipe-act revert" onclick="swDo(${gi2},3)"><span class="ic">↺</span>Reverter</button>`:''}<button class="swipe-act del" onclick="swDo(${gi2},4)"><span class="ic">🗑</span>Excluir</button><button class="swipe-act edit" onclick="swDo(${gi2},0)"><span class="ic">✏</span>Editar</button></div>
-    <div class="pcard${dentro?' lc-ct-item':''}${pago?' done':''}${parcial?' parcial':''}${vencCard?' venc':''}${hojeCard?' hoje-card':''}" data-gi="${gi2}" data-pend="${pago?'':'1'}">
+    <div class="pcard${dentro?' lc-ct-item':''}${pago?' done':''}${parcial?' parcial':''}${vencCard?' venc':''}${hojeCard?' hoje-card':''}" data-gi="${gi2}" data-pend="${pago?'':'1'}"${dentro?lcCorTipo(r.tipo):''}>
       ${pago
         ?`<div class="pcard-done-icon">✓</div>`
         :`<input type="checkbox" class="pcard-chk chk-b" data-idx="${gi2}">`}
@@ -10535,7 +10564,7 @@ function lcContratoHtml(g,fecharBusca){
     const pago=isPago(r), parcial=isParcial(r), com=r.tipo==='Comissão';
     return `<div class="swipe lc-ct-sw" data-dia="${r.prev_pgto||''}">
       ${lcSwipeActsHtml(r,i,pre)}
-      <div class="pcard lc-card lc-ct-item${pago?' done':''}${parcial?' parcial':''}">
+      <div class="pcard lc-card lc-ct-item${pago?' done':''}${parcial?' parcial':''}"${lcCorTipo(r.tipo)}>
         <div class="pcard-body">
           <div class="pcard-tags">
             ${tipTag(r.tipo)}

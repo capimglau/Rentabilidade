@@ -408,5 +408,22 @@ as linhas já pagas dos mesmos cartões de contrato (`chaveCartaoContrato`) —
 o contrato aparece inteiro, com o "↺ Reverter pagamento" à mão. Os totais do
 topo continuam seguindo o filtro.
 
+### Contraste do cartão de contrato — `[lanc-cartao-contraste]`
+
+Relato do usuário: *"melhore o contraste, talvez os cards um pouco
+cinzas."* A moldura (`.lc-ct`) era branca (`var(--card)`) sobre um fundo
+TAMBÉM branco (página e modal de busca usam `--card`), sobrando só a sombra
+fraca pra separar; as linhas de dentro eram cinza (`var(--surface)`) — mais
+escuras que a moldura, hierarquia ao contrário.
+
+Invertido: a moldura agora é tintada (`var(--surface2)` + borda), as linhas
+de dentro são brancas (`var(--card)`) com sombra própria — cada lançamento
+destaca por cima do cartão, em vez de se misturar com ele. Cada linha
+também ganhou a faixa lateral colorida do próprio tipo (`lcCorTipo`/
+`TC_COR` — a mesma cor da tag: Locação azul, Comissão roxa…), que tinha
+sumido (`display:none`) quando o cartão de contrato nasceu. Vencido/hoje/
+pago continuam vencendo essa cor (maior especificidade CSS), porque são o
+sinal que pede ação.
+
 ## Ritmo do trabalho
 - **Calibrar a verificação pelo tamanho da mudança.** Trocar um texto, um número (tempo de exibição, tamanho de fonte, cor) ou coisa igualmente pontual: edita e sobe direto, sem abrir navegador/playwright pra testar. Guardar teste visual (screenshot, simulação, etc.) pra mudança de layout, efeito novo ou correção de bug visual — onde não dá pra confirmar só lendo o código.
