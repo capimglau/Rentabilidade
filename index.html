@@ -2458,6 +2458,9 @@ html[data-theme="dark"] .day-items .lc-ct { background: rgba(30,39,56,.88); bord
 .lc-ct-foot-r { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .lc-ct-tot { font-size: 18px; font-weight: 800; letter-spacing: -.02em; color: var(--blue); white-space: nowrap; }
 .lc-ct.done .lc-ct-tot { color: var(--ink3); }
+.lc-ct-aviso > span { flex: 1 1 200px; }
+.lc-ct-aviso { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--amber-soft); color: var(--amber); font-size: 12px; line-height: 1.4; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lc-ct-fix { margin-left: auto; border: 0; border-radius: 8px; padding: 5px 12px; font: inherit; font-weight: 700; background: var(--amber); color: #fff; cursor: pointer; }
 
 /* Resumo por forma de pagamento de um dia (clique no somatório do dia) */
 .rfd { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
@@ -7358,6 +7361,7 @@ function numerarGrupo(grupo){
 function comissaoLancNumDe(r){
   return (TEM_LANC_NUM&&r&&r.id!=null)?'COM-'+r.id:null;
 }
+const tiraNotaComissao=o=>String(o||'').replace(/\s*·?\s*Comissão\s+[\d.,]+%\s*\(-\s*R\$\s*[\d.,]+\)/g,'').replace(/^\s*·\s*/,'').trim();
 function acharComissaoDe(r){
   const key=comissaoLancNumDe(r);
   if(key){
@@ -9807,8 +9811,13 @@ async function saveEdit(){
   // Na redivisão quem manda é o rateio (sincronizarParcelas recalcula o
   // saldo de cada parcela pela taxa da forma).
   novo.saldo=fN(document.getElementById('e-sl').value);
-  const obsDigitado=document.getElementById('e-obs').value||'';
-  novo.obs=(obsDigitado||comNota)?`${obsDigitado}${comNota}`:null;
+  // A nota "· Comissão N% (-R$ X)" é do app, não do usuário: a antiga sai
+  // antes de gravar a nova. Sem isso cada edição com a caixinha ticada
+  // empilhava mais uma nota no Obs ("Comissão 3% (-R$ 72,20) · Comissão 3%
+  // (-R$ …)"), parecendo duas comissões num contrato que só tem uma.
+  let obsDigitado=document.getElementById('e-obs').value||'';
+  if(pctCom>0||removeCom)obsDigitado=tiraNotaComissao(obsDigitado);
+  novo.obs=(obsDigitado||comNota)?`${obsDigitado}${comNota}`.replace(/^ · /,''):null;
   document.getElementById('e-com-on').checked=false;
   document.getElementById('e-com').value='';
   document.getElementById('e-com').disabled=true;
@@ -10266,6 +10275,50 @@ function lcItensContratoHtml(items,fecharBusca){
     ?lcCardHtml(g[0].r,g[0].i,fecharBusca)
     :lcContratoHtml(g,fecharBusca)).join('');
 }
+// [comissao-unica] A Comissão é UMA por contrato e vale o % dela sobre o
+// valor da Locação que o cliente paga (liq da Locação): UGJ4J24 → 3% de
+// R$ 3.610,50 = R$ 108,31. O cartão confere isso a cada render e avisa
+// quando não bate — duas Comissões no mesmo contrato, ou uma calculada
+// sobre outra base (edição antiga que abateu por cima do que já tinha
+// sido abatido). Com a Comissão ainda em aberto, o aviso traz "Corrigir".
+function pctDaComissao(c){
+  const m=/Comissão\s+([\d.,]+)\s*%/i.exec(String(c&&c.obs||''));
+  return m?fN(m[1]):0;
+}
+function conferenciaComissao(itens){
+  const locs=itens.filter(({r})=>r.tipo==='Locação');
+  const coms=itens.filter(({r})=>r.tipo==='Comissão');
+  if(!coms.length)return null;
+  if(coms.length>1)return{tipo:'dup',n:coms.length};
+  if(locs.length!==1)return null;
+  const loc=locs[0].r, com=coms[0], pct=pctDaComissao(com.r);
+  if(!(pct>0))return null;
+  const base=liq(loc);
+  const certo=Math.round(base*pct/100*100)/100;
+  const atual=Math.round(fN(com.r.valor)*100)/100;
+  if(Math.abs(certo-atual)<0.005)return null;
+  return{tipo:'valor',pct,base,certo,atual,i:com.i,pago:fN(com.r.valor_pago)>0};
+}
+function avisoComissaoContrato(itens){
+  const c=conferenciaComissao(itens);
+  if(!c)return '';
+  if(c.tipo==='dup')return `<div class="lc-ct-aviso">⚠ ${c.n} Comissões neste contrato — deve ter só uma. Exclua a que sobra pelo swipe.</div>`;
+  const dif=c.certo-c.atual;
+  return `<div class="lc-ct-aviso"><span>⚠ Comissão ${String(c.pct).replace('.',',')}% da Locação (${fR(c.base)}) = <b>${fR(c.certo)}</b>, mas está lançada ${fR(c.atual)} (${dif>0?'faltam':'sobram'} ${fR(Math.abs(dif))}).</span>
+    ${c.pago?'':`<button type="button" class="lc-ct-fix" onclick="event.stopPropagation();corrigirComissao(${c.i},${c.certo})">Corrigir</button>`}</div>`;
+}
+function corrigirComissao(idx,certo){
+  const com=allD()[idx]; if(!com||com.tipo!=='Comissão')return;
+  if(fN(com.valor_pago)>0)return;
+  const prev={valor:com.valor,saldo:com.saldo};
+  com.valor=certo;
+  com.saldo=Math.round(certo*(1-getTaxaForma(com.forma))*100)/100;
+  dbUpdate(com);
+  renderAll();
+  showToast(`Comissão corrigida para ${fR(certo)}`,'Desfazer',()=>{
+    Object.assign(com,prev); dbUpdate(com); renderAll();
+  });
+}
 function lcContratoHtml(g,fecharBusca){
   const pre=fecharBusca?'closeSearch();':'';
   const itens=g.slice().sort((a,b)=>ordemTipoContrato(a.r.tipo)-ordemTipoContrato(b.r.tipo)||ordemParcela(a.r,b.r));
@@ -10278,6 +10331,7 @@ function lcContratoHtml(g,fecharBusca){
   const hojeCard=!todosPagos&&!algumVenc&&r0.prev_pgto===td();
   const donos=[...new Set(itens.map(({r})=>r.dono||'—'))];
   const ehBoleto=/boleto/i.test(r0.forma||'');
+  const aviso=avisoComissaoContrato(itens);
   const linhas=itens.map(({r,i})=>{
     const pago=isPago(r), parcial=isParcial(r), com=r.tipo==='Comissão';
     return `<div class="swipe lc-ct-sw" data-dia="${r.prev_pgto||''}">
@@ -10316,6 +10370,7 @@ function lcContratoHtml(g,fecharBusca){
       </div>
     </div>
     <div class="lc-ct-itens">${linhas}</div>
+    ${aviso}
     <div class="lc-ct-foot">
       <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':'Total do contrato'}</span>
       <span class="lc-ct-foot-r">
