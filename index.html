@@ -2435,7 +2435,13 @@ html[data-theme="dark"] .agb-ev-ghost{
    de dentro são brancas (`--card`) com sombra própria — cada lançamento
    destaca por cima do fundo do cartão, do jeito que uma lista agrupada
    (Ajustes do iOS, por ex.) já resolve esse mesmo problema. */
-.lc-ct { position: relative; background: var(--surface2); border: 1px solid var(--line); border-radius: 18px; padding: 14px 14px 12px 18px; margin-bottom: 9px; box-shadow: 0 4px 16px rgba(60,70,120,.09), 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
+/* [lanc-cartao-contraste] margin-bottom bem maior que o de um .swipe solto
+   (9-10px) — pedido do usuário pra separar melhor um contrato do próximo.
+   Cada cartão já é um AGRUPAMENTO de vários lançamentos; com o mesmo respiro
+   de um cartão avulso, a moldura cinza-clara (que já diferencia um contrato
+   do outro) ficava perto demais da próxima, e a régua vertical parecia uma
+   lista contínua em vez de blocos separados. */
+.lc-ct { position: relative; background: var(--surface2); border: 1px solid var(--line); border-radius: 18px; padding: 14px 14px 12px 18px; margin-bottom: 22px; box-shadow: 0 4px 16px rgba(60,70,120,.09), 0 1px 3px rgba(0,0,0,.04); overflow: hidden; }
 .day-items .lc-ct { background: rgba(255,255,255,.78); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255,255,255,.9); }
 html[data-theme="dark"] .day-items .lc-ct { background: rgba(30,39,56,.94); border: 1px solid rgba(255,255,255,.09); }
 .lc-ct::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--line); }
