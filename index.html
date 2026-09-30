@@ -9416,30 +9416,66 @@ function gerarPdfDono(d){
   const resTipo=somaPor(rec,r=>r.tipo,r=>liq(r))||'<tr><td class="vz" colspan="2">—</td></tr>';
   const resDesp=somaPor(desp,x=>x.categoria,x=>fN(x.valor))||'<tr><td class="vz" colspan="2">—</td></tr>';
   const linhasDesp=desp.map(x=>`<tr><td>${fDM(x.data)}</td><td>${escHtml(x.categoria||'Despesa')}</td><td>${escHtml(x.descricao||'')}</td><td class="n">${fR(x.valor)}</td></tr>`).join('')||'<tr><td colspan="4" class="vz">Nenhuma despesa lançada.</td></tr>';
-  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Extrato ${escHtml(d)} - ${mes}</title><style>
-  body{font:13px/1.4 Arial,Helvetica,sans-serif;color:#111;margin:24px}
-  h1{font-size:20px;margin:0}.sub{color:#555;margin:2px 0 16px}
-  .kp{display:flex;gap:10px;margin-bottom:18px}.kp div{flex:1;border:1px solid #ddd;border-radius:8px;padding:8px 10px}
-  .kp small{display:block;color:#666;font-size:11px}.kp b{font-size:15px}
-  h2{font-size:14px;margin:18px 0 6px}table{width:100%;border-collapse:collapse}
-  th,td{text-align:left;padding:5px 6px;border-bottom:1px solid #e5e5e5}th{background:#f3f4f6;font-size:11px}
-  .n{text-align:right;white-space:nowrap}.vz{color:#777;text-align:center}
-  .tot{margin-top:16px;border-top:2px solid #111;padding-top:8px;display:flex;justify-content:space-between;font-size:15px;font-weight:700}
-  h3{font-size:13px;margin:14px 0 4px;background:#eef2ff;padding:5px 8px;border-radius:6px}h3 span{font-weight:400;color:#555;font-size:11px;margin-left:6px}
-  .ob td{color:#666;font-size:11px;font-style:italic}.res2{display:flex;gap:20px}.res2>div{flex:1}tr{page-break-inside:avoid}
-  .ft{margin-top:20px;color:#888;font-size:10px}
-  @media print{body{margin:10mm}}</style></head><body>
+  if(!document.getElementById('pdfDonoCss')){const st=document.createElement('style');st.id='pdfDonoCss';st.textContent=`  .pdfd{font:13px/1.4 Arial,Helvetica,sans-serif;color:#111;background:#fff;padding:20px;width:720px;max-width:none;box-sizing:border-box}
+  .pdfd h1{font-size:20px;margin:0}.pdfd .sub{color:#555;margin:2px 0 16px}
+  .pdfd .kp{display:flex;gap:10px;margin-bottom:18px}.pdfd .kp div{flex:1;border:1px solid #ddd;border-radius:8px;padding:8px 10px}
+  .pdfd .kp small{display:block;color:#666;font-size:11px}.pdfd .kp b{font-size:15px}
+  .pdfd h2{font-size:14px;margin:18px 0 6px}.pdfd table{width:100%;border-collapse:collapse}
+  .pdfd th,.pdfd td{text-align:left;padding:5px 6px;border-bottom:1px solid #e5e5e5}.pdfd th{background:#f3f4f6;font-size:11px}
+  .pdfd .n{text-align:right;white-space:nowrap}.pdfd .vz{color:#777;text-align:center}
+  .pdfd .tot{margin-top:16px;border-top:2px solid #111;padding-top:8px;display:flex;justify-content:space-between;font-size:15px;font-weight:700}
+  .pdfd h3{font-size:13px;margin:14px 0 4px;background:#eef2ff;padding:5px 8px;border-radius:6px}.pdfd h3 span{font-weight:400;color:#555;font-size:11px;margin-left:6px}
+  .pdfd .ob td{color:#666;font-size:11px;font-style:italic}.pdfd .res2{display:flex;gap:20px}.pdfd .res2>div{flex:1}.pdfd tr{page-break-inside:avoid}
+  #pdfDonoOv{position:fixed;inset:0;z-index:99999;background:#e5e7eb;display:flex;flex-direction:column}
+  #pdfDonoOv .pdfbar{display:flex;gap:8px;align-items:center;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:#111827}
+  #pdfDonoOv .pdfbar button{font:inherit;font-weight:700;font-size:14px;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;background:#fff;color:#111}
+  #pdfDonoOv .pdfbar .pri{background:#2563eb;color:#fff}#pdfDonoOv .pdfbar .sp{flex:1}
+  #pdfDonoOv .pdfscroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px}
+  #pdfDonoOv .pdfpage{transform-origin:top left;width:720px}
+`;document.head.appendChild(st);}
+  const corpo=`<div class="pdfd" id="pdfDonoDoc">
   <h1>${escHtml(d)}</h1><div class="sub">Extrato de ${mes} · gerado em ${fDM(td())}</div>
   <div class="kp"><div><small>Receitas previstas</small><b style="color:#15803d">${fR(totRec)}</b></div><div><small>Recebido</small><b>${fR(recebido)}</b></div><div><small>Pendente</small><b>${fR(pendente)}</b></div><div><small>Despesas</small><b style="color:#b91c1c">${fR(totDesp)}</b></div><div><small>Resultado</small><b style="color:${cor(res)}">${fR(res)}</b></div></div>
   <h2>Receitas previstas por veículo</h2>${blocosVeic}
   <div class="res2"><div><h2>Receitas por tipo</h2><table>${resTipo}</table></div><div><h2>Despesas por categoria</h2><table>${resDesp}</table></div></div>
   <h2>Despesas detalhadas</h2><table><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th class="n">Valor</th></tr>${linhasDesp}</table>
-  <div class="tot"><span>Saldo anterior ${fR(abertura)} + resultado ${fR(res)}</span><span style="color:${cor(fim)}">Saldo final ${fR(fim)}</span></div>
-  <div class="ft">Dica: na janela de impressão, escolha "Salvar como PDF" para compartilhar.</div>
-  <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`;
-  const w=window.open('','_blank');
-  if(!w){alert('Permita pop-ups para gerar o PDF.');return;}
-  w.document.open();w.document.write(html);w.document.close();
+  <div class="tot"><span>Saldo anterior ${fR(abertura)} + resultado ${fR(res)}</span><span style="color:${cor(fim)}">Saldo final ${fR(fim)}</span></div></div>`;
+  fecharPdfDono();
+  const ov=document.createElement('div');ov.id='pdfDonoOv';
+  ov.innerHTML=`<div class="pdfbar"><button onclick="fecharPdfDono()">✕ Fechar</button><span class="sp"></span><button class="pri" id="pdfDonoShare" onclick="compartilharPdfDono()">⬆ Compartilhar / Salvar PDF</button></div><div class="pdfscroll"><div class="pdfpage" id="pdfDonoPage">${corpo}</div></div>`;
+  ov.dataset.nome=`Extrato ${d} - ${mes}`;
+  document.body.appendChild(ov);
+  // encolhe a pré-visualização para caber na largura do celular
+  const sc=ov.querySelector('.pdfscroll'), pg=document.getElementById('pdfDonoPage');
+  const f=Math.min(1,(sc.clientWidth-24)/720); pg.style.transform=`scale(${f})`; pg.style.height=(pg.scrollHeight*f)+'px';
+}
+function fecharPdfDono(){const o=document.getElementById('pdfDonoOv');if(o)o.remove();}
+function _carregaHtml2pdf(){
+  if(window.html2pdf) return Promise.resolve();
+  return new Promise((ok,err)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';sc.onload=ok;sc.onerror=()=>err(new Error('lib'));document.head.appendChild(sc);});
+}
+async function compartilharPdfDono(){
+  const ov=document.getElementById('pdfDonoOv'); if(!ov) return;
+  const btn=document.getElementById('pdfDonoShare'), txt=btn.textContent;
+  btn.disabled=true; btn.textContent='Gerando PDF…';
+  const nome=(ov.dataset.nome||'Extrato').replace(/[\\/:*?"<>|]/g,'')+'.pdf';
+  try{
+    await _carregaHtml2pdf();
+    const pg=document.getElementById('pdfDonoPage'), tr=pg.style.transform;
+    pg.style.transform='none'; // captura em tamanho real, não na escala da tela
+    const blob=await html2pdf().set({margin:[8,8,8,8],image:{type:'jpeg',quality:.95},html2canvas:{scale:2,useCORS:true,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],avoid:'tr'}}).from(document.getElementById('pdfDonoDoc')).outputPdf('blob');
+    pg.style.transform=tr;
+    const file=new File([blob],nome,{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:nome});}catch(e){if(e&&e.name==='AbortError'){}else throw e;}
+    }else{
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();a.remove();
+    }
+  }catch(e){
+    const pg=document.getElementById('pdfDonoPage'); if(pg) pg.style.transform='';
+    alert('Não foi possível gerar o PDF ('+(e&&e.message||e)+'). Verifique a conexão e tente de novo.');
+  }
+  btn.disabled=false; btn.textContent=txt;
 }
 async function setSaldoMes(v){
   const d=donoAberto; if(!d) return;
