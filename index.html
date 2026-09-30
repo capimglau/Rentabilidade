@@ -9402,8 +9402,20 @@ function gerarPdfDono(d){
   const [y,m]=curMes.split('-');
   const mes=`${MF[parseInt(m)-1]} ${y}`;
   const cor=v=>v>=0?'#15803d':'#b91c1c';
-  const linhasRec=rec.map(r=>`<tr><td>${fDM(r.prev_pgto)}</td><td>${escHtml(r.placa||'')}</td><td>${escHtml(r.cliente||'—')}</td><td>${escHtml(r.tipo||'—')}</td><td>${isPago(r)?'Recebido':'Pendente'}</td><td class="n">${fR(liq(r))}</td></tr>`).join('')||'<tr><td colspan="6" class="vz">Sem receitas previstas neste mês.</td></tr>';
-  const linhasDesp=desp.map(x=>`<tr><td>${fDM(x.data)}</td><td colspan="4">${escHtml(x.categoria||'Despesa')}${x.descricao?' · '+escHtml(x.descricao):''}</td><td class="n">${fR(x.valor)}</td></tr>`).join('')||'<tr><td colspan="6" class="vz">Nenhuma despesa lançada.</td></tr>';
+  // Receitas agrupadas por veículo, com todos os campos do lançamento
+  const porPlaca={};
+  rec.forEach(r=>{(porPlaca[r.placa||'—']=porPlaca[r.placa||'—']||[]).push(r);});
+  const blocosVeic=Object.keys(porPlaca).sort().map(pl=>{
+    const it=porPlaca[pl];
+    const sub=it.reduce((a,r)=>a+liq(r),0), subRec=somaRecebido(it), subPend=it.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
+    const linhas=it.map(r=>`<tr><td>${fDM(r.prev_pgto)}</td><td>${escHtml(r.cliente||'—')}</td><td>${escHtml(r.tipo||'—')}</td><td>${escHtml(fFormaLabel(r.forma)||'')}</td><td>${r.saida?fDM(r.saida)+' → '+fDM(r.retorno):'—'}</td><td class="n">${fR(r.valor)}</td><td class="n">${fR(liq(r))}</td><td>${isPago(r)?'Recebido'+(r.data_pagamento?' '+fDM(r.data_pagamento):''):'Pendente'}</td></tr>${r.obs?`<tr class="ob"><td></td><td colspan="7">${escHtml(r.obs)}</td></tr>`:''}`).join('');
+    return `<h3>${escHtml(pl)} <span>${it.length} ${it.length===1?'lançamento':'lançamentos'} · recebido ${fR(subRec)} · pendente ${fR(subPend)} · total ${fR(sub)}</span></h3><table><tr><th>Venc.</th><th>Cliente</th><th>Tipo</th><th>Forma</th><th>Período</th><th class="n">Valor</th><th class="n">Líquido</th><th>Situação</th></tr>${linhas}</table>`;
+  }).join('')||'<div class="vz">Sem receitas previstas neste mês.</div>';
+  // Resumos por tipo e por categoria de despesa
+  const somaPor=(arr,kf,vf)=>{const o={};arr.forEach(x=>{const k=kf(x)||'—';o[k]=(o[k]||0)+vf(x);});return Object.keys(o).sort().map(k=>`<tr><td>${escHtml(k)}</td><td class="n">${fR(o[k])}</td></tr>`).join('');};
+  const resTipo=somaPor(rec,r=>r.tipo,r=>liq(r))||'<tr><td class="vz" colspan="2">—</td></tr>';
+  const resDesp=somaPor(desp,x=>x.categoria,x=>fN(x.valor))||'<tr><td class="vz" colspan="2">—</td></tr>';
+  const linhasDesp=desp.map(x=>`<tr><td>${fDM(x.data)}</td><td>${escHtml(x.categoria||'Despesa')}</td><td>${escHtml(x.descricao||'')}</td><td class="n">${fR(x.valor)}</td></tr>`).join('')||'<tr><td colspan="4" class="vz">Nenhuma despesa lançada.</td></tr>';
   const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Extrato ${escHtml(d)} - ${mes}</title><style>
   body{font:13px/1.4 Arial,Helvetica,sans-serif;color:#111;margin:24px}
   h1{font-size:20px;margin:0}.sub{color:#555;margin:2px 0 16px}
@@ -9413,12 +9425,15 @@ function gerarPdfDono(d){
   th,td{text-align:left;padding:5px 6px;border-bottom:1px solid #e5e5e5}th{background:#f3f4f6;font-size:11px}
   .n{text-align:right;white-space:nowrap}.vz{color:#777;text-align:center}
   .tot{margin-top:16px;border-top:2px solid #111;padding-top:8px;display:flex;justify-content:space-between;font-size:15px;font-weight:700}
+  h3{font-size:13px;margin:14px 0 4px;background:#eef2ff;padding:5px 8px;border-radius:6px}h3 span{font-weight:400;color:#555;font-size:11px;margin-left:6px}
+  .ob td{color:#666;font-size:11px;font-style:italic}.res2{display:flex;gap:20px}.res2>div{flex:1}tr{page-break-inside:avoid}
   .ft{margin-top:20px;color:#888;font-size:10px}
   @media print{body{margin:10mm}}</style></head><body>
   <h1>${escHtml(d)}</h1><div class="sub">Extrato de ${mes} · gerado em ${fDM(td())}</div>
   <div class="kp"><div><small>Receitas previstas</small><b style="color:#15803d">${fR(totRec)}</b></div><div><small>Recebido</small><b>${fR(recebido)}</b></div><div><small>Pendente</small><b>${fR(pendente)}</b></div><div><small>Despesas</small><b style="color:#b91c1c">${fR(totDesp)}</b></div><div><small>Resultado</small><b style="color:${cor(res)}">${fR(res)}</b></div></div>
-  <h2>Receitas previstas</h2><table><tr><th>Venc.</th><th>Placa</th><th>Cliente</th><th>Tipo</th><th>Situação</th><th class="n">Valor</th></tr>${linhasRec}</table>
-  <h2>Despesas</h2><table><tr><th>Data</th><th colspan="4">Categoria</th><th class="n">Valor</th></tr>${linhasDesp}</table>
+  <h2>Receitas previstas por veículo</h2>${blocosVeic}
+  <div class="res2"><div><h2>Receitas por tipo</h2><table>${resTipo}</table></div><div><h2>Despesas por categoria</h2><table>${resDesp}</table></div></div>
+  <h2>Despesas detalhadas</h2><table><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th class="n">Valor</th></tr>${linhasDesp}</table>
   <div class="tot"><span>Saldo anterior ${fR(abertura)} + resultado ${fR(res)}</span><span style="color:${cor(fim)}">Saldo final ${fR(fim)}</span></div>
   <div class="ft">Dica: na janela de impressão, escolha "Salvar como PDF" para compartilhar.</div>
   <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`;
