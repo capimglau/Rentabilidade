@@ -9269,6 +9269,7 @@ function renderProp(){
     const ini=d.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const tDesp=DESPESAS.filter(x=>x.dono===d&&x.mes===curMes).reduce((a,x)=>a+fN(x.valor),0);
     const saldoFim=donoSaldoFinal(d,curMes);
+    const saldoAnt=donoSaldoAbertura(d,curMes);
     return`<div class="oc" onclick="openDono('${d.replace(/'/g,"\\'")}')" role="button" tabindex="0" title="Ver extrato de ${d}">
       <div class="oc-hd">
         <div class="oc-av" style="background:${col}18;color:${col}">${ini}</div>
@@ -9281,6 +9282,7 @@ function renderProp(){
         <div class="prog"><div class="prog-f" style="width:${pct}%;background:${col}"></div></div>
       </div>
       <div class="oc-list">
+        <div class="oc-li"><span>Saldo anterior</span><b style="color:${saldoAnt>0?'var(--green)':saldoAnt<0?'var(--red)':'var(--ink3)'}">${fR(saldoAnt)}</b></div>
         <div class="oc-li"><span>Recebido</span><b style="color:${tp>0?'var(--green)':'var(--ink3)'}">${fR(tp)}</b></div>
         <div class="oc-li"><span>Pendente</span><b style="color:${ts>0?'var(--red)':'var(--ink3)'}">${fR(ts)}</b></div>
         <div class="oc-li"><span>Despesas</span><b style="color:${tDesp>0?'var(--red)':'var(--ink3)'}">${fR(tDesp)}</b></div>
