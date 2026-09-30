@@ -2565,6 +2565,8 @@ html[data-theme="dark"] .day-items .lc-ct { background: rgba(30,39,56,.94); bord
 .oc-saldo { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 14px; border-top: 1px dashed var(--line); }
 .oc-saldo span { font-size: 11.5px; font-weight: 700; color: var(--ink2); }
 .oc-saldo strong { font-size: 16px; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
+.oc-pdf { align-self:flex-start; font:inherit; font-size:12px; font-weight:700; color:var(--blue); background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 10px; cursor:pointer; }
+.oc-pdf:hover { background:var(--surface2); }
 .oc-more { font-size: 11px; color: var(--blue); font-weight: 700; display: flex; align-items: center; gap: 4px; margin-top: -4px; }
 @media (max-width: 420px) {
   .oc { padding: 17px; gap: 14px; }
@@ -4981,7 +4983,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
         <span class="oc-av" id="dnAv"></span>
         <span><span id="dnName" style="font-size:16px">Dono</span><span id="dnSub" style="display:block;font-size:11.5px;font-weight:500;color:var(--ink3)"></span></span>
       </span>
-      <button class="mcl" onclick="closeDono()">✕</button>
+      <span style="display:flex;align-items:center;gap:8px"><button type="button" class="oc-pdf" onclick="gerarPdfDono(donoAberto)">📄 PDF</button><button class="mcl" onclick="closeDono()">✕</button></span>
     </div>
 
     <div class="dn-mesnav">
@@ -9284,6 +9286,7 @@ function renderProp(){
         <div class="oc-li"><span>Despesas</span><b style="color:${tDesp>0?'var(--red)':'var(--ink3)'}">${fR(tDesp)}</b></div>
       </div>
       <div class="oc-saldo"><span>Saldo final</span><strong style="color:${saldoFim>=0?'var(--green)':'var(--red)'}">${fR(saldoFim)}</strong></div>
+      <button type="button" class="oc-pdf" onclick="event.stopPropagation();gerarPdfDono('${d.replace(/'/g,"\\'")}')" title="Gerar PDF do extrato de ${escHtml(d)} para compartilhar">📄 Gerar PDF</button>
       <div class="oc-more">Ver extrato (receitas × despesas) →</div>
     </div>`;
   }).join('');
@@ -9382,6 +9385,46 @@ function renderDonoModal(){
   document.getElementById('dnSaldoProx').textContent=`→ ${MF[parseInt(pm)-1]} ${py}`;
 
   renderDonoChart(d);
+}
+// PDF do extrato do dono: abre uma página de impressão do mês vigente
+// (lê allD()/DESPESAS na hora, sem estado próprio). Imprimir → "Salvar como PDF".
+function gerarPdfDono(d){
+  if(!d) return;
+  const rec=allD().filter(r=>r.dono===d && (r.prev_pgto||'').startsWith(curMes))
+                  .sort((a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||''));
+  const desp=DESPESAS.filter(x=>x.dono===d && x.mes===curMes).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const totRec=rec.reduce((a,r)=>a+liq(r),0);
+  const totDesp=desp.reduce((a,x)=>a+fN(x.valor),0);
+  const res=totRec-totDesp;
+  const abertura=donoSaldoAbertura(d,curMes);
+  const fim=abertura+res;
+  const recebido=somaRecebido(rec), pendente=rec.filter(r=>isPend(r)).reduce((a,r)=>a+fN(r.saldo),0);
+  const [y,m]=curMes.split('-');
+  const mes=`${MF[parseInt(m)-1]} ${y}`;
+  const cor=v=>v>=0?'#15803d':'#b91c1c';
+  const linhasRec=rec.map(r=>`<tr><td>${fDM(r.prev_pgto)}</td><td>${escHtml(r.placa||'')}</td><td>${escHtml(r.cliente||'—')}</td><td>${escHtml(r.tipo||'—')}</td><td>${isPago(r)?'Recebido':'Pendente'}</td><td class="n">${fR(liq(r))}</td></tr>`).join('')||'<tr><td colspan="6" class="vz">Sem receitas previstas neste mês.</td></tr>';
+  const linhasDesp=desp.map(x=>`<tr><td>${fDM(x.data)}</td><td colspan="4">${escHtml(x.categoria||'Despesa')}${x.descricao?' · '+escHtml(x.descricao):''}</td><td class="n">${fR(x.valor)}</td></tr>`).join('')||'<tr><td colspan="6" class="vz">Nenhuma despesa lançada.</td></tr>';
+  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Extrato ${escHtml(d)} - ${mes}</title><style>
+  body{font:13px/1.4 Arial,Helvetica,sans-serif;color:#111;margin:24px}
+  h1{font-size:20px;margin:0}.sub{color:#555;margin:2px 0 16px}
+  .kp{display:flex;gap:10px;margin-bottom:18px}.kp div{flex:1;border:1px solid #ddd;border-radius:8px;padding:8px 10px}
+  .kp small{display:block;color:#666;font-size:11px}.kp b{font-size:15px}
+  h2{font-size:14px;margin:18px 0 6px}table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:5px 6px;border-bottom:1px solid #e5e5e5}th{background:#f3f4f6;font-size:11px}
+  .n{text-align:right;white-space:nowrap}.vz{color:#777;text-align:center}
+  .tot{margin-top:16px;border-top:2px solid #111;padding-top:8px;display:flex;justify-content:space-between;font-size:15px;font-weight:700}
+  .ft{margin-top:20px;color:#888;font-size:10px}
+  @media print{body{margin:10mm}}</style></head><body>
+  <h1>${escHtml(d)}</h1><div class="sub">Extrato de ${mes} · gerado em ${fDM(td())}</div>
+  <div class="kp"><div><small>Receitas previstas</small><b style="color:#15803d">${fR(totRec)}</b></div><div><small>Recebido</small><b>${fR(recebido)}</b></div><div><small>Pendente</small><b>${fR(pendente)}</b></div><div><small>Despesas</small><b style="color:#b91c1c">${fR(totDesp)}</b></div><div><small>Resultado</small><b style="color:${cor(res)}">${fR(res)}</b></div></div>
+  <h2>Receitas previstas</h2><table><tr><th>Venc.</th><th>Placa</th><th>Cliente</th><th>Tipo</th><th>Situação</th><th class="n">Valor</th></tr>${linhasRec}</table>
+  <h2>Despesas</h2><table><tr><th>Data</th><th colspan="4">Categoria</th><th class="n">Valor</th></tr>${linhasDesp}</table>
+  <div class="tot"><span>Saldo anterior ${fR(abertura)} + resultado ${fR(res)}</span><span style="color:${cor(fim)}">Saldo final ${fR(fim)}</span></div>
+  <div class="ft">Dica: na janela de impressão, escolha "Salvar como PDF" para compartilhar.</div>
+  <script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`;
+  const w=window.open('','_blank');
+  if(!w){alert('Permita pop-ups para gerar o PDF.');return;}
+  w.document.open();w.document.write(html);w.document.close();
 }
 async function setSaldoMes(v){
   const d=donoAberto; if(!d) return;
