@@ -364,7 +364,6 @@
           const rec = tot > 0 ? pago / tot : 0;
           const w = maxV > 0 ? Math.max(s.value, 0) / maxV : 0;
           li.innerHTML =
-            `<span class="sb3d-legend-sq" style="background:${s.color}"></span>` +
             `<div class="sb3d-pl" style="--c:${s.color};--w:${w.toFixed(4)};--rec:${(rec * 100).toFixed(1)}%">` +
               `<div class="sb3d-pl-lane"><div class="sb3d-pill"><span class="sb3d-pill-fill"></span><span class="sb3d-pill-nm">${s.key}</span></div>` +
               `<span class="sb3d-pl-bub">${val}</span></div>` +
@@ -379,7 +378,8 @@
             `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
         }
         if (!s.locked) {
-          li.querySelector('.sb3d-legend-sq').addEventListener('click', e => { e.stopPropagation(); this.onToggle(ringId, s.key); });
+          const sq = li.querySelector('.sb3d-legend-sq');
+          if (sq) sq.addEventListener('click', e => { e.stopPropagation(); this.onToggle(ringId, s.key); });
           li.addEventListener('click', () => this.onOpen(ringId, s.key));
         }
         ulEl.appendChild(li);
