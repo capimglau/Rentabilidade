@@ -361,11 +361,13 @@
           let tot = v[0] + v[1] + v[2];
           if (!(tot > 0)) { v[1] = Math.max(s.value, 0); tot = v[1]; }
           const [pg, am, vm] = v.map(x => tot > 0 ? x / tot * 100 : 0);
-          const seg = (cls, cor, w) => `<span class="sb3d-legend-bar ${cls}" style="display:block;flex:none;height:100%;background:${cor};width:${w}%"></span>`;
-          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" style="display:flex;height:4px" title="Recebido ${pg.toFixed(0)}% · a receber ${am.toFixed(0)}% · em atraso ${vm.toFixed(0)}%">` +
-            seg('sb3d-rec-ok', 'var(--green,#2a9d5c)', pg) +
-            seg('sb3d-rec-pend', '#f2b01e', am) +
-            seg('sb3d-rec-open', 'var(--red,#d33)', vm) + `</span>`;
+          // Mesmo acabamento das barras do Top 5: traço fino de pontas
+          // arredondadas com halo (sombra espalhada da própria cor).
+          const seg = (cls, cor, w) => w > 0 ? `<span class="sb3d-legend-bar ${cls}" style="display:block;flex:none;height:100%;border-radius:999px;background:${cor};width:${w}%;box-shadow:0 0 7px 2px color-mix(in srgb, ${cor} 28%, transparent)"></span>` : '';
+          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" style="display:flex;height:3px;overflow:visible;background:transparent;box-shadow:none" title="Recebido ${pg.toFixed(0)}% · a receber ${am.toFixed(0)}% · em atraso ${vm.toFixed(0)}%">` +
+            seg('sb3d-rec-ok', 'var(--pastel-green,#5fb88a)', pg) +
+            seg('sb3d-rec-pend', 'var(--pastel-amber,#f2c04d)', am) +
+            seg('sb3d-rec-open', 'var(--pastel-red,#e8736b)', vm) + `</span>`;
         } else {
           const barPct = Math.max(s.pct, s.pct > 0 ? 0.6 : 0);
           barHtml = `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
