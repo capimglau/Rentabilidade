@@ -1967,7 +1967,7 @@ html[data-theme="dark"] .rc-cal-wrap .cal-cell, html[data-theme="dark"] .rc-cal-
      um dia expandido (baralho aberto) ainda rola verticalmente por
      mouse/trackpad, só o toque direto no cartão fica travado no eixo X. */
   .agb-wrap{ scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; touch-action:pan-x; }
-  .agb-col{ flex-basis:100%; scroll-snap-align:center; }
+  .agb-col{ flex-basis:100%; scroll-snap-align:center; scroll-snap-stop:always; }
 }
 
 /* ── Cabeçalho do dia — .agk2-day-col-head da Estilo, em duas linhas: a de
@@ -8126,6 +8126,7 @@ function agbPosicionaHoje(scrollAnt){
     }
   }
   wrap.scrollLeft=scrollAnt;
+  agbEncaixaDia(wrap,false);
 }
 // [altura-coluna-ativa] No mobile, .agb-board é UM ÚNICO flex-row com TODAS
 // as colunas do período lado a lado (a "página" visível é só um recorte
@@ -8172,8 +8173,37 @@ function _agbAjustaAgendada(){
   if(_agbAjustaRaf) cancelAnimationFrame(_agbAjustaRaf);
   _agbAjustaRaf=requestAnimationFrame(agbAjustaAlturaAtiva);
 }
+// [agenda-encaixa-dia] No celular o board tem que parar SEMPRE alinhado a um
+// dia. O scroll-snap do CSS não basta: o board é redesenhado (sincronização,
+// busca) e a rolagem restaurada podia ficar no meio do caminho entre dois
+// dias — aqui, parado o gesto, o dia mais próximo da borda é puxado pra ela.
+let _agbDedo=false, _agbEncaixaT=null;
+function agbEncaixaDia(wrap,suave){
+  if(!wrap||window.innerWidth>760)return;
+  const w0=wrap.getBoundingClientRect().left;
+  let melhor=null, dist=Infinity;
+  wrap.querySelectorAll('.agb-col').forEach(c=>{
+    const d=c.getBoundingClientRect().left-w0;
+    if(Math.abs(d)<Math.abs(dist)){dist=d;melhor=c;}
+  });
+  if(!melhor||Math.abs(dist)<2)return;
+  wrap.scrollTo({left:wrap.scrollLeft+dist,behavior:suave?'smooth':'auto'});
+}
+document.addEventListener('touchstart',e=>{if(e.target.closest&&e.target.closest('.agb-wrap'))_agbDedo=true;},{passive:true,capture:true});
+['touchend','touchcancel'].forEach(ev=>document.addEventListener(ev,()=>{
+  if(!_agbDedo)return;
+  _agbDedo=false;
+  clearTimeout(_agbEncaixaT);
+  _agbEncaixaT=setTimeout(()=>agbEncaixaDia(document.querySelector('#recebHoje .agb-wrap'),true),180);
+},{passive:true,capture:true}));
 document.addEventListener('scroll', function(e){
-  if(e.target.closest&&e.target.closest('.agb-wrap')) _agbAjustaAgendada();
+  if(e.target.closest&&e.target.closest('.agb-wrap')){
+    _agbAjustaAgendada();
+    if(!_agbDedo){
+      clearTimeout(_agbEncaixaT);
+      _agbEncaixaT=setTimeout(()=>agbEncaixaDia(e.target.closest('.agb-wrap'),true),160);
+    }
+  }
 }, true);
 window.addEventListener('resize', _agbAjustaAgendada);
 
