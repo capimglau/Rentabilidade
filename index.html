@@ -8340,10 +8340,19 @@ function ddmmyyyy(d){ if(!d)return null; const[yy,mm,dd]=d.split('-'); return dd
 // no banco (tipo, forma e baixa próprios); só aqui, na hora de decidir
 // quantos boletos emitir, eles se juntam num grupo. Sem isso, a lista
 // mostrava duas linhas para o mesmo boleto físico e confundia na emissão.
+// Chave do boleto: o MESMO contrato (placa+cliente+saída+retorno) com o mesmo
+// vencimento é UM boleto, qualquer que seja o tipo ou a forma de cada
+// lançamento (a Comissão volta pra cobrança do cliente no boleto da Locação).
+// Sem saída/retorno não dá pra afirmar que é o mesmo contrato — aí vale o
+// critério antigo, placa + vencimento.
+function chaveBoletoContrato(r){
+  if(!r.saida&&!r.retorno)return _plKey(r.placa)+'|'+(r.prev_pgto||'');
+  return [chaveContrato(r),r.retorno||'',r.prev_pgto||''].join('|');
+}
 function agruparBoletos(bol){
   const map=new Map();
   bol.forEach(r=>{
-    const k=_plKey(r.placa)+'|'+(r.prev_pgto||'');
+    const k=chaveBoletoContrato(r);
     let g=map.get(k);
     if(!g){
       g={placa:(r.placa||'').toUpperCase(),prev_pgto:r.prev_pgto||'',saida:r.saida,retorno:r.retorno,
@@ -8374,7 +8383,11 @@ function renderHdrData(){
 function renderBoletosPainel(rows){
   const el=document.getElementById('resBoletos');
   if(!el)return;
-  const bol=rows.filter(r=>(r.forma||'').toLowerCase()==='boleto');
+  // Além dos lançamentos em boleto, entram os do MESMO contrato e vencimento
+  // com outra forma (ex.: Comissão lançada sem forma) — vão no total do boleto.
+  const ehBol=r=>(r.forma||'').toLowerCase()==='boleto';
+  const chavesBol=new Set(rows.filter(r=>ehBol(r)&&(r.saida||r.retorno)).map(chaveBoletoContrato));
+  const bol=rows.filter(r=>ehBol(r)||((r.saida||r.retorno)&&chavesBol.has(chaveBoletoContrato(r))));
   const hd=document.getElementById('hdBoletosTxt');
   if(!bol.length){
     if(hd)hd.textContent='Boletos do mês';
