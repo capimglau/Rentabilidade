@@ -164,6 +164,12 @@
 .sb3d-legend-bar-wrap { grid-column: 2 / span 2; grid-row: 2; height: 4px; border-radius: 99px; background: var(--surface); box-shadow: inset 0 1px 1.5px rgba(0,0,0,.06); overflow: hidden; margin-top: 3px; }
 .sb3d-legend-bar { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.22,1,.36,1); box-shadow: 0 0 6px 0 var(--bc, transparent); }
 
+/* Barrinha fina de recebimento: verde recebido, vermelho não recebido */
+.sb3d-legend-rec { display: flex; height: 3px; }
+.sb3d-legend-rec .sb3d-legend-bar { border-radius: 0; box-shadow: none; flex: none; }
+.sb3d-rec-ok { background: var(--green); }
+.sb3d-rec-open { background: var(--red); }
+
 @media (max-width: 760px) { .sb3d-legends { flex-direction: column; gap: 8px; } }
 @media (prefers-reduced-motion: reduce) {
   .sb3d-slice, .sb3d-tag, .sb3d-connector, .sb3d-legend-bar,

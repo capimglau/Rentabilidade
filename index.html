@@ -8651,9 +8651,22 @@ function frxItemsFor(dim){
   const rows=frRowsForRing(dim);
   const grand=frSum(rows);
   const list=grand>0?frBreakdown(dim,rows,grand):[];
+  // Barrinha de recebimento da legenda: quanto do item já entrou (pago) e
+  // quanto ainda não (aberto), somando todas as linhas dele — "Outros"
+  // soma as chaves que ficaram fora do top.
+  const st={};
+  const nomes=new Set(list.map(it=>it.key));
+  rows.forEach(r=>{
+    let k=(r[dim]||'').trim()||'—';
+    if(!nomes.has(k))k='Outros';
+    const o=st[k]||(st[k]={pago:0,aberto:0});
+    o.pago+=fN(r.valor_pago);o.aberto+=fN(r.saldo);
+  });
   return list.map(it=>{
     const isOutros=it.key==='Outros';
+    const o=st[it.key]||{pago:0,aberto:0};
     return {
+      pago:o.pago, aberto:o.aberto,
       key:it.key, value:it.value, valueLabel:fRH(it.value),
       color:isOutros?FR_OUTROS:FR_PALETTE[it.rank%FR_PALETTE.length],
       selected:it.sel, locked:isOutros,

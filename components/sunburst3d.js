@@ -352,12 +352,25 @@
         const li = document.createElement('li');
         li.className = s.locked ? 'nosel' : (s.selected ? 'on' : '');
         li.dataset.ring = ringId; li.dataset.key = s.key;
-        const barPct = Math.max(s.pct, s.pct > 0 ? 0.6 : 0);
+        // Barra de recebimento (quando o item traz pago/aberto): verde = já
+        // recebido, vermelho = ainda não recebido, proporcional ao total do item.
+        let barHtml;
+        if (s.pago != null && s.aberto != null) {
+          const tot = Math.max(s.pago, 0) + Math.max(s.aberto, 0);
+          const pg = tot > 0 ? Math.max(s.pago, 0) / tot * 100 : 0;
+          const ab = tot > 0 ? 100 - pg : 0;
+          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" title="Recebido ${pg.toFixed(0)}% · não recebido ${ab.toFixed(0)}%">` +
+            `<span class="sb3d-legend-bar sb3d-rec-ok" style="width:${pg}%"></span>` +
+            `<span class="sb3d-legend-bar sb3d-rec-open" style="width:${ab}%"></span></span>`;
+        } else {
+          const barPct = Math.max(s.pct, s.pct > 0 ? 0.6 : 0);
+          barHtml = `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
+        }
         li.innerHTML =
           `<span class="sb3d-legend-sq" style="background:${s.color}"></span>` +
           `<span class="sb3d-legend-nm">${s.key}</span>` +
           `<span class="sb3d-legend-right"><span class="sb3d-legend-val">${s.valueLabel != null ? s.valueLabel : s.value}</span></span>` +
-          `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
+          barHtml;
         if (!s.locked) {
           li.querySelector('.sb3d-legend-sq').addEventListener('click', e => { e.stopPropagation(); this.onToggle(ringId, s.key); });
           li.addEventListener('click', () => this.onOpen(ringId, s.key));
