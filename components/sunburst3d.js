@@ -357,22 +357,17 @@
         if (s.pago != null && s.aberto != null) {
           // [legenda-pilulas] Pílula com o nome dentro, comprimento = valor do
           // item (relativo ao maior da lista), preenchida até a fatia já
-          // recebida. Bolha com o valor à direita e, embaixo, o recebido e o
-          // que falta (vermelho se há atraso, amarelo se ainda no prazo).
+          // recebida. Bolha com o valor à direita; só o
+          // valor (da base escolhida no filtro) aparece, sem legenda embaixo.
           const pago = Math.max(s.pago, 0), falta = Math.max(s.aberto, 0) + Math.max(s.atraso || 0, 0);
           const tot = pago + falta;
           const rec = tot > 0 ? pago / tot : 0;
           const w = maxV > 0 ? Math.max(s.value, 0) / maxV : 0;
-          const quitado = tot > 0.005 && falta <= 0.005;
-          const faltaCls = quitado ? 'ok' : ((s.atraso || 0) > 0.005 ? 'late' : 'pend');
-          const cap = `<span class="sb3d-cap-ok">recebido ${s.pagoLabel}</span> · ` +
-            (quitado ? `<span class="sb3d-cap-ok">quitado ✓</span>` : `<span class="sb3d-cap-${faltaCls}">a receber ${s.faltaLabel}</span>`);
           li.innerHTML =
             `<span class="sb3d-legend-sq" style="background:${s.color}"></span>` +
             `<div class="sb3d-pl" style="--c:${s.color};--w:${w.toFixed(4)};--rec:${(rec * 100).toFixed(1)}%">` +
               `<div class="sb3d-pl-lane"><div class="sb3d-pill"><span class="sb3d-pill-fill"></span><span class="sb3d-pill-nm">${s.key}</span></div>` +
               `<span class="sb3d-pl-bub">${val}</span></div>` +
-              `<div class="sb3d-pl-cap">${cap}</div>` +
             `</div>`;
           li.classList.add('sb3d-li-pl');
         } else {
