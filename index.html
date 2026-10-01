@@ -1430,6 +1430,19 @@ button.day-total:active { opacity: .45; }
 
 /* Botão que mostra/oculta o gráfico circular de Faturamento por categoria
    (fica oculto por padrão; a legenda em pílulas já traz tudo). */
+/* Filtro de Tipo: só o ícone de funil ao lado do botão do gráfico; o
+   popover com os tipos abre por baixo, alinhado à direita. */
+.frx-tipo-filtro { margin: 0; flex: none; display: block; position: relative; }
+.frx-tipo-filtro .rf-menu-hd { display: none; }
+.frx-tipo-filtro .rf-sec { border-radius: 10px; }
+.frx-tipo-filtro .rf-sec-tt { width: 32px; height: 32px; padding: 0; gap: 0; justify-content: center; color: var(--ink3); }
+.frx-tipo-filtro .rf-sec-label, .frx-tipo-filtro .rf-caret { display: none; }
+.frx-tipo-filtro .rf-sec-tt::before { content: ""; flex: none; width: 17px; height: 17px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4h16l-6.2 8v6.5l-3.6 1.8V12z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4h16l-6.2 8v6.5l-3.6 1.8V12z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.frx-tipo-filtro .rf-sec[open] .rf-sec-tt { color: var(--ink); }
+.frx-tipo-filtro .rf-badge { position: absolute; top: -5px; right: -5px; min-width: 15px; height: 15px; font-size: 9px; }
+.frx-tipo-filtro .rf-sec-opts { left: auto; right: 0; min-width: 190px; }
 .frx-toggle { flex: none; width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink3); display: grid; place-items: center; cursor: pointer; padding: 0; }
 .frx-toggle svg { width: 18px; height: 18px; }
 .frx-toggle:hover { color: var(--ink); background: var(--surface); }
@@ -4247,6 +4260,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
   <div id="recebHoje"></div>
   <div class="card card-donut">
     <div class="card-hd">Faturamento por categoria<span class="sub"></span>
+      <div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar por tipo"></div>
       <button type="button" class="frx-toggle" id="frxToggleBtn" onclick="frxToggleGrafico()" aria-pressed="false" title="Mostrar gráfico circular" aria-label="Mostrar gráfico circular">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 12a9 9 0 0 0-9-9v9z"/></svg>
       </button></div>
@@ -4257,7 +4271,6 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
         <div class="fr-total-value mono" id="frTotalValue">R$ 0,00</div>
         <div class="fr-total-sub" id="frTotalSub"></div>
       </div>
-      <div class="rf-bar rf-flat" id="fatRingFilters"></div>
     </div>
     <div class="sb3d-body">
       <div id="frxStage"></div>
@@ -8928,7 +8941,7 @@ function frRenderData(){
 // — pra não fechar popovers abertos nem perder o estado a cada renderResumo().
 let frFiltersBuilt=false;
 function buildFatRingFilters(){
-  makeFilterSelector('fatRingFilters', FRT, frRenderData, true, FR_ORDER);
+  makeFilterSelector('fatRingFilters', FRT, frRenderData, true, ['tipo']);
   const bar=document.getElementById('fatRingFilters');
   if(bar){
     const cb=bar.querySelector('input[data-dim="dono"][value="Indefinido"]');
