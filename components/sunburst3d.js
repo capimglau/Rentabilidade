@@ -363,9 +363,12 @@
           const tot = pago + falta;
           const rec = tot > 0 ? pago / tot : 0;
           const w = maxV > 0 ? Math.max(s.value, 0) / maxV : 0;
+          const lateW = tot > 0 ? Math.max(s.atraso || 0, 0) / tot * 100 : 0;
+          const alerta = s.antigoLabel
+            ? `<span class="sb3d-pill-alerta" title="Vencido de mês anterior: ${s.antigoLabel}"></span>` : '';
           li.innerHTML =
             `<div class="sb3d-pl" style="--c:${s.color};--w:${w.toFixed(4)};--rec:${(rec * 100).toFixed(1)}%">` +
-              `<div class="sb3d-pl-lane"><div class="sb3d-pill"><span class="sb3d-pill-fill"></span><span class="sb3d-pill-nm">${s.key}</span></div>` +
+              `<div class="sb3d-pl-lane"><div class="sb3d-pill"><span class="sb3d-pill-fill"></span>${lateW > 0 ? `<span class="sb3d-pill-late" style="width:${lateW.toFixed(1)}%"></span>` : ''}<span class="sb3d-pill-nm">${s.key}</span>${alerta}</div>` +
               `<span class="sb3d-pl-bub">${val}</span></div>` +
             `</div>`;
           li.classList.add('sb3d-li-pl');
