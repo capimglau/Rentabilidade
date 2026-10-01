@@ -352,18 +352,20 @@
         const li = document.createElement('li');
         li.className = s.locked ? 'nosel' : (s.selected ? 'on' : '');
         li.dataset.ring = ringId; li.dataset.key = s.key;
-        // Barra de recebimento (quando o item traz pago/aberto): verde = já
-        // recebido, vermelho = ainda não recebido, proporcional ao total do item.
+        // Barra de recebimento (quando o item traz pago/aberto/atraso): verde =
+        // já recebido, amarelo = a receber (ainda no prazo), vermelho = em
+        // atraso — proporcional ao total do item.
         let barHtml;
         if (s.pago != null && s.aberto != null) {
-          const tot = Math.max(s.pago, 0) + Math.max(s.aberto, 0);
-          if (!(tot > 0)) { s = { ...s, aberto: Math.max(s.value, 0) }; }
-          const tot2 = Math.max(s.pago, 0) + Math.max(s.aberto, 0);
-          const pg = tot2 > 0 ? Math.max(s.pago, 0) / tot2 * 100 : 0;
-          const ab = tot2 > 0 ? 100 - pg : 0;
-          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" style="display:flex;height:4px" title="Recebido ${pg.toFixed(0)}% · não recebido ${ab.toFixed(0)}%">` +
-            `<span class="sb3d-legend-bar sb3d-rec-ok" style="display:block;flex:none;height:100%;background:var(--green,#2a9d5c);width:${pg}%"></span>` +
-            `<span class="sb3d-legend-bar sb3d-rec-open" style="display:block;flex:none;height:100%;background:var(--red,#d33);width:${ab}%"></span></span>`;
+          const v = [Math.max(s.pago, 0), Math.max(s.aberto, 0), Math.max(s.atraso || 0, 0)];
+          let tot = v[0] + v[1] + v[2];
+          if (!(tot > 0)) { v[1] = Math.max(s.value, 0); tot = v[1]; }
+          const [pg, am, vm] = v.map(x => tot > 0 ? x / tot * 100 : 0);
+          const seg = (cls, cor, w) => `<span class="sb3d-legend-bar ${cls}" style="display:block;flex:none;height:100%;background:${cor};width:${w}%"></span>`;
+          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" style="display:flex;height:4px" title="Recebido ${pg.toFixed(0)}% · a receber ${am.toFixed(0)}% · em atraso ${vm.toFixed(0)}%">` +
+            seg('sb3d-rec-ok', 'var(--green,#2a9d5c)', pg) +
+            seg('sb3d-rec-pend', '#f2b01e', am) +
+            seg('sb3d-rec-open', 'var(--red,#d33)', vm) + `</span>`;
         } else {
           const barPct = Math.max(s.pct, s.pct > 0 ? 0.6 : 0);
           barHtml = `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
