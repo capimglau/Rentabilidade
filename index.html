@@ -4245,18 +4245,6 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
 <div class="page on" id="page-resumo">
   <div class="mrow" id="res-m"></div>
   <div id="recebHoje"></div>
-  <div class="card" id="cardBoletos">
-    <!-- Sem cabeçalho (pedido do usuário): saíram o título "Boletos do mês"
-         e o botão de link compartilhável ao lado. As duas linhas do ledger
-         já dizem o que o painel é ("Boletos a emitir"/"Boletos emitidos"),
-         e era o cabeçalho que empurrava o conteúdo pra baixo.
-         renderBoletosPainel ainda procura #hdBoletosTxt, mas sempre atrás
-         de um if(hd) — sem o elemento, ele só não escreve título nenhum.
-         compartilharLinkBoletos()/body.modo-boletos continuam existindo: um
-         link já gerado segue abrindo o painel sozinho, só não há mais botão
-         para gerar um novo. -->
-    <div id="resBoletos"></div>
-  </div>
   <div class="card card-donut">
     <div class="card-hd">Faturamento por categoria<span class="sub">filtros próprios</span>
       <button type="button" class="frx-toggle" id="frxToggleBtn" onclick="frxToggleGrafico()" aria-pressed="false" title="Mostrar gráfico circular" aria-label="Mostrar gráfico circular">
@@ -4284,6 +4272,18 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
         </div>
       </div>
     </div>
+  </div>
+  <div class="card" id="cardBoletos">
+    <!-- Sem cabeçalho (pedido do usuário): saíram o título "Boletos do mês"
+         e o botão de link compartilhável ao lado. As duas linhas do ledger
+         já dizem o que o painel é ("Boletos a emitir"/"Boletos emitidos"),
+         e era o cabeçalho que empurrava o conteúdo pra baixo.
+         renderBoletosPainel ainda procura #hdBoletosTxt, mas sempre atrás
+         de um if(hd) — sem o elemento, ele só não escreve título nenhum.
+         compartilharLinkBoletos()/body.modo-boletos continuam existindo: um
+         link já gerado segue abrindo o painel sozinho, só não há mais botão
+         para gerar um novo. -->
+    <div id="resBoletos"></div>
   </div>
   <div class="res-ctrls" id="resCtrls">
     <div class="rf-bar" id="resumoFilters"></div>
