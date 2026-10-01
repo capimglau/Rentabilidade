@@ -2358,6 +2358,13 @@ html[data-theme="dark"] .agb-ev-ghost{
    então +6px aqui. No mobile o ajuste é outro (ver @media max-width:760px)
    porque lá o .page já parte de um padding-top menor (16px). */
 #res-m { grid-template-columns: repeat(4, 1fr); display: grid; margin-top: 6px; }
+/* Mobile: Previsto/Recebido/A receber/Atrasado dividem UM card que alterna
+   (#mc-prev-cycle); no desktop continuam sendo cards separados. */
+#res-m .mc-mob-only { display: none; }
+@media(max-width:760px){
+  #res-m .mc-mob-only { display: block; }
+  #res-m .mc-desk-only { display: none; }
+}
 
 /* Busca global */
 .search-input {
@@ -6068,6 +6075,15 @@ let mcLocCycleIdx = 0;
 // receber do mês e o quanto disso já está vencido.
 let mcArecCycleTimer = null;
 let mcArecCycleIdx = 0;
+// Card único do mobile: Previsto → Recebido → A receber → (Atrasado).
+let mcPrevCycleTimer = null;
+let mcPrevCycleIdx = 0;
+let mcPrevCycleRoutes = [];
+// O toque leva pra tela do slide que está em cena (cada um tem o seu destino).
+function mcPrevCycleClick(){
+  const f=mcPrevCycleRoutes[mcPrevCycleIdx];
+  if(f)new Function(f)();
+}
 // Avança o carrossel de um card de dois-ou-mais slides: o que estava em
 // cena sai pela esquerda, o próximo entra pela direita (mesma direção pros
 // dois, como uma esteira). Devolve o slide que saiu pro repouso (sem
@@ -8863,13 +8879,33 @@ function renderResumo(){
   // proprietário, só que sempre 2 slides (nunca cycla se não há vencido).
   const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
+  // Mobile: Previsto, Recebido, A receber e (se houver) Atrasado alternam num card só.
+  mcPrevCycleRoutes=['abrirCalendarioPrevisto()',"irLancMetric('pago')","irLancMetric('pend')"];
+  const prevSlides=`<div class="mc-cycle-slide on"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>`+
+    `<div class="mc-cycle-slide"><div class="mc-label">Recebido</div><div class="mc-value" style="color:var(--green)">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>`+
+    `<div class="mc-cycle-slide"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
+    (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
+  if(nVenc>0)mcPrevCycleRoutes.push("irLancMetric('pend')");
   document.getElementById('res-m').innerHTML=`
-    <div class="mc blue" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
+    <div class="mc blue mc-desk-only" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
+    <div class="mc blue mc-cycle mc-mob-only" id="mc-prev-cycle" role="button" tabindex="0" onclick="mcPrevCycleClick()" title="Toque pra ver Previsto, Recebido, A receber e Atrasado"><div class="mc-cycle-stage">${prevSlides}</div></div>
     <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="mcLocCycleClick()" onmouseenter="mcLocCyclePause()" onmouseleave="mcLocCycleResume()" title="Locação do mês por proprietário — clique pra passar pro próximo"><div class="mc-cycle-stage">${locSlides}</div></div>
-    <div class="mc green" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
-    <div class="mc amber mc-cycle" id="mc-arec-cycle" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-cycle-stage">${arecSlides}</div></div>
+    <div class="mc green mc-desk-only" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
+    <div class="mc amber mc-cycle mc-desk-only" id="mc-arec-cycle" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-cycle-stage">${arecSlides}</div></div>
   `;
   mcLocCycleStart();
+  clearTimeout(mcPrevCycleTimer);
+  mcPrevCycleIdx=0;
+  {const nSl=mcPrevCycleRoutes.length;
+   const schedPrev=()=>{
+     mcPrevCycleTimer=setTimeout(()=>{
+       const nextIdx=(mcPrevCycleIdx+1)%nSl;
+       if(!mcCycleStep('#mc-prev-cycle .mc-cycle-stage',mcPrevCycleIdx,nextIdx))return;
+       mcPrevCycleIdx=nextIdx;
+       schedPrev();
+     },5000);
+   };
+   schedPrev();}
   clearTimeout(mcArecCycleTimer);
   mcArecCycleIdx=0;
   if(nVenc>0){
