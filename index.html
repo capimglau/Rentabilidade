@@ -1428,6 +1428,16 @@ button.day-total:active { opacity: .45; }
   flex-shrink: 0;
 }
 
+/* Botão que mostra/oculta o gráfico circular de Faturamento por categoria
+   (fica oculto por padrão; a legenda em pílulas já traz tudo). */
+.frx-toggle { flex: none; width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink3); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.frx-toggle svg { width: 18px; height: 18px; }
+.frx-toggle:hover { color: var(--ink); background: var(--surface); }
+.frx-toggle[aria-pressed="true"] { color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.frx-toggle:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.card-donut:not(.frx-grafico) #frxStage { display: none; }
+.card-donut:not(.frx-grafico) .sb3d-body { gap: 0; }
+
 /* ─── TABLE ─── */
 .tw { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -4246,7 +4256,10 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
     <div id="resBoletos"></div>
   </div>
   <div class="card card-donut">
-    <div class="card-hd">Faturamento por categoria<span class="sub">filtros próprios</span></div>
+    <div class="card-hd">Faturamento por categoria<span class="sub">filtros próprios</span>
+      <button type="button" class="frx-toggle" id="frxToggleBtn" onclick="frxToggleGrafico()" aria-pressed="false" title="Mostrar gráfico circular" aria-label="Mostrar gráfico circular">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 12a9 9 0 0 0-9-9v9z"/></svg>
+      </button></div>
     <div class="fr-filterrow">
       <div class="fr-basistoggle" id="frBasisToggle"></div>
       <div class="fr-total" id="frTotal">
@@ -8762,6 +8775,19 @@ function frxToggle(dim,key){
 }
 
 let frxChart=null;
+// Gráfico circular oculto por padrão; o botão do cabeçalho do cartão alterna
+// e a escolha fica lembrada neste aparelho.
+function frxToggleGrafico(forcar){
+  const card=document.querySelector('.card-donut'); if(!card)return;
+  const on=typeof forcar==='boolean'?forcar:!card.classList.contains('frx-grafico');
+  card.classList.toggle('frx-grafico',on);
+  const b=document.getElementById('frxToggleBtn');
+  if(b){b.setAttribute('aria-pressed',on?'true':'false');const t=on?'Ocultar gráfico circular':'Mostrar gráfico circular';b.title=t;b.setAttribute('aria-label',t);}
+  try{localStorage.setItem('frxGrafico',on?'1':'0');}catch(e){}
+}
+(function(){let on=false;try{on=localStorage.getItem('frxGrafico')==='1';}catch(e){}
+  const ini=()=>frxToggleGrafico(on);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ini);else ini();})();
 function frxEnsureChart(){
   if(frxChart)return frxChart;
   frxChart=new Sunburst3D(document.getElementById('frxStage'), {
