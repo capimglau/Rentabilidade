@@ -348,35 +348,41 @@
       const items = this._lastData[ringId] || [];
       const segs = this._computeSegs(this._ringById(ringId), items);
       ulEl.innerHTML = '';
+      const maxV = Math.max(0, ...segs.map(x => Math.max(x.value, 0)));
       segs.forEach(s => {
         const li = document.createElement('li');
         li.className = s.locked ? 'nosel' : (s.selected ? 'on' : '');
         li.dataset.ring = ringId; li.dataset.key = s.key;
-        // Barra de recebimento (quando o item traz pago/aberto/atraso): verde =
-        // já recebido, amarelo = a receber (ainda no prazo), vermelho = em
-        // atraso — proporcional ao total do item.
-        let barHtml;
+        const val = s.valueLabel != null ? s.valueLabel : s.value;
         if (s.pago != null && s.aberto != null) {
-          const v = [Math.max(s.pago, 0), Math.max(s.aberto, 0), Math.max(s.atraso || 0, 0)];
-          let tot = v[0] + v[1] + v[2];
-          if (!(tot > 0)) { v[1] = Math.max(s.value, 0); tot = v[1]; }
-          const [pg, am, vm] = v.map(x => tot > 0 ? x / tot * 100 : 0);
-          // Mesmo acabamento das barras do Top 5: traço fino de pontas
-          // arredondadas com halo (sombra espalhada da própria cor).
-          const seg = (cls, cor, w) => w > 0 ? `<span class="sb3d-legend-bar ${cls}" style="display:block;flex:none;height:100%;border-radius:999px;background:${cor};width:${w}%;box-shadow:0 0 7px 2px color-mix(in srgb, ${cor} 28%, transparent)"></span>` : '';
-          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" style="display:flex;height:3px;overflow:visible;background:transparent;box-shadow:none" title="Recebido ${pg.toFixed(0)}% · a receber ${am.toFixed(0)}% · em atraso ${vm.toFixed(0)}%">` +
-            seg('sb3d-rec-ok', 'var(--pastel-green,#5fb88a)', pg) +
-            seg('sb3d-rec-pend', 'var(--pastel-amber,#f2c04d)', am) +
-            seg('sb3d-rec-open', 'var(--pastel-red,#e8736b)', vm) + `</span>`;
+          // [legenda-pilulas] Pílula com o nome dentro, comprimento = valor do
+          // item (relativo ao maior da lista), preenchida até a fatia já
+          // recebida. Bolha com o valor à direita e, embaixo, o recebido e o
+          // que falta (vermelho se há atraso, amarelo se ainda no prazo).
+          const pago = Math.max(s.pago, 0), falta = Math.max(s.aberto, 0) + Math.max(s.atraso || 0, 0);
+          const tot = pago + falta;
+          const rec = tot > 0 ? pago / tot : 0;
+          const w = maxV > 0 ? Math.max(s.value, 0) / maxV : 0;
+          const quitado = tot > 0.005 && falta <= 0.005;
+          const faltaCls = quitado ? 'ok' : ((s.atraso || 0) > 0.005 ? 'late' : 'pend');
+          const cap = `<span class="sb3d-cap-ok">recebido ${s.pagoLabel}</span> · ` +
+            (quitado ? `<span class="sb3d-cap-ok">quitado ✓</span>` : `<span class="sb3d-cap-${faltaCls}">a receber ${s.faltaLabel}</span>`);
+          li.innerHTML =
+            `<span class="sb3d-legend-sq" style="background:${s.color}"></span>` +
+            `<div class="sb3d-pl" style="--c:${s.color};--w:${w.toFixed(4)};--rec:${(rec * 100).toFixed(1)}%">` +
+              `<div class="sb3d-pl-lane"><div class="sb3d-pill"><span class="sb3d-pill-fill"></span><span class="sb3d-pill-nm">${s.key}</span></div>` +
+              `<span class="sb3d-pl-bub">${val}</span></div>` +
+              `<div class="sb3d-pl-cap">${cap}</div>` +
+            `</div>`;
+          li.classList.add('sb3d-li-pl');
         } else {
           const barPct = Math.max(s.pct, s.pct > 0 ? 0.6 : 0);
-          barHtml = `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
+          li.innerHTML =
+            `<span class="sb3d-legend-sq" style="background:${s.color}"></span>` +
+            `<span class="sb3d-legend-nm">${s.key}</span>` +
+            `<span class="sb3d-legend-right"><span class="sb3d-legend-val">${val}</span></span>` +
+            `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
         }
-        li.innerHTML =
-          `<span class="sb3d-legend-sq" style="background:${s.color}"></span>` +
-          `<span class="sb3d-legend-nm">${s.key}</span>` +
-          `<span class="sb3d-legend-right"><span class="sb3d-legend-val">${s.valueLabel != null ? s.valueLabel : s.value}</span></span>` +
-          barHtml;
         if (!s.locked) {
           li.querySelector('.sb3d-legend-sq').addEventListener('click', e => { e.stopPropagation(); this.onToggle(ringId, s.key); });
           li.addEventListener('click', () => this.onOpen(ringId, s.key));
