@@ -172,8 +172,7 @@
 
 /* [legenda-pilulas] Legenda em pílulas: nome dentro, preenchida até o recebido,
    bolha com o valor e uma linha embaixo com recebido / a receber. */
-.sb3d-legend li.sb3d-li-pl { grid-template-columns: 8px 1fr; grid-template-rows: auto; align-items: start; column-gap: 8px; padding: 3px 6px; }
-.sb3d-li-pl .sb3d-legend-sq { grid-row: 1; margin-top: 12px; }
+.sb3d-legend li.sb3d-li-pl { grid-template-columns: 1fr; grid-template-rows: auto; align-items: start; padding: 3px 6px; }
 .sb3d-pl { min-width: 0; }
 .sb3d-pl-lane { display: flex; align-items: center; gap: 8px; }
 .sb3d-pill { position: relative; flex: none; height: 32px; border-radius: 999px; display: flex; align-items: center; padding-inline: 12px; overflow: hidden;
@@ -191,7 +190,6 @@ html[data-theme="dark"] .sb3d-pill-nm { color: #10141c; }
   .sb3d-pill-nm { font-size: 11px; }
   .sb3d-pl-bub { font-size: 10.5px; padding: 3px 8px; }
   .sb3d-pl-cap { font-size: 9.5px; margin-top: 2px; }
-  .sb3d-li-pl .sb3d-legend-sq { margin-top: 9px; }
 }
 
 @media (max-width: 760px) { .sb3d-legends { flex-direction: column; gap: 8px; } }
