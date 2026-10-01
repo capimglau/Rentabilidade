@@ -357,11 +357,13 @@
         let barHtml;
         if (s.pago != null && s.aberto != null) {
           const tot = Math.max(s.pago, 0) + Math.max(s.aberto, 0);
-          const pg = tot > 0 ? Math.max(s.pago, 0) / tot * 100 : 0;
-          const ab = tot > 0 ? 100 - pg : 0;
-          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" title="Recebido ${pg.toFixed(0)}% · não recebido ${ab.toFixed(0)}%">` +
-            `<span class="sb3d-legend-bar sb3d-rec-ok" style="width:${pg}%"></span>` +
-            `<span class="sb3d-legend-bar sb3d-rec-open" style="width:${ab}%"></span></span>`;
+          if (!(tot > 0)) { s = { ...s, aberto: Math.max(s.value, 0) }; }
+          const tot2 = Math.max(s.pago, 0) + Math.max(s.aberto, 0);
+          const pg = tot2 > 0 ? Math.max(s.pago, 0) / tot2 * 100 : 0;
+          const ab = tot2 > 0 ? 100 - pg : 0;
+          barHtml = `<span class="sb3d-legend-bar-wrap sb3d-legend-rec" style="display:flex;height:4px" title="Recebido ${pg.toFixed(0)}% · não recebido ${ab.toFixed(0)}%">` +
+            `<span class="sb3d-legend-bar sb3d-rec-ok" style="display:block;flex:none;height:100%;background:var(--green,#2a9d5c);width:${pg}%"></span>` +
+            `<span class="sb3d-legend-bar sb3d-rec-open" style="display:block;flex:none;height:100%;background:var(--red,#d33);width:${ab}%"></span></span>`;
         } else {
           const barPct = Math.max(s.pct, s.pct > 0 ? 0.6 : 0);
           barHtml = `<span class="sb3d-legend-bar-wrap"><span class="sb3d-legend-bar" style="width:${barPct}%;background:${s.color};--bc:${s.color}66"></span></span>`;
