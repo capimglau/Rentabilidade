@@ -8072,6 +8072,8 @@ function renderRecebHoje(){
   // Refaz o innerHTML inteiro (inclusive a busca da Agenda) a cada render —
   // sem isso o campo perderia o foco a cada tecla digitada, já que o
   // <input> em si é recriado do zero junto com o resto.
+  const wrapAnt=el.querySelector('.agb-wrap');
+  const scrollAnt=wrapAnt?wrapAnt.scrollLeft:0;
   const buscaFoco=document.activeElement&&document.activeElement.id==='agbBuscaInput';
   const buscaCursor=buscaFoco?document.activeElement.selectionStart:null;
   // Agenda (board por dia) é o padrão; o calendário Seg-Sex do mês continua
@@ -8104,7 +8106,26 @@ function renderRecebHoje(){
     const inp=document.getElementById('agbBuscaInput');
     if(inp){ inp.focus(); if(buscaCursor!=null) inp.setSelectionRange(buscaCursor,buscaCursor); }
   }
+  agbPosicionaHoje(scrollAnt);
   agbAjustaAlturaAtiva();
+}
+// [agenda-abre-em-hoje] Havendo lançamento HOJE, o board abre rolado pra
+// coluna de hoje (e não em Atrasados, à esquerda) — uma vez só por abertura
+// do app. Nos re-renders seguintes (sincronização, busca, filtro) mantém a
+// posição em que o usuário deixou o board, que o innerHTML novo zeraria.
+let agbHojeInit=false;
+function agbPosicionaHoje(scrollAnt){
+  const wrap=document.querySelector('#recebHoje .agb-wrap');
+  if(!wrap||!wrap.clientWidth)return;   // página escondida: mede 0, tenta no próximo render
+  if(!agbHojeInit){
+    const col=wrap.querySelector('.agb-col.agb-hoje');
+    if(col){
+      wrap.scrollLeft+=col.getBoundingClientRect().left-wrap.getBoundingClientRect().left;
+      agbHojeInit=true;
+      return;
+    }
+  }
+  wrap.scrollLeft=scrollAnt;
 }
 // [altura-coluna-ativa] No mobile, .agb-board é UM ÚNICO flex-row com TODAS
 // as colunas do período lado a lado (a "página" visível é só um recorte
