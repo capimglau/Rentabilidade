@@ -1452,7 +1452,14 @@ button.day-total:active { opacity: .45; }
 .card-donut .card-hd .sub:empty { display: none; }
 .card-donut .card-hd .frx-tipo-filtro { margin: 0 0 0 auto; padding: 0; }
 .card-donut .card-hd .frx-toggle { margin: 0; }
-.card-donut .fr-filterrow { margin: 10px 0 10px; }
+/* Linha da base + total: o rótulo "Total previsto" sobrava (a pastilha já diz
+   Previsto/Recebido/A receber), então fica só o valor, na mesma linha e
+   centralizado com a pastilha. */
+.card-donut .fr-filterrow { margin: 6px 0 8px; align-items: center; }
+.card-donut .fr-filterrow .fr-total { display: flex; align-items: center; justify-content: flex-end; }
+.card-donut .fr-filterrow .fr-total-label { display: none; }
+.card-donut .fr-filterrow .fr-total-value { font-size: 18px; margin: 0; line-height: 1; }
+.card-donut .frx-base-chip { background: var(--card); box-shadow: 0 0 0 1px var(--line); }
 .frx-tipo-filtro { display: flex; align-items: center; }
 .card-donut .frx-tipo-filtro.rf-flat .rf-sec, .card-donut .frx-tipo-filtro.rf-flat .rf-sec:hover, .card-donut .frx-tipo-filtro.rf-flat .rf-sec[open] { border: 0; box-shadow: none; background: transparent; border-radius: 10px; padding: 0; }
 .frx-tipo-filtro .rf-sec > .rf-sec-tt { border-radius: 10px; }
