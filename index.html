@@ -1434,8 +1434,16 @@ button.day-total:active { opacity: .45; }
    popover com os tipos abre por baixo, alinhado à direita. */
 .frx-tipo-filtro { margin: 0; flex: none; display: block; position: relative; }
 .frx-tipo-filtro .rf-menu-hd { display: none; }
+/* Cabeçalho do cartão compacto: título, funil e gráfico na mesma linha, sem
+   a margem inferior que .rf-bar traz (vencia por vir depois no arquivo). */
+.card-donut { padding-top: 12px; }
+.card-donut .card-hd { margin-bottom: 4px; min-height: 32px; align-items: center; }
+.card-donut .card-hd .sub:empty { display: none; }
+.card-donut .card-hd .frx-tipo-filtro { margin: 0 0 0 auto; padding: 0; }
+.card-donut .card-hd .frx-toggle { margin: 0; }
+.card-donut .fr-filterrow { margin: 0 0 10px; }
 .frx-tipo-filtro { display: flex; align-items: center; }
-.frx-tipo-filtro .rf-sec, .frx-tipo-filtro .rf-sec:hover, .frx-tipo-filtro .rf-sec[open] { border: 0; box-shadow: none; background: transparent; border-radius: 10px; padding: 0; }
+.card-donut .frx-tipo-filtro.rf-flat .rf-sec, .card-donut .frx-tipo-filtro.rf-flat .rf-sec:hover, .card-donut .frx-tipo-filtro.rf-flat .rf-sec[open] { border: 0; box-shadow: none; background: transparent; border-radius: 10px; padding: 0; }
 .frx-tipo-filtro .rf-sec > .rf-sec-tt { border-radius: 10px; }
 .frx-tipo-filtro .rf-sec > .rf-sec-tt:hover, .frx-tipo-filtro .rf-sec[open] > .rf-sec-tt { background: var(--surface); }
 .frx-tipo-filtro .rf-sec-tt { width: 32px; height: 32px; padding: 0; gap: 0; justify-content: center; color: var(--ink3); }
