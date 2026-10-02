@@ -268,6 +268,11 @@ body::before {
   background: var(--surface); border: 1px solid var(--line);
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
+/* No PC alguma regra de .icon-btn (40px) vencia esta: o botão ficava bem maior que
+   o seletor de mês ao lado. Seletor com id + classes dobradas garante 25px
+   (a mesma altura do .month-nav) e o centraliza na linha. */
+#themeBtnHdr.icon-btn.theme-btn-hdr { width: 25px; height: 25px; min-width: 25px; align-self: center; margin-left: 6px; }
+#themeBtnHdr.icon-btn.theme-btn-hdr svg { width: 13px; height: 13px; }
 .theme-btn-hdr svg { width: 13px; height: 13px; }
 .theme-btn-hdr:hover { background: var(--card); }
 html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); border-color: rgba(255,255,255,.10); }
@@ -6730,6 +6735,36 @@ function filtGeral(o={}){
 
 const CH={};
 function mkC(id,cfg){if(CH[id])CH[id].destroy();const c=document.getElementById(id);if(!c)return;CH[id]=new Chart(c,cfg);}
+// [atraso-pulsa] Nos gráficos do Resumo, a série "Atrasado" (vermelha) pulsa
+// devagar, como a zona de vencido de meses anteriores nas pílulas. Guarda a
+// cor original de cada série e só varia a opacidade (~2,8s por ciclo).
+function _corComAlpha(c,a){
+  if(typeof c!=='string')return null;
+  let m=/^#([0-9a-f]{6})$/i.exec(c);
+  if(m){const n=parseInt(m[1],16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+  m=/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i.exec(c);
+  return m?`rgba(${m[1]},${m[2]},${m[3]},${a})`:null;
+}
+(function(){
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  setInterval(function(){
+    if(document.hidden)return;
+    const t=Date.now()/2800*Math.PI*2;
+    const a=(.62+.38*(.5+.5*Math.sin(t))).toFixed(2);
+    Object.keys(CH).forEach(function(id){
+      const ch=CH[id]; if(!ch||!ch.canvas||!ch.canvas.isConnected||!ch.canvas.offsetWidth)return;
+      let mexeu=false;
+      ch.data.datasets.forEach(function(ds){
+        if(ds.label!=='Atrasado')return;
+        if(ds._cor0==null){ds._cor0={bg:typeof ds.backgroundColor==='string'?ds.backgroundColor:null,bd:typeof ds.borderColor==='string'?ds.borderColor:null,linha:ch.config.type==='line'||ds.type==='line'};}
+        const c=ds._cor0;
+        const nb=c.bg&&_corComAlpha(c.bg,a); if(nb&&!c.linha){ds.backgroundColor=nb;mexeu=true;}
+        if(c.linha){const nl=_corComAlpha('#bf2518',a);ds.borderColor=nl;ds.pointBackgroundColor=nl;mexeu=true;}
+      });
+      if(mexeu)ch.update('none');
+    });
+  },90);
+})();
 // Gradiente vertical para traço/preenchimento de linhas (scriptable color)
 function vGrad(context,cFrom,cTo){const ch=context.chart,area=ch.chartArea;if(!area)return cFrom;const g=ch.ctx.createLinearGradient(0,area.top,0,area.bottom);g.addColorStop(0,cFrom);g.addColorStop(1,cTo);return g;}
 // Qualidade/identidade visual padrão dos gráficos
