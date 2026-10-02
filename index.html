@@ -1812,6 +1812,11 @@ html[data-theme="dark"] .bol-ledger{ --bol-org:#F4C78C; --bol-grn:#8FCBA3; }
 .rc-cal-topbar-2 .agb-busca-ic { width: 15px; height: 15px; }
 .rc-cal-topbar-2 .agb-busca-input { font-size: 13px; }
 .agb-busca-sp { flex: 1 1 auto; }
+/* PC: a busca não estica pela tela toda; largura proporcional (um dia do board
+   tem 1/3 da linha), com o funil e o botão de visão logo ao lado. */
+@media (min-width: 761px) {
+  .rc-cal-topbar-2 .agb-busca { flex: 0 1 340px; width: 340px; }
+}
 /* Tudo na mesma altura da busca (30px) e centralizado na linha. */
 .rc-cal-topbar-2 { align-items: center; min-height: 33px; }
 .rc-cal-topbar-2 .rc-ico-btn { width: 33px; height: 33px; border-radius: 9px; }
