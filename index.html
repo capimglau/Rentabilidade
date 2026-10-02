@@ -1450,6 +1450,7 @@ button.day-total:active { opacity: .45; }
 .card-donut { padding-top: 12px; }
 .card-donut .card-hd { margin-bottom: 4px; min-height: 32px; align-items: center; }
 .card-donut .card-hd .sub:empty { display: none; }
+#frxTitulo { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-donut .card-hd .frx-tipo-filtro { margin: 0 0 0 auto; padding: 0; }
 .card-donut .card-hd .frx-toggle { margin: 0; }
 /* Linha da base + total: o rótulo "Total previsto" sobrava (a pastilha já diz
@@ -8981,7 +8982,14 @@ function frUpdateTotal(){
   const lbl=document.getElementById('frTotalLabel'), val=document.getElementById('frTotalValue'), sub=document.getElementById('frTotalSub');
   if(lbl)lbl.textContent=frBasis==='comp'?'Total previsto':frBasis==='pend'?'Total a receber':'Total recebido';
   const tit=document.getElementById('frxTitulo');
-  if(tit)tit.textContent=frBasis==='comp'?'Faturamento total':frBasis==='pend'?'Faturamento a receber':'Faturamento recebido';
+  if(tit){
+    // Título = base + filtros ativos (tipo/proprietário): "Faturamento total",
+    // "Faturamento recebido · Locação", "Faturamento total · Locação + Avarias".
+    const base=frBasis==='comp'?'Faturamento total':frBasis==='pend'?'Faturamento a receber':'Faturamento recebido';
+    const sel=FR_ORDER.flatMap(d=>[...FRT[d]]);
+    const filtro=!sel.length?'':sel.length<=2?sel.join(' + '):sel.length+' filtros';
+    tit.textContent=filtro?base+' · '+filtro:base;
+  }
   if(val)val.innerHTML=fRH(grand);
   if(sub)sub.textContent=rows.length+' lançamento'+(rows.length===1?'':'s')+
     (activeCount?' · '+activeCount+' filtro'+(activeCount===1?'':'s')+' ativo'+(activeCount===1?'':'s'):'');
