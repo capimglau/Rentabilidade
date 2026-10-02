@@ -1455,10 +1455,11 @@ button.day-total:active { opacity: .45; }
 /* Linha da base + total: o rótulo "Total previsto" sobrava (a pastilha já diz
    Previsto/Recebido/A receber), então fica só o valor, na mesma linha e
    centralizado com a pastilha. */
-.card-donut .fr-filterrow { margin: 6px 0 8px; align-items: center; }
-.card-donut .fr-filterrow .fr-total { display: flex; align-items: center; justify-content: flex-end; }
+.card-donut .fr-filterrow { margin: 16px 0 10px; align-items: center; justify-content: flex-start; gap: 10px; }
+.card-donut .fr-filterrow .fr-total { display: flex; align-items: center; justify-content: flex-start; flex: 0 1 auto; text-align: left; }
 .card-donut .fr-filterrow .fr-total-label { display: none; }
-.card-donut .fr-filterrow .fr-total-value { font-size: 18px; margin: 0; line-height: 1; }
+.card-donut .fr-filterrow .fr-total-value { font-size: 16px; margin: 0; line-height: 1; }
+.card-donut .frx-base-chip { font-size: 14px; height: 34px; padding-block: 0; }
 .card-donut .frx-base-chip { background: var(--card); box-shadow: 0 0 0 1px var(--line); }
 .frx-tipo-filtro { display: flex; align-items: center; }
 .card-donut .frx-tipo-filtro.rf-flat .rf-sec, .card-donut .frx-tipo-filtro.rf-flat .rf-sec:hover, .card-donut .frx-tipo-filtro.rf-flat .rf-sec[open] { border: 0; box-shadow: none; background: transparent; border-radius: 10px; padding: 0; }
