@@ -273,6 +273,12 @@ body::before {
    (a mesma altura do .month-nav) e o centraliza na linha. */
 #themeBtnHdr.icon-btn.theme-btn-hdr { width: 25px; height: 25px; min-width: 25px; align-self: center; margin-left: 6px; }
 #themeBtnHdr.icon-btn.theme-btn-hdr svg { width: 13px; height: 13px; }
+/* Celular: o seletor de mês tem 28px (botões maiores que no PC); o botão de tema
+   acompanha a altura dele, centralizado. */
+@media (max-width: 760px) {
+  #themeBtnHdr.icon-btn.theme-btn-hdr { width: 28px; height: 28px; min-width: 28px; }
+  #themeBtnHdr.icon-btn.theme-btn-hdr svg { width: 14px; height: 14px; }
+}
 .theme-btn-hdr svg { width: 13px; height: 13px; }
 .theme-btn-hdr:hover { background: var(--card); }
 html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); border-color: rgba(255,255,255,.10); }
