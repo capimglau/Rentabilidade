@@ -1428,6 +1428,17 @@ button.day-total:active { opacity: .45; }
   flex-shrink: 0;
 }
 
+/* Seletor único da base do Faturamento (Previsto / Recebido / A receber):
+   pastilha discreta que abre uma lista curta. O bloco inteiro (pastilha +
+   total) desce um pouco, pra respirar abaixo do título. */
+.fr-filterrow { margin-top: 10px; }
+.frx-base { position: relative; flex: 0 0 auto; }
+.frx-base-chip { display: inline-flex; align-items: center; gap: 6px; border: 0; background: var(--surface); color: var(--ink); font: inherit; font-weight: 800; font-size: 13px; border-radius: 999px; padding: 7px 12px; cursor: pointer; }
+.frx-base-chip:focus-visible, .frx-base-menu button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.frx-base-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 50; display: flex; flex-direction: column; min-width: 130px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px; box-shadow: var(--shadow-lg); }
+.frx-base-menu[hidden] { display: none; }
+.frx-base-menu button { border: 0; background: none; text-align: left; font: inherit; font-size: 13px; font-weight: 700; color: var(--ink2); padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+.frx-base-menu button[aria-checked="true"] { color: var(--ink); background: var(--surface); }
 /* Botão que mostra/oculta o gráfico circular de Faturamento por categoria
    (fica oculto por padrão; a legenda em pílulas já traz tudo). */
 /* Filtro de Tipo: só o ícone de funil ao lado do botão do gráfico; o
@@ -1441,7 +1452,7 @@ button.day-total:active { opacity: .45; }
 .card-donut .card-hd .sub:empty { display: none; }
 .card-donut .card-hd .frx-tipo-filtro { margin: 0 0 0 auto; padding: 0; }
 .card-donut .card-hd .frx-toggle { margin: 0; }
-.card-donut .fr-filterrow { margin: 0 0 10px; }
+.card-donut .fr-filterrow { margin: 10px 0 10px; }
 .frx-tipo-filtro { display: flex; align-items: center; }
 .card-donut .frx-tipo-filtro.rf-flat .rf-sec, .card-donut .frx-tipo-filtro.rf-flat .rf-sec:hover, .card-donut .frx-tipo-filtro.rf-flat .rf-sec[open] { border: 0; box-shadow: none; background: transparent; border-radius: 10px; padding: 0; }
 .frx-tipo-filtro .rf-sec > .rf-sec-tt { border-radius: 10px; }
@@ -4276,7 +4287,7 @@ body.modo-boletos #page-resumo > #cardBoletos { display: block; }
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 12a9 9 0 0 0-9-9v9z"/></svg>
       </button></div>
     <div class="fr-filterrow">
-      <div class="fr-basistoggle" id="frBasisToggle"></div>
+      <div class="frx-base" id="frBasisToggle"></div>
       <div class="fr-total" id="frTotal">
         <div class="fr-total-label" id="frTotalLabel">Total previsto</div>
         <div class="fr-total-value mono" id="frTotalValue">R$ 0,00</div>
@@ -8960,24 +8971,24 @@ function buildFatRingFilters(){
   }
   const bt=document.getElementById('frBasisToggle');
   if(bt){
+    // Seletor único da base (Previsto / Recebido / A receber): uma pastilha
+    // mostra a atual e abre uma lista curta ao tocar.
+    const NOMES={comp:'Previsto',caixa:'Recebido',pend:'A receber'};
     bt.innerHTML=
-      '<button type="button" data-b="comp">Previsto</button>'+
-      '<button type="button" data-b="caixa">Recebido</button>'+
-      '<button type="button" data-b="pend">A receber</button>';
-    bt.querySelectorAll('button').forEach(b=>{
-      b.classList.toggle('on', b.dataset.b===frBasis);
-      b.classList.toggle('rec', b.dataset.b==='caixa');
-      b.classList.toggle('pend', b.dataset.b==='pend');
-      b.addEventListener('click', ()=>{
-        frBasis=b.dataset.b;
-        bt.querySelectorAll('button').forEach(x=>{
-          x.classList.toggle('on', x===b);
-          x.classList.toggle('rec', x.dataset.b==='caixa');
-          x.classList.toggle('pend', x.dataset.b==='pend');
-        });
-        frRenderData();
-      });
-    });
+      '<button type="button" class="frx-base-chip" aria-haspopup="menu" aria-expanded="false"><span class="frx-base-nm"></span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg></button>'+
+      '<div class="frx-base-menu" role="menu" hidden>'+Object.keys(NOMES).map(k=>`<button type="button" role="menuitemradio" data-b="${k}">${NOMES[k]}</button>`).join('')+'</div>';
+    const chip=bt.querySelector('.frx-base-chip'), menu=bt.querySelector('.frx-base-menu');
+    const sync=()=>{
+      bt.querySelector('.frx-base-nm').textContent=NOMES[frBasis];
+      menu.querySelectorAll('button').forEach(x=>x.setAttribute('aria-checked',x.dataset.b===frBasis?'true':'false'));
+    };
+    const fecha=()=>{menu.hidden=true;chip.setAttribute('aria-expanded','false');};
+    chip.addEventListener('click',e=>{e.stopPropagation();menu.hidden=!menu.hidden;chip.setAttribute('aria-expanded',menu.hidden?'false':'true');});
+    menu.querySelectorAll('button').forEach(b=>b.addEventListener('click',e=>{
+      e.stopPropagation();frBasis=b.dataset.b;sync();fecha();frRenderData();
+    }));
+    document.addEventListener('click',fecha);
+    sync();
   }
 }
 
