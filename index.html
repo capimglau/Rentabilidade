@@ -2840,6 +2840,43 @@ html[data-theme="dark"] .day-items .lc-ct { background: rgba(30,39,56,.94); bord
   background: var(--surface);
   border-color: var(--line);
 }
+/* [graficos-resumo] A fileira de filtros dos gráficos vira uma pílula-resumo
+   ("Previsto · 2026 · Mensal") que abre um painel, mais o funil de Filtros.
+   Os <select> originais continuam no DOM (escondidos) por causa do estado e
+   dos setters que já existem. */
+.res-ctrls { flex-wrap: wrap; align-items: center; }
+.res-ctrls > .rc-sel { display: none; }
+.res-ctrls > #resResumoPill { flex: 1 1 0; min-width: 0; }
+.res-ctrls > .rf-bar { flex: 0 0 auto; }
+.rcp-chip { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 13px; font-weight: 800; border-radius: 999px; padding: 0 14px; height: 36px; cursor: pointer; }
+.rcp-chip svg { width: 10px; height: 10px; flex: none; color: var(--ink3); transition: transform .15s; }
+.rcp-chip[aria-expanded="true"] svg { transform: rotate(180deg); }
+.rcp-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rcp-panel { flex: 0 0 100%; display: grid; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.rcp-panel[hidden] { display: none; }
+.rcp-r { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rcp-l { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink3); }
+.rcp-words { display: flex; gap: 14px; }
+.rcp-words button { border: 0; background: none; font: inherit; font-size: 13px; font-weight: 800; color: var(--ink3); padding: 5px 0; cursor: pointer; border-bottom: 2px solid transparent; }
+.rcp-words button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.rcp-step { display: inline-flex; align-items: center; gap: 2px; font-weight: 800; font-size: 14px; }
+.rcp-step button { border: 0; background: none; width: 28px; height: 28px; border-radius: 8px; color: var(--ink3); cursor: pointer; font-size: 17px; line-height: 1; }
+.rcp-step button:hover:not(:disabled) { background: var(--surface); color: var(--ink); }
+.rcp-step button:disabled { opacity: .3; cursor: default; }
+.rcp-step span { min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
+.rcp-seg { display: inline-flex; background: var(--surface); border-radius: 999px; padding: 3px; }
+.rcp-seg button { border: 0; background: none; font: inherit; font-size: 12px; font-weight: 700; color: var(--ink3); padding: 5px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.rcp-seg button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+.rcp-chip:focus-visible, .rcp-panel button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+/* "Filtros" vira só o funil (o texto e a seta somem; o selo de quantidade fica). */
+.res-ctrls.res-ctrls .rf-single { flex: 0 0 auto; }
+.res-ctrls.res-ctrls .rf-single > summary { width: 36px; height: 36px; padding: 0; font-size: 0; gap: 0; border-radius: 999px; justify-content: center; position: relative; color: var(--ink3); }
+.res-ctrls.res-ctrls .rf-single > summary .rf-caret { display: none; }
+.res-ctrls.res-ctrls .rf-single > summary::before { content: ''; width: 18px; height: 18px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4h16l-6.2 8v6.5l-3.6 1.8V12z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 4h16l-6.2 8v6.5l-3.6 1.8V12z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.res-ctrls.res-ctrls .rf-single > summary .rf-badge { position: absolute; top: -4px; right: -4px; font-size: 10px; }
+
 .rc-sel {
   width: 100%;
   background: rgba(255,255,255,.5);
@@ -4355,6 +4392,7 @@ html, body { touch-action: pan-x pan-y; }
     <div id="resBoletos"></div>
   </div>
   <div class="res-ctrls" id="resCtrls">
+    <div id="resResumoPill"></div>
     <div class="rf-bar" id="resumoFilters"></div>
     <select class="rc-sel" id="rc-base" onchange="setResBase(this.value)" title="Previsto, recebido ou a receber">
       <option value="comp" selected>Previsto</option>
@@ -7303,6 +7341,26 @@ function resMonths(){
   for(let m=1;m<=12;m++)arr.push(`${resAno}-${String(m).padStart(2,'0')}`);
   return arr;
 }
+
+// [graficos-resumo] Pílula-resumo da fileira de filtros dos gráficos.
+let resPillAberto=false;
+function toggleResPill(){resPillAberto=!resPillAberto;renderResPill();}
+function renderResPill(){
+  const el=document.getElementById('resResumoPill'); if(!el)return;
+  const NOMES={comp:'Previsto',caixa:'Recebido',pend:'A receber'};
+  const anos=resAnos(), i=anos.indexOf(resAno);
+  const seta='<svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg>';
+  // Mantém os <select> escondidos em dia com o estado (outros trechos leem).
+  const sb=document.getElementById('rc-base'); if(sb)sb.value=resBase;
+  const sa=document.getElementById('rc-acum'); if(sa)sa.value=resAcum?'1':'0';
+  el.innerHTML=`<button type="button" class="rcp-chip" onclick="toggleResPill()" aria-expanded="${resPillAberto}"><span>${NOMES[resBase]} · ${resAno} · ${resAcum?'Acumulado':'Mensal'}</span>${seta}</button>`;
+  let pn=document.getElementById('resResumoPanel');
+  if(!pn){pn=document.createElement('div');pn.id='resResumoPanel';pn.className='rcp-panel';document.getElementById('resCtrls').appendChild(pn);}
+  pn.hidden=!resPillAberto;
+  pn.innerHTML=`<div class="rcp-r"><span class="rcp-l">Base</span><div class="rcp-words">${Object.keys(NOMES).map(k=>`<button type="button" aria-pressed="${resBase===k}" onclick="setResBase('${k}')">${NOMES[k]}</button>`).join('')}</div></div>
+    <div class="rcp-r"><span class="rcp-l">Ano</span><span class="rcp-step"><button type="button" aria-label="Ano anterior" ${i<=0?'disabled':''} onclick="setResAno('${anos[i-1]}')">‹</button><span>${resAno}</span><button type="button" aria-label="Próximo ano" ${i>=anos.length-1?'disabled':''} onclick="setResAno('${anos[i+1]}')">›</button></span></div>
+    <div class="rcp-r"><span class="rcp-l">Período</span><span class="rcp-seg"><button type="button" aria-pressed="${!resAcum}" onclick="setResAcum('0')">Mensal</button><button type="button" aria-pressed="${resAcum}" onclick="setResAcum('1')">Acumulado</button></span></div>`;
+}
 // Valor de um lançamento conforme a base selecionada.
 function valBase(r){ return resBase==='caixa' ? fN(r.valor_pago) : resBase==='pend' ? fN(r.saldo) : fN(r.valor); }
 function cumArr(arr){ let s=0; return arr.map(v=>s+=v); }
@@ -9126,6 +9184,7 @@ function renderResumo(){
    if(sel){const anos=resAnos();
      if(!anos.includes(resAno))resAno=anos[anos.length-1];
      sel.innerHTML=anos.map(a=>`<option value="${a}"${a===resAno?' selected':''}>${a}</option>`).join('');}}
+  renderResPill();
   // Séries temporais: sempre os 12 meses do ano selecionado
   const mShown=resMonths();
   const labelsT=mShown.map(mLabel);
