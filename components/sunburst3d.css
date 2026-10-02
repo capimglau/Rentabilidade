@@ -179,7 +179,11 @@
   width: max(88px, calc((100% - 120px) * var(--w))); background: color-mix(in srgb, var(--c) 38%, var(--card)); }
 .sb3d-pill-fill { position: absolute; inset: 0 auto 0 0; width: var(--rec); background: var(--c); border-radius: 999px; transition: width .6s cubic-bezier(.22,1,.36,1); }
 .sb3d-pill-nm { position: relative; z-index: 1; font-size: 13px; font-weight: 800; color: #1b2230; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-html[data-theme="dark"] .sb3d-pill-nm { color: #10141c; }
+/* Tema escuro: a pílula fica em tons médios (trilho e preenchimento) e o nome em
+   claro, legível sobre os dois — texto escuro sumia no fundo escuro. */
+html[data-theme="dark"] .sb3d-pill { background: color-mix(in srgb, var(--c) 24%, var(--card)); }
+html[data-theme="dark"] .sb3d-pill-fill { background: color-mix(in srgb, var(--c) 62%, var(--card)); }
+html[data-theme="dark"] .sb3d-pill-nm { color: #f4f6fa; text-shadow: 0 1px 2px rgba(0,0,0,.45); }
 .sb3d-pill-late { position: absolute; top: 0; bottom: 0; right: 0; z-index: 0; background: color-mix(in srgb, var(--red) 55%, transparent); }
 .sb3d-pill-late-old { position: absolute; top: 0; bottom: 0; right: 0; z-index: 0; background: var(--red); animation: sb3dPulsa 2.8s ease-in-out infinite; }
 @keyframes sb3dPulsa { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
