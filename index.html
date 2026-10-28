@@ -4539,8 +4539,8 @@ html, body { touch-action: pan-x pan-y; }
         <div id="nf-renovar" class="s2" style="display:none;grid-column:1/-1;padding:13px 14px;border:1px solid var(--blue-mid);border-radius:12px;background:var(--blue-soft);font-size:13px;line-height:1.5" aria-live="polite">
           <div id="nf-renovar-texto" style="margin-bottom:10px"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button type="button" class="btn btn-blue btn-sm" id="nf-renovar-sim">✓ Renovar por mais 30 dias</button>
-            <button type="button" class="btn btn-sm" id="nf-renovar-nao">Não, novo contrato</button>
+            <button type="button" class="btn btn-blue btn-sm" id="nf-renovar-sim">1 · Renovar por mais 30 dias</button>
+            <button type="button" class="btn btn-sm" id="nf-renovar-nao">2 · Editar dados</button>
           </div>
         </div>
         <div class="fp"><label>Proprietário</label><select id="nf-d"><option value="">Selecione</option></select></div>
@@ -12394,6 +12394,22 @@ function ultimaLocacaoPlaca(placa){
     ((b.retorno||'').localeCompare(a.retorno||'')) || ((b.saida||'').localeCompare(a.saida||'')));
   return locs[0]||null;
 }
+// Soma um mês de calendário, conservando o dia quando possível (31 -> último dia do mês).
+function nfMesSeguinte(data){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data||''))return '';
+  const [ano,mes,dia]=data.split('-').map(Number);
+  const max=new Date(Date.UTC(ano,mes+1,0)).getUTCDate();
+  const d=new Date(Date.UTC(ano,mes,Math.min(dia,max)));
+  return d.toISOString().slice(0,10);
+}
+function nfMoeda(valor){return Number(valor||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function nfItensLocacao(origem){
+  const placa=_plKey(origem.placa);
+  const encontrados=allD().filter(r=>_plKey(r.placa)===placa &&
+    (r.cliente||'')===(origem.cliente||'') && (r.saida||'')===(origem.saida||'') &&
+    (r.retorno||'')===(origem.retorno||'') && (r.prev_pgto||'')===(origem.prev_pgto||''));
+  return encontrados.length?encontrados:[origem];
+}
 function verificarRenovacaoPlaca(){
   const campo=document.getElementById('nf-p'),box=document.getElementById('nf-renovar');
   if(!campo||!box)return;
@@ -12403,25 +12419,34 @@ function verificarRenovacaoPlaca(){
   const anterior=ultimaLocacaoPlaca(chave);
   nfRenovacaoOrigem=anterior;
   if(!anterior){box.style.display='none';return;}
-  const novoVenc=addD(anterior.prev_pgto,30);
-  document.getElementById('nf-renovar-texto').innerHTML=`<strong>Renovação encontrada para ${esc(anterior.placa)}.</strong><br>Última locação: ${esc(anterior.cliente||'Cliente não informado')} · vencimento anterior <strong>${fD(anterior.prev_pgto)}</strong>.<br>Deseja renovar por mais 30 dias? Novo vencimento: <strong>${fD(proxUtil(novoVenc))}</strong>.`;
+  const inicioNovo=anterior.retorno||anterior.prev_pgto;
+  const fimNovo=nfMesSeguinte(inicioNovo);
+  const vencNovo=nfMesSeguinte(anterior.prev_pgto);
+  const itens=nfItensLocacao(anterior);
+  const total=itens.reduce((sum,r)=>sum+(Number(r.valor)||0),0);
+  document.getElementById('nf-renovar-texto').innerHTML=
+    `<strong>Última locação — placa ${esc(anterior.placa)}</strong><br>`+
+    `Cliente: <strong>${esc(anterior.cliente||'Não informado')}</strong><br>`+
+    `Período anterior: <strong>${fD(anterior.saida)} a ${fD(anterior.retorno)}</strong><br>`+
+    `Último vencimento: <strong>${fD(anterior.prev_pgto)}</strong><br>`+
+    `Valor do contrato: <strong>${nfMoeda(total)}</strong><br><br>`+
+    `<strong>Próxima renovação</strong><br>`+
+    `Novo período: <strong>${fD(inicioNovo)} a ${fD(fimNovo)}</strong><br>`+
+    `Novo vencimento: <strong>${fD(vencNovo)}</strong> (mesmo dia do mês seguinte).<br><br>`+
+    `Deseja renovar automaticamente ou editar os dados antes de salvar?`;
   box.style.display='block';
 }
-function aplicarRenovacaoPlaca(){
+function aplicarRenovacaoPlaca(editar=false){
   const origem=nfRenovacaoOrigem;
   if(!origem)return;
   const placa=normPlaca(origem.placa);
-  const mesmaLocacao=allD().filter(r=>_plKey(r.placa)===_plKey(placa) &&
-    (r.cliente||'')===(origem.cliente||'') && (r.saida||'')===(origem.saida||'') &&
-    (r.retorno||'')===(origem.retorno||'') && (r.prev_pgto||'')===(origem.prev_pgto||''));
-  const itens=mesmaLocacao.length?mesmaLocacao:[origem];
+  const itens=nfItensLocacao(origem);
   document.getElementById('nf-p').value=placa;
   preencheDono('nf-d',origem.dono||donoDaPlaca(placa));
   document.getElementById('nf-c').value=origem.cliente||'';
-  // Início do novo período no término do anterior, duração de 30 dias.
-  const inicio=origem.retorno||origem.saida||origem.prev_pgto;
+  const inicio=origem.retorno||origem.prev_pgto;
   document.getElementById('nf-s').value=inicio;
-  document.getElementById('nf-r').value=addD(inicio,30);
+  document.getElementById('nf-r').value=nfMesSeguinte(inicio);
   const box=document.getElementById('nf-itens');box.innerHTML='';
   itens.forEach(r=>{
     const it=addItem('nf',false);
@@ -12433,11 +12458,10 @@ function aplicarRenovacaoPlaca(){
     const band=forma.split(' · ').slice(1).join(' · ');
     if(band)itemSet(it,'bandeira',band);
     itemSet(it,'valor',toBR(Number(r.valor)||0));
-    // A nova data de pagamento, quando informada, acompanha o próximo período.
-    itemSet(it,'dpago',r.data_pgto?addD(r.data_pgto,30):'');
+    // Não transportar uma baixa efetivada do contrato anterior para o novo.
+    itemSet(it,'dpago','');
     itemSet(it,'obs',r.obs||'');
-    // Vencimento baseado na data do contrato anterior, não na data atual.
-    itemSet(it,'prev',proxUtil(addD(r.prev_pgto||origem.prev_pgto,30)));
+    itemSet(it,'prev',nfMesSeguinte(r.prev_pgto||origem.prev_pgto));
     it.dataset.prevManual='1';
   });
   if(!itens.length)addItem('nf',false);
@@ -12445,7 +12469,14 @@ function aplicarRenovacaoPlaca(){
   nfRenovacaoPlacaIgnorada=_plKey(placa);
   nfRenovacaoOrigem=null;
   document.getElementById('nf-renovar').style.display='none';
-  document.getElementById('nMsg').innerHTML='<span style="color:var(--green)">✓ Dados da última locação copiados. Confira e clique em Salvar para criar a renovação.</span>';
+  const msg=document.getElementById('nMsg');
+  if(editar){
+    msg.innerHTML='<span style="color:var(--green)">✓ Dados preenchidos. Faça as alterações desejadas e clique em Salvar.</span>';
+    document.getElementById('nf-c').focus();
+  }else{
+    msg.innerHTML='<span style="color:var(--blue)">Renovação preenchida. Salvando novo contrato…</span>';
+    addN();
+  }
 }
 function initRenovacaoPlaca(){
   const placa=document.getElementById('nf-p');
@@ -12457,12 +12488,8 @@ function initRenovacaoPlaca(){
     verificarRenovacaoPlaca();
   });
   placa.addEventListener('change',verificarRenovacaoPlaca);
-  document.getElementById('nf-renovar-sim').addEventListener('click',aplicarRenovacaoPlaca);
-  document.getElementById('nf-renovar-nao').addEventListener('click',()=>{
-    nfRenovacaoPlacaIgnorada=_plKey(placa.value);
-    nfRenovacaoOrigem=null;
-    document.getElementById('nf-renovar').style.display='none';
-  });
+  document.getElementById('nf-renovar-sim').addEventListener('click',()=>aplicarRenovacaoPlaca(false));
+  document.getElementById('nf-renovar-nao').addEventListener('click',()=>aplicarRenovacaoPlaca(true));
 }
 function calcN(){calcItems('nf');}
 
