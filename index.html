@@ -4211,6 +4211,15 @@ body.modo-boletos .header-right { display: none; }
 body.modo-boletos #page-resumo > * { display: none; }
 body.modo-boletos #page-resumo > #cardBoletos { display: block; }
 
+
+/* Resumo ao passar o mouse sobre os tubos e suas legendas */
+.frx-hover-detail{position:fixed;z-index:99999;pointer-events:none;width:238px;max-width:calc(100vw - 16px);padding:12px 14px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.22);font-size:12px;line-height:1.4}
+.frx-hover-detail[hidden]{display:none}
+.frx-hover-detail strong{font-size:14px;display:block;margin-bottom:2px}
+.frx-hover-sub{color:var(--ink3);font-size:11px;margin-bottom:9px}
+.frx-hover-line{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.frx-hover-line b{white-space:nowrap;font-variant-numeric:tabular-nums}
+#frxLegendDono li,#frxLegendTipo li{cursor:pointer}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -8996,7 +9005,8 @@ function frxEnsureChart(){
     getIcon:(ringId,key)=>ringId==='tipo'?FRX_ICON_PATHS[frxTypeIcon(key)]:null,
     getLabel:(ringId,key)=>ringId==='dono'?key:null,
     getShortLabel:(ringId,key)=>ringId==='dono'?frxInitials(key):null,
-    onToggle:(ringId,key)=>frxToggle(ringId,key),
+    // Um clique na fatia abre os lançamentos exatos (não apenas aplica filtro).
+    onToggle:(ringId,key)=>mostrarLancCategoria(ringId,key),
     onOpen:(ringId,key)=>mostrarLancCategoria(ringId,key),
   });
   // Clicar no miolo FIXA o que ele estiver mostrando naquele instante:
@@ -9110,8 +9120,94 @@ function frUpdateTotal(){
     (activeCount?' · '+activeCount+' filtro'+(activeCount===1?'':'s')+' ativo'+(activeCount===1?'':'s'):'');
 }
 
+// Detalhamento financeiro das fatias dos dois tubos e das respectivas legendas.
+// Os dados vêm dos mesmos registros que alimentam cada anel, respeitando
+// o mês, a base de faturamento e os filtros cruzados ativos.
+function frxResumoItem(dim,key){
+  const rows=frRowsForRing(dim);
+  const itens=frBreakdown(dim,rows,frSum(rows));
+  const n=itens.findIndex(x=>x.key===key);
+  if(n<0)return null;
+  const visiveis=new Set(itens.filter(x=>x.key!=='Outros').map(x=>x.key));
+  const selecionados=rows.filter(r=>{
+    const k=(r[dim]||'').trim()||'—';
+    return key==='Outros'?!visiveis.has(k):k===key;
+  });
+  return {rows:selecionados,value:frSum(selecionados),
+    pago:selecionados.reduce((t,r)=>t+fN(r.valor_pago),0),
+    saldo:selecionados.reduce((t,r)=>t+fN(r.saldo),0),
+    vencido:selecionados.reduce((t,r)=>t+(isVenc(r)?fN(r.saldo):0),0)};
+}
+let frxInfoBox=null;
+function frxEsconderResumo(){if(frxInfoBox)frxInfoBox.hidden=true;}
+function frxMostrarResumo(dim,key,evt){
+  const data=frxResumoItem(dim,key);
+  if(!data){frxEsconderResumo();return;}
+  if(!frxInfoBox){
+    frxInfoBox=document.createElement('div');
+    frxInfoBox.className='frx-hover-detail';
+    frxInfoBox.hidden=true;
+    document.body.appendChild(frxInfoBox);
+  }
+  const titulo=document.createElement('strong');titulo.textContent=key;
+  const subtitulo=document.createElement('div');subtitulo.className='frx-hover-sub';
+  subtitulo.textContent=(dim==='dono'?'Proprietário':'Tipo')+' · '+data.rows.length+' lançamento'+(data.rows.length===1?'':'s');
+  const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Vencido',data.vencido]];
+  frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor])=>{
+    const linha=document.createElement('div');linha.className='frx-hover-line';
+    const a=document.createElement('span');a.textContent=nome;
+    const b=document.createElement('b');b.textContent=fR(valor);
+    linha.append(a,b);return linha;
+  }));
+  frxInfoBox.hidden=false;
+  const rect=frxInfoBox.getBoundingClientRect();
+  const px=evt.clientX??(evt.target.getBoundingClientRect().left+20);
+  const py=evt.clientY??(evt.target.getBoundingClientRect().top+15);
+  frxInfoBox.style.left=Math.max(8,Math.min(window.innerWidth-rect.width-8,px+14))+'px';
+  frxInfoBox.style.top=Math.max(8,Math.min(window.innerHeight-rect.height-8,py+14))+'px';
+}
+function frxLigarDetalhes(){
+  const stage=document.getElementById('frxStage');
+  if(!stage||stage.dataset.resumoLigado)return;
+  stage.dataset.resumoLigado='1';
+  // Compatível com elementos SVG que expõem key/ring nos atributos,
+  // e com os rótulos textuais desenhados pelo componente Sunburst3D.
+  const detectar=(target)=>{
+    if(target.closest('.sb3d-hub'))return null;
+    const el=target.closest('[data-key],[data-label],[data-name],[data-ring],[data-ring-id],[aria-label],title');
+    if(!el)return null;
+    const attrs=[el,target];
+    let key='',dim='';
+    for(const node of attrs){
+      key=key||node.getAttribute('data-key')||node.getAttribute('data-label')||node.getAttribute('data-name')||'';
+      dim=dim||node.getAttribute('data-ring')||node.getAttribute('data-ring-id')||node.getAttribute('data-dim')||'';
+    }
+    const label=(el.getAttribute('aria-label')||el.getAttribute('title')||el.textContent||'').trim();
+    const candidatos=FR_ORDER.flatMap(d=>frBreakdown(d,frRowsForRing(d),frSum(frRowsForRing(d))).map(x=>({dim:d,key:x.key})));
+    if(key){const found=candidatos.find(x=>x.key===key&&(!dim||dim===x.dim));if(found)return found;}
+    return candidatos.find(x=>label===x.key||label.startsWith(x.key+' ·')||label.startsWith(x.key+' —'))||null;
+  };
+  stage.addEventListener('pointermove',e=>{const item=detectar(e.target);if(item)frxMostrarResumo(item.dim,item.key,e);else frxEsconderResumo();});
+  stage.addEventListener('pointerleave',frxEsconderResumo);
+  for(const [id,dim] of [['frxLegendDono','dono'],['frxLegendTipo','tipo']]){
+    const lista=document.getElementById(id);if(!lista)continue;
+    const chave=(ev)=>{
+      const li=ev.target.closest('li');if(!li||!lista.contains(li))return null;
+      const dados=frBreakdown(dim,frRowsForRing(dim),frSum(frRowsForRing(dim)));
+      const texto=(li.textContent||'').trim();
+      return dados.find(it=>texto.startsWith(it.key))?.key||null;
+    };
+    lista.addEventListener('pointermove',e=>{const k=chave(e);if(k)frxMostrarResumo(dim,k,e);else frxEsconderResumo();});
+    lista.addEventListener('pointerleave',frxEsconderResumo);
+    lista.addEventListener('click',e=>{const k=chave(e);if(k){e.preventDefault();e.stopPropagation();frxEsconderResumo();mostrarLancCategoria(dim,k);}},true);
+  }
+  document.addEventListener('scroll',frxEsconderResumo,true);
+}
+
 function frRenderData(){
   frxEnsureChart();
+  frxLigarDetalhes();
+  frxEsconderResumo();
   frxChart.update({ tipo:frxItemsFor('tipo'), dono:frxItemsFor('dono') });
   frxChart.renderLegend('tipo', document.getElementById('frxLegendTipo'), {title:'Tipo'});
   frxChart.renderLegend('dono', document.getElementById('frxLegendDono'), {title:'Proprietário'});
@@ -11396,7 +11492,8 @@ function mostrarLancDiaFluxo(dia){
 function mostrarLancCategoria(dim,key){
   ULTIMO_MSEARCH=()=>mostrarLancCategoria(dim,key);
   setSearchFiltersVisiveis(false);
-  const rows=frRowsForRing(dim).filter(r=>((r[dim]||'').trim()||'—')===key);
+  const detalhe=frxResumoItem(dim,key);
+  const rows=detalhe?detalhe.rows:[];
   if(!rows.length){
     // Só sai sem abrir nada na 1ª chamada; se já estava aberto (refresh
     // depois de uma alteração em outro lugar), avisa em vez de deixar a
