@@ -4360,7 +4360,7 @@ html, body { touch-action: pan-x pan-y; }
       <option value="pend" selected>Pendentes</option>
       <option value="">Todos</option>
       <option value="pago">Baixados</option>
-      <option value="venc">Vencidos</option>
+      <option value="venc">Atrasados</option>
     </select>
   </div>
   <div id="lf-total"></div>
@@ -4536,6 +4536,13 @@ html, body { touch-action: pan-x pan-y; }
       <div class="fg">
         <div class="fp"><label>Placa</label><input type="text" id="nf-p" placeholder="Ex: UFR2H17" list="placaDL" autocomplete="off"></div>
         <datalist id="placaDL"></datalist>
+        <div id="nf-renovar" class="s2" style="display:none;grid-column:1/-1;padding:13px 14px;border:1px solid var(--blue-mid);border-radius:12px;background:var(--blue-soft);font-size:13px;line-height:1.5" aria-live="polite">
+          <div id="nf-renovar-texto" style="margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn-blue btn-sm" id="nf-renovar-sim">✓ Renovar por mais 30 dias</button>
+            <button type="button" class="btn btn-sm" id="nf-renovar-nao">Não, novo contrato</button>
+          </div>
+        </div>
         <div class="fp"><label>Proprietário</label><select id="nf-d"><option value="">Selecione</option></select></div>
         <div class="fp s2"><label>Cliente</label><input type="text" id="nf-c" list="clienteDL" autocomplete="off"></div>
         <datalist id="clienteDL"></datalist>
@@ -5027,7 +5034,7 @@ html, body { touch-action: pan-x pan-y; }
         <option value="">Todos</option>
         <option value="pend">Pendentes</option>
         <option value="pago">Baixados</option>
-        <option value="venc">Vencidos</option>
+        <option value="venc">Atrasados</option>
       </select>
     </div>
     <div id="searchResults"></div>
@@ -5042,7 +5049,7 @@ html, body { touch-action: pan-x pan-y; }
       <div class="cal-legend">
         <span title="Recebido"><i style="background:var(--green-soft);border:1.5px solid var(--green)"></i><b class="legend-txt">Recebido</b></span>
         <span title="A receber"><i style="background:var(--amber-soft);border:1.5px solid var(--amber)"></i><b class="legend-txt">A receber</b></span>
-        <span title="Vencido"><i style="background:var(--red-soft);border:1.5px solid var(--red)"></i><b class="legend-txt">Vencido</b></span>
+        <span title="Atrasado"><i style="background:var(--red-soft);border:1.5px solid var(--red)"></i><b class="legend-txt">Atrasado</b></span>
         <span title="Recebido + a receber"><i style="background:var(--purple-soft);border:1.5px solid var(--purple)"></i><b class="legend-txt">Recebido + a receber</b></span>
       </div>
       <button class="mcl" onclick="closeCalPrevisto()">✕</button>
@@ -6666,7 +6673,7 @@ function tipTag(t){
 }
 function stTag(r){
   if(isPago(r)) return`<span class="st-baixado">✓ Baixado</span>`;
-  if(isVenc(r)) return`<span class="st-vencido">⚠ ${isParcial(r)?'Parcial vencido':'Vencido'}</span>`;
+  if(isVenc(r)) return`<span class="st-vencido">⚠ ${isParcial(r)?'Parcial atrasado':'Atrasado'}</span>`;
   if(isParcial(r)) return`<span class="st-parcial">◐ Parcial</span>`;
   return`<span class="st-previsto">◷ ${fD(r.prev_pgto)}</span>`;
 }
@@ -6957,7 +6964,7 @@ function buildMiniSummary(){
     <div class="ms-row"><span class="ms-label">No mês — recebido</span><span class="ms-value green">${fR(totalRecMes)}</span></div>
     <div class="ms-row" style="border-top:2px solid var(--line)"><span class="ms-label">Vencem hoje</span><span class="ms-value blue">${hj.length > 0 ? fR(hj.reduce((a,r)=>a+fN(r.saldo),0)) : '—'}</span></div>
     <div class="ms-row"><span class="ms-label">Próximos 7 dias</span><span class="ms-value amber">${fR(p7.reduce((a,r)=>a+fN(r.saldo),0))}</span></div>
-    <div class="ms-row"><span class="ms-label">Já vencidos</span><span class="ms-value ${venc.length?'red':'green'}">${venc.length?fR(venc.reduce((a,r)=>a+fN(r.saldo),0)):'✓ Zero'}</span></div>
+    <div class="ms-row"><span class="ms-label">Atrasados</span><span class="ms-value ${venc.length?'red':'green'}">${venc.length?fR(venc.reduce((a,r)=>a+fN(r.saldo),0)):'✓ Zero'}</span></div>
   `;
 }
 
@@ -6987,7 +6994,7 @@ function dayHeaderHtml(dia,n,totalHtml){
   const semData=dia==='Sem data';
   const isHoje=dia===hoje, isVencDia=!semData&&dia<hoje;
   const titCls=isHoje?'hoje':isVencDia?'venc':'';
-  const tag=isHoje?`<span class="day-tag hoje">HOJE</span>`:isVencDia?`<span class="day-tag venc">VENCIDO</span>`:'';
+  const tag=isHoje?`<span class="day-tag hoje">HOJE</span>`:isVencDia?`<span class="day-tag venc">ATRASADO</span>`:'';
   return `<div class="day-header" onclick="toggleDay(this)">
       <div class="day-weekday">${semData?'':WD[new Date(dia+'T12:00:00').getDay()]}</div>
       <div class="day-title ${titCls}">${semData?'Sem data':dia.slice(8)+'/'+dia.slice(5,7)+'/'+dia.slice(2,4)}</div>
@@ -7026,7 +7033,7 @@ function renderBaixas(){
     if(status==='todos'){verTodosEl.style.display='none';verTodosEl.innerHTML='';}
     else{
       verTodosEl.style.display='block';
-      const STATUS_LBL={pend:'Pendentes',venc:'Vencidos',hoje:'Vencem hoje',futuro:'Futuros',pago:'Pagos'};
+      const STATUS_LBL={pend:'Pendentes',venc:'Atrasados',hoje:'Vencem hoje',futuro:'Futuros',pago:'Pagos'};
       verTodosEl.innerHTML=`<button class="btn btn-sm" onclick="verTodosRecebimentos()">← Ver todos (mostrando só: ${STATUS_LBL[status]||status})</button>`;
     }
   }
@@ -7043,10 +7050,10 @@ function renderBaixas(){
     <div class="mc amber"><div class="mc-label">A receber no mês</div><div class="mc-value">${fRH(totPend)}</div></div>
     <div class="mc green"><div class="mc-label">Recebido no mês</div><div class="mc-value">${fRH(totRec)}</div></div>
     <div class="mc blue"><div class="mc-label">Vencem hoje</div><div class="mc-value">${nHoje}</div></div>
-    <div class="mc red"><div class="mc-label">Já vencidos</div><div class="mc-value">${nVenc}</div></div>
+    <div class="mc red"><div class="mc-label">Atrasados</div><div class="mc-value">${nVenc}</div></div>
   `;
   const metricsMiniText=document.getElementById('metricsMiniText');
-  if(metricsMiniText)metricsMiniText.textContent=`${fR(totPend)} a receber · ${nHoje} hoje · ${nVenc} vencidos`;
+  if(metricsMiniText)metricsMiniText.textContent=`${fR(totPend)} a receber · ${nHoje} hoje · ${nVenc} atrasados`;
 
   const container=document.getElementById('baixasContainer');
   container.innerHTML='';
@@ -7357,7 +7364,7 @@ function buildBaixasFilters(){
   // clique de distância no seletor (e no botão "Ver todos").
   const statusHtml = `<select id="bf-status" class="bf-status-destaque" onchange="renderBaixas()">
     <option value="pend" selected>Pendentes</option>
-    <option value="venc">Vencidos</option>
+    <option value="venc">Atrasados</option>
     <option value="hoje">Vencem hoje</option>
     <option value="futuro">Futuros</option>
     <option value="pago">Pagos</option>
@@ -7992,7 +7999,7 @@ function renderRecCalGridHtml(){
     if(rec>0&&pend>0){
       const venc=dia<hoje;
       cls += ' cal-mix'+(venc?' rc-blink':(isToday?' rc-hoje-mov':''));
-      const pendLabel=venc?'Vencido':'A receber';
+      const pendLabel=venc?'Atrasado':'A receber';
       const dot=(venc||isToday)?'<span class="cal-dot"></span>':'';
       valHtml = `<span class="cal-mix-item rec" title="Recebido ${fR(rec)}">${calValDuplo(rec)}</span>`+
                 `<span class="cal-mix-item pend${venc?' venc':''}" title="${pendLabel} ${fR(pend)}">${calValDuplo(pend)}</span>`+dot;
@@ -8002,7 +8009,7 @@ function renderRecCalGridHtml(){
     } else if(pend>0){
       const venc=dia<hoje;
       cls += venc?' cal-venc rc-blink':(isToday?' cal-pend rc-hoje-mov':' cal-pend');
-      const label=venc?'Vencido':(isToday?'Vence hoje':'A receber');
+      const label=venc?'Atrasado':(isToday?'Vence hoje':'A receber');
       const dot=(venc||isToday)?'<span class="cal-dot"></span>':'';
       valHtml=`<span class="cal-val" title="${label} ${fR(pend)}">${calValDuplo(pend)}</span>`+dot;
     }
@@ -8054,7 +8061,7 @@ function diaBlocoHtml(dia,drows){
   const corpo=ordem.map(k=>diaClienteHtml(dia,k,porCliente[k].pend,porCliente[k].pago)).join('');
   return `<div class="cal-full-day-hd">
       <b>${fDM(dia)}</b>
-      <span class="cal-full-day-tot">${totPago>0?`<span class="t-rec">Recebido ${fR(totPago)}</span>`:''}${totPend>0?`<span class="t-pend">A receber ${fR(totPend)}</span>`:''}</span>
+      <span class="cal-full-day-tot">${totPago>0?`<span class="t-rec">Recebido ${fR(totPago)}</span>`:''}${totPend>0?`<span class="t-pend">${(dia<td()&&dia!=='Sem data')?'Atrasado':'A receber'} ${fR(totPend)}</span>`:''}</span>
       ${bulkDiaBtn}
     </div>
     <div class="cal-full-day-list">${corpo}</div>`;
@@ -8700,7 +8707,7 @@ function renderBoletosPainel(rows){
   const linhas=mostra.map(g=>{
     const idx=grupos.indexOf(g);
     const pago=g.totalSaldo<=0.005, venc=!pago&&g.prev_pgto&&g.prev_pgto<td();
-    const situacao=pago?'recebido':venc?'vencido':'a vencer';
+    const situacao=pago?'recebido':venc?'atrasado':'a vencer';
     const vencTxt=ddmmyyyy(g.prev_pgto)||'—';
     const periodo=g.saida?`${ddmmyyyy(g.saida)} → ${ddmmyyyy(g.retorno)||'?'}`:'—';
     const urgente=!g.feito&&diasAteVenc(g.prev_pgto)<=20;
@@ -9185,13 +9192,13 @@ function renderResumo(){
   // "A receber" também alterna: total pendente do mês e, quando há algo
   // vencido, o quanto disso já passou do prazo — mesmo esquema do card de
   // proprietário, só que sempre 2 slides (nunca cycla se não há vencido).
-  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
+  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   // Mobile: Previsto, Recebido, A receber e (se houver) Atrasado alternam num card só.
   mcPrevCycleRoutes=['abrirCalendarioPrevisto()',"irLancMetric('pago')","irLancMetric('pend')"];
   const prevSlides=`<div class="mc-cycle-slide on"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>`+
     `<div class="mc-cycle-slide"><div class="mc-label">Recebido</div><div class="mc-value" style="color:var(--green)">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>`+
-    `<div class="mc-cycle-slide"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} pendentes</div></div>`+
+    `<div class="mc-cycle-slide"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   if(nVenc>0)mcPrevCycleRoutes.push("irLancMetric('pend')");
   document.getElementById('res-m').innerHTML=`
@@ -9360,7 +9367,7 @@ function renderResumo(){
   const projVenc=projPend.filter(r=>r.prev_pgto<t);
   const projVencVal=projVenc.reduce((a,r)=>a+fN(r.saldo),0);
   const temVenc=projVencVal>0;
-  const projLbl=temVenc?['Vencidos',...dLbl]:dLbl;
+  const projLbl=temVenc?['Atrasados',...dLbl]:dLbl;
   const projVal=temVenc?[projVencVal,...dK.map(k=>dia[k])]:dK.map(k=>dia[k]);
   const projQt=temVenc?[projVenc.length,...dK.map(k=>diaQt[k])]:dK.map(k=>diaQt[k]);
   const projCor=projVal.map((_,i)=>(temVenc&&i===0)?'#bf2518':'#f2b01e');
@@ -9377,7 +9384,7 @@ function renderResumo(){
     onHover:(evt,els)=>{if(evt.native)evt.native.target.style.cursor=els.length?'pointer':'default';},
     plugins:{legend:{display:false},barLabels:{display:true,size:13,fmt:v=>v>=1000?(v/1000).toFixed(1).replace('.',',')+'k':String(Math.round(v))},
       tooltip:{callbacks:{
-        title:it=>it[0].label==='Vencidos'?'Vencidos':'Vence em '+it[0].label,
+        title:it=>it[0].label==='Atrasados'?'Atrasados':'Vence em '+it[0].label,
         label:ctx=>' '+fR(ctx.raw)+' · '+(projQt[ctx.dataIndex]||0)+' lançamento(s)'}}},
     scales:{y:{beginAtZero:true,grace:'14%',ticks:{callback:v=>'R$'+Math.round(v/1000)+'k',maxTicksLimit:5,font:{size:11,family:'IBM Plex Sans'}},grid:{color:gridCol()},border:{display:false,dash:[4,4]}},
       x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,font:{size:11,family:'IBM Plex Sans'}}}}}});
@@ -9578,7 +9585,7 @@ function renderCalPrevisto(){
       valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Recebido ${fR(entry.rec)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.rec)}</span>`;
     } else if(entry.pend>0 && dia<today){
       cls += ' cal-venc';
-      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Vencido ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
+      valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="Atrasado ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
     } else if(entry.pend>0){
       cls += ' cal-pend';
       valHtml = `<span class="cal-val" onclick="calAbrirDia('${dia}')" title="A receber ${fR(entry.pend)} · Ver lançamentos de ${fDM(dia)}">${calFRk(entry.pend)}</span>`;
@@ -11281,7 +11288,7 @@ function mostrarLancDia(dia){
   document.getElementById('mSearch').classList.add('on');
   const input=document.getElementById('searchInput'); if(input)input.style.display='none';
   const tit=document.getElementById('searchModalTit');
-  if(tit) tit.textContent=venc?'⚠ Vencidos':'Vence em '+fDM(dia);
+  if(tit) tit.textContent=venc?'⚠ Atrasados':'Vence em '+fDM(dia);
   const box=document.getElementById('searchResults');
   if(!items.length){ box.innerHTML='<div class="srow-empty">Nada encontrado.</div>'; return; }
   const totVal=items.reduce((a,{r})=>a+fN(r.saldo),0);
@@ -12375,6 +12382,88 @@ function initItens(pref){
   }
   resetItems(pref);
 }
+// RENOVAÇÃO POR PLACA: consulta todo o histórico carregado, não apenas o mês filtrado.
+// A renovação é um NOVO contrato; o anterior e seus recebimentos permanecem intactos.
+let nfRenovacaoOrigem=null;
+let nfRenovacaoPlacaIgnorada='';
+function ultimaLocacaoPlaca(placa){
+  const chave=_plKey(placa);
+  const locs=allD().filter(r=>_plKey(r.placa)===chave &&
+    semAcento(String(r.tipo||'')).toLowerCase()==='locacao' && r.prev_pgto && /^\d{4}-\d{2}-\d{2}$/.test(r.prev_pgto));
+  locs.sort((a,b)=>((b.prev_pgto||'').localeCompare(a.prev_pgto||'')) ||
+    ((b.retorno||'').localeCompare(a.retorno||'')) || ((b.saida||'').localeCompare(a.saida||'')));
+  return locs[0]||null;
+}
+function verificarRenovacaoPlaca(){
+  const campo=document.getElementById('nf-p'),box=document.getElementById('nf-renovar');
+  if(!campo||!box)return;
+  const chave=_plKey(campo.value);
+  if(chave.length!==7 || chave===nfRenovacaoPlacaIgnorada){box.style.display='none';nfRenovacaoOrigem=null;return;}
+  if(nfRenovacaoOrigem && _plKey(nfRenovacaoOrigem.placa)===chave)return;
+  const anterior=ultimaLocacaoPlaca(chave);
+  nfRenovacaoOrigem=anterior;
+  if(!anterior){box.style.display='none';return;}
+  const novoVenc=addD(anterior.prev_pgto,30);
+  document.getElementById('nf-renovar-texto').innerHTML=`<strong>Renovação encontrada para ${esc(anterior.placa)}.</strong><br>Última locação: ${esc(anterior.cliente||'Cliente não informado')} · vencimento anterior <strong>${fD(anterior.prev_pgto)}</strong>.<br>Deseja renovar por mais 30 dias? Novo vencimento: <strong>${fD(proxUtil(novoVenc))}</strong>.`;
+  box.style.display='block';
+}
+function aplicarRenovacaoPlaca(){
+  const origem=nfRenovacaoOrigem;
+  if(!origem)return;
+  const placa=normPlaca(origem.placa);
+  const mesmaLocacao=allD().filter(r=>_plKey(r.placa)===_plKey(placa) &&
+    (r.cliente||'')===(origem.cliente||'') && (r.saida||'')===(origem.saida||'') &&
+    (r.retorno||'')===(origem.retorno||'') && (r.prev_pgto||'')===(origem.prev_pgto||''));
+  const itens=mesmaLocacao.length?mesmaLocacao:[origem];
+  document.getElementById('nf-p').value=placa;
+  preencheDono('nf-d',origem.dono||donoDaPlaca(placa));
+  document.getElementById('nf-c').value=origem.cliente||'';
+  // Início do novo período no término do anterior, duração de 30 dias.
+  const inicio=origem.retorno||origem.saida||origem.prev_pgto;
+  document.getElementById('nf-s').value=inicio;
+  document.getElementById('nf-r').value=addD(inicio,30);
+  const box=document.getElementById('nf-itens');box.innerHTML='';
+  itens.forEach(r=>{
+    const it=addItem('nf',false);
+    itemSet(it,'tipo',LANC_TIPOS.includes(r.tipo)?r.tipo:'Outros');
+    const forma=String(r.forma||'Boleto');
+    const formaBase=LANC_FORMAS.find(f=>forma===f||forma.startsWith(f+' ·'))||'Boleto';
+    itemSet(it,'forma',formaBase);
+    calcItems('nf');
+    const band=forma.split(' · ').slice(1).join(' · ');
+    if(band)itemSet(it,'bandeira',band);
+    itemSet(it,'valor',toBR(Number(r.valor)||0));
+    // A nova data de pagamento, quando informada, acompanha o próximo período.
+    itemSet(it,'dpago',r.data_pgto?addD(r.data_pgto,30):'');
+    itemSet(it,'obs',r.obs||'');
+    // Vencimento baseado na data do contrato anterior, não na data atual.
+    itemSet(it,'prev',proxUtil(addD(r.prev_pgto||origem.prev_pgto,30)));
+    it.dataset.prevManual='1';
+  });
+  if(!itens.length)addItem('nf',false);
+  calcItems('nf');
+  nfRenovacaoPlacaIgnorada=_plKey(placa);
+  nfRenovacaoOrigem=null;
+  document.getElementById('nf-renovar').style.display='none';
+  document.getElementById('nMsg').innerHTML='<span style="color:var(--green)">✓ Dados da última locação copiados. Confira e clique em Salvar para criar a renovação.</span>';
+}
+function initRenovacaoPlaca(){
+  const placa=document.getElementById('nf-p');
+  if(!placa||placa.dataset.renovacaoInit)return;
+  placa.dataset.renovacaoInit='1';
+  placa.addEventListener('input',()=>{
+    const chave=_plKey(placa.value);
+    if(chave!==nfRenovacaoPlacaIgnorada)nfRenovacaoPlacaIgnorada='';
+    verificarRenovacaoPlaca();
+  });
+  placa.addEventListener('change',verificarRenovacaoPlaca);
+  document.getElementById('nf-renovar-sim').addEventListener('click',aplicarRenovacaoPlaca);
+  document.getElementById('nf-renovar-nao').addEventListener('click',()=>{
+    nfRenovacaoPlacaIgnorada=_plKey(placa.value);
+    nfRenovacaoOrigem=null;
+    document.getElementById('nf-renovar').style.display='none';
+  });
+}
 function calcN(){calcItems('nf');}
 
 // Lê os itens do formulário e devolve {recs} ou {erro}. Cartão parcelado
@@ -12489,6 +12578,8 @@ async function addN(){
   document.getElementById('novosCard').style.display='block';
   // Reset form
   ['nf-p','nf-c'].forEach(id=>document.getElementById(id).value='');
+  nfRenovacaoOrigem=null;nfRenovacaoPlacaIgnorada='';
+  document.getElementById('nf-renovar').style.display='none';
   resetItems('nf');
   rNovos();popSel();renderAll();
 }
@@ -13280,6 +13371,7 @@ async function boot(){
   autoCompletePlaca('e-p');
   autoCompletePlaca('ai-p');
   autoFillDono('nf-p','nf-d');
+  initRenovacaoPlaca();
   autoFillDono('e-p','e-d');
   autoFillDono('ai-p','ai-d');
   // Dropdown de sugestão (substitui o <datalist>, que não funciona no iOS
