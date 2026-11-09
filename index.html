@@ -4591,6 +4591,62 @@ html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
     padding:15px 12px 14px;border-radius:17px;
   }
 }
+
+/* 09/11 — Grade compacta de vencimentos: 3 cards na mesma linha, sem
+   perder agrupamento do contrato nem ações individuais de cada lançamento. */
+#page-lancamentos .lc-parcelas-grid,
+#searchResults .lc-parcelas-grid,
+.day-items .lc-parcelas-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  align-items:stretch;
+  min-width:0;
+}
+#page-lancamentos .lc-parcelas-grid > .lc-parcela-card,
+#searchResults .lc-parcelas-grid > .lc-parcela-card,
+.day-items .lc-parcelas-grid > .lc-parcela-card {
+  margin:0;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  border-radius:13px;
+}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt {
+  min-height:0;
+  padding:10px 12px;
+  gap:6px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l {gap:3px 7px;flex:1 1 155px;min-width:0}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l .agi-prev-lbl {font-size:9px;line-height:1.1}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l b {font-size:15px;line-height:1.15}
+.lc-parcelas-grid .lc-parcela-card .lc-parc {font-size:10px;padding:3px 7px;border-radius:7px}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-r {gap:5px;flex:0 0 auto;margin-left:auto;width:auto}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-r > span:last-child {font-size:15px}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-itens {padding:7px 10px 8px;flex:1;min-width:0}
+#page-lancamentos .lc-parcelas-grid .swipe.lc-ct-sw .pcard.lc-ct-item,
+#searchResults .lc-parcelas-grid .swipe.lc-ct-sw .pcard.lc-ct-item,
+.day-items .lc-parcelas-grid .swipe .pcard.lc-ct-item {padding:5px 2px;min-height:0;gap:5px}
+.lc-parcelas-grid .lc-parcela-card .pcard-body {gap:3px}
+.lc-parcelas-grid .lc-parcela-card .pcard-tags {gap:4px 5px}
+.lc-parcelas-grid .lc-parcela-card .pcard-tags .tag {font-size:10px;padding:3px 7px}
+.lc-parcelas-grid .lc-parcela-card .pcard-obs {font-size:10px;line-height:1.3}
+.lc-parcelas-grid .lc-parcela-card .pcard-parcial-sub {font-size:10px}
+/* Moldura do contrato também menor, sem exagero de margens. */
+#page-lancamentos .lc-ct,#searchResults .lc-ct {padding:15px 17px 14px}
+#page-lancamentos .lc-ct-hd,#searchResults .lc-ct-hd {gap:6px;margin-bottom:11px;padding-bottom:11px}
+#page-lancamentos .lc-ct-foot,#searchResults .lc-ct-foot {margin-top:11px;padding-top:10px}
+@media (max-width:1120px) {
+ #page-lancamentos .lc-parcelas-grid,#searchResults .lc-parcelas-grid,.day-items .lc-parcelas-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:680px) {
+ #page-lancamentos .lc-parcelas-grid,#searchResults .lc-parcelas-grid,.day-items .lc-parcelas-grid {grid-template-columns:minmax(0,1fr);gap:8px}
+ #page-lancamentos .lc-ct,#searchResults .lc-ct {padding:12px 10px}
+ .lc-parcelas-grid .lc-parcela-card .lc-ct-dt {padding:9px 10px}
+}
+/* Ações dos lançamentos continuam operando sobre a parcela específica. */
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -11659,7 +11715,7 @@ function lcContratoHtml(g,fecharBusca,opt){
         ${multiData?'':metaVenc}
       </div>
     </div>
-    ${corpo}
+    <div class="lc-parcelas-grid">${corpo}</div>
     ${aviso}
     <div class="lc-ct-foot">
       <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':(ehContrato?'Total do contrato':'Total parcelado')}${nFora?`<small class="lc-ct-fora-nota">inclui ${nFora} ${opt.foraLabel||'fora do filtro'}</small>`:''}${par?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${par.loc.i},${par.com.i})">✎ Ajustar total</button>`:''}${(!multiData&&pagosIdx.length)?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosIdx.join(',')}])">↺ Reverter pagamento</button>`:''}</span>
