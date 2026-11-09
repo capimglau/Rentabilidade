@@ -4803,6 +4803,39 @@ html[data-theme="dark"] #page-resumo .fat-barra-pct {
   color:#42576a !important;
 }
 
+
+/* AGI — correção do baralho da Agenda: quantidade real de cartas e simetria. */
+#page-resumo .agb-baralho-wrap,
+#page-resumo .agb-deck-rotativo {margin-bottom:8px;}
+#page-resumo .agb-baralho-um {margin-bottom:4px;}
+#page-resumo .agb-ev-ghost {
+  box-sizing:border-box;
+  height:100%;
+  transform:none;
+  border-radius:17px;
+  background:var(--card);
+  box-shadow:0 2px 4px rgba(0,0,0,.12);
+}
+#page-resumo .agb-ev-ghost-1,
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-1 {
+  left:4px; right:4px; top:4px; bottom:0;
+  transform:none;
+  opacity:.90;
+  clip-path:inset(calc(100% - 5px) 0 0 0);
+}
+#page-resumo .agb-ev-ghost-2,
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-2 {
+  left:8px; right:8px; top:8px; bottom:0;
+  transform:none;
+  opacity:.78;
+  clip-path:inset(calc(100% - 9px) 0 0 0);
+}
+/* Ao expandir, os cartões reais seguem imediatamente depois do cartão visível. */
+#page-resumo .agb-col.agb-col-open .agb-baralho-wrap,
+#page-resumo .agb-col.agb-col-open .agb-deck-rotativo {margin-bottom:0;}
+#page-resumo .agb-col-more {margin-top:0;gap:9px;}
+#page-resumo .agb-col.agb-col-open .agb-col-more {display:flex;}
+
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -8906,9 +8939,12 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
     <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${badgeHtml}${stackBadge}</div>
   </div>`;
   if(!hiddenCount)return cardHtml;
-  return `<div class="agb-baralho-wrap">
-    <div class="agb-ev-ghost agb-ev-ghost-1"></div>
-    <div class="agb-ev-ghost agb-ev-ghost-2"></div>
+  // Uma carta oculta = uma camada atrás; duas ou mais = até duas camadas.
+  // Nunca mostrar duas cartas fantasma quando existe só um lançamento oculto.
+  const fantasmas=`<div class="agb-ev-ghost agb-ev-ghost-1" aria-hidden="true"></div>`+
+    (hiddenCount>1?`<div class="agb-ev-ghost agb-ev-ghost-2" aria-hidden="true"></div>`:'');
+  return `<div class="agb-baralho-wrap${hiddenCount===1?' agb-baralho-um':''}">
+    ${fantasmas}
     ${cardHtml}
   </div>`;
 }
@@ -8942,7 +8978,7 @@ function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   const cardsHtml=visiveis.map((g,i)=>{
     const isTopo=temResto&&i===visiveis.length-1;
     const html=agbCardHtml(g,dia,isTopo?resto.length:0,pago);
-    return isTopo?html.replace('class="agb-baralho-wrap"',`class="agb-baralho-wrap agb-deck-rotativo" data-agb-deck="${deckId}"`):html;
+    return isTopo?html.replace('class="agb-baralho-wrap',`class="agb-baralho-wrap agb-deck-rotativo`).replace('class="agb-baralho-wrap agb-deck-rotativo',`data-agb-deck="${deckId}" class="agb-baralho-wrap agb-deck-rotativo`):html;
   }).join('');
   const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia,0,pago)).join('')}</div>`:'';
   const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
