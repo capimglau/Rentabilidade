@@ -4647,6 +4647,39 @@ html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
  .lc-parcelas-grid .lc-parcela-card .lc-ct-dt {padding:9px 10px}
 }
 /* Ações dos lançamentos continuam operando sobre a parcela específica. */
+
+/* Faturamento horizontal — painéis pareados (padrão Estilo). */
+.fat-paineis { margin: 0 0 18px; }
+.fat-paineis-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:0 0 13px; }
+.fat-paineis-titulo { font-size:16px; font-weight:750; color:var(--ink); margin-right:auto; }
+.fat-paineis-toolbar .fr-total { display:none; }
+.fat-paineis-toolbar #fatRingFilters { flex:none; }
+.fat-paineis-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:stretch; }
+.fat-painel { background:var(--card); border:1px solid var(--line); border-radius:19px; overflow:hidden; box-shadow:var(--card-shadow); min-width:0; display:flex; flex-direction:column; }
+.fat-painel-cab { padding:17px 19px; display:flex; align-items:center; justify-content:space-between; gap:12px; background:color-mix(in srgb,var(--blue) 6%,var(--card)); border-bottom:1px solid var(--line); }
+.fat-painel-cab h2 { font-size:15px; font-weight:700; color:var(--ink); line-height:1.25; }
+.fat-painel-total { font-size:13px; font-weight:700; color:var(--blue); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.fat-painel-lista { padding:19px 18px 12px; display:flex; flex-direction:column; gap:16px; flex:1; }
+.fat-barra-linha { border:0; padding:0; background:transparent; text-align:left; display:grid; grid-template-columns:minmax(84px,24%) minmax(85px,1fr) max-content; align-items:center; gap:10px; cursor:pointer; width:100%; color:var(--ink); }
+.fat-barra-linha:hover .fat-barra-faixa { box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 25%,transparent); }
+.fat-barra-linha:focus-visible { outline:2px solid var(--blue); outline-offset:4px; border-radius:6px; }
+.fat-barra-nome { font-size:12px; font-weight:650; overflow-wrap:anywhere; }
+.fat-barra-faixa { display:flex; position:relative; height:27px; border-radius:999px; overflow:hidden; background:var(--surface2); min-width:0; }
+.fat-barra-cheio { display:block; flex:0 0 auto; background:var(--fat-cor); }
+.fat-barra-restante { display:block; flex:0 0 auto; background-color:color-mix(in srgb,var(--fat-cor) 32%,var(--card)); background-image:repeating-linear-gradient(125deg,transparent 0,transparent 7px,rgba(255,255,255,.43) 7px,rgba(255,255,255,.43) 12px); background-size:34px 34px; animation:fat-listras 1.5s linear infinite; }
+.fat-barra-pct { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(255,255,255,.86); color:#263747; font-size:10px; font-weight:750; border-radius:999px; padding:2px 7px; line-height:1.25; pointer-events:none; }
+.fat-barra-valor { font-size:12px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.fat-painel-legenda { border-top:1px solid var(--line); margin:10px 18px 0; padding:13px 0 16px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px 22px; color:var(--ink3); font-size:11px; font-weight:600; }
+.fat-painel-legenda span { display:inline-flex; align-items:center; gap:6px; }
+.fat-painel-legenda i { display:inline-block; width:23px; height:11px; border-radius:999px; background:var(--pastel-blue); }
+.fat-painel-legenda .fat-lenda-pendente { background-color:#d5e0eb; background-image:repeating-linear-gradient(125deg,transparent 0,transparent 5px,#a8bdd2 5px,#a8bdd2 9px); background-size:24px 24px; animation:fat-listras 1.5s linear infinite; }
+.fat-painel-vazio { color:var(--ink3);font-size:13px;text-align:center;padding:20px 0; }
+@keyframes fat-listras { to { background-position:34px 0; } }
+@media(prefers-reduced-motion:reduce){ .fat-barra-restante,.fat-painel-legenda .fat-lenda-pendente {animation:none;} }
+@media(max-width:1000px){.fat-paineis-grid {grid-template-columns:1fr;} }
+@media(max-width:540px){ .fat-painel-cab{padding:14px 12px;flex-wrap:wrap;} .fat-painel-lista{padding:15px 12px;gap:14px;} .fat-barra-linha{grid-template-columns:minmax(68px,28%) minmax(55px,1fr) max-content;gap:6px;} .fat-barra-nome,.fat-barra-valor {font-size:11px;} .fat-barra-faixa{height:24px;} .fat-painel-legenda{margin-inline:12px;} }
+html[data-theme="dark"] .fat-barra-pct {background:rgba(20,30,44,.88);color:#eef2fa;}
+
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -4807,32 +4840,25 @@ html, body { touch-action: pan-x pan-y; }
 <div class="page on" id="page-resumo">
   <div class="mrow" id="res-m"></div>
   <div id="recebHoje"></div>
-  <div class="card card-donut">
-    <div class="card-hd"><span id="frxTitulo">Faturamento</span><span class="sub"></span>
-      <div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar por tipo"></div>
-      <button type="button" class="frx-toggle" id="frxToggleBtn" onclick="frxToggleGrafico()" aria-pressed="false" title="Mostrar gráfico circular" aria-label="Mostrar gráfico circular">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 12a9 9 0 0 0-9-9v9z"/></svg>
-      </button></div>
-    <div class="fr-filterrow">
+  <!-- Faturamento: dois painéis simultâneos, com execução sólida e saldo hachurado. -->
+  <div class="fat-paineis">
+    <div class="fat-paineis-toolbar">
+      <span class="fat-paineis-titulo" id="frxTitulo">Faturamento</span>
+      <div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div>
       <div class="frx-base" id="frBasisToggle"></div>
-      <div class="fr-total" id="frTotal">
-        <div class="fr-total-label" id="frTotalLabel">Total previsto</div>
-        <div class="fr-total-value mono" id="frTotalValue">R$ 0,00</div>
-        <div class="fr-total-sub" id="frTotalSub"></div>
-      </div>
+      <div class="fr-total" id="frTotal"><span id="frTotalLabel" hidden></span><span id="frTotalValue" hidden></span><span id="frTotalSub" hidden></span></div>
     </div>
-    <div class="sb3d-body">
-      <div id="frxStage"></div>
-      <div class="sb3d-legends">
-        <div class="sb3d-legend-block">
-          <div class="sb3d-legend-title">Proprietário</div>
-          <ul class="sb3d-legend" id="frxLegendDono"></ul>
-        </div>
-        <div class="sb3d-legend-block">
-          <div class="sb3d-legend-title">Tipo</div>
-          <ul class="sb3d-legend" id="frxLegendTipo"></ul>
-        </div>
-      </div>
+    <div class="fat-paineis-grid">
+      <section class="fat-painel" aria-labelledby="fatTipoTitulo">
+        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><span class="fat-painel-total" id="fatTipoTotal"></span></header>
+        <div class="fat-painel-lista" id="fatTipoBarras"></div>
+        <div class="fat-painel-legenda"><span><i class="fat-lenda-solida"></i>Efetivado</span><span><i class="fat-lenda-pendente"></i>A realizar</span></div>
+      </section>
+      <section class="fat-painel" aria-labelledby="fatDonoTitulo">
+        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><span class="fat-painel-total" id="fatDonoTotal"></span></header>
+        <div class="fat-painel-lista" id="fatDonoBarras"></div>
+        <div class="fat-painel-legenda"><span><i class="fat-lenda-solida"></i>Efetivado</span><span><i class="fat-lenda-pendente"></i>A realizar</span></div>
+      </section>
     </div>
   </div>
   <div class="card" id="cardBoletos">
@@ -9671,13 +9697,35 @@ function frxLigarDetalhes(){
 }
 
 function frRenderData(){
-  frxEnsureChart();
-  frxLigarDetalhes();
-  frxEsconderResumo();
-  frxChart.update({ tipo:frxItemsFor('tipo'), dono:frxItemsFor('dono') });
-  frxChart.renderLegend('tipo', document.getElementById('frxLegendTipo'), {title:'Tipo'});
-  frxChart.renderLegend('dono', document.getElementById('frxLegendDono'), {title:'Proprietário'});
-  frxUpdateHub();
+  // Os dois painéis usam os mesmos lançamentos do mês e filtros cruzados já existentes.
+  for(const [dim,target,totalTarget] of [['tipo','fatTipoBarras','fatTipoTotal'],['dono','fatDonoBarras','fatDonoTotal']]){
+    const lista=document.getElementById(target),total=document.getElementById(totalTarget);
+    if(!lista)continue;
+    const itens=frxItemsFor(dim);
+    const montante=itens.reduce((acc,it)=>acc+Math.max(0,it.value),0);
+    if(total)total.textContent='Total: '+fR(montante);
+    lista.replaceChildren();
+    if(!itens.length){const vazio=document.createElement('p');vazio.className='fat-painel-vazio';vazio.textContent='Nenhum lançamento neste período.';lista.appendChild(vazio);continue;}
+    itens.forEach((it,idx)=>{
+      const pago=Math.max(0,Math.min(it.value,it.pago));
+      const falta=Math.max(0,it.value-pago);
+      const proporcao=it.value>0?100*pago/it.value:0;
+      const pct=montante>0?Math.round(it.value/montante*100):0;
+      const linha=document.createElement('button');linha.type='button';linha.className='fat-barra-linha';
+      linha.title=it.key+' · Efetivado: '+fR(pago)+' · A realizar: '+fR(falta)+' — clique para visualizar os lançamentos';
+      linha.setAttribute('aria-label',linha.title);
+      const nome=document.createElement('span');nome.className='fat-barra-nome';nome.textContent=it.key;
+      const faixa=document.createElement('span');faixa.className='fat-barra-faixa';faixa.style.setProperty('--fat-cor',it.color);
+      const cheio=document.createElement('span');cheio.className='fat-barra-cheio';cheio.style.width=proporcao+'%';
+      const pend=document.createElement('span');pend.className='fat-barra-restante';pend.style.width=(100-proporcao)+'%';
+      faixa.append(cheio,pend);
+      const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
+      const valor=document.createElement('span');valor.className='fat-barra-valor';valor.textContent=fR(it.value);
+      linha.append(nome,faixa,valor);
+      linha.addEventListener('click',()=>mostrarLancCategoria(dim,it.key));
+      lista.appendChild(linha);
+    });
+  }
   frUpdateTotal();
 }
 
