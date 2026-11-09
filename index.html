@@ -4666,7 +4666,7 @@ html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
 .fat-barra-nome { font-size:12px; font-weight:650; overflow-wrap:anywhere; }
 .fat-barra-faixa { display:flex; position:relative; height:27px; border-radius:999px; overflow:hidden; background:var(--surface2); min-width:0; }
 .fat-barra-cheio { display:block; flex:0 0 auto; background:var(--fat-cor); }
-.fat-barra-restante { display:block; flex:0 0 auto; background-color:color-mix(in srgb,var(--fat-cor) 32%,var(--card)); background-image:repeating-linear-gradient(125deg,transparent 0,transparent 7px,rgba(255,255,255,.43) 7px,rgba(255,255,255,.43) 12px); background-size:34px 34px; animation:fat-listras 1.5s linear infinite; }
+.fat-barra-restante { display:block; flex:0 0 auto; background-color:color-mix(in srgb,var(--fat-cor) 32%,var(--card)); background-image:repeating-linear-gradient(125deg,transparent 0,transparent 9px,rgba(255,255,255,.18) 9px,rgba(255,255,255,.18) 13px); background-size:44px 44px; animation:fat-listras 9s linear infinite; }
 .fat-barra-pct { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(255,255,255,.86); color:#263747; font-size:10px; font-weight:750; border-radius:999px; padding:2px 7px; line-height:1.25; pointer-events:none; }
 .fat-barra-valor { font-size:12px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
 .fat-painel-legenda { border-top:1px solid var(--line); margin:10px 18px 0; padding:13px 0 16px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px 22px; color:var(--ink3); font-size:11px; font-weight:600; }
@@ -4674,7 +4674,7 @@ html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
 .fat-painel-legenda i { display:inline-block; width:23px; height:11px; border-radius:999px; background:var(--pastel-blue); }
 .fat-painel-legenda .fat-lenda-pendente { background-color:#d5e0eb; background-image:repeating-linear-gradient(125deg,transparent 0,transparent 5px,#a8bdd2 5px,#a8bdd2 9px); background-size:24px 24px; animation:fat-listras 1.5s linear infinite; }
 .fat-painel-vazio { color:var(--ink3);font-size:13px;text-align:center;padding:20px 0; }
-@keyframes fat-listras { to { background-position:34px 0; } }
+@keyframes fat-listras { to { background-position:44px 0; } }
 @media(prefers-reduced-motion:reduce){ .fat-barra-restante,.fat-painel-legenda .fat-lenda-pendente {animation:none;} }
 @media(max-width:1000px){.fat-paineis-grid {grid-template-columns:1fr;} }
 @media(max-width:540px){ .fat-painel-cab{padding:14px 12px;flex-wrap:wrap;} .fat-painel-lista{padding:15px 12px;gap:14px;} .fat-barra-linha{grid-template-columns:minmax(68px,28%) minmax(55px,1fr) max-content;gap:6px;} .fat-barra-nome,.fat-barra-valor {font-size:11px;} .fat-barra-faixa{height:24px;} .fat-painel-legenda{margin-inline:12px;} }
@@ -4852,12 +4852,10 @@ html, body { touch-action: pan-x pan-y; }
       <section class="fat-painel" aria-labelledby="fatTipoTitulo">
         <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><span class="fat-painel-total" id="fatTipoTotal"></span></header>
         <div class="fat-painel-lista" id="fatTipoBarras"></div>
-        <div class="fat-painel-legenda"><span><i class="fat-lenda-solida"></i>Efetivado</span><span><i class="fat-lenda-pendente"></i>A realizar</span></div>
       </section>
       <section class="fat-painel" aria-labelledby="fatDonoTitulo">
         <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><span class="fat-painel-total" id="fatDonoTotal"></span></header>
         <div class="fat-painel-lista" id="fatDonoBarras"></div>
-        <div class="fat-painel-legenda"><span><i class="fat-lenda-solida"></i>Efetivado</span><span><i class="fat-lenda-pendente"></i>A realizar</span></div>
       </section>
     </div>
   </div>
@@ -9764,7 +9762,9 @@ function buildFatRingFilters(){
 }
 
 function renderFatRings(){
-  if(!document.getElementById('frxStage'))return;
+  // Painéis em barras substituíram o antigo gráfico #frxStage.
+  // Não interromper a renderização apenas porque o gráfico antigo foi removido.
+  if(!document.getElementById('fatTipoBarras')&&!document.getElementById('fatDonoBarras'))return;
   if(!frFiltersBuilt){buildFatRingFilters(); frFiltersBuilt=true;}
   frRenderData();
 }
