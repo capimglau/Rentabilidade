@@ -4307,6 +4307,57 @@ html[data-theme="dark"] .lc-ct.done .lc-ct-tot{color:var(--ink3)}
 .lc-ct-stub-go{font-size:18px;color:var(--ink3);line-height:1}
 @keyframes lcCtFlash{0%{box-shadow:0 0 0 0 rgba(31,95,168,.55)}100%{box-shadow:0 0 0 14px rgba(31,95,168,0)}}
 .lc-ct-flash{animation:lcCtFlash .9s ease-out 2}
+
+/* AGI 09/11/2026 — leitura financeira: prioridade às datas e parcelas agrupadas. */
+#page-lancamentos .lf-searchbar {margin-bottom:16px}
+#page-lancamentos #lfFiltPanel {gap:12px; margin-bottom:22px}
+#page-lancamentos #lf-total {margin-bottom:22px}
+#page-lancamentos .day-group {margin-bottom:34px}
+#page-lancamentos .day-items {padding-top:14px}
+#page-lancamentos .day-items > .swipe {margin-bottom:14px}
+#page-lancamentos .lc-ct, #searchResults .lc-ct {padding:19px 19px 17px 23px; margin-bottom:24px; border-radius:20px; box-shadow:0 5px 18px rgba(20,38,65,.075)}
+#page-lancamentos .lc-ct-hd, #searchResults .lc-ct-hd {gap:12px; padding-bottom:17px}
+#page-lancamentos .lc-ct-itens, #searchResults .lc-ct-itens {gap:10px}
+#page-lancamentos .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,
+#searchResults .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item {padding:13px 15px 13px 17px; min-height:65px; border-radius:12px}
+#page-lancamentos .lc-ct-foot, #searchResults .lc-ct-foot {padding-top:16px; margin-top:16px}
+#searchResults .srow-mes-tot {margin-bottom:16px; margin-top:23px}
+#searchResults .srow-mes-tot:first-child {margin-top:0}
+#searchResults > .swipe {margin-bottom:15px}
+.agi-prev-date,.agi-prev-range {display:inline-flex!important; align-items:center; flex-wrap:wrap; column-gap:9px; row-gap:2px; padding:7px 11px; border:1px solid rgba(31,95,168,.17); background:var(--blue-soft); color:var(--blue); border-radius:10px; max-width:100%; line-height:1.35; font-variant-numeric:tabular-nums}
+.agi-prev-date strong,.agi-prev-range strong {font-size:13px; font-weight:800; white-space:nowrap; color:inherit}
+.agi-prev-lbl {font-size:10.5px; font-weight:650; letter-spacing:.01em; opacity:.86}
+.agi-prev-date.late {background:var(--red-soft); color:var(--red); border-color:rgba(191,37,24,.18)}
+.agi-prev-date.today {background:var(--blue-soft); color:var(--blue); border-color:var(--blue)}
+.agi-prev-date.paid {background:var(--green-soft); color:var(--green); border-color:rgba(10,100,57,.16)}
+.agi-prev-range small {font-size:10px; opacity:.8}
+.lc-ct-dt {margin:20px 0 10px; padding:11px 13px; border:1px solid var(--line); background:var(--card); border-radius:11px; gap:10px}
+.lc-ct-dt-l {display:flex; align-items:center; gap:9px; flex-wrap:wrap}
+.lc-ct-dt-l b {font-size:14px; font-weight:800; color:var(--blue)}
+.lc-ct-dt.venc {background:var(--red-soft);border-color:rgba(191,37,24,.14)}
+.lc-ct-dt.venc .lc-ct-dt-l b {color:var(--red)}
+.lc-ct-dt.ok {background:var(--green-soft);border-color:rgba(10,100,57,.14)}
+.lc-ct-dt.ok .lc-ct-dt-l b {color:var(--green)}
+.lc-ct-dt-r > span:last-child {font-size:14px; font-variant-numeric:tabular-nums}
+.lc-ct .swipe.lc-ct-sw.fora {opacity:.82}
+.lc-ct .swipe.lc-ct-sw.fora:hover,.lc-ct .swipe.lc-ct-sw.fora.open {opacity:1}
+.lc-ct-hd .pcard-meta {gap:8px 12px; margin-top:3px}
+.lc-ct .pcard.lc-ct-item .pcard-tags {gap:7px 9px; flex-wrap:wrap}
+.lc-ct .pcard.lc-ct-item .pcard-body {gap:7px}
+.lc-ct-stub {margin-bottom:13px; padding:14px 16px; background:var(--card); border-color:rgba(31,95,168,.2)}
+html[data-theme="dark"] .agi-prev-date,html[data-theme="dark"] .agi-prev-range {background:rgba(47,111,183,.16); border-color:rgba(117,172,235,.24); color:#a8d1ff}
+html[data-theme="dark"] .agi-prev-date.late {background:rgba(191,37,24,.16); color:#ffaaa1}
+html[data-theme="dark"] .agi-prev-date.paid {background:rgba(10,100,57,.22); color:#9bd7b6}
+html[data-theme="dark"] .lc-ct-dt {background:var(--card)}
+@media(max-width:760px){
+ #page-lancamentos .lc-ct,#searchResults .lc-ct {padding:15px 12px 14px 17px; margin-bottom:23px}
+ #page-lancamentos .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,#searchResults .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item {padding:12px 10px 12px 13px}
+ .agi-prev-date,.agi-prev-range {padding:6px 9px; gap:5px}
+ .agi-prev-lbl {font-size:10px}
+ .agi-prev-date strong {font-size:12px}
+ .lc-ct-dt {padding:10px; align-items:flex-start}
+ .lc-ct-dt-r {width:100%; justify-content:space-between}
+}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -11298,6 +11349,7 @@ function lcContratoHtml(g,fecharBusca,opt){
           <div class="pcard-tags">
             ${tipTag(r.tipo)}
             ${pi?`<span class="lc-parc" title="Parcela ${pi.atual} de ${pi.total}">Parcela ${pi.atual}/${pi.total}</span>`:''}
+            <span class="agi-prev-date${pago?' paid':isVenc(r)?' late':r.prev_pgto===hoje?' today':''}" title="Previsão de pagamento"><span class="agi-prev-lbl">Previsão de pagamento</span><strong>${r.prev_pgto?fDM(r.prev_pgto):'Sem data'}</strong></span>
             ${formas.length>1?`<span class="tag tag-forma">${fFormaLabel(r.forma)}</span>`:''}
             ${donos.length>1?`<span style="font-size:11px;color:var(--ink3)">${esc(r.dono||'—')}</span>`:''}
             ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
@@ -11324,7 +11376,7 @@ function lcContratoHtml(g,fecharBusca,opt){
       const pagosD=its.filter(({r})=>fN(r.valor_pago)>0).map(({i})=>i);
       const lbl=d?(d===hoje?'hoje · ':'')+fDM(d):'sem data';
       return `<div class="lc-ct-dt${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}">
-        <span class="lc-ct-dt-l">🗓 Vence <b>${lbl}</b>${opt.anchorDia!=null&&opt.anchorDia===d?'<i class="lc-ct-dt-here">neste dia</i>':''}</span>
+        <span class="lc-ct-dt-l"><span class="agi-prev-lbl">Previsão de pagamento</span><b>${lbl}</b>${opt.anchorDia!=null&&opt.anchorDia===d?'<i class="lc-ct-dt-here">neste dia</i>':''}</span>
         <span class="lc-ct-dt-r">${parD?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${parD.loc.i},${parD.com.i})">✎ Ajustar total</button>`:''}${pagosD.length?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosD.join(',')}])">↺ Reverter</button>`:''}<span>${fR(tot)}</span></span>
       </div>`+`<div class="lc-ct-itens">${its.map(linha).join('')}</div>`;
     }).join('');
@@ -11339,8 +11391,8 @@ function lcContratoHtml(g,fecharBusca,opt){
   ].filter(Boolean).join(' · ');
   const venc0=datas.filter(Boolean);
   const metaVenc=multiData
-    ?`<span>Vencimentos <b style="font-weight:700">${fDM(venc0[0])}</b> → <b style="font-weight:700">${fDM(venc0[venc0.length-1])}</b> · ${datas.length} datas</span>`
-    :`<span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r0.prev_pgto)}</b></span>`;
+    ?`<span class="agi-prev-range"><span class="agi-prev-lbl">Previsões de pagamento</span><strong>${venc0.length?fDM(venc0[0]):'Sem data'} → ${venc0.length?fDM(venc0[venc0.length-1]):'Sem data'}</strong><small>${datas.length} datas</small></span>`
+    :`<span class="agi-prev-date${todosPagos?' paid':algumVenc?' late':hojeCard?' today':''}"><span class="agi-prev-lbl">Previsão de pagamento</span><strong>${r0.prev_pgto?fDM(r0.prev_pgto):'Sem data'}</strong></span>`;
   const idAttr=opt.id?` id="${opt.id}"`:'';
   return `<div${idAttr} class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}" data-dia="${r0.prev_pgto||''}">
     <div class="lc-ct-hd">
@@ -11431,7 +11483,7 @@ function lcCardHtml(r,gi,fecharBusca){
         </div>`:''}
         <div class="pcard-meta">
           <span>🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
-          <span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r.prev_pgto)}</b></span>
+          <span class="agi-prev-date${pago?' paid':venc?' late':hojeCard?' today':''}" title="Previsão de pagamento"><span class="agi-prev-lbl">Previsão de pagamento</span><strong>${r.prev_pgto?fDM(r.prev_pgto):'Sem data'}</strong></span>
         </div>
       </div>
       <div class="pcard-right">
