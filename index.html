@@ -4385,6 +4385,37 @@ html[data-theme="dark"] .lc-ct-dt {background:var(--card)}
   .lc-ct-dt .lc-ct-dt-l {width:100%}
 }
 
+/* Busca 09/11 — área de resultados prioritária; filtros opcionais e retráteis.
+   Corrige o painel que ficava fixo e consumia quase toda a altura. */
+#mSearch .modal-busca > #srFiltToggleBtn:not(.sr-hide) {
+  display:inline-flex !important; align-items:center; justify-content:center;
+  align-self:flex-start; width:auto; margin:9px 0 4px;
+  padding:8px 15px; border-radius:12px; font-size:12.5px;
+  min-height:34px; background:var(--surface); color:var(--ink2);
+  border:1px solid var(--line); box-shadow:none; cursor:pointer;
+}
+#mSearch .modal-busca > #srFiltToggleBtn.sr-hide {display:none !important}
+#mSearch .modal-busca > #srFiltPanel {
+  display:grid; grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:9px; margin:8px 0 10px; max-height:none; overflow:visible;
+  opacity:1; transition:none; flex:0 0 auto;
+}
+#mSearch .modal-busca > #srFiltPanel.collapsed {
+  display:none !important; margin:0 !important; padding:0 !important;
+}
+#mSearch #srFiltPanel select {
+  min-width:0; width:100%; padding:9px 11px; border-radius:10px;
+  font-size:12.5px; background:var(--surface); color:var(--ink);
+  border:1px solid var(--line);
+}
+#mSearch #searchResults {margin-top:6px; padding-top:10px;}
+@media(max-width:900px){
+  #mSearch .modal-busca > #srFiltPanel {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:480px){
+  #mSearch .modal-busca > #srFiltPanel {grid-template-columns:1fr 1fr; gap:6px;}
+  #mSearch .modal-busca > #srFiltToggleBtn:not(.sr-hide) {margin:7px 0 2px;}
+}
 /* AGI — 09/11/2026: cada vencimento em um CARD independente, sem barras duplicadas. */
 #page-lancamentos .lc-ct, #searchResults .lc-ct {
   background:var(--card); border:1px solid var(--line);
@@ -5258,7 +5289,7 @@ html, body { touch-action: pan-x pan-y; }
 <div class="overlay" id="mSearch">
   <div class="modal modal-busca">
     <div class="mhd"><span id="searchModalTit">Buscar lançamento</span> <button class="mcl" onclick="closeSearch()">✕</button></div>
-    <input id="searchInput" class="search-input" type="text" placeholder="Placa, cliente, proprietário, observação, nº do cartão…" autocomplete="off" oninput="runSearch()">
+    <input id="searchInput" class="search-input" type="text" placeholder="Placa, cliente, proprietário, observação, nº do cartão…" autocomplete="off" oninput="onSearchInputChanged()">
     <!-- Filtros: só a busca de lançamento (openSearch) usa — os outros
          reaproveitamentos do #mSearch (dia da projeção, dia do fluxo,
          categoria do faturamento, duplicados) já chegam com o recorte
@@ -5877,6 +5908,17 @@ async function tentarBiometriaLogin(silencioso){
 // pra não misturar um filtro esquecido ligado com um recorte que já vem
 // pronto deles. runSearch() já lê os selects direto, então só falta
 // mostrar/esconder e colapsar como os outros painéis de filtro.
+// Busca: digitação recolhe os filtros, deixando os contratos como foco.
+// O usuário pode reabri-los quando quiser, sem perder os valores escolhidos.
+function onSearchInputChanged(){
+  const panel=document.getElementById('srFiltPanel');
+  const btn=document.getElementById('srFiltToggleBtn');
+  if(panel)panel.classList.add('collapsed');
+  if(btn){btn.classList.remove('expanded');btn.textContent='⚙ Filtros';}
+  const results=document.getElementById('searchResults');
+  if(results)results.scrollTop=0;
+  runSearch();
+}
 function toggleSearchFilters(){
   const panel=document.getElementById('srFiltPanel');
   const btn=document.getElementById('srFiltToggleBtn');
@@ -5884,7 +5926,7 @@ function toggleSearchFilters(){
   const isCollapsed=panel.classList.contains('collapsed');
   panel.classList.toggle('collapsed',!isCollapsed);
   btn.classList.toggle('expanded',isCollapsed);
-  btn.textContent=isCollapsed?'▲ Filtros':'▼ Filtros';
+  btn.textContent=isCollapsed?'▲ Ocultar filtros':'⚙ Filtros';
 }
 // Zera os filtros e mostra/esconde o bloco pra caber com quem abriu o
 // #mSearch: true pra busca de lançamento (openSearch), false pras outras
@@ -5900,7 +5942,7 @@ function setSearchFiltersVisiveis(v){
   // qualquer btn.style.display via JS — por isso a classe (seletor por id
   // tem mais especificidade que a regra de classe, mesmo os dois com
   // !important) em vez de mexer no style inline.
-  if(btn){ btn.classList.remove('expanded'); btn.textContent='▼ Filtros'; btn.classList.toggle('sr-hide',!v); }
+  if(btn){ btn.classList.remove('expanded'); btn.textContent='⚙ Filtros'; btn.classList.toggle('sr-hide',!v); btn.style.display=v?'':'none'; }
 }
 function toggleFilterPanel(panelId){
   const panel=document.getElementById(panelId);
