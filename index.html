@@ -4756,6 +4756,53 @@ html[data-theme="dark"] .fat-barra-pct {background:rgba(20,30,44,.88);color:#eef
  #cardFaturamentoMensal .rcp-chip{max-width:none;}
 }
 
+
+/* Ajustes finos — Agenda e tubos (09/11/2026): sem alterar dados ou estrutura. */
+/* Valores dos cards da Agenda: menos 2px e maior contraste com o fundo. */
+#page-resumo .agb-card-val {
+  font-size:11px !important;
+  font-weight:750;
+  color:color-mix(in srgb,var(--flag-ink,var(--ink)) 52%,var(--ink) 48%) !important;
+  text-shadow:none;
+}
+html[data-theme="dark"] #page-resumo .agb-card-val {
+  color:color-mix(in srgb,var(--flag-mid,var(--ink)) 65%,white 35%) !important;
+}
+/* O destaque verde de itens pagos precisa manter seu significado. */
+#page-resumo .agb-card-val.agb-card-val-pago {
+  color:var(--green) !important;
+}
+/* Controles de confirmar/editar um pouco menores, sem alterar cliques. */
+#page-resumo .agb-card-check,
+#page-resumo .agb-card-edit {
+  width:22px !important;
+  height:22px !important;
+  border-radius:7px;
+}
+#page-resumo .agb-card-check svg {width:12px !important;height:12px !important;}
+#page-resumo .agb-card-edit svg {width:12px !important;height:12px !important;}
+/* Busca levemente mais curta, mantendo filtros e calendário integrados. */
+@media(min-width:761px) {
+  #page-resumo .rc-cal-topbar-2 .agb-busca {
+    flex:0 1 298px;
+    width:298px;
+    max-width:298px;
+  }
+}
+/* O percentual continua na posição original, com leitura mais nítida. */
+#page-resumo .fat-barra-pct {
+  background:rgba(255,255,255,.94) !important;
+  color:#18334c !important;
+  font-weight:800 !important;
+  text-shadow:none !important;
+  border:1px solid rgba(20,40,56,.10);
+  font-variant-numeric:tabular-nums;
+}
+html[data-theme="dark"] #page-resumo .fat-barra-pct {
+  background:rgba(241,246,250,.94) !important;
+  color:#16283d !important;
+}
+
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -4970,6 +5017,27 @@ html[data-theme="dark"] #page-resumo .fat-barra-atraso-antigo{background:#e16b78
 /* Recolha nunca deixa o cabeçalho do gráfico substituir o painel de filtros. */
 #cardFaturamentoMensal #resCtrls{display:flex!important;}
 
+
+/* AGI — valores compactos no mobile, sem cortar Silvio e demais categorias.
+   Desktop mantém o formato exato; title conserva o total para conferência. */
+.fat-valor-curto{display:none;}
+@media(max-width:760px){
+  #page-resumo .fat-valor-completo{display:none;}
+  #page-resumo .fat-valor-curto{display:inline;}
+  #page-resumo .fat-barra-linha{display:flex;min-width:0;width:100%;gap:7px;}
+  #page-resumo .fat-barra-faixa{
+    width:min(var(--tubo-largura,70%),calc(100% - 92px));
+    max-width:calc(100% - 92px);
+    flex:0 1 auto;
+  }
+  #page-resumo .fat-barra-valor{min-width:0;flex:0 0 auto;white-space:nowrap;font-size:10.5px;}
+  #page-resumo .fat-painel-cab-acoes{min-width:0;max-width:100%;}
+  #page-resumo .fat-painel-total{font-size:11px;white-space:nowrap;}
+}
+@media(max-width:380px){
+  #page-resumo .fat-barra-faixa{width:min(var(--tubo-largura,70%),calc(100% - 83px));max-width:calc(100% - 83px);}
+  #page-resumo .fat-barra-valor{font-size:10px;}
+}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -10022,6 +10090,22 @@ function frxLigarDetalhes(){
   document.addEventListener('scroll',frxEsconderResumo,true);
 }
 
+// Exibição abreviada apenas nas telas estreitas; números reais não são arredondados nos cálculos.
+function frValorCompacto(v){
+  const n=Number(v);
+  if(!Number.isFinite(n))return '—';
+  const a=Math.abs(n), sinal=n<0?'-':'';
+  if(a>=1000000)return sinal+'R$ '+(a/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi';
+  if(a>=1000)return sinal+'R$ '+(a/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil';
+  return fR(n);
+}
+function frValorResponsivo(el,valor,prefixo=''){
+  const completo=prefixo+fR(valor),reduzido=prefixo+frValorCompacto(valor);
+  const normal=document.createElement('span');normal.className='fat-valor-completo';normal.textContent=completo;
+  const curto=document.createElement('span');curto.className='fat-valor-curto';curto.textContent=reduzido;
+  el.replaceChildren(normal,curto);
+  el.title=completo;
+}
 function frRenderData(){
   // Os dois painéis usam os mesmos lançamentos do mês e filtros cruzados já existentes.
   for(const [dim,target,totalTarget] of [['tipo','fatTipoBarras','fatTipoTotal'],['dono','fatDonoBarras','fatDonoTotal']]){
@@ -10029,7 +10113,7 @@ function frRenderData(){
     if(!lista)continue;
     const itens=frxItemsFor(dim);
     const montante=itens.reduce((acc,it)=>acc+Math.max(0,it.value),0);
-    if(total)total.textContent='Total: '+fR(montante);
+    if(total)frValorResponsivo(total,montante,'Total: ');
     lista.replaceChildren();
     if(!itens.length){const vazio=document.createElement('p');vazio.className='fat-painel-vazio';vazio.textContent='Nenhum lançamento neste período.';lista.appendChild(vazio);continue;}
     const maiorBarra=Math.max(...itens.map(x=>Math.max(0,x.value)),0.01);
@@ -10067,7 +10151,7 @@ function frRenderData(){
         faixa.appendChild(marca);
       }
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
-      const valor=document.createElement('span');valor.className='fat-barra-valor';valor.textContent=fR(it.value);
+      const valor=document.createElement('span');valor.className='fat-barra-valor';frValorResponsivo(valor,it.value);
       linha.append(faixa,valor);
       // Prévia disponível em todas as linhas, mesmo sem clicar.
       linha.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')frxMostrarResumo(dim,it.key,e);});
