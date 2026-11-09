@@ -4755,6 +4755,7 @@ html[data-theme="dark"] .fat-barra-pct {background:rgba(20,30,44,.88);color:#eef
  #cardFaturamentoMensal #resResumoPill{flex:1 1 auto;}
  #cardFaturamentoMensal .rcp-chip{max-width:none;}
 }
+
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -4819,6 +4820,49 @@ html[data-theme="dark"] #page-resumo #cardBoletos {border-color:rgba(255,255,255
  #page-resumo .fat-painel-cab-acoes {gap:5px;}
 }
 @media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none!important;}}
+
+/* AGI refinamento final: distância uniforme, filtros cruzados e atrasos nos tubos. */
+@media(min-width:761px){
+  /* Aproxima a busca da área de indicadores, sem mover o cabeçalho fixo. */
+  #page-resumo #res-m{margin-bottom:24px !important;}
+  #page-resumo .rc-cal-topbar-2{margin-top:-13px !important;margin-bottom:9px !important;}
+}
+/* Um pequeno intervalo visual regular entre a Agenda e os dois painéis. */
+#page-resumo .fat-paineis{margin-top:14px !important;margin-bottom:24px !important;}
+#page-resumo .fat-paineis-grid{gap:18px;}
+#page-resumo .fat-painel-cab-acoes{gap:10px;}
+#page-resumo .fat-painel-cab h2{min-width:0;}
+#page-resumo .fat-painel-cab{justify-content:space-between;}
+/* Mantém rótulo, porcentagem e valor legíveis quando há débitos antigos. */
+#page-resumo .fat-barra-linha{flex-wrap:wrap;row-gap:4px;}
+#page-resumo .fat-barra-atraso-mes{
+  display:block;flex:0 0 auto; background:#c56b6b;
+  box-shadow:inset 2px 0 rgba(255,255,255,.45);
+}
+#page-resumo .fat-atraso-antigo{
+  flex:0 0 auto; font-size:9.5px;font-weight:750;
+  line-height:1.3; border-radius:7px; padding:3px 6px;
+  color:#963538;background:#f9e3e3;border:1px solid #ecc0c1;
+  max-width:100%;white-space:nowrap;
+}
+/* Menos opacidade: tons mais claros só no segmento ainda não efetivado,
+   conservando a parte efetivada totalmente sólida. */
+#page-resumo .fat-barra-restante{
+  background-color:color-mix(in srgb,var(--fat-cor) 48%,white) !important;
+  background-image:linear-gradient(135deg,rgba(255,255,255,.52) 25%,rgba(255,255,255,.05) 25% 50%,rgba(255,255,255,.52) 50% 75%,rgba(255,255,255,.05) 75%) !important;
+  background-size:11px 11px !important;
+  animation:agi-estilo-ondas 1.5s linear infinite !important;
+}
+html[data-theme="dark"] #page-resumo .fat-barra-atraso-mes{background:#c96770;}
+html[data-theme="dark"] #page-resumo .fat-atraso-antigo{background:#4e232c;border-color:#824351;color:#ffd8dd;}
+@media(max-width:760px){
+ #page-resumo #res-m{margin-bottom:22px !important;}
+ #page-resumo .rc-cal-topbar-2{margin-top:-8px !important;}
+ #page-resumo .fat-paineis{margin-top:12px !important;margin-bottom:22px !important;}
+ #page-resumo .fat-atraso-antigo{font-size:9px;padding:2px 5px;}
+}
+@media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none !important;}}
+
 /* Ajuste final AGI ↔ Estilo: busca integrada, datas e totais compactos, tubos -10%. */
 #page-resumo .rc-cal-topbar-2 { margin-top:-4px; }
 #page-resumo .rc-cal-topbar-2 .agb-busca {
@@ -4896,6 +4940,36 @@ html[data-theme="dark"] #page-resumo #cardBoletos {border-color:rgba(255,255,255
 @media(max-width:760px) {
   #page-resumo .agb-col-hd {height:41px;min-height:41px;max-height:41px;padding:5px 10px;}
 }
+/* AGI · alinhamento final da Agenda com a Estilo (cartões, títulos e controles). */
+#page-resumo .agb-card{height:64px;border-radius:14px;padding-top:8px;padding-bottom:8px;gap:5px;}
+#page-resumo .agb-card::before{background-size:16px 16px,auto;}
+#page-resumo .agb-card-acts{right:7px;gap:4px;}
+#page-resumo .agb-card-check,#page-resumo .agb-card-edit{width:24px;height:24px;border-radius:8px;}
+#page-resumo .agb-card-check svg{width:14px;height:14px;}
+#page-resumo .agb-card-edit svg{width:13px;height:13px;}
+#page-resumo .agb-col-hd{height:38px;min-height:38px;max-height:38px;box-sizing:border-box;}
+#page-resumo .agb-col-hd-l{align-items:baseline;}
+#page-resumo .agb-dow{font-size:13px;}
+#page-resumo .agb-dom{font-size:12.5px;}
+#page-resumo .agb-card-title,#page-resumo .agb-card-val{font-size:13px;}
+#page-resumo .agb-card-sub{font-size:11px;}
+/* Busca ligeiramente mais próxima das métricas; painéis com respiro próprio. */
+#page-resumo .rc-cal-topbar-2{margin-top:-9px;margin-bottom:11px;}
+#page-resumo .fat-paineis{margin-top:-7px;margin-bottom:22px;}
+/* Cartas ocultas: profundidade e alternância da Estilo, sem distorção 3D. */
+#page-resumo .agb-deck-rotativo{margin-bottom:16px;}
+#page-resumo .agb-deck-rotativo .agb-ev-ghost{transition:opacity .9s ease;}
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-1{transform:translateY(7px) scaleX(.955);opacity:.90;clip-path:inset(calc(100% - 7px) 0 0 0);}
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-2{transform:translateY(13px) scaleX(.915);opacity:.74;clip-path:inset(calc(100% - 13px) 0 0 0);}
+#page-resumo .agb-deck-rotativo .agb-card{transition:transform .9s ease,opacity .9s ease,box-shadow .15s ease;}
+#page-resumo .agb-deck-rotativo.is-flipping .agb-card{opacity:.08;transform:scale(.88);animation:none;}
+#page-resumo .agb-deck-rotativo.is-flipping .agb-ev-ghost-1{opacity:.3;}
+#page-resumo .agb-deck-rotativo.is-flipping .agb-ev-ghost-2{opacity:.2;}
+@media(max-width:760px){#page-resumo .agb-card{height:68.5px;padding-top:9px;padding-bottom:9px;}#page-resumo .rc-cal-topbar-2{margin-top:-4px;}}
+@media(prefers-reduced-motion:reduce){#page-resumo .agb-deck-rotativo .agb-card{transition-duration:.9s!important;}}
+/* Recolha nunca deixa o cabeçalho do gráfico substituir o painel de filtros. */
+#cardFaturamentoMensal #resCtrls{display:flex!important;}
+
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -5051,11 +5125,11 @@ html[data-theme="dark"] #page-resumo #cardBoletos {border-color:rgba(255,255,255
   <div class="fat-paineis">
     <div class="fat-paineis-grid">
       <section class="fat-painel" aria-labelledby="fatTipoTitulo">
-        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
+        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
         <div class="fat-painel-lista" id="fatTipoBarras"></div>
       </section>
       <section class="fat-painel" aria-labelledby="fatDonoTitulo">
-        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
+        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
         <div class="fat-painel-lista" id="fatDonoBarras"></div>
       </section>
     </div>
@@ -8521,6 +8595,11 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
 // agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir. Igual
 // à Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (antes
 // só valia no mobile; o CSS que forçava tudo aberto no PC foi removido).
+// Alternância do baralho no mesmo ritmo da Estilo: 10s + transição suave.
+// O registro real da parcela é preservado: a troca refaz somente o cartão de topo,
+// com os controles correspondentes ao lançamento que está sendo exibido.
+const AGB_DECKS = new Map();
+let AGB_DECK_SEQ = 0;
 const AGB_COL_LIMITE=2;
 function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   const grupos=agruparPorCliente(itens);
@@ -8531,7 +8610,18 @@ function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   const temResto=grupos.length>AGB_COL_LIMITE;
   const visiveis=grupos.slice(0,AGB_COL_LIMITE);
   const resto=temResto?grupos.slice(AGB_COL_LIMITE):[];
-  const cardsHtml=visiveis.map((g,i)=>agbCardHtml(g,dia,(temResto&&i===visiveis.length-1)?resto.length:0,pago)).join('');
+  // Primeiro cartão fixo. Segundo cartão é o topo do baralho e alterna
+  // por todos os lançamentos escondidos, como na Agenda da Estilo.
+  let deckId='';
+  if(temResto){
+    deckId='agb-deck-'+(++AGB_DECK_SEQ);
+    AGB_DECKS.set(deckId,{itens:[grupos[1],...resto],dia,pago,indice:0,ocultos:resto.length});
+  }
+  const cardsHtml=visiveis.map((g,i)=>{
+    const isTopo=temResto&&i===visiveis.length-1;
+    const html=agbCardHtml(g,dia,isTopo?resto.length:0,pago);
+    return isTopo?html.replace('class="agb-baralho-wrap"',`class="agb-baralho-wrap agb-deck-rotativo" data-agb-deck="${deckId}"`):html;
+  }).join('');
   const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia,0,pago)).join('')}</div>`:'';
   const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
   // Cabeçalho de UMA linha só (pedido do usuário): data à esquerda com a
@@ -8573,6 +8663,37 @@ function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
     <div class="agb-col-body">${grupos.length?cardsHtml:'<div class="agb-empty">Sem lançamentos</div>'}${moreHtml}</div>
   </div>`;
 }
+// Ciclo da Estilo: a cada 10 segundos o segundo cartão mostra uma das
+// entradas ocultas, desvanecendo por 900 ms. Nunca recria o painel inteiro.
+(function iniciarAlternanciaAgendaAGI(){
+  if(window.__agiDeckInterval) return;
+  window.__agiDeckInterval=setInterval(function(){
+    if(document.hidden) return;
+    const lista=document.querySelectorAll('#recebHoje .agb-deck-rotativo');
+    lista.forEach(function(el){
+      if(el.closest('.agb-col-open')) return;
+      const chave=el.getAttribute('data-agb-deck');
+      const deck=AGB_DECKS.get(chave);
+      if(!deck||deck.itens.length<2||el.classList.contains('is-flipping'))return;
+      el.classList.add('is-flipping');
+      setTimeout(function(){
+        if(!el.isConnected)return;
+        const atual=AGB_DECKS.get(chave);
+        if(!atual)return;
+        atual.indice=(atual.indice+1)%atual.itens.length;
+        const html=agbCardHtml(atual.itens[atual.indice],atual.dia,atual.ocultos,atual.pago);
+        const tmp=document.createElement('template');
+        tmp.innerHTML=html.trim();
+        const novo=tmp.content.firstElementChild;
+        if(!novo)return;
+        novo.classList.add('agb-deck-rotativo','is-flipping');
+        novo.setAttribute('data-agb-deck',chave);
+        el.replaceWith(novo);
+        requestAnimationFrame(function(){requestAnimationFrame(function(){novo.classList.remove('is-flipping');});});
+      },900);
+    });
+  },10000);
+})();
 // Abre/fecha o baralho de cards extras da coluna (só existe efeito no
 // mobile — no PC o CSS já mostra tudo aberto e esconde o baralho).
 function toggleAgbDeck(el){
@@ -8587,6 +8708,7 @@ function toggleAgbDeck(el){
 // Resumo — evita um board infinito com parcelas de contratos longos lá
 // na frente, mantendo o mesmo horizonte que o resto da dashboard já usa.
 function renderAgendaBoardHtml(){
+  AGB_DECKS.clear(); AGB_DECK_SEQ=0;
   const hoje=td();
   const tF=addD(hoje,90);
   const base=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&r.prev_pgto&&agbMatchQ(r));
@@ -9640,6 +9762,7 @@ function frxItemsFor(dim){
   allD().forEach(r=>{
     if(r.dono==='Indefinido'||(selDono&&r.dono!==selDono))return;
     if(!isVenc(r)||!(r.prev_pgto<iniMes))return;
+    if(!FR_ORDER.every(d=>d===dim||!FRT[d].size||FRT[d].has(r[d])))return;
     let k=(r[dim]||'').trim()||'—';
     if(!nomes.has(k))k='Outros';
     antigo[k]=(antigo[k]||0)+fN(r.saldo);
@@ -9847,7 +9970,7 @@ function frxMostrarResumo(dim,key,evt){
   const titulo=document.createElement('strong');titulo.textContent=key;
   const subtitulo=document.createElement('div');subtitulo.className='frx-hover-sub';
   subtitulo.textContent=(dim==='dono'?'Proprietário':'Tipo')+' · '+data.rows.length+' lançamento'+(data.rows.length===1?'':'s');
-  const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Vencido',data.vencido]];
+  const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Atrasado neste mês',data.vencido],['Atrasado de meses anteriores',frxItemsFor(dim).find(i=>i.key===key)?.antigo||0]];
   frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor])=>{
     const linha=document.createElement('div');linha.className='frx-hover-line';
     const a=document.createElement('span');a.textContent=nome;
@@ -9916,7 +10039,7 @@ function frRenderData(){
       const proporcao=it.value>0?100*pago/it.value:0;
       const pct=montante>0?Math.round(it.value/montante*100):0;
       const linha=document.createElement('button');linha.type='button';linha.className='fat-barra-linha';
-      linha.title=it.key+' · Efetivado: '+fR(pago)+' · A realizar: '+fR(falta)+' — clique para visualizar os lançamentos';
+      linha.title=it.key+' · Efetivado: '+fR(pago)+' · A realizar: '+fR(falta)+' · Atrasado neste mês: '+fR(it.atraso||0)+' · Atrasado de meses anteriores: '+fR(it.antigo||0)+' — clique para visualizar os lançamentos';
       linha.setAttribute('aria-label',linha.title);
       const nome=document.createElement('span');nome.className='fat-barra-nome';nome.textContent=it.key;
       const faixa=document.createElement('span');faixa.className='fat-barra-faixa';
@@ -9927,13 +10050,34 @@ function frRenderData(){
       faixa.style.setProperty('--fat-cor',cor);
       linha.style.setProperty('--fat-cor',cor);
       faixa.style.setProperty('--tubo-largura',Math.max(26,Math.min(82,82*Math.max(0,it.value)/maiorBarra))+'%');
+      // O atraso deste mês ocupa parte da faixa pendente, sem alterar o total.
+      // Débitos de meses anteriores aparecem como indicador separado, sem
+      // contaminar os totalizadores do mês selecionado.
+      const atrasoMes=Math.max(0,Math.min(falta,it.atraso||0));
+      const atrasoAntigo=Math.max(0,it.antigo||0);
+      const pendNormal=Math.max(0,falta-atrasoMes);
       const cheio=document.createElement('span');cheio.className='fat-barra-cheio';cheio.style.width=proporcao+'%';
-      const pend=document.createElement('span');pend.className='fat-barra-restante';pend.style.width=(100-proporcao)+'%';
-      faixa.append(cheio,pend,nome);
+      const pend=document.createElement('span');pend.className='fat-barra-restante';pend.style.width=(it.value>0?100*pendNormal/it.value:0)+'%';
+      const atraso=document.createElement('span');atraso.className='fat-barra-atraso-mes';atraso.style.width=(it.value>0?100*atrasoMes/it.value:0)+'%';
+      faixa.append(cheio,pend,atraso,nome);
+      if(atrasoMes>0.005)linha.classList.add('fat-tem-atraso-mes');
+      if(atrasoAntigo>0.005){
+        linha.classList.add('fat-tem-atraso-antigo');
+        const aviso=document.createElement('span');aviso.className='fat-atraso-antigo';
+        aviso.title='Atrasado de meses anteriores: '+fR(atrasoAntigo);
+        aviso.setAttribute('aria-label',aviso.title);
+        aviso.textContent='+'+fR(atrasoAntigo)+' vencido';
+        linha.appendChild(aviso);
+      }
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
       const valor=document.createElement('span');valor.className='fat-barra-valor';valor.textContent=fR(it.value);
       linha.append(faixa,valor);
-      linha.addEventListener('click',()=>mostrarLancCategoria(dim,it.key));
+      // Prévia disponível em todas as linhas, mesmo sem clicar.
+      linha.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')frxMostrarResumo(dim,it.key,e);});
+      linha.addEventListener('pointerleave',frxEsconderResumo);
+      linha.addEventListener('focus',()=>{const r=linha.getBoundingClientRect();frxMostrarResumo(dim,it.key,{clientX:r.left+15,clientY:r.bottom});});
+      linha.addEventListener('blur',frxEsconderResumo);
+      linha.addEventListener('click',()=>{frxEsconderResumo();mostrarLancCategoria(dim,it.key);});
       lista.appendChild(linha);
     });
   }
@@ -10083,7 +10227,7 @@ function renderResumo(){
   let recA=mShown.map(k=>recM[k]||0), pendA=mShown.map(k=>pendM[k]||0), atrsA=mShown.map(k=>atrsM[k]||0);
   if(resAcum){recA=cumArr(recA);pendA=cumArr(pendA);atrsA=cumArr(atrsA);}
   const hdMes=document.getElementById('hdMes');
-  if(hdMes) hdMes.textContent='Faturamento mensal'+acumSfx;
+  if(hdMes){const titulo=hdMes.querySelector(':scope > span'); if(titulo) titulo.textContent='Faturamento mensal'+acumSfx;}
   const temAtrsMes=atrsA.some(v=>v>0);
   // Respiro entre os segmentos empilhados: borda na cor do fundo do
   // card só no topo de cada segmento, separando visualmente
@@ -12080,9 +12224,17 @@ function lancListHtml(items,fecharBusca){
 // excluir individualmente não muda).
 // Valores líquidos (pago/pendente) de todos os itens de uma lista de
 // grupos — usado pra montar o subtotal que abre cada mês.
-function totaisGrupos(grupos){
+function totaisGrupos(grupos,mesKey){
+  // O cartão mostra o contrato inteiro, inclusive parcelas de outros meses.
+  // O subtotal mensal, porém, deve usar SOMENTE lançamentos cujo vencimento
+  // pertence ao mês do cabeçalho e que efetivamente passaram pelos filtros.
   let pago=0,pend=0,n=0;
-  grupos.forEach(g=>g.itens.forEach(({r})=>{pago+=fN(r.valor_pago);if(isPend(r))pend+=fN(r.saldo);n++;}));
+  grupos.forEach(g=>g.itens.forEach(({r})=>{
+    if(mesKey!==undefined&&(r.prev_pgto||'').slice(0,7)!==mesKey)return;
+    pago+=fN(r.valor_pago);
+    if(isPend(r))pend+=fN(r.saldo);
+    n++;
+  }));
   return{pago,pend,liq:pago+pend,n};
 }
 function buscaGroupedHtml(grupos,fecharBusca){
@@ -12091,16 +12243,16 @@ function buscaGroupedHtml(grupos,fecharBusca){
   // pedaço no bloco "futuro", outro no bloco "passado/vencido") — cada
   // aparição soma só os itens que vêm logo abaixo dela, senão o mesmo
   // total apareceria duplicado nos dois cabeçalhos.
-  let mesCorrente=undefined;
+  const mesesExibidos=new Set();
   return grupos.map((g,idx)=>{
     const mesKey=(g.ref||'').slice(0,7);
     let mesHtml='';
-    if(mesKey!==mesCorrente){
-      mesCorrente=mesKey;
+    if(!mesesExibidos.has(mesKey)){
+      mesesExibidos.add(mesKey);
       const lbl=mesKey?MN[parseInt(mesKey.slice(5,7),10)-1]+'/'+mesKey.slice(2,4):'Sem vencimento';
-      let fim=idx+1;
-      while(fim<grupos.length&&(grupos[fim].ref||'').slice(0,7)===mesKey)fim++;
-      const t=totaisGrupos(grupos.slice(idx,fim));
+      // Soma o mês de vencimento dos lançamentos, não o contrato inteiro.
+      // Grupos com parcelas em vários meses continuam visualmente unidos.
+      const t=totaisGrupos(grupos,mesKey);
       mesHtml=`<div class="search-total srow-mes-tot">
         <div class="st-main"><span>${lbl} · ${t.n} lançamento${t.n===1?'':'s'}</span><span class="st-val">${fR(t.liq)}</span></div>
         <div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div>
