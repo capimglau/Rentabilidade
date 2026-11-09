@@ -4384,6 +4384,72 @@ html[data-theme="dark"] .lc-ct-dt {background:var(--card)}
   .lc-ct-dt-r {width:auto; margin-left:auto}
   .lc-ct-dt .lc-ct-dt-l {width:100%}
 }
+
+/* AGI — 09/11/2026: cada vencimento em um CARD independente, sem barras duplicadas. */
+#page-lancamentos .lc-ct, #searchResults .lc-ct {
+  background:var(--card); border:1px solid var(--line);
+  padding:20px 22px 18px; box-shadow:0 8px 25px rgba(23,37,55,.055);
+}
+#page-lancamentos .lc-ct-hd, #searchResults .lc-ct-hd {
+  gap:9px; padding:0 0 17px; margin-bottom:17px;
+  border-bottom:1px solid var(--line);
+}
+.lc-ct-hd .pcard-meta {margin-top:0}
+.lc-parcela-card {
+  background:var(--card); border:1px solid color-mix(in srgb,var(--ink) 10%,transparent);
+  border-radius:16px; overflow:hidden; margin:0 0 14px;
+  box-shadow:0 2px 10px rgba(20,30,50,.035);
+}
+.lc-parcela-card:last-of-type {margin-bottom:0}
+.lc-parcela-card .lc-ct-dt {
+  display:flex; flex-wrap:nowrap; margin:0; padding:16px 19px;
+  border:none; border-radius:0; background:var(--surface);
+  gap:16px; min-height:67px;
+}
+.lc-parcela-card .lc-ct-dt-l {gap:5px 12px; min-width:0}
+.lc-parcela-card .lc-ct-dt-l .agi-prev-lbl {display:block; flex-basis:100%; color:var(--ink3); font-size:10px; font-weight:600; opacity:1}
+.lc-parcela-card .lc-ct-dt-l b {font-size:17px; letter-spacing:-.02em; white-space:nowrap}
+.lc-parcela-card .lc-parc {background:var(--card); color:var(--blue); font-size:11.5px; padding:5px 10px; border-radius:8px}
+.lc-parcela-card .lc-ct-dt-r {margin-left:auto; white-space:nowrap}
+.lc-parcela-card .lc-ct-dt-r > span:last-child {font-size:17px; letter-spacing:-.02em; color:var(--ink)}
+.lc-parcela-card.venc .lc-ct-dt {background:var(--red-soft)}
+.lc-parcela-card.ok .lc-ct-dt {background:var(--green-soft)}
+.lc-parcela-card.hoje .lc-ct-dt {background:var(--blue-soft)}
+.lc-parcela-card .lc-ct-itens {padding:11px 16px 13px; gap:0!important}
+#page-lancamentos .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item,
+#searchResults .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item,
+.day-items .lc-parcela-card .swipe .pcard.lc-ct-item {
+  padding:9px 5px; min-height:41px; border:0; background:transparent;
+  border-radius:0; box-shadow:none; gap:8px;
+}
+.lc-parcela-card .pcard.lc-ct-item::before {display:none!important}
+.lc-parcela-card .swipe + .swipe {border-top:1px solid var(--line)}
+.lc-parcela-card .pcard-tags .tag {font-size:11px}
+.lc-parcela-card .pcard-obs {font-size:11px; color:var(--ink3); background:transparent; padding:0;}
+.lc-parcela-card .pcard-right {align-items:flex-end}
+.lc-parcela-card.unica .pcard-value.lc-ct-v {display:none} /* valor já está no título */
+.lc-parcela-card.unica .pcard-parcial-sub {font-size:10.5px}
+.lc-parcela-card.unica .pcard-right:empty {display:none}
+.lc-parcela-card .lc-ct-sw.fora {opacity:.7}
+.lc-parcela-card .lc-ct-sw.fora .lc-fora-tag {font-size:10px}
+.lc-ct .lc-ct-foot {margin-top:18px; border-top:1px solid var(--line)}
+html[data-theme="dark"] .lc-parcela-card {background:var(--card);border-color:rgba(255,255,255,.13)}
+html[data-theme="dark"] .lc-parcela-card .lc-ct-dt {background:rgba(255,255,255,.045)}
+html[data-theme="dark"] .lc-parcela-card.venc .lc-ct-dt {background:rgba(191,37,24,.15)}
+html[data-theme="dark"] .lc-parcela-card.ok .lc-ct-dt {background:rgba(10,100,57,.18)}
+html[data-theme="dark"] .lc-parcela-card.hoje .lc-ct-dt {background:rgba(31,95,168,.18)}
+html[data-theme="dark"] .lc-parcela-card .lc-parc {background:rgba(45,88,130,.25);color:#b0d5ff}
+@media(max-width:760px){
+ #page-lancamentos .lc-ct,#searchResults .lc-ct {padding:14px 11px 13px}
+ .lc-parcela-card {border-radius:13px; margin-bottom:12px}
+ .lc-parcela-card .lc-ct-dt {padding:13px 12px; min-height:60px; gap:8px; flex-wrap:wrap}
+ .lc-parcela-card .lc-ct-dt-l {flex:1 1 140px; gap:4px 7px}
+ .lc-parcela-card .lc-ct-dt-l b {font-size:15px}
+ .lc-parcela-card .lc-ct-dt-r {width:auto; margin-left:auto; justify-content:flex-end}
+ .lc-parcela-card .lc-ct-dt-r > span:last-child {font-size:15px}
+ .lc-parcela-card .lc-ct-itens {padding:7px 10px 9px}
+ .lc-parcela-card .lc-ct-dt-r button {font-size:10px}
+}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -11375,7 +11441,7 @@ function lcContratoHtml(g,fecharBusca,opt){
           <div class="pcard-tags">
             ${tipTag(r.tipo)}
             <!-- Parcela e vencimento são exibidos no cabeçalho da data, não no corpo. -->
-            ${formas.length>1?`<span class="tag tag-forma">${fFormaLabel(r.forma)}</span>`:''}
+            ${r.forma?`<span class="tag tag-forma">${fFormaLabel(r.forma)}</span>`:''}
             ${donos.length>1?`<span style="font-size:11px;color:var(--ink3)">${esc(r.dono||'—')}</span>`:''}
             ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
             ${fora?`<span class="tag lc-fora-tag">${opt.foraLabel||'fora do filtro'}</span>`:''}
@@ -11402,10 +11468,10 @@ function lcContratoHtml(g,fecharBusca,opt){
       const lbl=d?(d===hoje?'hoje · ':'')+fDM(d):'sem data';
       const parcelas=[...new Set(its.map(({r})=>{const p=agbParcelaInfo(r);return p?`${p.atual}/${p.total}`:null;}).filter(Boolean))];
       const cabParcelas=parcelas.length?`<span class="lc-ct-parcelas">${parcelas.map(p=>`<span class="lc-parc" title="Parcela ${p.replace('/',' de ')}">Parcela ${p}</span>`).join('')}</span>`:'';
-      return `<div class="lc-ct-dt${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}">
+      return `<section class="lc-parcela-card${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}${its.length===1?' unica':''}" aria-label="${parcelas.length?'Parcela '+parcelas.join(', '):'Pagamento'} — ${d?fDM(d):'sem data'}"><div class="lc-ct-dt${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}">
         <span class="lc-ct-dt-l"><span class="agi-prev-lbl">Previsão de pagamento</span><b>${lbl}</b>${cabParcelas}${opt.anchorDia!=null&&opt.anchorDia===d?'<i class="lc-ct-dt-here">neste dia</i>':''}</span>
         <span class="lc-ct-dt-r">${parD?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${parD.loc.i},${parD.com.i})">✎ Ajustar total</button>`:''}${pagosD.length?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosD.join(',')}])">↺ Reverter</button>`:''}<span>${fR(tot)}</span></span>
-      </div>`+`<div class="lc-ct-itens">${its.map(linha).join('')}</div>`;
+      </div>`+`<div class="lc-ct-itens">${its.map(linha).join('')}</div></section>`;
     }).join('');
   }else{
     corpo=`<div class="lc-ct-itens">${itens.map(linha).join('')}</div>`;
@@ -11434,12 +11500,11 @@ function lcContratoHtml(g,fecharBusca,opt){
       <div class="pcard-tags">
         <span class="ddot" style="background:${col}"></span>
         <span style="font-size:11.5px;color:var(--ink3)">${esc(donos.join(' · '))}</span>
-        ${formas.slice(0,2).map(f=>`<span class="tag tag-forma">${fFormaLabel(f)}</span>`).join('')}${formas.length>2?`<span class="tag tag-forma">+${formas.length-2}</span>`:''}
-        <span class="itens-cnt">${itens.length} lançamentos${nParc?` · ${nParc} parcela${nParc===1?'':'s'}`:''}</span>
+        <span class="itens-cnt">${itens.length} lançamentos · ${datas.length} vencimento${datas.length===1?'':'s'}</span>
       </div>
       <div class="pcard-meta">
         ${ehContrato?`<span>🗓 ${fDM(r0.saida)} → ${fDM(r0.retorno)}</span>`:''}
-        ${metaVenc}
+        ${multiData?'':metaVenc}
       </div>
     </div>
     ${corpo}
