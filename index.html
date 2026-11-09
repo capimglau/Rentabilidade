@@ -14900,5 +14900,52 @@ iniciarApp();
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- AGI: sincroniza a busca da agenda à largura REAL do primeiro cartão Previsto.
+     Mede as caixas renderizadas para não depender de gaps/breakpoints aproximados. -->
+<script>
+(function(){
+  'use strict';
+  let agiBuscaRaf=0;
+  function ajustarBuscaPrevisto(){
+    const page=document.getElementById('page-resumo');
+    const primeira=page && page.querySelector('#res-m .mc:not(.mc-mob-only)');
+    const barra=page && page.querySelector('.rc-cal-topbar-2 .agb-busca');
+    if(!primeira || !barra) return;
+    if(window.matchMedia('(max-width:760px)').matches){
+      barra.style.removeProperty('width');
+      barra.style.removeProperty('max-width');
+      barra.style.removeProperty('flex');
+      barra.style.removeProperty('margin-left');
+      return;
+    }
+    const card=primeira.getBoundingClientRect();
+    const container=barra.parentElement.getBoundingClientRect();
+    if(card.width<100 || !container.width) return;
+    const deslocamento=Math.max(0,card.left-container.left);
+    const largura=Math.min(card.width,container.width-deslocamento);
+    barra.style.setProperty('width', largura+'px','important');
+    barra.style.setProperty('max-width',largura+'px','important');
+    barra.style.setProperty('flex','0 0 '+largura+'px','important');
+    barra.style.setProperty('margin-left',deslocamento+'px','important');
+  }
+  function agendar(){
+    if(agiBuscaRaf) return;
+    agiBuscaRaf=requestAnimationFrame(function(){agiBuscaRaf=0;ajustarBuscaPrevisto();});
+  }
+  const page=document.getElementById('page-resumo');
+  if(!page) return;
+  const observador=new MutationObserver(agendar);
+  observador.observe(page,{childList:true,subtree:true});
+  if(typeof ResizeObserver!=='undefined'){
+    const ro=new ResizeObserver(agendar);
+    ro.observe(page);
+    const metrics=page.querySelector('#res-m');
+    if(metrics) ro.observe(metrics);
+  }
+  window.addEventListener('resize',agendar,{passive:true});
+  agendar();
+})();
+</script>
 </body>
 </html>
