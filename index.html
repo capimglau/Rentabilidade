@@ -4680,6 +4680,39 @@ html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
 @media(max-width:540px){ .fat-painel-cab{padding:14px 12px;flex-wrap:wrap;} .fat-painel-lista{padding:15px 12px;gap:14px;} .fat-barra-linha{grid-template-columns:minmax(68px,28%) minmax(55px,1fr) max-content;gap:6px;} .fat-barra-nome,.fat-barra-valor {font-size:11px;} .fat-barra-faixa{height:24px;} .fat-painel-legenda{margin-inline:12px;} }
 html[data-theme="dark"] .fat-barra-pct {background:rgba(20,30,44,.88);color:#eef2fa;}
 
+
+/* FATURAMENTO — tubos no padrão Estilo (09/11/2026): rótulos dentro da
+   faixa, larguras proporcionais, efetivado sólido e pendente hachurado. */
+#page-resumo .fat-paineis { margin-top: -9px; margin-bottom: 28px; }
+#page-resumo .fat-paineis-toolbar { gap: 14px; margin-bottom: 15px; min-height: 34px; justify-content:flex-start; }
+#page-resumo .fat-paineis-titulo { margin:0 12px 0 0; line-height:1.2; font-size:17px; flex:0 1 auto; }
+#page-resumo .fat-paineis-toolbar #fatRingFilters { margin:0; flex:0 0 auto; }
+#page-resumo .fat-paineis-toolbar .frx-base { margin:0 0 0 5px; align-self:center; }
+#page-resumo .fat-paineis-grid { gap:18px; }
+#page-resumo .fat-painel-lista { gap:12px; padding:17px 18px 20px; }
+#page-resumo .fat-barra-linha { display:flex; align-items:center; gap:12px; min-height:31px; }
+#page-resumo .fat-barra-faixa { height:33px; width:var(--tubo-largura,70%); flex:none; min-width:0; border-radius:999px; isolation:isolate; background:var(--fat-cor); }
+#page-resumo .fat-barra-cheio { background:var(--fat-cor); }
+#page-resumo .fat-barra-restante { background-color:color-mix(in srgb,var(--fat-cor) 68%,white); background-image:repeating-linear-gradient(130deg,transparent 0px,transparent 6px,rgba(255,255,255,.33) 6px,rgba(255,255,255,.33) 11px); background-size:40px 40px; animation:fat-listras-sutil 16s linear infinite; }
+@keyframes fat-listras-sutil {to{background-position:40px 0;}}
+#page-resumo .fat-barra-nome { position:absolute; inset:0 auto 0 12px; display:flex; align-items:center; z-index:2; color:#fff; font-size:12.5px; font-weight:700; max-width:calc(100% - 82px); text-shadow:0 1px 2px rgba(0,0,0,.16); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+#page-resumo .fat-barra-pct { left:auto; right:9px; transform:translateY(-50%); padding:2px 5px; background:rgba(255,255,255,.16); color:#fff; font-size:11px; font-weight:750; text-shadow:0 1px 2px rgba(0,0,0,.2); }
+#page-resumo .fat-barra-valor { color:var(--fat-cor); font-size:12px; font-weight:750; }
+#page-resumo .fat-painel-cab { padding:15px 18px; }
+#page-resumo #cardBoletos { margin-top:0; }
+@media(max-width:1000px){ #page-resumo .fat-paineis-grid{gap:16px;} }
+@media(max-width:760px){
+ #page-resumo .fat-paineis {margin-top:-4px; margin-bottom:22px;}
+ #page-resumo .fat-paineis-toolbar {gap:9px; flex-wrap:wrap;}
+ #page-resumo .fat-paineis-titulo {font-size:15px; margin-right:auto;}
+ #page-resumo .fat-painel-lista {gap:10px; padding:14px 12px 18px;}
+ #page-resumo .fat-barra-faixa {height:31px;}
+ #page-resumo .fat-barra-linha {gap:8px;}
+ #page-resumo .fat-barra-nome {font-size:11px;left:9px;max-width:calc(100% - 57px);}
+ #page-resumo .fat-barra-valor {font-size:11px;}
+}
+@media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none;}}
+
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -9704,6 +9737,7 @@ function frRenderData(){
     if(total)total.textContent='Total: '+fR(montante);
     lista.replaceChildren();
     if(!itens.length){const vazio=document.createElement('p');vazio.className='fat-painel-vazio';vazio.textContent='Nenhum lançamento neste período.';lista.appendChild(vazio);continue;}
+    const maiorBarra=Math.max(...itens.map(x=>Math.max(0,x.value)),0.01);
     itens.forEach((it,idx)=>{
       const pago=Math.max(0,Math.min(it.value,it.pago));
       const falta=Math.max(0,it.value-pago);
@@ -9713,13 +9747,20 @@ function frRenderData(){
       linha.title=it.key+' · Efetivado: '+fR(pago)+' · A realizar: '+fR(falta)+' — clique para visualizar os lançamentos';
       linha.setAttribute('aria-label',linha.title);
       const nome=document.createElement('span');nome.className='fat-barra-nome';nome.textContent=it.key;
-      const faixa=document.createElement('span');faixa.className='fat-barra-faixa';faixa.style.setProperty('--fat-cor',it.color);
+      const faixa=document.createElement('span');faixa.className='fat-barra-faixa';
+      // Paleta fechada da Estilo: vinho, verde sálvia, turquesa, cinza e malva.
+      const paletaTipo=['#a67d87','#80a49b','#69a69d','#92999d','#9b829f','#728fa6'];
+      const paletaDono=['#547e9b','#7fa68a','#917aa6','#87949c','#70a6a0','#ad8a80'];
+      const cor=(dim==='tipo'?paletaTipo:paletaDono)[idx%(dim==='tipo'?paletaTipo.length:paletaDono.length)];
+      faixa.style.setProperty('--fat-cor',cor);
+      linha.style.setProperty('--fat-cor',cor);
+      faixa.style.setProperty('--tubo-largura',Math.max(26,Math.min(82,82*Math.max(0,it.value)/maiorBarra))+'%');
       const cheio=document.createElement('span');cheio.className='fat-barra-cheio';cheio.style.width=proporcao+'%';
       const pend=document.createElement('span');pend.className='fat-barra-restante';pend.style.width=(100-proporcao)+'%';
-      faixa.append(cheio,pend);
+      faixa.append(cheio,pend,nome);
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
       const valor=document.createElement('span');valor.className='fat-barra-valor';valor.textContent=fR(it.value);
-      linha.append(nome,faixa,valor);
+      linha.append(faixa,valor);
       linha.addEventListener('click',()=>mostrarLancCategoria(dim,it.key));
       lista.appendChild(linha);
     });
