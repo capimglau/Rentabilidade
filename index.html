@@ -4836,6 +4836,19 @@ html[data-theme="dark"] #page-resumo .fat-barra-pct {
 #page-resumo .agb-col-more {margin-top:0;gap:9px;}
 #page-resumo .agb-col.agb-col-open .agb-col-more {display:flex;}
 
+
+/* Pendências de boletos: apenas o título pulsa suavemente, sem expandir a lista. */
+@keyframes agBoletoTituloRespira {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .58; }
+}
+.bol-ltit.bol-ltit-pendente {
+  color: var(--bol-org);
+  animation: agBoletoTituloRespira 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bol-ltit.bol-ltit-pendente { animation: none; }
+}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -8887,7 +8900,7 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
   // .cal-ok do Calendário), só pra confirmar visualmente que aquele card já
   // está resolvido (o board inteiro é "coisa a fazer" por padrão; este é o
   // único tipo de card aqui que não é).
-  const atrasoTxt=atrasado?agbAtrasoTxt(grp.recs.map(r=>r.prev_pgto).filter(Boolean).sort()[0],td())
+  const atrasoTxt=atrasado?agbAtrasoTxt(grp.recs.map(r=>agbDataLiquidacao(r)).filter(Boolean).sort()[0],td())
     :pago?'✓ Recebido':null;
   // animation-delay ancorado no relógio, não no instante em que o card
   // montou: sem isso dois cards atrasados pulsam fora de fase (um claro,
@@ -9065,15 +9078,36 @@ function toggleAgbDeck(el){
 // Mesma janela de 90 dias já usada na "Projeção de recebimentos" do
 // Resumo — evita um board infinito com parcelas de contratos longos lá
 // na frente, mantendo o mesmo horizonte que o resto da dashboard já usa.
+// [AGI-BOLETO-LIQUIDACAO-AGENDA] A agenda exibe a data de liquidação
+// informada pela regra solicitada: dia 05/11 -> 05/12 (mês seguinte).
+// A data original do lançamento permanece intacta para contratos, relatórios,
+// demonstrativos e cálculos financeiros; somente a posição na Agenda muda.
+// Nos dias 29/30/31, limita ao último dia do mês de destino.
+function agbDataLiquidacao(r){
+  const data=String(r&&r.prev_pgto||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)) return data;
+  if(!/boleto/i.test(String(r.forma||''))) return data;
+  const [ano,mes,dia]=data.split('-').map(Number);
+  const d=new Date(Date.UTC(ano,mes,1));
+  const anoDest=d.getUTCFullYear(),mesDest=d.getUTCMonth()+1;
+  const ultimo=new Date(Date.UTC(anoDest,mesDest,0)).getUTCDate();
+  return anoDest+'-'+String(mesDest).padStart(2,'0')+'-'+String(Math.min(dia,ultimo)).padStart(2,'0');
+}
+// Ações do board usam a MESMA data exibida nas colunas, evitando que um
+// clique em 'Baixar tudo' selecione lançamentos de outro dia.
+function agbCorrespondeDia(r,dia,hoje){
+  const data=agbDataLiquidacao(r);
+  return dia==='atrasados' ? Boolean(data&&data<hoje) : data===dia;
+}
 function renderAgendaBoardHtml(){
   AGB_DECKS.clear(); AGB_DECK_SEQ=0;
   const hoje=td();
   const tF=addD(hoje,90);
   const base=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&r.prev_pgto&&agbMatchQ(r));
-  const vencidos=base.filter(r=>r.prev_pgto<hoje);
-  const futuros=base.filter(r=>r.prev_pgto>=hoje&&r.prev_pgto<=tF);
+  const vencidos=base.filter(r=>agbDataLiquidacao(r)<hoje);
+  const futuros=base.filter(r=>agbDataLiquidacao(r)>=hoje&&agbDataLiquidacao(r)<=tF);
   const porDia={};
-  futuros.forEach(r=>{(porDia[r.prev_pgto]=porDia[r.prev_pgto]||[]).push(r);});
+  futuros.forEach(r=>{const dia=agbDataLiquidacao(r);(porDia[dia]=porDia[dia]||[]).push(r);});
   const dias=Object.keys(porDia).sort();
   // [agenda-dia-a-dia-pago] O que já foi baixado, um dia por coluna — pedido
   // do usuário: "eu quero que apareça tudo que já foi baixado também, dia a
@@ -9144,10 +9178,10 @@ function renderRecCalGridHtml(){
   const hoje=td();
   const mes=curMes;
   const [y,m]=mes.split('-').map(Number);
-  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&(r.prev_pgto||'').startsWith(mes));
+  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&(isPago(r)?(r.prev_pgto||''):agbDataLiquidacao(r)).startsWith(mes));
   const porDia={};
   rows.forEach(r=>{
-    const dia=(r.prev_pgto||'').slice(0,10); if(!dia)return;
+    const dia=(isPago(r)?r.prev_pgto:agbDataLiquidacao(r))||''; if(!dia)return;
     (porDia[dia]=porDia[dia]||[]).push(r);
   });
 
@@ -9288,7 +9322,7 @@ function _baixarLoteConfirmado(alvos,label,dataPag,nota){
 function baixarTudoCliente(dia,cliente){
   const atrasados=dia==='atrasados';
   const hoje=td();
-  const alvos=allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)&&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  const alvos=allD().filter(r=>agbCorrespondeDia(r,dia,hoje)&&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
   if(!alvos.length) return;
   const quando=atrasados?'em atraso':`em ${fDM(dia)}`;
   if(!confirm(`Confirmar a baixa de ${alvos.length} lançamento(s) de ${cliente} ${quando} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
@@ -9297,7 +9331,7 @@ function baixarTudoCliente(dia,cliente){
 function baixarTudoDia(dia){
   const atrasados=dia==='atrasados';
   const hoje=td();
-  const alvos=allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  const alvos=allD().filter(r=>agbCorrespondeDia(r,dia,hoje)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
   if(!alvos.length) return;
   const quando=atrasados?'em atraso':`de ${fDM(dia)}`;
   if(!confirm(`Confirmar a baixa de TODOS os ${alvos.length} lançamento(s) pendentes ${quando} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
@@ -9325,7 +9359,7 @@ const agbChaveRec = r => (r && r.id!=null) ? ('id'+String(r.id)) : ('ix'+allD().
 function _agbAlvosCliente(dia,cliente){
   const atrasados=dia==='atrasados';
   const hoje=td();
-  return allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)
+  return allD().filter(r=>agbCorrespondeDia(r,dia,hoje)
     &&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
 }
 
@@ -9845,7 +9879,8 @@ function renderBoletosPainel(rows){
   // Boleto a emitir vencendo em 20 dias ou menos (ou já vencido): abre a
   // lista sozinho na primeira vez que aparece, pra não passar batido.
   const temUrgente=afazerG.some(g=>diasAteVenc(g.prev_pgto)<=20);
-  if(!bolAutoInit&&temUrgente){bolExpandido=true;bolFiltro='afazer';bolAutoInit=true;}
+  // A lista permanece recolhida mesmo havendo boletos urgentes; o título sinaliza as pendências.
+  if(!bolAutoInit)bolAutoInit=true;
 
   // [ESTILO LEDGER] Duas linhas tipo extrato, iguais às do painel de Boletos
   // do Dashboard do Sistema Estilo — o próprio nome de cada linha já diz o
@@ -9860,7 +9895,7 @@ function renderBoletosPainel(rows){
         onclick="event.stopPropagation();verBoletosFiltro('afazer')" title="Ver só os boletos a emitir">
       <div class="bol-lic">${icRelogio}</div>
       <div class="bol-ltxt">
-        <div class="bol-ltit">Boletos a emitir</div>
+        <div class="bol-ltit${afazer>0?' bol-ltit-pendente':''}">Boletos a emitir</div>
         <div class="bol-lsub">${afazer>0?plural(afazer):'nenhum pendente'}</div>
       </div>
       <div class="bol-lval">${fRH(totFazer)}</div>
@@ -10413,8 +10448,8 @@ function frRenderData(){
       const proporcao=it.value>0?100*pago/it.value:0;
       const pct=montante>0?Math.round(it.value/montante*100):0;
       const linha=document.createElement('button');linha.type='button';linha.className='fat-barra-linha';
-      linha.title=it.key+' · Efetivado: '+fR(pago)+' · A realizar: '+fR(falta)+' · Atrasado neste mês: '+fR(it.atraso||0)+' · Atrasado de meses anteriores: '+fR(it.antigo||0)+' — clique para visualizar os lançamentos';
-      linha.setAttribute('aria-label',linha.title);
+      const descricaoAcessivel=it.key+' · Efetivado: '+fR(pago)+' · A realizar: '+fR(falta)+' · Atrasado neste mês: '+fR(it.atraso||0)+' · Atrasado de meses anteriores: '+fR(it.antigo||0)+' — clique para visualizar os lançamentos';
+      linha.setAttribute('aria-label',descricaoAcessivel);
       const nome=document.createElement('span');nome.className='fat-barra-nome';nome.textContent=it.key;
       const faixa=document.createElement('span');faixa.className='fat-barra-faixa';
       // Paleta fechada da Estilo: vinho, verde sálvia, turquesa, cinza e malva.
@@ -10443,9 +10478,11 @@ function frRenderData(){
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
       const valor=document.createElement('span');valor.className='fat-barra-valor';frValorResponsivo(valor,it.value);
       linha.append(faixa,valor);
-      // Prévia disponível em todas as linhas, mesmo sem clicar.
-      linha.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')frxMostrarResumo(dim,it.key,e);});
-      linha.addEventListener('pointerleave',frxEsconderResumo);
+      // Prévia APENAS enquanto o cursor está dentro da área real do tubo.
+      // O espaço vazio e o valor à direita não acionam nem mantêm a janela.
+      faixa.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')frxMostrarResumo(dim,it.key,e);});
+      faixa.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')frxMostrarResumo(dim,it.key,e);});
+      faixa.addEventListener('pointerleave',frxEsconderResumo);
       linha.addEventListener('focus',()=>{const r=linha.getBoundingClientRect();frxMostrarResumo(dim,it.key,{clientX:r.left+15,clientY:r.bottom});});
       linha.addEventListener('blur',frxEsconderResumo);
       linha.addEventListener('click',()=>{frxEsconderResumo();mostrarLancCategoria(dim,it.key);});
@@ -10629,7 +10666,7 @@ function renderResumo(){
     const col=DC['Silvio']||'#1f5fa8';
     return [{type:'line',label:'Silvio · Locação',data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:1,tension:.35,pointRadius:1,pointHoverRadius:3,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc'}];
   })():[];
-  mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:[...dsMes,...dsDonoLocMes]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},plugins:{legend:{display:true,position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},barLabels:{display:true,size:window.innerWidth<=760?12:11,fmt:v=>Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const barItems=items.filter(it=>it.dataset.type!=='line');return barItems.length>1?'Total: '+fR(barItems.reduce((a,it)=>a+(it.raw||0),0)):'';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
+  mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:[...dsMes,...dsDonoLocMes]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:10}},plugins:{legend:{display:false},barLabels:{display:true,size:window.innerWidth<=760?12:11,fmt:v=>Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const barItems=items.filter(it=>it.dataset.type!=='line');return barItems.length>1?'Total: '+fR(barItems.reduce((a,it)=>a+(it.raw||0),0)):'';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   // Os painéis de barra mostram previsto E recebido juntos, então não seguem
   // o seletor previsto/recebido (que continua valendo para os gráficos).
   const hd=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
