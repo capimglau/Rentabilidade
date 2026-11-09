@@ -4505,6 +4505,92 @@ html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card .lc-parc {
 html:not([data-theme="dark"]) .lc-parcela-card.venc .lc-ct-dt {background:#f4e9e9!important}
 html:not([data-theme="dark"]) .lc-parcela-card.ok .lc-ct-dt {background:#eaf2ec!important}
 html:not([data-theme="dark"]) .lc-parcela-card.hoje .lc-ct-dt {background:#e7eef6!important}
+/* AGI — 09/11: moldura azul-acinzentada sóbria para reunir parcelas do mesmo contrato.
+   Preserva a separação dos cards e os indicadores de situação. */
+html:not([data-theme="dark"]) #searchResults .lc-ct,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct {
+  background:linear-gradient(145deg,#e8eef5 0%,#edf2f7 56%,#e4ecf4 100%);
+  border:1px solid #b7cadd;
+  border-radius:22px;
+  padding:22px 24px 20px;
+  box-shadow:0 4px 18px rgba(42,69,98,.095),inset 0 1px 0 rgba(255,255,255,.7);
+}
+html:not([data-theme="dark"]) #searchResults .lc-ct::before,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct::before {
+  width:3px;background:#6588ac;animation:none;
+}
+html:not([data-theme="dark"]) #searchResults .lc-ct-hd,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct-hd {
+  border-bottom:1px solid rgba(93,120,151,.18);
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card {
+  border:1px solid #d9e0e8;
+  box-shadow:0 2px 9px rgba(40,61,84,.07);
+}
+html:not([data-theme="dark"]) #searchResults .lc-ct-foot,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct-foot {
+  border-top-color:rgba(93,120,151,.2);
+}
+@media(max-width:760px){
+ html:not([data-theme="dark"]) #searchResults .lc-ct,
+ html:not([data-theme="dark"]) #page-lancamentos .lc-ct {padding:15px 12px 14px;border-radius:17px}
+}
+html[data-theme="dark"] #searchResults .lc-ct,
+html[data-theme="dark"] #page-lancamentos .lc-ct {
+  background:linear-gradient(145deg,#202f42,#233447);
+  border:1px solid #425c75;
+  box-shadow:0 5px 19px rgba(0,0,0,.16);
+}
+html[data-theme="dark"] #searchResults .lc-ct::before,
+html[data-theme="dark"] #page-lancamentos .lc-ct::before {background:#7799bb;animation:none}
+/* AGI — 09/11/2026: identidade visual unificada da tela de Lançamentos.
+   Moldura de contrato igual à Busca; fundo cinza-azulado sóbrio em torno de todas
+   as parcelas, cards internos cinza-claro e separação visual entre contratos. */
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct {
+  background:linear-gradient(145deg,#e8eef5 0%,#edf2f7 56%,#e4ecf4 100%) !important;
+  border:1px solid #b7cadd !important;
+  border-radius:22px;
+  box-shadow:0 4px 18px rgba(42,69,98,.095),inset 0 1px 0 rgba(255,255,255,.7) !important;
+  padding:22px 24px 20px;
+  margin-bottom:20px;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct::before {
+  background:#6588ac !important;width:3px;animation:none;
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card {
+  background:#f5f6f8; border:1px solid #d9e0e8;
+  box-shadow:0 2px 9px rgba(40,61,84,.07);
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card .lc-ct-dt {
+  background:#eceef2;border-bottom:1px solid #e2e5e9;
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card .lc-ct-itens {background:#f5f6f8}
+/* Situações financeiras continuam reconhecíveis sem cores saturadas. */
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.venc .lc-ct-dt {background:#f4e9e9}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.ok .lc-ct-dt {background:#eaf2ec}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.hoje .lc-ct-dt {background:#e7eef6}
+/* Lançamentos avulsos e atalhos mantêm seu próprio card, sem aparência de
+   pertencer indevidamente ao contrato imediatamente acima. */
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .swipe .pcard {
+  background:#f5f6f8;border:1px solid #e0e3e8;border-radius:15px;
+  box-shadow:0 2px 9px rgba(40,61,84,.045);
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct-stub {
+  background:#f0f3f7;border:1px dashed #b9c9d9;border-radius:14px;
+}
+html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
+  background:linear-gradient(145deg,#202f42,#233447) !important;
+  border:1px solid #425c75 !important;
+  box-shadow:0 5px 19px rgba(0,0,0,.16) !important;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+@media(max-width:760px){
+  html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct {
+    padding:15px 12px 14px;border-radius:17px;
+  }
+}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
