@@ -4777,6 +4777,34 @@ html[data-theme="dark"] #page-resumo #cardBoletos {border-color:rgba(255,255,255
  #page-resumo .fat-painel-cab-acoes {gap:5px;}
 }
 @media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none!important;}}
+/* Ajuste final AGI ↔ Estilo: busca integrada, datas e totais compactos, tubos -10%. */
+#page-resumo .rc-cal-topbar-2 { margin-top:-4px; }
+#page-resumo .rc-cal-topbar-2 .agb-busca {
+  flex:0 1 328px; width:min(100%,328px); max-width:328px;
+  height:32px; padding:0 7px 0 11px; gap:7px;
+}
+#page-resumo .rc-cal-topbar-2 .agb-busca-input { font-size:12px; }
+#page-resumo .agb-busca-divisor {
+  flex:none; width:1px; height:17px; margin:0 1px 0 3px;
+  background:color-mix(in srgb,var(--ink3) 28%,transparent);
+}
+#page-resumo .agb-busca .rc-ico-btn {
+  flex:none; width:26px; height:27px; min-width:26px;
+  padding:0; border:0; background:transparent; box-shadow:none;
+  color:var(--ink3); border-radius:6px;
+}
+#page-resumo .agb-busca .rc-ico-btn svg { width:16px; height:16px; }
+#page-resumo .agb-busca .rc-ico-btn:hover,
+#page-resumo .agb-busca .rc-ico-btn:focus-visible { color:var(--blue); }
+#page-resumo .agb-col-hd {padding:8px 11px;gap:3px;margin-bottom:9px;min-height:43px;}
+#page-resumo .agb-dow {font-size:12px;}
+#page-resumo .agb-dom {font-size:10.5px;}
+#page-resumo .agb-dh-in,#page-resumo .agb-dh-out {font-size:10.5px;padding:1px 6px;}
+#page-resumo .fat-barra-faixa {height:29px;} /* 32 × 0,9 = 28,8px */
+@media(max-width:760px){
+  #page-resumo .rc-cal-topbar-2 .agb-busca{flex:1 1 auto;width:100%;max-width:none;}
+  #page-resumo .fat-barra-faixa{height:26px;} /* 29 × 0,9 = 26,1px */
+}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -8877,8 +8905,11 @@ function renderRecebHoje(){
     <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda…" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
     ${selAgbQ?`<button type="button" class="agb-busca-clear" title="Limpar busca" onclick="setAgbQ('')">✕</button>`:''}
+    <span class="agb-busca-divisor" aria-hidden="true"></span>
+    ${tipoIcoHtml}
+    ${toggleHtml}
   </div>`;
-  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml:'<span class="agb-busca-sp"></span>'}${tipoIcoHtml}${toggleHtml}</div>
+  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml:'<span class="agb-busca-sp"></span>'+tipoIcoHtml+toggleHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-cal">
