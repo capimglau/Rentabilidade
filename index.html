@@ -4481,6 +4481,30 @@ html[data-theme="dark"] .lc-parcela-card .lc-parc {background:rgba(45,88,130,.25
  .lc-parcela-card .lc-ct-itens {padding:7px 10px 9px}
  .lc-parcela-card .lc-ct-dt-r button {font-size:10px}
 }
+/* AGI — Busca/Lançamentos: parcelas em cinza tom sobre tom, contraste suave com o contrato branco. */
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card {
+  background:#f5f6f8;
+  border:1px solid #e0e3e8;
+  box-shadow:0 3px 12px rgba(32,43,57,.055);
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card .lc-ct-dt,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card .lc-ct-dt {
+  background:#eceef2;
+  border-bottom:1px solid #e2e5e9;
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card .lc-ct-itens,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card .lc-ct-itens {
+  background:#f5f6f8;
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card .lc-parc,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card .lc-parc {
+  background:#fff;
+}
+/* Manter os indicadores de atraso/quitado/hoje visíveis sem perder a base neutra. */
+html:not([data-theme="dark"]) .lc-parcela-card.venc .lc-ct-dt {background:#f4e9e9!important}
+html:not([data-theme="dark"]) .lc-parcela-card.ok .lc-ct-dt {background:#eaf2ec!important}
+html:not([data-theme="dark"]) .lc-parcela-card.hoje .lc-ct-dt {background:#e7eef6!important}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
