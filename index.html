@@ -4722,6 +4722,61 @@ html[data-theme="dark"] .fat-barra-pct {background:rgba(20,30,44,.88);color:#eef
 /* Sem zoom de página: nem o gesto de pinça, nem o toque duplo. O toque que
    rola (pan) continua livre; só o zoom some. */
 html, body { touch-action: pan-x pan-y; }
+
+/* ═══ AGI | identidade Estilo (09/11/2026) ═══
+   Cards arredondados e com relevo da referência, mantendo os dados e ações. */
+#page-resumo .fat-paineis { margin-top:-17px; margin-bottom:25px; }
+#page-resumo .fat-paineis-grid { gap:18px; }
+#page-resumo .fat-painel, #page-resumo #cardBoletos,
+#page-resumo .mc, #page-resumo .card,
+#page-lancamentos .lc-grupo, #searchResults .lc-grupo {
+  border-radius:22px;
+  border:1px solid rgba(90,100,115,.10);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.35),0 10px 18px -14px rgba(0,0,0,.28),0 2px 14px rgba(0,0,0,.10);
+}
+#page-resumo .fat-painel { overflow:visible; background:var(--card); }
+#page-resumo .fat-painel-cab {
+  border-radius:22px 22px 0 0; padding:13px 16px; min-height:55px;
+  background:color-mix(in srgb,var(--blue) 4%,var(--card));
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px;
+}
+#page-resumo .fat-painel-cab h2 { font-size:14px; font-weight:700; flex:1 1 160px; }
+#page-resumo .fat-painel-cab-acoes { display:flex; flex:0 1 auto; align-items:center; justify-content:flex-end; gap:9px; min-width:0; }
+#page-resumo .fat-painel-total { font-size:12px; font-weight:700; }
+#page-resumo #fatRingFilters { margin:0; position:relative; z-index:8; }
+#page-resumo #frBasisToggle { position:relative; z-index:8; margin:0; }
+#page-resumo .frx-base-chip { font-size:11.5px; font-weight:700; padding:6px 10px; }
+#page-resumo .fat-painel-lista { padding:15px 16px 18px; gap:10px; }
+#page-resumo .fat-barra-linha { min-height:29px; gap:11px; }
+#page-resumo .fat-barra-faixa { height:32px; border-radius:999px; overflow:hidden; }
+/* Listra de 11px / ciclo de 1,5s: mesma geometria e velocidade do tubo A2 da Estilo.
+   Background posicionado somente na parte ainda não efetivada. */
+@keyframes agi-estilo-ondas { to { background-position:11px 0; } }
+#page-resumo .fat-barra-restante {
+  background-color:color-mix(in srgb,var(--fat-cor) 63%,white);
+  background-image:linear-gradient(135deg,rgba(255,255,255,.27) 25%,rgba(255,255,255,.06) 25% 50%,rgba(255,255,255,.27) 50% 75%,rgba(255,255,255,.06) 75%);
+  background-size:11px 11px;
+  animation:agi-estilo-ondas 1.5s linear infinite;
+}
+#page-resumo .fat-barra-nome { font-size:12px; font-weight:700; }
+#page-resumo .fat-barra-valor { font-size:11.5px; font-weight:700; }
+#page-resumo .fat-barra-pct { font-size:10.5px; }
+#page-resumo #cardBoletos { margin-top:0; }
+/* Agenda: dois cards visíveis por dia; os demais permanecem no baralho oculto,
+   podendo ser abertos pelo cabeçalho/selo +N, inclusive no desktop. */
+#page-resumo .agb-col-hd { border-radius:17px; }
+#page-resumo .agb-card { border-radius:17px; }
+html[data-theme="dark"] #page-resumo .fat-painel,
+html[data-theme="dark"] #page-resumo #cardBoletos {border-color:rgba(255,255,255,.10);box-shadow:0 8px 22px rgba(0,0,0,.25);}
+@media(max-width:760px){
+ #page-resumo .fat-paineis {margin-top:-7px; margin-bottom:20px;}
+ #page-resumo .fat-painel-cab {padding:11px 12px;}
+ #page-resumo .fat-painel-cab h2 {font-size:13px;flex-basis:135px;}
+ #page-resumo .fat-painel-lista {padding:13px 12px 16px;gap:9px;}
+ #page-resumo .fat-barra-faixa {height:29px;}
+ #page-resumo .fat-painel-cab-acoes {gap:5px;}
+}
+@media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none!important;}}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -4875,19 +4930,13 @@ html, body { touch-action: pan-x pan-y; }
   <div id="recebHoje"></div>
   <!-- Faturamento: dois painéis simultâneos, com execução sólida e saldo hachurado. -->
   <div class="fat-paineis">
-    <div class="fat-paineis-toolbar">
-      <span class="fat-paineis-titulo" id="frxTitulo">Faturamento</span>
-      <div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div>
-      <div class="frx-base" id="frBasisToggle"></div>
-      <div class="fr-total" id="frTotal"><span id="frTotalLabel" hidden></span><span id="frTotalValue" hidden></span><span id="frTotalSub" hidden></span></div>
-    </div>
     <div class="fat-paineis-grid">
       <section class="fat-painel" aria-labelledby="fatTipoTitulo">
-        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><span class="fat-painel-total" id="fatTipoTotal"></span></header>
+        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
         <div class="fat-painel-lista" id="fatTipoBarras"></div>
       </section>
       <section class="fat-painel" aria-labelledby="fatDonoTitulo">
-        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><span class="fat-painel-total" id="fatDonoTotal"></span></header>
+        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
         <div class="fat-painel-lista" id="fatDonoBarras"></div>
       </section>
     </div>
@@ -8352,7 +8401,7 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
 // agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir. Igual
 // à Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (antes
 // só valia no mobile; o CSS que forçava tudo aberto no PC foi removido).
-const AGB_COL_LIMITE=3;
+const AGB_COL_LIMITE=2;
 function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   const grupos=agruparPorCliente(itens);
   // [agenda-dia-a-dia-pago] Numa coluna paga, saldo é 0 em todo mundo — o
