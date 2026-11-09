@@ -5155,6 +5155,107 @@ html[data-theme="dark"] .lc-parcela-card .lc-parc{background:rgba(132,114,213,.2
 html[data-theme="dark"] #page-resumo .fat-barra-pct{background:rgba(239,233,255,.79)!important;color:#514676!important}
 html[data-theme="dark"] .theme-btn-hdr{background:rgba(155,141,214,.20);border-color:rgba(219,207,255,.14)}
 
+
+/* INDIGO COMPLETO v2 — neutraliza estilos azuis antigos com maior especificidade.
+   Afeta EXCLUSIVAMENTE o tema dark; o tema claro e os dados não mudam. */
+html[data-theme="dark"] {
+  --ink:#F4F0FF; --ink2:#D4CDE8; --ink3:#ADA4C6;
+  --line:rgba(196,181,243,.18);
+  --card:#2A2642; --surface:#242037; --surface2:#373150;
+  --blue:#B8A9FF; --blue2:#8F7CDC;
+  --blue-soft:rgba(184,169,255,.17); --blue-mid:#615687;
+  --pastel-blue:#B7AEF5; --dock-petroleo:#BFB3F5;
+  --purple:#C6B2FF; --purple-soft:rgba(190,163,255,.18);
+  background:#1D1A30 !important;
+  color-scheme:dark;
+}
+html[data-theme="dark"] body {
+  background:#1D1A30 !important;
+  background-image:linear-gradient(180deg,#242039 0%,#1D1A30 100%) !important;
+  color:var(--ink);
+}
+html[data-theme="dark"] .header {background:#29243E !important;border-bottom-color:var(--line) !important;}
+html[data-theme="dark"] .nav-tabs{background:#28233E !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .ntab.on{background:#40385D !important;color:#ECE5FF !important;}
+html[data-theme="dark"] .month-nav,
+html[data-theme="dark"] .subnav {background:#39324F !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .subnav-btn.on{background:#51476E !important;color:var(--ink) !important;}
+/* Painéis antes presos aos gradientes AZUIS com !important. */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .mc,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .owner-pills,
+html[data-theme="dark"] .search-total,
+html[data-theme="dark"] .day-items .lc-ct,
+html[data-theme="dark"] .fat-painel,
+html[data-theme="dark"] #page-resumo #cardBoletos {
+  background:linear-gradient(180deg,#302B49 0%,#29253F 100%) !important;
+  border-color:rgba(201,184,255,.17) !important;
+  box-shadow:inset 0 1px 0 rgba(250,244,255,.07),0 9px 22px rgba(10,8,21,.28) !important;
+}
+/* Os cards de dia conservam a estrutura original e a bandeira de categoria. */
+html[data-theme="dark"] .agb-card,
+html[data-theme="dark"] .pcard,
+html[data-theme="dark"] .swipe .pcard,
+html[data-theme="dark"] .day-items .pcard,
+html[data-theme="dark"] .day-items .swipe .pcard,
+html[data-theme="dark"] .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,
+html[data-theme="dark"] .day-items .lc-ct .swipe .pcard.lc-ct-item {
+  background:linear-gradient(165deg,#3A3453 0%,#302B47 100%) !important;
+  border-color:rgba(197,181,244,.17) !important;
+}
+html[data-theme="dark"] .pcard:hover,
+html[data-theme="dark"] .day-items .pcard:hover,
+html[data-theme="dark"] .day-items .swipe .pcard:hover{
+  background:#443B60 !important;
+}
+html[data-theme="dark"] .agb-col-hd {background:#302B46 !important;border-color:rgba(205,193,250,.13) !important;}
+html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{background:#383050 !important;}
+html[data-theme="dark"] .agb-col.agb-pago .agb-col-hd{background:#293B3C !important;}
+html[data-theme="dark"] .agb-busca,
+html[data-theme="dark"] .agb-busca input,
+html[data-theme="dark"] .search-input,
+html[data-theme="dark"] .fbar input[type=text],
+html[data-theme="dark"] .fbar select,
+html[data-theme="dark"] .filt-panel select,
+html[data-theme="dark"] .filt-panel input {
+  background-color:#36304C !important;
+  color:var(--ink) !important;
+  border-color:var(--line) !important;
+}
+html[data-theme="dark"] input::placeholder{color:#B5AACD !important;opacity:1;}
+html[data-theme="dark"] .fat-painel-cab{background:#38324F !important;border-bottom-color:var(--line) !important;}
+html[data-theme="dark"] .fat-painel-total{color:#C7B8FF !important;}
+html[data-theme="dark"] .boletos-banner{background:rgba(160,140,226,.13) !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .lc-parcela-card {background:#332D49 !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .lc-parcela-card .lc-ct-dt{background:#3B3453 !important;}
+html[data-theme="dark"] .lc-parcela-card.venc .lc-ct-dt{background:#583443 !important;}
+html[data-theme="dark"] .lc-parcela-card.ok .lc-ct-dt{background:#2D4A40 !important;}
+html[data-theme="dark"] .lc-parcela-card.hoje .lc-ct-dt{background:#49416A !important;}
+html[data-theme="dark"] #searchResults .lc-ct::before,
+html[data-theme="dark"] #page-lancamentos .lc-ct::before{background:#AA9BEC !important;}
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .icon-btn.round-action,
+html[data-theme="dark"] .theme-btn-hdr,
+html[data-theme="dark"] .filt-toggle-btn,
+html[data-theme="dark"] .rf > summary {
+  background:rgba(179,159,241,.16) !important;
+  border-color:rgba(212,195,255,.16) !important;
+  color:var(--ink) !important;
+}
+html[data-theme="dark"] .sk{
+  background:linear-gradient(90deg,#29233E 25%,#433957 37%,#29233E 63%) !important;
+  background-size:400% 100% !important;
+}
+html[data-theme="dark"] tr:hover td{background:#39324F !important;}
+/* O indicador percentual permanece legível com fundo lavanda transparente. */
+html[data-theme="dark"] #page-resumo .fat-barra-pct{
+  background:rgba(237,229,255,.74) !important;color:#514474 !important;
+}
+/* Status pago, pendente e atrasado continuam com suas cores funcionais. */
+@media(max-width:760px){
+ html[data-theme="dark"] .fat-painel-cab{background:#38324F !important;}
+}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
