@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>AGI Locadora</title>
-<meta name="theme-color" content="#ffffff" id="metaTheme">
-<script>try{var t=localStorage.getItem('agi-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('metaTheme').content='#131c2c';}}catch(e){}</script>
+<meta name="theme-color" content="#E3E4E7" id="metaTheme">
+<script>try{var t=localStorage.getItem('agi-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('metaTheme').content='#131d31';}}catch(e){}</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -123,7 +123,7 @@ body, body *:not(.placa):not(.lc-ro-hora):not(.prem-input){ font-family:'IBM Ple
 html { overflow-x: clip; }
 body {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: #caccd1;
+  background: #E3E4E7;
   min-height: 100vh;
   color: var(--ink);
   /* O anel de "Faturamento por categoria" sangra até a borda da tela no
@@ -166,7 +166,7 @@ body::before {
      lugares que pintam o fundo (body, body::before e o fallback de
      impressão) — mudar um só deixa uma faixa da cor antiga aparecendo
      em alguma tela. */
-  background: #caccd1;
+  background: #E3E4E7;
   pointer-events: none;
   font-size: 14px;
   line-height: 1.5;
@@ -3697,7 +3697,7 @@ details[open] summary::before { transform: rotate(90deg); }
   .pcard-value { font-size: 16px; }
 
   /* ═══════ Estética iOS (minimalista) ═══════ */
-  body { background: #caccd1; color: #1c1c1e; }
+  body { background: #E3E4E7; color: #1c1c1e; }
 
   /* Barras translúcidas (vidro fosco) */
   /* NÃO usar backdrop-filter aqui: criaria um containing block e jogaria
@@ -4211,6 +4211,102 @@ body.modo-boletos .header-right { display: none; }
 body.modo-boletos #page-resumo > * { display: none; }
 body.modo-boletos #page-resumo > #cardBoletos { display: block; }
 
+
+/* Resumo ao passar o mouse sobre os tubos e suas legendas */
+.frx-hover-detail{position:fixed;z-index:99999;pointer-events:none;width:238px;max-width:calc(100vw - 16px);padding:12px 14px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 35px rgba(0,0,0,.22);font-size:12px;line-height:1.4}
+.frx-hover-detail[hidden]{display:none}
+.frx-hover-detail strong{font-size:14px;display:block;margin-bottom:2px}
+.frx-hover-sub{color:var(--ink3);font-size:11px;margin-bottom:9px}
+.frx-hover-line{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.frx-hover-line b{white-space:nowrap;font-variant-numeric:tabular-nums}
+#frxLegendDono li,#frxLegendTipo li{cursor:pointer}
+
+/* ════════════════════════════════════════════════════════════════════
+   [estilo-paineis] Experiência visual de painéis do Sistema Estilo
+   (temas Neve = claro e Azul/"dim" = escuro), portada pro AGI com os
+   mesmos valores. Fica no FIM da folha pra vencer as regras anteriores.
+   ════════════════════════════════════════════════════════════════════ */
+/* Claro (Neve): fundo #E3E4E7, painéis brancos com borda e sombra suaves */
+html{background:#E3E4E7}
+body,body::before{background:#E3E4E7}
+.card{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(16,20,30,.06);box-shadow:0 2px 12px rgba(16,20,30,.06)}
+.search-total{border-color:rgba(16,20,30,.08);box-shadow:0 2px 10px rgba(16,20,30,.05)}
+.day-items .lc-ct{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid rgba(16,20,30,.06);box-shadow:0 2px 12px rgba(16,20,30,.06)}
+
+/* Escuro (Azul/dim): fundo em gradiente, painéis em gradiente com brilho de
+   topo, cartões de evento tom-sobre-tom, valores mais sóbrios */
+html[data-theme="dark"]{
+  --card:#263a5a; --surface:#1f2e49; --surface2:#2a4060; --line:#394f6f;
+  --ink3:#9db0cb; --blue-mid:#3b5a85;
+  background:#131d31;
+}
+html[data-theme="dark"] body{
+  background-color:#131d31;
+  background-image:linear-gradient(180deg,#1a2640 0%,#131d31 100%);
+  background-attachment:fixed;
+}
+html[data-theme="dark"] body::before{display:none}
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .mc,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .owner-pills,
+html[data-theme="dark"] .search-total,
+html[data-theme="dark"] .day-items .lc-ct{
+  background:linear-gradient(180deg,#2a3e5f 0%,#223555 100%) !important;
+  border:1px solid #394f6f !important;
+  box-shadow:inset 0 1px 0 rgba(170,195,235,.12) !important;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+html[data-theme="dark"] .day-items .lc-ct{box-shadow:inset 0 1px 0 rgba(170,195,235,.12),0 14px 20px -14px rgba(0,0,0,.5) !important}
+html[data-theme="dark"] .pcard,
+html[data-theme="dark"] .swipe .pcard,
+html[data-theme="dark"] .day-items .pcard,
+html[data-theme="dark"] .day-items .swipe .pcard{
+  background:linear-gradient(165deg,#2f4568 0%,#263b5b 100%);
+  border:1px solid #394f6f;
+  box-shadow:inset 0 1px 0 rgba(170,195,235,.10),0 1px 3px rgba(0,0,0,.35);
+}
+html[data-theme="dark"] .pcard:hover,
+html[data-theme="dark"] .day-items .pcard:hover{background:linear-gradient(165deg,#34496e 0%,#2a4062 100%)}
+html[data-theme="dark"] .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,
+html[data-theme="dark"] .day-items .lc-ct .swipe .pcard.lc-ct-item{
+  background:linear-gradient(165deg,#2f4568 0%,#263b5b 100%);
+  border:1px solid #394f6f;
+}
+html[data-theme="dark"] .search-total .st-pago{color:var(--pastel-green)}
+html[data-theme="dark"] .search-total .st-pend{color:var(--pastel-amber)}
+html[data-theme="dark"] .search-total .st-val,
+html[data-theme="dark"] .lc-ct-tot{color:var(--pastel-blue)}
+html[data-theme="dark"] .lc-ct.done .lc-ct-tot{color:var(--ink3)}
+
+/* [vinculo-contrato] Cartão de contrato/compra parcelada com tudo junto */
+.lc-ct-vinc{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lc-ct-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);padding:3px 10px;border-radius:20px}
+.lc-ct-badge.parc{color:var(--purple);background:var(--purple-soft)}
+.lc-ct-stat{font-size:11px;font-weight:600;color:var(--ink3)}
+.lc-ct-stat b{color:var(--ink2);font-weight:700}
+.lc-ct-dt{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:12px 2px 7px;padding:0 2px 6px;border-bottom:1px dashed var(--line);font-size:11.5px;font-weight:700;color:var(--ink2)}
+.lc-ct-hd+.lc-ct-dt{margin-top:4px}
+.lc-ct-dt.venc{color:var(--pastel-red)}
+.lc-ct-dt.hoje{color:var(--blue)}
+.lc-ct-dt.ok{color:var(--pastel-green)}
+.lc-ct-dt-r{display:flex;align-items:center;gap:8px;font-weight:800;flex-wrap:wrap;justify-content:flex-end}
+.lc-ct-dt-here{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:var(--blue-soft);color:var(--blue);border-radius:10px;padding:1px 7px;margin-left:6px}
+.lc-parc{font-size:10.5px;font-weight:700;color:var(--ink2);background:var(--surface2);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.lc-fora-tag{font-size:10px;font-weight:600;color:var(--ink3);background:transparent;border:1px dashed var(--line)}
+.lc-ct .swipe.lc-ct-sw.fora{opacity:.58;transition:opacity .15s}
+.lc-ct .swipe.lc-ct-sw.fora:hover,.lc-ct .swipe.lc-ct-sw.fora.open,.lc-ct .swipe.lc-ct-sw.fora.dragging{opacity:1}
+.lc-ct-fora-nota{display:block;font-size:10.5px;font-weight:500;color:var(--ink3)}
+.lc-ct-stub{display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:9px;border:1px dashed var(--line);border-radius:14px;cursor:pointer;background:transparent;-webkit-tap-highlight-color:transparent}
+.lc-ct-stub:active{background:var(--surface2)}
+.lc-ct-stub-ic{font-size:15px;flex:0 0 auto}
+.lc-ct-stub-tx{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px}
+.lc-ct-stub-sub{font-size:11px;color:var(--ink3);line-height:1.35}
+.lc-ct-stub-sub b{color:var(--ink2)}
+.lc-ct-stub-v{font-size:13.5px;font-weight:800;color:var(--ink2);white-space:nowrap}
+.lc-ct-stub-go{font-size:18px;color:var(--ink3);line-height:1}
+@keyframes lcCtFlash{0%{box-shadow:0 0 0 0 rgba(31,95,168,.55)}100%{box-shadow:0 0 0 14px rgba(31,95,168,0)}}
+.lc-ct-flash{animation:lcCtFlash .9s ease-out 2}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -4536,6 +4632,13 @@ html, body { touch-action: pan-x pan-y; }
       <div class="fg">
         <div class="fp"><label>Placa</label><input type="text" id="nf-p" placeholder="Ex: UFR2H17" list="placaDL" autocomplete="off"></div>
         <datalist id="placaDL"></datalist>
+        <div id="nf-renovar" class="s2" style="display:none;grid-column:1/-1;padding:13px 14px;border:1px solid var(--blue-mid);border-radius:12px;background:var(--blue-soft);font-size:13px;line-height:1.5" aria-live="polite">
+          <div id="nf-renovar-texto" style="margin-bottom:10px"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn-blue btn-sm" id="nf-renovar-sim">1 · Renovar por mais 30 dias</button>
+            <button type="button" class="btn btn-sm" id="nf-renovar-nao">2 · Editar dados</button>
+          </div>
+        </div>
         <div class="fp"><label>Proprietário</label><select id="nf-d"><option value="">Selecione</option></select></div>
         <div class="fp s2"><label>Cliente</label><input type="text" id="nf-c" list="clienteDL" autocomplete="off"></div>
         <datalist id="clienteDL"></datalist>
@@ -7232,40 +7335,68 @@ function renderLanc(){
     return;
   }
   const all=allD();
-  // [contrato-inteiro] Filtrado em Pendentes/Vencidos, o cartão de contrato
-  // ainda mostra as linhas JÁ PAGAS do mesmo contrato — senão uma Locação
-  // baixada (até sem querer) sumia e o cartão ficava só com a Comissão,
-  // sem dar pra ver nem reverter o que aconteceu. Os totais do topo seguem
-  // o filtro; só a lista ganha as irmãs do cartão.
-  let exib=rows;
-  if(status==='pend'||status==='venc'){
-    const chaves=new Set(rows.map(chaveCartaoContrato));
-    const ja=new Set(rows);
-    const extra=all.filter(r=>!ja.has(r)&&chaves.has(chaveCartaoContrato(r)));
-    if(extra.length)exib=rows.concat(extra).sort((a,b)=>(a.prev_pgto||'').localeCompare(b.prev_pgto||''));
-  }
-  body.innerHTML=lancDiasHtml(exib,all);
+  // [contrato-inteiro] Quem decide o que entra no cartão do contrato é o
+  // VÍNCULO (chaveVinculo), não o filtro: filtrado por mês/status, o cartão
+  // ainda traz as outras linhas do mesmo contrato (as já pagas, as de outro
+  // mês…) marcadas "fora do filtro" — senão uma Locação baixada (até sem
+  // querer) sumia e o cartão ficava só com a Comissão, sem dar pra ver nem
+  // reverter o que aconteceu. Os totais do topo e do dia seguem o filtro.
+  body.innerHTML=lancDiasHtml(rows,all);
 }
 // Lançamentos divididos por data de vencimento, com o somatório do dia no
 // cabeçalho — mesma divisão visual dos Recebimentos, pra as duas telas se
 // lerem igual. O somatório aqui é o líquido do dia (pago + saldo).
 function lancDiasHtml(rows,all){
   const hoje=td();
+  // 1) Dias REAIS de vencimento — contagem, total e DIA_ROWS (resumo por forma
+  //    de pagamento ao clicar no total) só olham o que passou no filtro.
   const byDay={};
   rows.forEach(r=>{
     const d=r.prev_pgto||'Sem data';
     (byDay[d]||(byDay[d]=[])).push(r);
   });
   DIA_ROWS.lancamentos=byDay;
+  // 2) Vínculos: tudo do mesmo contrato (ou da mesma compra parcelada) vira
+  //    UM cartão com todos os lançamentos juntos, no vencimento em aberto mais
+  //    próximo dentre os que passaram no filtro (ou no mais antigo, se
+  //    estiver tudo pago). Nos outros dias de vencimento fica só um atalho.
+  const idx=new Map(); all.forEach((r,i)=>idx.set(r,i));
+  const vinc=mapaVinculos(all);
+  const noFiltro=new Set(rows);
+  const doFiltro=new Map();
+  rows.forEach(r=>{const k=chaveVinculo(r);let a=doFiltro.get(k);if(!a){a=[];doFiltro.set(k,a);}a.push(r);});
+  const ancora=new Map();
+  doFiltro.forEach((rs,k)=>{
+    if((vinc.get(k)||[]).length<2)return;
+    const base=rs.filter(isPend);
+    const ref=(base.length?base:rs).slice().sort((a,b)=>(a.prev_pgto||'9999-99-99').localeCompare(b.prev_pgto||'9999-99-99'))[0];
+    ancora.set(k,ref.prev_pgto||'Sem data');
+  });
   return ordenaDias(Object.keys(byDay)).map(dia=>{
     const items=byDay[dia];
     const totDia=items.reduce((a,r)=>a+liq(r),0);
     const allDone=items.every(r=>isPago(r));
     const passado=dia!=='Sem data'&&dia<hoje;
     const totalStr=dayTotalHtml(dia,'lancamentos','liq'+(allDone?' ok':''),fR(totDia));
+    const partes=[], atalhos=new Map(), feitos=new Set();
+    items.forEach(r=>{
+      const k=chaveVinculo(r), g=vinc.get(k)||[];
+      if(g.length<2){partes.push({html:lcCardHtml(r,idx.get(r),false)});return;}
+      if(ancora.get(k)===dia){
+        if(feitos.has(k))return;
+        feitos.add(k);
+        partes.push({html:lcContratoHtml(g.map(x=>({r:x.r,i:x.i,fora:!noFiltro.has(x.r)})),false,
+          {id:'lcct-l-'+hashChave(k),anchorDia:dia==='Sem data'?'':dia})});
+        return;
+      }
+      if(atalhos.has(k)){partes[atalhos.get(k)].its.push({r,i:idx.get(r)});return;}
+      atalhos.set(k,partes.length);
+      partes.push({k,its:[{r,i:idx.get(r)}]});
+    });
+    const corpo=partes.map(p=>p.html!=null?p.html:lcAtalhoContratoHtml(p.its,p.k,ancora.get(p.k)==='Sem data'?'':ancora.get(p.k),'lcct-l-')).join('');
     return `<div class="day-group${passado?' passado':''}" data-dia="${dia}">
       ${dayHeaderHtml(dia,items.length,totalStr)}
-      <div class="day-items">${lcItensContratoHtml(items.map(r=>({r,i:all.indexOf(r)})),false)}</div>
+      <div class="day-items">${corpo}</div>
     </div>`;
   }).join('');
 }
@@ -8989,7 +9120,8 @@ function frxEnsureChart(){
     getIcon:(ringId,key)=>ringId==='tipo'?FRX_ICON_PATHS[frxTypeIcon(key)]:null,
     getLabel:(ringId,key)=>ringId==='dono'?key:null,
     getShortLabel:(ringId,key)=>ringId==='dono'?frxInitials(key):null,
-    onToggle:(ringId,key)=>frxToggle(ringId,key),
+    // Um clique na fatia abre os lançamentos exatos (não apenas aplica filtro).
+    onToggle:(ringId,key)=>mostrarLancCategoria(ringId,key),
     onOpen:(ringId,key)=>mostrarLancCategoria(ringId,key),
   });
   // Clicar no miolo FIXA o que ele estiver mostrando naquele instante:
@@ -9103,8 +9235,94 @@ function frUpdateTotal(){
     (activeCount?' · '+activeCount+' filtro'+(activeCount===1?'':'s')+' ativo'+(activeCount===1?'':'s'):'');
 }
 
+// Detalhamento financeiro das fatias dos dois tubos e das respectivas legendas.
+// Os dados vêm dos mesmos registros que alimentam cada anel, respeitando
+// o mês, a base de faturamento e os filtros cruzados ativos.
+function frxResumoItem(dim,key){
+  const rows=frRowsForRing(dim);
+  const itens=frBreakdown(dim,rows,frSum(rows));
+  const n=itens.findIndex(x=>x.key===key);
+  if(n<0)return null;
+  const visiveis=new Set(itens.filter(x=>x.key!=='Outros').map(x=>x.key));
+  const selecionados=rows.filter(r=>{
+    const k=(r[dim]||'').trim()||'—';
+    return key==='Outros'?!visiveis.has(k):k===key;
+  });
+  return {rows:selecionados,value:frSum(selecionados),
+    pago:selecionados.reduce((t,r)=>t+fN(r.valor_pago),0),
+    saldo:selecionados.reduce((t,r)=>t+fN(r.saldo),0),
+    vencido:selecionados.reduce((t,r)=>t+(isVenc(r)?fN(r.saldo):0),0)};
+}
+let frxInfoBox=null;
+function frxEsconderResumo(){if(frxInfoBox)frxInfoBox.hidden=true;}
+function frxMostrarResumo(dim,key,evt){
+  const data=frxResumoItem(dim,key);
+  if(!data){frxEsconderResumo();return;}
+  if(!frxInfoBox){
+    frxInfoBox=document.createElement('div');
+    frxInfoBox.className='frx-hover-detail';
+    frxInfoBox.hidden=true;
+    document.body.appendChild(frxInfoBox);
+  }
+  const titulo=document.createElement('strong');titulo.textContent=key;
+  const subtitulo=document.createElement('div');subtitulo.className='frx-hover-sub';
+  subtitulo.textContent=(dim==='dono'?'Proprietário':'Tipo')+' · '+data.rows.length+' lançamento'+(data.rows.length===1?'':'s');
+  const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Vencido',data.vencido]];
+  frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor])=>{
+    const linha=document.createElement('div');linha.className='frx-hover-line';
+    const a=document.createElement('span');a.textContent=nome;
+    const b=document.createElement('b');b.textContent=fR(valor);
+    linha.append(a,b);return linha;
+  }));
+  frxInfoBox.hidden=false;
+  const rect=frxInfoBox.getBoundingClientRect();
+  const px=evt.clientX??(evt.target.getBoundingClientRect().left+20);
+  const py=evt.clientY??(evt.target.getBoundingClientRect().top+15);
+  frxInfoBox.style.left=Math.max(8,Math.min(window.innerWidth-rect.width-8,px+14))+'px';
+  frxInfoBox.style.top=Math.max(8,Math.min(window.innerHeight-rect.height-8,py+14))+'px';
+}
+function frxLigarDetalhes(){
+  const stage=document.getElementById('frxStage');
+  if(!stage||stage.dataset.resumoLigado)return;
+  stage.dataset.resumoLigado='1';
+  // Compatível com elementos SVG que expõem key/ring nos atributos,
+  // e com os rótulos textuais desenhados pelo componente Sunburst3D.
+  const detectar=(target)=>{
+    if(target.closest('.sb3d-hub'))return null;
+    const el=target.closest('[data-key],[data-label],[data-name],[data-ring],[data-ring-id],[aria-label],title');
+    if(!el)return null;
+    const attrs=[el,target];
+    let key='',dim='';
+    for(const node of attrs){
+      key=key||node.getAttribute('data-key')||node.getAttribute('data-label')||node.getAttribute('data-name')||'';
+      dim=dim||node.getAttribute('data-ring')||node.getAttribute('data-ring-id')||node.getAttribute('data-dim')||'';
+    }
+    const label=(el.getAttribute('aria-label')||el.getAttribute('title')||el.textContent||'').trim();
+    const candidatos=FR_ORDER.flatMap(d=>frBreakdown(d,frRowsForRing(d),frSum(frRowsForRing(d))).map(x=>({dim:d,key:x.key})));
+    if(key){const found=candidatos.find(x=>x.key===key&&(!dim||dim===x.dim));if(found)return found;}
+    return candidatos.find(x=>label===x.key||label.startsWith(x.key+' ·')||label.startsWith(x.key+' —'))||null;
+  };
+  stage.addEventListener('pointermove',e=>{const item=detectar(e.target);if(item)frxMostrarResumo(item.dim,item.key,e);else frxEsconderResumo();});
+  stage.addEventListener('pointerleave',frxEsconderResumo);
+  for(const [id,dim] of [['frxLegendDono','dono'],['frxLegendTipo','tipo']]){
+    const lista=document.getElementById(id);if(!lista)continue;
+    const chave=(ev)=>{
+      const li=ev.target.closest('li');if(!li||!lista.contains(li))return null;
+      const dados=frBreakdown(dim,frRowsForRing(dim),frSum(frRowsForRing(dim)));
+      const texto=(li.textContent||'').trim();
+      return dados.find(it=>texto.startsWith(it.key))?.key||null;
+    };
+    lista.addEventListener('pointermove',e=>{const k=chave(e);if(k)frxMostrarResumo(dim,k,e);else frxEsconderResumo();});
+    lista.addEventListener('pointerleave',frxEsconderResumo);
+    lista.addEventListener('click',e=>{const k=chave(e);if(k){e.preventDefault();e.stopPropagation();frxEsconderResumo();mostrarLancCategoria(dim,k);}},true);
+  }
+  document.addEventListener('scroll',frxEsconderResumo,true);
+}
+
 function frRenderData(){
   frxEnsureChart();
+  frxLigarDetalhes();
+  frxEsconderResumo();
   frxChart.update({ tipo:frxItemsFor('tipo'), dono:frxItemsFor('dono') });
   frxChart.renderLegend('tipo', document.getElementById('frxLegendTipo'), {title:'Tipo'});
   frxChart.renderLegend('dono', document.getElementById('frxLegendDono'), {title:'Proprietário'});
@@ -10744,11 +10962,11 @@ function matchBusca(r,q){
 // algo no futuro (o mais próximo primeiro), depois — rolando a lista — os
 // que só têm hoje/passado (o mais recente primeiro, indo para trás no
 // tempo). Sem nenhuma data vai para o fim, por último.
-function agruparResultadosBusca(res){
+function agruparResultadosBusca(res,vinc){
   const hoje=td();
   const mapa=new Map();
   res.forEach(item=>{
-    const k=chaveContrato(item.r);
+    const k=chaveVinculo(item.r);
     if(!mapa.has(k))mapa.set(k,{key:k,itens:[]});
     mapa.get(k).itens.push(item);
   });
@@ -10759,6 +10977,14 @@ function agruparResultadosBusca(res){
     const comData=g.itens.filter(({r})=>r.prev_pgto);
     g.futuro=futuros.length>0;
     g.ref=futuros.length?futuros[0].r.prev_pgto:(comData.length?comData[comData.length-1].r.prev_pgto:'');
+    // [vinculo-contrato] O cartão mostra o contrato INTEIRO: os lançamentos
+    // que não casaram com a busca/filtros (outras parcelas, outras datas)
+    // entram marcados "fora da busca" — só g.itens (o que casou) entra nos
+    // totais do mês.
+    if(vinc){
+      const ja=new Set(g.itens.map(x=>x.r));
+      g.todos=g.itens.concat((vinc.get(g.key)||[]).filter(x=>!ja.has(x.r)).map(x=>({r:x.r,i:x.i,fora:true})));
+    }else g.todos=g.itens;
   });
   grupos.sort((a,b)=>{
     if(!a.ref&&!b.ref)return 0;
@@ -10818,7 +11044,7 @@ function runSearch(){
       </div>
     </div>`;
   }
-  const grupos=agruparResultadosBusca(res);
+  const grupos=agruparResultadosBusca(res,mapaVinculos(all));
   const shown=grupos.slice(0,40);
   const moreHtml=grupos.length>shown.length?`<div class="srow-empty">+${grupos.length-shown.length} contrato(s) não exibido(s) — refine a busca</div>`:'';
   box.innerHTML=ownerHtml+buscaGroupedHtml(shown,true)+moreHtml;
@@ -10846,16 +11072,50 @@ function ordemTipoContrato(t){
 }
 // items: [{r,i}] já na ordem da lista. Mantém a ordem (o grupo entra na
 // posição do primeiro item dele); grupo de 1 continua o cartão de sempre.
+// [vinculo-contrato] O que "é a mesma coisa" para fins de exibição, MAIS LARGO
+// que chaveCartaoContrato (que exige mesmo vencimento+forma+retorno): tudo que
+// pertence ao MESMO CONTRATO (placa+cliente+saída — chaveContrato, a mesma
+// definição que renderIrmaos usa) aparece junto, mesmo com vencimentos e
+// formas diferentes (Locação + Avaria + Lavagem, ou as parcelas de um cartão
+// em vários meses). Sem saída/retorno não dá pra dizer que é um contrato: aí
+// vale a compra PARCELADA (mesmo lanc_num ou "Parcela X/N" — agbParcelaGroupKey)
+// e, não sendo nenhuma das duas, o lançamento fica sozinho.
+const _vincFallback=new WeakMap(); let _vincSeq=0;
+function chaveVinculo(r){
+  if(r.saida||r.retorno)return 'C|'+chaveContrato(r)+(r.saida?'':'|'+(r.retorno||''));
+  const pk=agbParcelaGroupKey(r);
+  if(pk)return 'P|'+pk;
+  if(r.id!=null&&r.id!=='')return 'I|'+r.id;
+  if(!_vincFallback.has(r))_vincFallback.set(r,++_vincSeq);
+  return 'I|~'+_vincFallback.get(r);
+}
+// Map chave → [{r,i}] com TODOS os lançamentos (i = índice em allD()).
+function mapaVinculos(all){
+  const m=new Map();
+  all.forEach((r,i)=>{const k=chaveVinculo(r);let a=m.get(k);if(!a){a=[];m.set(k,a);}a.push({r,i});});
+  return m;
+}
+function hashChave(s){let h=5381;s=String(s);for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36);}
+// items: [{r,i}] já na ordem da lista. Mantém a ordem (o grupo entra na
+// posição do primeiro item dele); grupo de 1 continua o cartão de sempre.
 function lcItensContratoHtml(items,fecharBusca){
   const mapa=new Map();
   items.forEach(it=>{
-    const k=chaveCartaoContrato(it.r);
+    const k=chaveVinculo(it.r);
     if(!mapa.has(k))mapa.set(k,[]);
     mapa.get(k).push(it);
   });
   return [...mapa.values()].map(g=>g.length<2
     ?lcCardHtml(g[0].r,g[0].i,fecharBusca)
     :lcContratoHtml(g,fecharBusca)).join('');
+}
+// Atalho "ir para o cartão do contrato": rola até ele, abre o dia se estiver
+// recolhido e pisca o cartão pra dar pra achar.
+function lcIrParaContrato(id){
+  const el=document.getElementById(id); if(!el)return;
+  const dg=el.closest('.day-group'); if(dg&&dg.classList.contains('collapsed'))dg.classList.remove('collapsed');
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.classList.remove('lc-ct-flash'); void el.offsetWidth; el.classList.add('lc-ct-flash');
 }
 // [comissao-abate] A Locação com Comissão (caixinha ticada) ABATE a
 // comissão: Locação líquida + Comissão = total do contrato (o boleto).
@@ -10992,33 +11252,58 @@ function ajustarTotalContrato(iLoc,iCom){
     dbUpdate(loc); dbUpdate(com); renderAll();
   });
 }
-function lcContratoHtml(g,fecharBusca){
+function lcContratoHtml(g,fecharBusca,opt){
+  opt=opt||{};
   const pre=fecharBusca?'closeSearch();':'';
-  const itens=g.slice().sort((a,b)=>ordemTipoContrato(a.r.tipo)-ordemTipoContrato(b.r.tipo)||ordemParcela(a.r,b.r));
-  const r0=itens[0].r, col=DC[r0.dono]||'#888';
+  const hoje=td();
+  // Ordem: por vencimento (sem data por último) e, dentro da mesma data, a do
+  // catálogo (Locação primeiro, Comissão logo depois) e a da parcela.
+  const itens=g.slice().sort((a,b)=>{
+    const da=a.r.prev_pgto||'9999-99-99', db=b.r.prev_pgto||'9999-99-99';
+    if(da!==db)return da<db?-1:1;
+    return ordemTipoContrato(a.r.tipo)-ordemTipoContrato(b.r.tipo)||ordemParcela(a.r,b.r);
+  });
+  const r0=(itens.find(it=>!it.fora)||itens[0]).r, col=DC[r0.dono]||'#888';
   const total=itens.reduce((a,{r})=>a+liq(r),0);
   const saldo=itens.reduce((a,{r})=>a+(isPago(r)?0:fN(r.saldo)),0);
   const pagoTot=itens.reduce((a,{r})=>a+fN(r.valor_pago),0);
   const todosPagos=itens.every(({r})=>isPago(r));
   const algumVenc=itens.some(({r})=>isVenc(r)&&!isPago(r));
-  const hojeCard=!todosPagos&&!algumVenc&&r0.prev_pgto===td();
+  const datas=[...new Set(itens.map(({r})=>r.prev_pgto||''))];
+  const multiData=datas.length>1;
+  const hojeCard=!todosPagos&&!algumVenc&&datas.includes(hoje);
   const donos=[...new Set(itens.map(({r})=>r.dono||'—'))];
-  const ehBoleto=/boleto/i.test(r0.forma||'');
-  const aviso=avisoComissaoContrato(itens);
-  const par=parContratoAjustavel(itens);
+  const formas=[...new Set(itens.map(({r})=>r.forma||''))];
+  const ehContrato=itens.some(({r})=>r.saida||r.retorno);
+  const nParc=itens.filter(({r})=>agbParcelaInfo(r)).length;
+  const nPagos=itens.filter(({r})=>isPago(r)).length;
+  const nVenc=itens.filter(({r})=>isVenc(r)&&!isPago(r)).length;
+  const nPend=itens.filter(({r})=>isPend(r)).length-nVenc;
+  const nFora=itens.filter(it=>it.fora).length;
+  const ehBoleto=!multiData&&/boleto/i.test(r0.forma||'');
   const pagosIdx=itens.filter(({r})=>fN(r.valor_pago)>0).map(({i})=>i);
-  const linhas=itens.map(({r,i})=>{
-    const pago=isPago(r), parcial=isParcial(r), com=r.tipo==='Comissão';
-    return `<div class="swipe lc-ct-sw" data-dia="${r.prev_pgto||''}">
+  // Avisos de comissão: por COBRANÇA (mesma data+forma), que é onde "só uma
+  // Comissão" faz sentido — num contrato com vários vencimentos cada data
+  // pode ter a sua.
+  const subs=new Map();
+  itens.forEach(it=>{const k=chaveCartaoContrato(it.r);if(!subs.has(k))subs.set(k,[]);subs.get(k).push(it);});
+  const aviso=[...subs.values()].map(avisoComissaoContrato).join('');
+  const linha=({r,i,fora})=>{
+    const pago=isPago(r), parcial=isParcial(r), com=r.tipo==='Comissão', pi=agbParcelaInfo(r);
+    const obs=pi?obsSemParcela(r.obs):(r.obs||'');
+    return `<div class="swipe lc-ct-sw${fora?' fora':''}" data-dia="${r.prev_pgto||''}">
       ${lcSwipeActsHtml(r,i,pre)}
-      <div class="pcard lc-card lc-ct-item${pago?' done':''}${parcial?' parcial':''}"${lcCorTipo(r.tipo)}>
+      <div class="pcard lc-card lc-ct-item${pago?' done':''}${parcial?' parcial':''}${isVenc(r)&&!pago?' venc':''}"${lcCorTipo(r.tipo)}>
         <div class="pcard-body">
           <div class="pcard-tags">
             ${tipTag(r.tipo)}
+            ${pi?`<span class="lc-parc" title="Parcela ${pi.atual} de ${pi.total}">Parcela ${pi.atual}/${pi.total}</span>`:''}
+            ${formas.length>1?`<span class="tag tag-forma">${fFormaLabel(r.forma)}</span>`:''}
             ${donos.length>1?`<span style="font-size:11px;color:var(--ink3)">${esc(r.dono||'—')}</span>`:''}
             ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
+            ${fora?`<span class="tag lc-fora-tag">${opt.foraLabel||'fora do filtro'}</span>`:''}
           </div>
-          ${r.obs?`<span class="pcard-obs" title="${esc(r.obs)}">📝&nbsp;${esc(r.obs)}</span>`:''}
+          ${obs?`<span class="pcard-obs" title="${esc(obs)}">📝&nbsp;${esc(obs)}</span>`:''}
         </div>
         <div class="pcard-right">
           <span class="pcard-value lc-ct-v">${com?'+ ':''}${fR(liq(r))}</span>
@@ -11026,9 +11311,43 @@ function lcContratoHtml(g,fecharBusca){
         </div>
       </div>
     </div>`;
-  }).join('');
-  return `<div class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}" data-dia="${r0.prev_pgto||''}">
+  };
+  // Vários vencimentos: um divisor por data (com o subtotal dela) separa as
+  // linhas — é ali que se lê "este contrato cobra tanto em tal dia".
+  let corpo;
+  if(multiData){
+    corpo=datas.map(d=>{
+      const its=itens.filter(({r})=>(r.prev_pgto||'')===d);
+      const tot=its.reduce((a,{r})=>a+liq(r),0);
+      const okD=its.every(({r})=>isPago(r)), vencD=its.some(({r})=>isVenc(r)&&!isPago(r));
+      const parD=parContratoAjustavel(its);
+      const pagosD=its.filter(({r})=>fN(r.valor_pago)>0).map(({i})=>i);
+      const lbl=d?(d===hoje?'hoje · ':'')+fDM(d):'sem data';
+      return `<div class="lc-ct-dt${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}">
+        <span class="lc-ct-dt-l">🗓 Vence <b>${lbl}</b>${opt.anchorDia!=null&&opt.anchorDia===d?'<i class="lc-ct-dt-here">neste dia</i>':''}</span>
+        <span class="lc-ct-dt-r">${parD?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${parD.loc.i},${parD.com.i})">✎ Ajustar total</button>`:''}${pagosD.length?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosD.join(',')}])">↺ Reverter</button>`:''}<span>${fR(tot)}</span></span>
+      </div>`+`<div class="lc-ct-itens">${its.map(linha).join('')}</div>`;
+    }).join('');
+  }else{
+    corpo=`<div class="lc-ct-itens">${itens.map(linha).join('')}</div>`;
+  }
+  const par=multiData?null:parContratoAjustavel(itens);
+  const resumo=[
+    nPagos?`<b>${nPagos}</b> pago${nPagos===1?'':'s'}`:'',
+    nPend>0?`<b>${nPend}</b> a vencer`:'',
+    nVenc?`<b style="color:var(--pastel-red)">${nVenc}</b> atrasado${nVenc===1?'':'s'}`:''
+  ].filter(Boolean).join(' · ');
+  const venc0=datas.filter(Boolean);
+  const metaVenc=multiData
+    ?`<span>Vencimentos <b style="font-weight:700">${fDM(venc0[0])}</b> → <b style="font-weight:700">${fDM(venc0[venc0.length-1])}</b> · ${datas.length} datas</span>`
+    :`<span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r0.prev_pgto)}</b></span>`;
+  const idAttr=opt.id?` id="${opt.id}"`:'';
+  return `<div${idAttr} class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}" data-dia="${r0.prev_pgto||''}">
     <div class="lc-ct-hd">
+      <div class="lc-ct-vinc">
+        <span class="lc-ct-badge${ehContrato?'':' parc'}">${ehContrato?'🔗 Mesmo contrato':'💳 Compra parcelada'}</span>
+        ${resumo?`<span class="lc-ct-stat">${resumo}</span>`:''}
+      </div>
       <div class="pcard-top">
         <span class="placa">${esc(r0.placa)}</span>
         <span class="pcard-name">${esc(r0.cliente||'—')}</span>
@@ -11036,18 +11355,18 @@ function lcContratoHtml(g,fecharBusca){
       <div class="pcard-tags">
         <span class="ddot" style="background:${col}"></span>
         <span style="font-size:11.5px;color:var(--ink3)">${esc(donos.join(' · '))}</span>
-        <span class="tag tag-forma">${fFormaLabel(r0.forma)}</span>
-        <span class="itens-cnt">${itens.length} lançamentos · 1 contrato</span>
+        ${formas.slice(0,2).map(f=>`<span class="tag tag-forma">${fFormaLabel(f)}</span>`).join('')}${formas.length>2?`<span class="tag tag-forma">+${formas.length-2}</span>`:''}
+        <span class="itens-cnt">${itens.length} lançamentos${nParc?` · ${nParc} parcela${nParc===1?'':'s'}`:''}</span>
       </div>
       <div class="pcard-meta">
-        <span>🗓 ${fDM(r0.saida)} → ${fDM(r0.retorno)}</span>
-        <span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r0.prev_pgto)}</b></span>
+        ${ehContrato?`<span>🗓 ${fDM(r0.saida)} → ${fDM(r0.retorno)}</span>`:''}
+        ${metaVenc}
       </div>
     </div>
-    <div class="lc-ct-itens">${linhas}</div>
+    ${corpo}
     ${aviso}
     <div class="lc-ct-foot">
-      <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':'Total do contrato'}${par?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${par.loc.i},${par.com.i})">✎ Ajustar total</button>`:''}${pagosIdx.length?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();${pre}reverterPagamentoLote([${pagosIdx.join(',')}])">↺ Reverter pagamento</button>`:''}</span>
+      <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':(ehContrato?'Total do contrato':'Total parcelado')}${nFora?`<small class="lc-ct-fora-nota">inclui ${nFora} ${opt.foraLabel||'fora do filtro'}</small>`:''}${par?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${par.loc.i},${par.com.i})">✎ Ajustar total</button>`:''}${(!multiData&&pagosIdx.length)?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosIdx.join(',')}])">↺ Reverter pagamento</button>`:''}</span>
       <span class="lc-ct-foot-r">
         <span class="lc-ct-tot">${fR(total)}</span>
         ${todosPagos?`<span class="pcard-parcial-sub" style="color:var(--green)">✓ recebido</span>`
@@ -11055,6 +11374,23 @@ function lcContratoHtml(g,fecharBusca){
           :`<span class="pcard-parcial-sub" style="color:var(--red)">Saldo ${fR(saldo)}</span>`)}
       </span>
     </div>
+  </div>`;
+}
+// Linha-atalho: o contrato tem lançamentos que vencem NESTE dia, mas o cartão
+// completo (com todos os lançamentos do contrato juntos) fica no vencimento
+// em aberto mais próximo — aqui só aponta pra ele. Os totais do dia seguem
+// contando esses lançamentos no dia real de vencimento.
+function lcAtalhoContratoHtml(its,key,anchorDia,idPref){
+  const r0=its[0].r, tot=its.reduce((a,{r})=>a+liq(r),0);
+  const id=idPref+hashChave(key);
+  const ehContrato=!!(r0.saida||r0.retorno);
+  return `<div class="lc-ct-stub" onclick="lcIrParaContrato('${id}')">
+    <span class="lc-ct-stub-ic">${ehContrato?'🔗':'💳'}</span>
+    <div class="lc-ct-stub-tx">
+      <div class="pcard-top"><span class="placa">${esc(r0.placa)}</span><span class="pcard-name">${esc(r0.cliente||'—')}</span></div>
+      <div class="lc-ct-stub-sub">${its.length} lançamento${its.length===1?'':'s'} ${ehContrato?'do mesmo contrato':'da mesma compra'} vence${its.length===1?'':'m'} neste dia · todos juntos em <b>${anchorDia?fDM(anchorDia):'sem data'}</b></div>
+    </div>
+    <span class="lc-ct-stub-v">${fR(tot)}</span><span class="lc-ct-stub-go">›</span>
   </div>`;
 }
 // Cartão de lançamento com swipe (arrastar revela Baixar/Parcial/Reverter/
@@ -11160,7 +11496,9 @@ function buscaGroupedHtml(grupos,fecharBusca){
     // [lanc-cartao-contrato] Mesmo agrupamento/design de Lançamentos — reusa
     // lcItensContratoHtml direto (ela já resolve grupo de 1 vs vários), em
     // vez de uma segunda função de cartão só pra Busca.
-    return mesHtml+lcItensContratoHtml(g.itens,fecharBusca);
+    return mesHtml+((g.todos||g.itens).length>1
+      ?lcContratoHtml(g.todos||g.itens,fecharBusca,{foraLabel:'fora da busca'})
+      :lcCardHtml(g.itens[0].r,g.itens[0].i,fecharBusca));
   }).join('');
 }
 // ── HISTÓRICO: LANÇAMENTOS FEITOS EM CADA DIA (só consulta) ──
@@ -11389,7 +11727,8 @@ function mostrarLancDiaFluxo(dia){
 function mostrarLancCategoria(dim,key){
   ULTIMO_MSEARCH=()=>mostrarLancCategoria(dim,key);
   setSearchFiltersVisiveis(false);
-  const rows=frRowsForRing(dim).filter(r=>((r[dim]||'').trim()||'—')===key);
+  const detalhe=frxResumoItem(dim,key);
+  const rows=detalhe?detalhe.rows:[];
   if(!rows.length){
     // Só sai sem abrir nada na 1ª chamada; se já estava aberto (refresh
     // depois de uma alteração em outro lugar), avisa em vez de deixar a
@@ -11550,7 +11889,7 @@ function swEnd(e){
 // ── TEMA (claro/escuro) ──
 function isDark(){return document.documentElement.getAttribute('data-theme')==='dark';}
 function gridCol(){return isDark()?'rgba(255,255,255,.08)':'#eeece8';}
-function cardBgCol(){return isDark()?'#1e2738':'#ffffff';}
+function cardBgCol(){return isDark()?'#263a5a':'#ffffff';}
 /* [paleta-da-agenda] Mesmas cores dos --pastel-* (CSS) resolvidas em JS —
    Canvas/Chart.js não lê custom properties no backgroundColor, então
    repete os hex aqui, igual gridCol()/cardBgCol() acima. Usadas no
@@ -11565,7 +11904,7 @@ function pastelAmber(){return isDark()?'#F4C78C':'#c08a4a';}
 // o fundo é acinzentado e os botões são brancos).
 function applyThemeChrome(){
   const dark=isDark();
-  const m=document.getElementById('metaTheme'); if(m)m.content=dark?'#131c2c':'#ffffff';
+  const m=document.getElementById('metaTheme'); if(m)m.content=dark?'#131d31':'#E3E4E7';
   const ico=dark
     ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>'
     :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5 6.6 6.6 0 0 0 20.5 13.2Z"/></svg>';
@@ -12375,6 +12714,115 @@ function initItens(pref){
   }
   resetItems(pref);
 }
+// RENOVAÇÃO POR PLACA: consulta todo o histórico carregado, não apenas o mês filtrado.
+// A renovação é um NOVO contrato; o anterior e seus recebimentos permanecem intactos.
+let nfRenovacaoOrigem=null;
+let nfRenovacaoPlacaIgnorada='';
+function ultimaLocacaoPlaca(placa){
+  const chave=_plKey(placa);
+  const locs=allD().filter(r=>_plKey(r.placa)===chave &&
+    semAcento(String(r.tipo||'')).toLowerCase()==='locacao' && r.prev_pgto && /^\d{4}-\d{2}-\d{2}$/.test(r.prev_pgto));
+  locs.sort((a,b)=>((b.prev_pgto||'').localeCompare(a.prev_pgto||'')) ||
+    ((b.retorno||'').localeCompare(a.retorno||'')) || ((b.saida||'').localeCompare(a.saida||'')));
+  return locs[0]||null;
+}
+// Soma um mês de calendário, conservando o dia quando possível (31 -> último dia do mês).
+function nfMesSeguinte(data){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data||''))return '';
+  const [ano,mes,dia]=data.split('-').map(Number);
+  const max=new Date(Date.UTC(ano,mes+1,0)).getUTCDate();
+  const d=new Date(Date.UTC(ano,mes,Math.min(dia,max)));
+  return d.toISOString().slice(0,10);
+}
+function nfMoeda(valor){return Number(valor||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+function nfItensLocacao(origem){
+  const placa=_plKey(origem.placa);
+  const encontrados=allD().filter(r=>_plKey(r.placa)===placa &&
+    (r.cliente||'')===(origem.cliente||'') && (r.saida||'')===(origem.saida||'') &&
+    (r.retorno||'')===(origem.retorno||'') && (r.prev_pgto||'')===(origem.prev_pgto||''));
+  return encontrados.length?encontrados:[origem];
+}
+function verificarRenovacaoPlaca(){
+  const campo=document.getElementById('nf-p'),box=document.getElementById('nf-renovar');
+  if(!campo||!box)return;
+  const chave=_plKey(campo.value);
+  if(chave.length!==7 || chave===nfRenovacaoPlacaIgnorada){box.style.display='none';nfRenovacaoOrigem=null;return;}
+  if(nfRenovacaoOrigem && _plKey(nfRenovacaoOrigem.placa)===chave)return;
+  const anterior=ultimaLocacaoPlaca(chave);
+  nfRenovacaoOrigem=anterior;
+  if(!anterior){box.style.display='none';return;}
+  const inicioNovo=anterior.retorno||anterior.prev_pgto;
+  const fimNovo=nfMesSeguinte(inicioNovo);
+  const vencNovo=nfMesSeguinte(anterior.prev_pgto);
+  const itens=nfItensLocacao(anterior);
+  const total=itens.reduce((sum,r)=>sum+(Number(r.valor)||0),0);
+  document.getElementById('nf-renovar-texto').innerHTML=
+    `<strong>Última locação — placa ${esc(anterior.placa)}</strong><br>`+
+    `Cliente: <strong>${esc(anterior.cliente||'Não informado')}</strong><br>`+
+    `Período anterior: <strong>${fD(anterior.saida)} a ${fD(anterior.retorno)}</strong><br>`+
+    `Último vencimento: <strong>${fD(anterior.prev_pgto)}</strong><br>`+
+    `Valor do contrato: <strong>${nfMoeda(total)}</strong><br><br>`+
+    `<strong>Próxima renovação</strong><br>`+
+    `Novo período: <strong>${fD(inicioNovo)} a ${fD(fimNovo)}</strong><br>`+
+    `Novo vencimento: <strong>${fD(vencNovo)}</strong> (mesmo dia do mês seguinte).<br><br>`+
+    `Deseja renovar automaticamente ou editar os dados antes de salvar?`;
+  box.style.display='block';
+}
+function aplicarRenovacaoPlaca(editar=false){
+  const origem=nfRenovacaoOrigem;
+  if(!origem)return;
+  const placa=normPlaca(origem.placa);
+  const itens=nfItensLocacao(origem);
+  document.getElementById('nf-p').value=placa;
+  preencheDono('nf-d',origem.dono||donoDaPlaca(placa));
+  document.getElementById('nf-c').value=origem.cliente||'';
+  const inicio=origem.retorno||origem.prev_pgto;
+  document.getElementById('nf-s').value=inicio;
+  document.getElementById('nf-r').value=nfMesSeguinte(inicio);
+  const box=document.getElementById('nf-itens');box.innerHTML='';
+  itens.forEach(r=>{
+    const it=addItem('nf',false);
+    itemSet(it,'tipo',LANC_TIPOS.includes(r.tipo)?r.tipo:'Outros');
+    const forma=String(r.forma||'Boleto');
+    const formaBase=LANC_FORMAS.find(f=>forma===f||forma.startsWith(f+' ·'))||'Boleto';
+    itemSet(it,'forma',formaBase);
+    calcItems('nf');
+    const band=forma.split(' · ').slice(1).join(' · ');
+    if(band)itemSet(it,'bandeira',band);
+    itemSet(it,'valor',toBR(Number(r.valor)||0));
+    // Não transportar uma baixa efetivada do contrato anterior para o novo.
+    itemSet(it,'dpago','');
+    itemSet(it,'obs',r.obs||'');
+    itemSet(it,'prev',nfMesSeguinte(r.prev_pgto||origem.prev_pgto));
+    it.dataset.prevManual='1';
+  });
+  if(!itens.length)addItem('nf',false);
+  calcItems('nf');
+  nfRenovacaoPlacaIgnorada=_plKey(placa);
+  nfRenovacaoOrigem=null;
+  document.getElementById('nf-renovar').style.display='none';
+  const msg=document.getElementById('nMsg');
+  if(editar){
+    msg.innerHTML='<span style="color:var(--green)">✓ Dados preenchidos. Faça as alterações desejadas e clique em Salvar.</span>';
+    document.getElementById('nf-c').focus();
+  }else{
+    msg.innerHTML='<span style="color:var(--blue)">Renovação preenchida. Salvando novo contrato…</span>';
+    addN();
+  }
+}
+function initRenovacaoPlaca(){
+  const placa=document.getElementById('nf-p');
+  if(!placa||placa.dataset.renovacaoInit)return;
+  placa.dataset.renovacaoInit='1';
+  placa.addEventListener('input',()=>{
+    const chave=_plKey(placa.value);
+    if(chave!==nfRenovacaoPlacaIgnorada)nfRenovacaoPlacaIgnorada='';
+    verificarRenovacaoPlaca();
+  });
+  placa.addEventListener('change',verificarRenovacaoPlaca);
+  document.getElementById('nf-renovar-sim').addEventListener('click',()=>aplicarRenovacaoPlaca(false));
+  document.getElementById('nf-renovar-nao').addEventListener('click',()=>aplicarRenovacaoPlaca(true));
+}
 function calcN(){calcItems('nf');}
 
 // Lê os itens do formulário e devolve {recs} ou {erro}. Cartão parcelado
@@ -12489,6 +12937,8 @@ async function addN(){
   document.getElementById('novosCard').style.display='block';
   // Reset form
   ['nf-p','nf-c'].forEach(id=>document.getElementById(id).value='');
+  nfRenovacaoOrigem=null;nfRenovacaoPlacaIgnorada='';
+  document.getElementById('nf-renovar').style.display='none';
   resetItems('nf');
   rNovos();popSel();renderAll();
 }
@@ -13280,6 +13730,7 @@ async function boot(){
   autoCompletePlaca('e-p');
   autoCompletePlaca('ai-p');
   autoFillDono('nf-p','nf-d');
+  initRenovacaoPlaca();
   autoFillDono('e-p','e-d');
   autoFillDono('ai-p','ai-d');
   // Dropdown de sugestão (substitui o <datalist>, que não funciona no iOS
