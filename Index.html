@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>AGI Locadora</title>
 <meta name="theme-color" content="#E3E4E7" id="metaTheme">
-<script>try{var t=localStorage.getItem('agi-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('metaTheme').content='#131d31';}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('agi-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('metaTheme').content='#202039';}}catch(e){}</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -579,7 +579,7 @@ html[data-theme="dark"] .theme-btn-hdr { background: rgba(120,140,170,.22); bord
    1px menor — ver o override logo abaixo, pedido do usuário. */
 /* Valor 14px (era 15px, −1px) SÓ na fileira do Resumo: as outras .mrow do
    app (Baixas, Lançamentos) continuam em 15px, que é o padrão da Estilo. */
-#res-m .mc-value { font-size: 14px; }
+#res-m .mc-value { font-size: 13px; }
 /* +1px nos TEXTOS (rótulo e legenda, não o valor — esse já tem seu próprio
    ajuste acima) da fileira do Resumo: pedido do usuário. */
 #res-m .mc-label { font-size: 12px; }
@@ -4307,6 +4307,559 @@ html[data-theme="dark"] .lc-ct.done .lc-ct-tot{color:var(--ink3)}
 .lc-ct-stub-go{font-size:18px;color:var(--ink3);line-height:1}
 @keyframes lcCtFlash{0%{box-shadow:0 0 0 0 rgba(31,95,168,.55)}100%{box-shadow:0 0 0 14px rgba(31,95,168,0)}}
 .lc-ct-flash{animation:lcCtFlash .9s ease-out 2}
+
+/* AGI 09/11/2026 — leitura financeira: prioridade às datas e parcelas agrupadas. */
+#page-lancamentos .lf-searchbar {margin-bottom:16px}
+#page-lancamentos #lfFiltPanel {gap:12px; margin-bottom:22px}
+#page-lancamentos #lf-total {margin-bottom:22px}
+#page-lancamentos .day-group {margin-bottom:34px}
+#page-lancamentos .day-items {padding-top:14px}
+#page-lancamentos .day-items > .swipe {margin-bottom:14px}
+#page-lancamentos .lc-ct, #searchResults .lc-ct {padding:19px 19px 17px 23px; margin-bottom:24px; border-radius:20px; box-shadow:0 5px 18px rgba(20,38,65,.075)}
+#page-lancamentos .lc-ct-hd, #searchResults .lc-ct-hd {gap:12px; padding-bottom:17px}
+#page-lancamentos .lc-ct-itens, #searchResults .lc-ct-itens {gap:10px}
+#page-lancamentos .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,
+#searchResults .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item {padding:13px 15px 13px 17px; min-height:65px; border-radius:12px}
+#page-lancamentos .lc-ct-foot, #searchResults .lc-ct-foot {padding-top:16px; margin-top:16px}
+#searchResults .srow-mes-tot {margin-bottom:16px; margin-top:23px}
+#searchResults .srow-mes-tot:first-child {margin-top:0}
+#searchResults > .swipe {margin-bottom:15px}
+.agi-prev-date,.agi-prev-range {display:inline-flex!important; align-items:center; flex-wrap:wrap; column-gap:9px; row-gap:2px; padding:7px 11px; border:1px solid rgba(31,95,168,.17); background:var(--blue-soft); color:var(--blue); border-radius:10px; max-width:100%; line-height:1.35; font-variant-numeric:tabular-nums}
+.agi-prev-date strong,.agi-prev-range strong {font-size:13px; font-weight:800; white-space:nowrap; color:inherit}
+.agi-prev-lbl {font-size:10.5px; font-weight:650; letter-spacing:.01em; opacity:.86}
+.agi-prev-date.late {background:var(--red-soft); color:var(--red); border-color:rgba(191,37,24,.18)}
+.agi-prev-date.today {background:var(--blue-soft); color:var(--blue); border-color:var(--blue)}
+.agi-prev-date.paid {background:var(--green-soft); color:var(--green); border-color:rgba(10,100,57,.16)}
+.agi-prev-range small {font-size:10px; opacity:.8}
+.lc-ct-dt {margin:20px 0 10px; padding:11px 13px; border:1px solid var(--line); background:var(--card); border-radius:11px; gap:10px}
+.lc-ct-dt-l {display:flex; align-items:center; gap:9px; flex-wrap:wrap}
+.lc-ct-dt-l b {font-size:14px; font-weight:800; color:var(--blue)}
+.lc-ct-dt.venc {background:var(--red-soft);border-color:rgba(191,37,24,.14)}
+.lc-ct-dt.venc .lc-ct-dt-l b {color:var(--red)}
+.lc-ct-dt.ok {background:var(--green-soft);border-color:rgba(10,100,57,.14)}
+.lc-ct-dt.ok .lc-ct-dt-l b {color:var(--green)}
+.lc-ct-dt-r > span:last-child {font-size:14px; font-variant-numeric:tabular-nums}
+.lc-ct .swipe.lc-ct-sw.fora {opacity:.82}
+.lc-ct .swipe.lc-ct-sw.fora:hover,.lc-ct .swipe.lc-ct-sw.fora.open {opacity:1}
+.lc-ct-hd .pcard-meta {gap:8px 12px; margin-top:3px}
+.lc-ct .pcard.lc-ct-item .pcard-tags {gap:7px 9px; flex-wrap:wrap}
+.lc-ct .pcard.lc-ct-item .pcard-body {gap:7px}
+.lc-ct-stub {margin-bottom:13px; padding:14px 16px; background:var(--card); border-color:rgba(31,95,168,.2)}
+html[data-theme="dark"] .agi-prev-date,html[data-theme="dark"] .agi-prev-range {background:rgba(47,111,183,.16); border-color:rgba(117,172,235,.24); color:#a8d1ff}
+html[data-theme="dark"] .agi-prev-date.late {background:rgba(191,37,24,.16); color:#ffaaa1}
+html[data-theme="dark"] .agi-prev-date.paid {background:rgba(10,100,57,.22); color:#9bd7b6}
+html[data-theme="dark"] .lc-ct-dt {background:var(--card)}
+@media(max-width:760px){
+ #page-lancamentos .lc-ct,#searchResults .lc-ct {padding:15px 12px 14px 17px; margin-bottom:23px}
+ #page-lancamentos .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,#searchResults .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item {padding:12px 10px 12px 13px}
+ .agi-prev-date,.agi-prev-range {padding:6px 9px; gap:5px}
+ .agi-prev-lbl {font-size:10px}
+ .agi-prev-date strong {font-size:12px}
+ .lc-ct-dt {padding:10px; align-items:flex-start}
+ .lc-ct-dt-r {width:100%; justify-content:space-between}
+}
+/* AGI 09/11 — Busca em tela cheia e parcelas no cabeçalho do vencimento. */
+#mSearch.overlay { padding:0; align-items:stretch; justify-content:stretch; }
+#mSearch .modal.modal-busca {
+  width:100vw; max-width:none; height:100dvh; max-height:100dvh;
+  margin:0; border:0; border-radius:0; box-shadow:none;
+  display:flex; flex-direction:column; overflow:hidden;
+  padding:clamp(14px,2vw,28px) clamp(14px,3vw,44px) max(12px,env(safe-area-inset-bottom));
+}
+#mSearch .modal-busca::before {display:none}
+#mSearch .modal-busca > .mhd {flex-shrink:0; margin-bottom:14px}
+#mSearch .modal-busca > .search-input,
+#mSearch .modal-busca > #srFiltToggleBtn,
+#mSearch .modal-busca > #srFiltPanel {flex-shrink:0}
+#mSearch #searchResults {flex:1 1 auto; min-height:0; max-height:none; overflow-y:auto; overscroll-behavior:contain; padding:8px 3px 24px}
+#page-lancamentos.page {max-width:none; width:100%;}
+.lc-ct-dt .lc-ct-parcelas {display:inline-flex; align-items:center; gap:5px; flex-wrap:wrap}
+.lc-ct-dt .lc-parc {background:color-mix(in srgb,var(--blue) 10%,var(--card)); color:var(--ink2); padding:4px 9px; font-size:11px; font-weight:750}
+.lc-ct-dt .lc-ct-dt-l {align-items:center; gap:8px 12px}
+.lc-ct .lc-ct-itens .agi-prev-date {display:none!important}
+@media(max-width:760px){
+  #mSearch .modal.modal-busca {width:100%;height:100dvh;max-height:100dvh;padding:16px 12px max(12px,env(safe-area-inset-bottom))}
+  #mSearch .modal-busca > .mhd {margin-bottom:10px}
+  #mSearch #searchResults {padding-bottom:28px}
+  .lc-ct-dt-r {width:auto; margin-left:auto}
+  .lc-ct-dt .lc-ct-dt-l {width:100%}
+}
+
+/* Busca 09/11 — área de resultados prioritária; filtros opcionais e retráteis.
+   Corrige o painel que ficava fixo e consumia quase toda a altura. */
+#mSearch .modal-busca > #srFiltToggleBtn:not(.sr-hide) {
+  display:inline-flex !important; align-items:center; justify-content:center;
+  align-self:flex-start; width:auto; margin:9px 0 4px;
+  padding:8px 15px; border-radius:12px; font-size:12.5px;
+  min-height:34px; background:var(--surface); color:var(--ink2);
+  border:1px solid var(--line); box-shadow:none; cursor:pointer;
+}
+#mSearch .modal-busca > #srFiltToggleBtn.sr-hide {display:none !important}
+#mSearch .modal-busca > #srFiltPanel {
+  display:grid; grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:9px; margin:8px 0 10px; max-height:none; overflow:visible;
+  opacity:1; transition:none; flex:0 0 auto;
+}
+#mSearch .modal-busca > #srFiltPanel.collapsed {
+  display:none !important; margin:0 !important; padding:0 !important;
+}
+#mSearch #srFiltPanel select {
+  min-width:0; width:100%; padding:9px 11px; border-radius:10px;
+  font-size:12.5px; background:var(--surface); color:var(--ink);
+  border:1px solid var(--line);
+}
+#mSearch #searchResults {margin-top:6px; padding-top:10px;}
+@media(max-width:900px){
+  #mSearch .modal-busca > #srFiltPanel {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:480px){
+  #mSearch .modal-busca > #srFiltPanel {grid-template-columns:1fr 1fr; gap:6px;}
+  #mSearch .modal-busca > #srFiltToggleBtn:not(.sr-hide) {margin:7px 0 2px;}
+}
+/* AGI — 09/11/2026: cada vencimento em um CARD independente, sem barras duplicadas. */
+#page-lancamentos .lc-ct, #searchResults .lc-ct {
+  background:var(--card); border:1px solid var(--line);
+  padding:20px 22px 18px; box-shadow:0 8px 25px rgba(23,37,55,.055);
+}
+#page-lancamentos .lc-ct-hd, #searchResults .lc-ct-hd {
+  gap:9px; padding:0 0 17px; margin-bottom:17px;
+  border-bottom:1px solid var(--line);
+}
+.lc-ct-hd .pcard-meta {margin-top:0}
+.lc-parcela-card {
+  background:var(--card); border:1px solid color-mix(in srgb,var(--ink) 10%,transparent);
+  border-radius:16px; overflow:hidden; margin:0 0 14px;
+  box-shadow:0 2px 10px rgba(20,30,50,.035);
+}
+.lc-parcela-card:last-of-type {margin-bottom:0}
+.lc-parcela-card .lc-ct-dt {
+  display:flex; flex-wrap:nowrap; margin:0; padding:16px 19px;
+  border:none; border-radius:0; background:var(--surface);
+  gap:16px; min-height:67px;
+}
+.lc-parcela-card .lc-ct-dt-l {gap:5px 12px; min-width:0}
+.lc-parcela-card .lc-ct-dt-l .agi-prev-lbl {display:block; flex-basis:100%; color:var(--ink3); font-size:10px; font-weight:600; opacity:1}
+.lc-parcela-card .lc-ct-dt-l b {font-size:17px; letter-spacing:-.02em; white-space:nowrap}
+.lc-parcela-card .lc-parc {background:var(--card); color:var(--blue); font-size:11.5px; padding:5px 10px; border-radius:8px}
+.lc-parcela-card .lc-ct-dt-r {margin-left:auto; white-space:nowrap}
+.lc-parcela-card .lc-ct-dt-r > span:last-child {font-size:17px; letter-spacing:-.02em; color:var(--ink)}
+.lc-parcela-card.venc .lc-ct-dt {background:var(--red-soft)}
+.lc-parcela-card.ok .lc-ct-dt {background:var(--green-soft)}
+.lc-parcela-card.hoje .lc-ct-dt {background:var(--blue-soft)}
+.lc-parcela-card .lc-ct-itens {padding:11px 16px 13px; gap:0!important}
+#page-lancamentos .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item,
+#searchResults .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item,
+.day-items .lc-parcela-card .swipe .pcard.lc-ct-item {
+  padding:9px 5px; min-height:41px; border:0; background:transparent;
+  border-radius:0; box-shadow:none; gap:8px;
+}
+.lc-parcela-card .pcard.lc-ct-item::before {display:none!important}
+.lc-parcela-card .swipe + .swipe {border-top:1px solid var(--line)}
+.lc-parcela-card .pcard-tags .tag {font-size:11px}
+.lc-parcela-card .pcard-obs {font-size:11px; color:var(--ink3); background:transparent; padding:0;}
+.lc-parcela-card .pcard-right {align-items:flex-end}
+.lc-parcela-card.unica .pcard-value.lc-ct-v {display:none} /* valor já está no título */
+.lc-parcela-card.unica .pcard-parcial-sub {font-size:10.5px}
+.lc-parcela-card.unica .pcard-right:empty {display:none}
+.lc-parcela-card .lc-ct-sw.fora {opacity:.7}
+.lc-parcela-card .lc-ct-sw.fora .lc-fora-tag {font-size:10px}
+.lc-ct .lc-ct-foot {margin-top:18px; border-top:1px solid var(--line)}
+html[data-theme="dark"] .lc-parcela-card {background:var(--card);border-color:rgba(255,255,255,.13)}
+html[data-theme="dark"] .lc-parcela-card .lc-ct-dt {background:rgba(255,255,255,.045)}
+html[data-theme="dark"] .lc-parcela-card.venc .lc-ct-dt {background:rgba(191,37,24,.15)}
+html[data-theme="dark"] .lc-parcela-card.ok .lc-ct-dt {background:rgba(10,100,57,.18)}
+html[data-theme="dark"] .lc-parcela-card.hoje .lc-ct-dt {background:rgba(31,95,168,.18)}
+html[data-theme="dark"] .lc-parcela-card .lc-parc {background:rgba(45,88,130,.25);color:#b0d5ff}
+@media(max-width:760px){
+ #page-lancamentos .lc-ct,#searchResults .lc-ct {padding:14px 11px 13px}
+ .lc-parcela-card {border-radius:13px; margin-bottom:12px}
+ .lc-parcela-card .lc-ct-dt {padding:13px 12px; min-height:60px; gap:8px; flex-wrap:wrap}
+ .lc-parcela-card .lc-ct-dt-l {flex:1 1 140px; gap:4px 7px}
+ .lc-parcela-card .lc-ct-dt-l b {font-size:15px}
+ .lc-parcela-card .lc-ct-dt-r {width:auto; margin-left:auto; justify-content:flex-end}
+ .lc-parcela-card .lc-ct-dt-r > span:last-child {font-size:15px}
+ .lc-parcela-card .lc-ct-itens {padding:7px 10px 9px}
+ .lc-parcela-card .lc-ct-dt-r button {font-size:10px}
+}
+/* AGI — Busca/Lançamentos: parcelas em cinza tom sobre tom, contraste suave com o contrato branco. */
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card {
+  background:#f5f6f8;
+  border:1px solid #e0e3e8;
+  box-shadow:0 3px 12px rgba(32,43,57,.055);
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card .lc-ct-dt,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card .lc-ct-dt {
+  background:#eceef2;
+  border-bottom:1px solid #e2e5e9;
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card .lc-ct-itens,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card .lc-ct-itens {
+  background:#f5f6f8;
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card .lc-parc,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card .lc-parc {
+  background:#fff;
+}
+/* Manter os indicadores de atraso/quitado/hoje visíveis sem perder a base neutra. */
+html:not([data-theme="dark"]) .lc-parcela-card.venc .lc-ct-dt {background:#f4e9e9!important}
+html:not([data-theme="dark"]) .lc-parcela-card.ok .lc-ct-dt {background:#eaf2ec!important}
+html:not([data-theme="dark"]) .lc-parcela-card.hoje .lc-ct-dt {background:#e7eef6!important}
+/* AGI — 09/11: moldura azul-acinzentada sóbria para reunir parcelas do mesmo contrato.
+   Preserva a separação dos cards e os indicadores de situação. */
+html:not([data-theme="dark"]) #searchResults .lc-ct,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct {
+  background:linear-gradient(145deg,#e8eef5 0%,#edf2f7 56%,#e4ecf4 100%);
+  border:1px solid #b7cadd;
+  border-radius:22px;
+  padding:22px 24px 20px;
+  box-shadow:0 4px 18px rgba(42,69,98,.095),inset 0 1px 0 rgba(255,255,255,.7);
+}
+html:not([data-theme="dark"]) #searchResults .lc-ct::before,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct::before {
+  width:3px;background:#6588ac;animation:none;
+}
+html:not([data-theme="dark"]) #searchResults .lc-ct-hd,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct-hd {
+  border-bottom:1px solid rgba(93,120,151,.18);
+}
+html:not([data-theme="dark"]) #searchResults .lc-parcela-card,
+html:not([data-theme="dark"]) #page-lancamentos .lc-parcela-card {
+  border:1px solid #d9e0e8;
+  box-shadow:0 2px 9px rgba(40,61,84,.07);
+}
+html:not([data-theme="dark"]) #searchResults .lc-ct-foot,
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct-foot {
+  border-top-color:rgba(93,120,151,.2);
+}
+@media(max-width:760px){
+ html:not([data-theme="dark"]) #searchResults .lc-ct,
+ html:not([data-theme="dark"]) #page-lancamentos .lc-ct {padding:15px 12px 14px;border-radius:17px}
+}
+html[data-theme="dark"] #searchResults .lc-ct,
+html[data-theme="dark"] #page-lancamentos .lc-ct {
+  background:linear-gradient(145deg,#202f42,#233447);
+  border:1px solid #425c75;
+  box-shadow:0 5px 19px rgba(0,0,0,.16);
+}
+html[data-theme="dark"] #searchResults .lc-ct::before,
+html[data-theme="dark"] #page-lancamentos .lc-ct::before {background:#7799bb;animation:none}
+/* AGI — 09/11/2026: identidade visual unificada da tela de Lançamentos.
+   Moldura de contrato igual à Busca; fundo cinza-azulado sóbrio em torno de todas
+   as parcelas, cards internos cinza-claro e separação visual entre contratos. */
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct {
+  background:linear-gradient(145deg,#e8eef5 0%,#edf2f7 56%,#e4ecf4 100%) !important;
+  border:1px solid #b7cadd !important;
+  border-radius:22px;
+  box-shadow:0 4px 18px rgba(42,69,98,.095),inset 0 1px 0 rgba(255,255,255,.7) !important;
+  padding:22px 24px 20px;
+  margin-bottom:20px;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct::before {
+  background:#6588ac !important;width:3px;animation:none;
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card {
+  background:#f5f6f8; border:1px solid #d9e0e8;
+  box-shadow:0 2px 9px rgba(40,61,84,.07);
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card .lc-ct-dt {
+  background:#eceef2;border-bottom:1px solid #e2e5e9;
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card .lc-ct-itens {background:#f5f6f8}
+/* Situações financeiras continuam reconhecíveis sem cores saturadas. */
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.venc .lc-ct-dt {background:#f4e9e9}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.ok .lc-ct-dt {background:#eaf2ec}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.hoje .lc-ct-dt {background:#e7eef6}
+/* Lançamentos avulsos e atalhos mantêm seu próprio card, sem aparência de
+   pertencer indevidamente ao contrato imediatamente acima. */
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .swipe .pcard {
+  background:#f5f6f8;border:1px solid #e0e3e8;border-radius:15px;
+  box-shadow:0 2px 9px rgba(40,61,84,.045);
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct-stub {
+  background:#f0f3f7;border:1px dashed #b9c9d9;border-radius:14px;
+}
+html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
+  background:linear-gradient(145deg,#202f42,#233447) !important;
+  border:1px solid #425c75 !important;
+  box-shadow:0 5px 19px rgba(0,0,0,.16) !important;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+@media(max-width:760px){
+  html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct {
+    padding:15px 12px 14px;border-radius:17px;
+  }
+}
+
+/* 09/11 — Grade compacta de vencimentos: 3 cards na mesma linha, sem
+   perder agrupamento do contrato nem ações individuais de cada lançamento. */
+#page-lancamentos .lc-parcelas-grid,
+#searchResults .lc-parcelas-grid,
+.day-items .lc-parcelas-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  align-items:stretch;
+  min-width:0;
+}
+#page-lancamentos .lc-parcelas-grid > .lc-parcela-card,
+#searchResults .lc-parcelas-grid > .lc-parcela-card,
+.day-items .lc-parcelas-grid > .lc-parcela-card {
+  margin:0;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  border-radius:13px;
+}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt {
+  min-height:0;
+  padding:10px 12px;
+  gap:6px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l {gap:3px 7px;flex:1 1 155px;min-width:0}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l .agi-prev-lbl {font-size:9px;line-height:1.1}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l b {font-size:15px;line-height:1.15}
+.lc-parcelas-grid .lc-parcela-card .lc-parc {font-size:10px;padding:3px 7px;border-radius:7px}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-r {gap:5px;flex:0 0 auto;margin-left:auto;width:auto}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-dt-r > span:last-child {font-size:15px}
+.lc-parcelas-grid .lc-parcela-card .lc-ct-itens {padding:7px 10px 8px;flex:1;min-width:0}
+#page-lancamentos .lc-parcelas-grid .swipe.lc-ct-sw .pcard.lc-ct-item,
+#searchResults .lc-parcelas-grid .swipe.lc-ct-sw .pcard.lc-ct-item,
+.day-items .lc-parcelas-grid .swipe .pcard.lc-ct-item {padding:5px 2px;min-height:0;gap:5px}
+.lc-parcelas-grid .lc-parcela-card .pcard-body {gap:3px}
+.lc-parcelas-grid .lc-parcela-card .pcard-tags {gap:4px 5px}
+.lc-parcelas-grid .lc-parcela-card .pcard-tags .tag {font-size:10px;padding:3px 7px}
+.lc-parcelas-grid .lc-parcela-card .pcard-obs {font-size:10px;line-height:1.3}
+.lc-parcelas-grid .lc-parcela-card .pcard-parcial-sub {font-size:10px}
+/* Moldura do contrato também menor, sem exagero de margens. */
+#page-lancamentos .lc-ct,#searchResults .lc-ct {padding:15px 17px 14px}
+#page-lancamentos .lc-ct-hd,#searchResults .lc-ct-hd {gap:6px;margin-bottom:11px;padding-bottom:11px}
+#page-lancamentos .lc-ct-foot,#searchResults .lc-ct-foot {margin-top:11px;padding-top:10px}
+@media (max-width:1120px) {
+ #page-lancamentos .lc-parcelas-grid,#searchResults .lc-parcelas-grid,.day-items .lc-parcelas-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:680px) {
+ #page-lancamentos .lc-parcelas-grid,#searchResults .lc-parcelas-grid,.day-items .lc-parcelas-grid {grid-template-columns:minmax(0,1fr);gap:8px}
+ #page-lancamentos .lc-ct,#searchResults .lc-ct {padding:12px 10px}
+ .lc-parcelas-grid .lc-parcela-card .lc-ct-dt {padding:9px 10px}
+}
+/* Ações dos lançamentos continuam operando sobre a parcela específica. */
+
+/* Faturamento horizontal — painéis pareados (padrão Estilo). */
+.fat-paineis { margin: 0 0 18px; }
+.fat-paineis-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:0 0 13px; }
+.fat-paineis-titulo { font-size:16px; font-weight:750; color:var(--ink); margin-right:auto; }
+.fat-paineis-toolbar .fr-total { display:none; }
+.fat-paineis-toolbar #fatRingFilters { flex:none; }
+.fat-paineis-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:stretch; }
+.fat-painel { background:var(--card); border:1px solid var(--line); border-radius:19px; overflow:hidden; box-shadow:var(--card-shadow); min-width:0; display:flex; flex-direction:column; }
+.fat-painel-cab { padding:17px 19px; display:flex; align-items:center; justify-content:space-between; gap:12px; background:color-mix(in srgb,var(--blue) 6%,var(--card)); border-bottom:1px solid var(--line); }
+.fat-painel-cab h2 { font-size:15px; font-weight:700; color:var(--ink); line-height:1.25; }
+.fat-painel-total { font-size:13px; font-weight:700; color:var(--blue); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.fat-painel-lista { padding:19px 18px 12px; display:flex; flex-direction:column; gap:16px; flex:1; }
+.fat-barra-linha { border:0; padding:0; background:transparent; text-align:left; display:grid; grid-template-columns:minmax(84px,24%) minmax(85px,1fr) max-content; align-items:center; gap:10px; cursor:pointer; width:100%; color:var(--ink); }
+.fat-barra-linha:hover .fat-barra-faixa { box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 25%,transparent); }
+.fat-barra-linha:focus-visible { outline:2px solid var(--blue); outline-offset:4px; border-radius:6px; }
+.fat-barra-nome { font-size:12px; font-weight:650; overflow-wrap:anywhere; }
+.fat-barra-faixa { display:flex; position:relative; height:27px; border-radius:999px; overflow:hidden; background:var(--surface2); min-width:0; }
+.fat-barra-cheio { display:block; flex:0 0 auto; background:var(--fat-cor); }
+.fat-barra-restante { display:block; flex:0 0 auto; background-color:color-mix(in srgb,var(--fat-cor) 32%,var(--card)); background-image:repeating-linear-gradient(125deg,transparent 0,transparent 9px,rgba(255,255,255,.18) 9px,rgba(255,255,255,.18) 13px); background-size:44px 44px; animation:fat-listras 9s linear infinite; }
+.fat-barra-pct { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(255,255,255,.86); color:#263747; font-size:10px; font-weight:750; border-radius:999px; padding:2px 7px; line-height:1.25; pointer-events:none; }
+.fat-barra-valor { font-size:12px; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.fat-painel-legenda { border-top:1px solid var(--line); margin:10px 18px 0; padding:13px 0 16px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px 22px; color:var(--ink3); font-size:11px; font-weight:600; }
+.fat-painel-legenda span { display:inline-flex; align-items:center; gap:6px; }
+.fat-painel-legenda i { display:inline-block; width:23px; height:11px; border-radius:999px; background:var(--pastel-blue); }
+.fat-painel-legenda .fat-lenda-pendente { background-color:#d5e0eb; background-image:repeating-linear-gradient(125deg,transparent 0,transparent 5px,#a8bdd2 5px,#a8bdd2 9px); background-size:24px 24px; animation:fat-listras 1.5s linear infinite; }
+.fat-painel-vazio { color:var(--ink3);font-size:13px;text-align:center;padding:20px 0; }
+@keyframes fat-listras { to { background-position:44px 0; } }
+@media(prefers-reduced-motion:reduce){ .fat-barra-restante,.fat-painel-legenda .fat-lenda-pendente {animation:none;} }
+@media(max-width:1000px){.fat-paineis-grid {grid-template-columns:1fr;} }
+@media(max-width:540px){ .fat-painel-cab{padding:14px 12px;flex-wrap:wrap;} .fat-painel-lista{padding:15px 12px;gap:14px;} .fat-barra-linha{grid-template-columns:minmax(68px,28%) minmax(55px,1fr) max-content;gap:6px;} .fat-barra-nome,.fat-barra-valor {font-size:11px;} .fat-barra-faixa{height:24px;} .fat-painel-legenda{margin-inline:12px;} }
+html[data-theme="dark"] .fat-barra-pct {background:rgba(20,30,44,.88);color:#eef2fa;}
+
+
+
+/* FATURAMENTO — gráfico de curva acumulada acima dos tubos (mesmo desenho da Estilo, 10/11/2026). */
+#page-resumo .fat-curva { margin:0 0 6px; }
+#page-resumo .fat-curva-wrap { position:relative; }
+#page-resumo .fat-curva svg { display:block; width:100%; max-width:520px; margin:0 auto; overflow:visible; }
+#page-resumo .fat-curva-tip { position:absolute; top:-2px; background:var(--card); border:1px solid var(--line); border-radius:9px; padding:3px 9px; font-size:11px; font-weight:700; line-height:1.25; white-space:nowrap; color:var(--ink); box-shadow:0 2px 10px rgba(0,0,0,.12); z-index:5; pointer-events:none; }
+#page-resumo .fat-curva-tip small { display:block; font-size:10.5px; font-weight:500; color:var(--ink3); }
+#page-resumo .fat-curva-rodape { display:flex; justify-content:space-between; gap:8px; font-size:12px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; }
+#page-resumo .fat-curva-rodape .rec { color:var(--green); }
+#page-resumo .fat-curva-rodape .pend { color:#e08a1e; }
+
+/* FATURAMENTO — tubos no padrão Estilo (09/11/2026): rótulos dentro da
+   faixa, larguras proporcionais, efetivado sólido e pendente hachurado. */
+#page-resumo .fat-paineis { margin-top: -9px; margin-bottom: 28px; }
+#page-resumo .fat-paineis-toolbar { gap: 14px; margin-bottom: 15px; min-height: 34px; justify-content:flex-start; }
+#page-resumo .fat-paineis-titulo { margin:0 12px 0 0; line-height:1.2; font-size:17px; flex:0 1 auto; }
+#page-resumo .fat-paineis-toolbar #fatRingFilters { margin:0; flex:0 0 auto; }
+#page-resumo .fat-paineis-toolbar .frx-base { margin:0 0 0 5px; align-self:center; }
+#page-resumo .fat-paineis-grid { gap:18px; }
+#page-resumo .fat-painel-lista { gap:12px; padding:17px 18px 20px; }
+#page-resumo .fat-barra-linha { display:flex; align-items:center; gap:12px; min-height:31px; }
+#page-resumo .fat-barra-faixa { height:33px; width:var(--tubo-largura,70%); flex:none; min-width:0; border-radius:999px; isolation:isolate; background:var(--fat-cor); }
+#page-resumo .fat-barra-cheio { background:var(--fat-cor); }
+#page-resumo .fat-barra-restante { background-color:color-mix(in srgb,var(--fat-cor) 68%,white); background-image:repeating-linear-gradient(130deg,transparent 0px,transparent 6px,rgba(255,255,255,.33) 6px,rgba(255,255,255,.33) 11px); background-size:40px 40px; animation:fat-listras-sutil 16s linear infinite; }
+@keyframes fat-listras-sutil {to{background-position:40px 0;}}
+#page-resumo .fat-barra-nome { position:absolute; inset:0 auto 0 12px; display:flex; align-items:center; z-index:2; color:#fff; font-size:12.5px; font-weight:700; max-width:calc(100% - 82px); text-shadow:0 1px 2px rgba(0,0,0,.16); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+#page-resumo .fat-barra-pct { left:auto; right:9px; transform:translateY(-50%); padding:2px 5px; background:rgba(255,255,255,.16); color:#fff; font-size:11px; font-weight:750; text-shadow:0 1px 2px rgba(0,0,0,.2); }
+#page-resumo .fat-barra-valor { color:var(--fat-cor); font-size:12px; font-weight:750; }
+#page-resumo .fat-painel-cab { padding:15px 18px; }
+#page-resumo #cardBoletos { margin-top:0; }
+@media(max-width:1000px){ #page-resumo .fat-paineis-grid{gap:16px;} }
+@media(max-width:760px){
+ #page-resumo .fat-paineis {margin-top:-4px; margin-bottom:22px;}
+ #page-resumo .fat-paineis-toolbar {gap:9px; flex-wrap:wrap;}
+ #page-resumo .fat-paineis-titulo {font-size:15px; margin-right:auto;}
+ #page-resumo .fat-painel-lista {gap:10px; padding:14px 12px 18px;}
+ #page-resumo .fat-barra-faixa {height:31px;}
+ #page-resumo .fat-barra-linha {gap:8px;}
+ #page-resumo .fat-barra-nome {font-size:11px;left:9px;max-width:calc(100% - 57px);}
+ #page-resumo .fat-barra-valor {font-size:11px;}
+}
+@media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none;}}
+
+
+/* AGI 09/11 — Agenda com as medidas REAIS da Estilo, inclusive datas e totais.
+   Na Estilo o cabeçalho desktop tem exatamente 38px, 13px para o dia,
+   12,5px para o mês e 10,5px para o chip financeiro. */
+@media (min-width:761px) {
+ #page-resumo .agb-col-hd {
+   height:38px !important; min-height:38px !important; max-height:38px !important;
+   padding:0 12px !important; margin-bottom:8px !important;
+   gap:0 !important; align-items:center !important;
+ }
+}
+#page-resumo .agb-dow {font-size:13px; font-weight:700; line-height:1;}
+#page-resumo .agb-dom {font-size:12.5px; font-weight:700; line-height:1;}
+#page-resumo .agb-dh-in, #page-resumo .agb-dh-out {
+ font-size:10.5px; font-weight:800; line-height:1.15;
+ padding:1px 7px; min-height:0; letter-spacing:-.1px;
+}
+/* Estilo: IBM Plex Sans e escalas idênticas nos cartões de eventos. */
+#page-resumo .agb-card-title {font-size:13px;font-weight:600;line-height:1.25;letter-spacing:-.1px;}
+#page-resumo .agb-card-val {font-size:13px;font-weight:700;line-height:1.25;letter-spacing:-.2px;}
+#page-resumo .agb-card-sub {font-size:11px;font-weight:500;}
+@media(max-width:760px){
+ #page-resumo .agb-col-hd {height:38px;min-height:38px;max-height:38px;padding:0 12px;}
+}
+/* Filtros do Faturamento mensal agora dentro do próprio painel, à direita
+   do título; o painel de opções abre em uma linha inteira abaixo dele. */
+#cardFaturamentoMensal > .card-hd {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;min-height:36px;}
+#cardFaturamentoMensal > .card-hd > span {flex:1 1 155px;min-width:0;}
+#cardFaturamentoMensal #resCtrls {
+ flex:0 1 auto;display:flex;align-items:center;justify-content:flex-end;
+ flex-wrap:wrap;gap:8px;margin:0;min-width:0;
+}
+#cardFaturamentoMensal #resResumoPill {flex:0 1 auto;min-width:0;}
+#cardFaturamentoMensal .rcp-chip {height:32px;max-width:260px;padding:0 12px;font-size:11.5px;}
+#cardFaturamentoMensal .res-ctrls.res-ctrls .rf-single > summary {height:32px;width:32px;}
+#cardFaturamentoMensal .rcp-panel {flex-basis:100%;min-width:min(340px,100%);}
+@media(max-width:650px){
+ #cardFaturamentoMensal > .card-hd{align-items:flex-start;}
+ #cardFaturamentoMensal #resCtrls{width:100%;flex:1 1 100%;justify-content:flex-start;}
+ #cardFaturamentoMensal #resResumoPill{flex:1 1 auto;}
+ #cardFaturamentoMensal .rcp-chip{max-width:none;}
+}
+
+
+/* Ajustes finos — Agenda e tubos (09/11/2026): sem alterar dados ou estrutura. */
+/* Valores dos cards da Agenda: menos 2px e maior contraste com o fundo. */
+#page-resumo .agb-card-val {
+  font-size:12px !important;
+  font-weight:750;
+  color:color-mix(in srgb,var(--flag-ink,var(--ink)) 52%,var(--ink) 48%) !important;
+  text-shadow:none;
+}
+html[data-theme="dark"] #page-resumo .agb-card-val {
+  color:color-mix(in srgb,var(--flag-mid,var(--ink)) 65%,white 35%) !important;
+}
+/* O destaque verde de itens pagos precisa manter seu significado. */
+#page-resumo .agb-card-val.agb-card-val-pago {
+  color:var(--green) !important;
+}
+/* Controles de confirmar/editar um pouco menores, sem alterar cliques. */
+#page-resumo .agb-card-check,
+#page-resumo .agb-card-edit {
+  width:22px !important;
+  height:22px !important;
+  border-radius:7px;
+}
+#page-resumo .agb-card-check svg {width:12px !important;height:12px !important;}
+#page-resumo .agb-card-edit svg {width:12px !important;height:12px !important;}
+/* Busca levemente mais curta, mantendo filtros e calendário integrados. */
+@media(min-width:761px) {
+  #page-resumo .rc-cal-topbar-2 .agb-busca {
+    flex:0 1 298px;
+    width:298px;
+    max-width:298px;
+  }
+}
+/* O percentual continua na posição original, com leitura mais nítida. */
+#page-resumo .fat-barra-pct {
+  background:rgba(255,255,255,.72) !important;
+  color:#426078 !important;
+  font-weight:800 !important;
+  text-shadow:none !important;
+  border:1px solid rgba(20,40,56,.10);
+  font-variant-numeric:tabular-nums;
+}
+html[data-theme="dark"] #page-resumo .fat-barra-pct {
+  background:rgba(241,246,250,.76) !important;
+  color:#42576a !important;
+}
+
+
+/* AGI — correção do baralho da Agenda: quantidade real de cartas e simetria. */
+#page-resumo .agb-baralho-wrap,
+#page-resumo .agb-deck-rotativo {margin-bottom:8px;}
+#page-resumo .agb-baralho-um {margin-bottom:4px;}
+#page-resumo .agb-ev-ghost {
+  box-sizing:border-box;
+  height:100%;
+  transform:none;
+  border-radius:17px;
+  background:var(--card);
+  box-shadow:0 2px 4px rgba(0,0,0,.12);
+}
+#page-resumo .agb-ev-ghost-1,
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-1 {
+  left:4px; right:4px; top:4px; bottom:0;
+  transform:none;
+  opacity:.90;
+  clip-path:inset(calc(100% - 5px) 0 0 0);
+}
+#page-resumo .agb-ev-ghost-2,
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-2 {
+  left:8px; right:8px; top:8px; bottom:0;
+  transform:none;
+  opacity:.78;
+  clip-path:inset(calc(100% - 9px) 0 0 0);
+}
+/* Ao expandir, os cartões reais seguem imediatamente depois do cartão visível. */
+#page-resumo .agb-col.agb-col-open .agb-baralho-wrap,
+#page-resumo .agb-col.agb-col-open .agb-deck-rotativo {margin-bottom:0;}
+#page-resumo .agb-col-more {margin-top:0;gap:9px;}
+#page-resumo .agb-col.agb-col-open .agb-col-more {display:flex;}
+
+
+/* Pendências de boletos: apenas o título pulsa suavemente, sem expandir a lista. */
+@keyframes agBoletoTituloRespira {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .58; }
+}
+.bol-ltit.bol-ltit-pendente {
+  color: var(--bol-org);
+  animation: agBoletoTituloRespira 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bol-ltit.bol-ltit-pendente { animation: none; }
+}
 </style>
 <link rel="stylesheet" href="components/sunburst3d.css?v=11">
 <script id="ds" type="application/json">
@@ -4316,6 +4869,486 @@ html[data-theme="dark"] .lc-ct.done .lc-ct-tot{color:var(--ink3)}
 /* Sem zoom de página: nem o gesto de pinça, nem o toque duplo. O toque que
    rola (pan) continua livre; só o zoom some. */
 html, body { touch-action: pan-x pan-y; }
+
+/* ═══ AGI | identidade Estilo (09/11/2026) ═══
+   Cards arredondados e com relevo da referência, mantendo os dados e ações. */
+#page-resumo .fat-paineis { margin-top:-17px; margin-bottom:25px; }
+#page-resumo .fat-paineis-grid { gap:18px; }
+#page-resumo .fat-painel, #page-resumo #cardBoletos,
+#page-resumo .mc, #page-resumo .card,
+#page-lancamentos .lc-grupo, #searchResults .lc-grupo {
+  border-radius:22px;
+  border:1px solid rgba(90,100,115,.10);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.35),0 10px 18px -14px rgba(0,0,0,.28),0 2px 14px rgba(0,0,0,.10);
+}
+#page-resumo .fat-painel { overflow:visible; background:var(--card); }
+#page-resumo .fat-painel-cab {
+  border-radius:22px 22px 0 0; padding:13px 16px; min-height:55px;
+  background:color-mix(in srgb,var(--blue) 4%,var(--card));
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px;
+}
+#page-resumo .fat-painel-cab h2 { font-size:14px; font-weight:700; flex:1 1 160px; }
+#page-resumo .fat-painel-cab-acoes { display:flex; flex:0 1 auto; align-items:center; justify-content:flex-end; gap:9px; min-width:0; }
+#page-resumo .fat-painel-total { font-size:12px; font-weight:700; }
+#page-resumo #fatRingFilters { margin:0; position:relative; z-index:8; }
+#page-resumo #frBasisToggle { position:relative; z-index:8; margin:0; }
+#page-resumo .frx-base-chip { font-size:11.5px; font-weight:700; padding:6px 10px; }
+#page-resumo .fat-painel-lista { padding:15px 16px 18px; gap:10px; }
+#page-resumo .fat-barra-linha { min-height:29px; gap:11px; }
+#page-resumo .fat-barra-faixa { height:32px; border-radius:999px; overflow:hidden; }
+/* Listra de 11px / ciclo de 1,5s: mesma geometria e velocidade do tubo A2 da Estilo.
+   Background posicionado somente na parte ainda não efetivada. */
+@keyframes agi-estilo-ondas { to { background-position:11px 0; } }
+#page-resumo .fat-barra-restante {
+  background-color:color-mix(in srgb,var(--fat-cor) 63%,white);
+  background-image:linear-gradient(135deg,rgba(255,255,255,.27) 25%,rgba(255,255,255,.06) 25% 50%,rgba(255,255,255,.27) 50% 75%,rgba(255,255,255,.06) 75%);
+  background-size:11px 11px;
+  animation:agi-estilo-ondas 1.5s linear infinite;
+}
+#page-resumo .fat-barra-nome { font-size:12px; font-weight:700; }
+#page-resumo .fat-barra-valor { font-size:11.5px; font-weight:700; }
+#page-resumo .fat-barra-pct { font-size:10.5px; }
+#page-resumo #cardBoletos { margin-top:0; }
+/* Agenda: dois cards visíveis por dia; os demais permanecem no baralho oculto,
+   podendo ser abertos pelo cabeçalho/selo +N, inclusive no desktop. */
+#page-resumo .agb-col-hd { border-radius:17px; }
+#page-resumo .agb-card { border-radius:17px; }
+html[data-theme="dark"] #page-resumo .fat-painel,
+html[data-theme="dark"] #page-resumo #cardBoletos {border-color:rgba(255,255,255,.10);box-shadow:0 8px 22px rgba(0,0,0,.25);}
+@media(max-width:760px){
+ #page-resumo .fat-paineis {margin-top:-7px; margin-bottom:20px;}
+ #page-resumo .fat-painel-cab {padding:11px 12px;}
+ #page-resumo .fat-painel-cab h2 {font-size:13px;flex-basis:135px;}
+ #page-resumo .fat-painel-lista {padding:13px 12px 16px;gap:9px;}
+ #page-resumo .fat-barra-faixa {height:29px;}
+ #page-resumo .fat-painel-cab-acoes {gap:5px;}
+}
+@media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none!important;}}
+
+/* AGI refinamento final: distância uniforme, filtros cruzados e atrasos nos tubos. */
+@media(min-width:761px){
+  /* Aproxima a busca da área de indicadores, sem mover o cabeçalho fixo. */
+  #page-resumo #res-m{margin-bottom:24px !important;}
+  #page-resumo .rc-cal-topbar-2{margin-top:-13px !important;margin-bottom:9px !important;}
+}
+/* Um pequeno intervalo visual regular entre a Agenda e os dois painéis. */
+#page-resumo .fat-paineis{margin-top:14px !important;margin-bottom:24px !important;}
+#page-resumo .fat-paineis-grid{gap:18px;}
+#page-resumo .fat-painel-cab-acoes{gap:10px;}
+#page-resumo .fat-painel-cab h2{min-width:0;}
+#page-resumo .fat-painel-cab{justify-content:space-between;}
+/* Tubos originais: sem badges externos ou alteração de alinhamento.
+   Vencido do mês ocupa um trecho do próprio saldo pendente; vencidos antigos
+   são indicados por um traço escuro DENTRO da extremidade do tubo. */
+#page-resumo .fat-barra-linha{flex-wrap:nowrap;row-gap:0;}
+#page-resumo .fat-barra-atraso-mes{
+  display:block;flex:0 0 auto;background:#c56b6b;
+  box-shadow:inset 1px 0 rgba(255,255,255,.3);
+}
+#page-resumo .fat-barra-atraso-antigo{
+  position:absolute;right:0;top:0;bottom:0;width:4px;
+  z-index:1;background:#a52f3c;pointer-events:none;
+}
+/* Pendente ligeiramente mais escuro e listras mais próximas.
+   Efetivado continua com a cor sólida original. */
+@keyframes agi-ondas-compactas{to{background-position:8px 0}}
+#page-resumo .fat-barra-restante{
+  background-color:color-mix(in srgb,var(--fat-cor) 66%,white) !important;
+  background-image:linear-gradient(135deg,rgba(255,255,255,.30) 25%,rgba(255,255,255,.04) 25% 50%,rgba(255,255,255,.30) 50% 75%,rgba(255,255,255,.04) 75%) !important;
+  background-size:8px 8px !important;
+  animation:agi-ondas-compactas 1.5s linear infinite !important;
+}
+html[data-theme="dark"] #page-resumo .fat-barra-atraso-mes{background:#c96770;}
+html[data-theme="dark"] #page-resumo .fat-barra-atraso-antigo{background:#e16b78;}
+@media(max-width:760px){
+ #page-resumo #res-m{margin-bottom:22px !important;}
+ #page-resumo .rc-cal-topbar-2{margin-top:-8px !important;}
+ #page-resumo .fat-paineis{margin-top:12px !important;margin-bottom:22px !important;}
+}
+@media(prefers-reduced-motion:reduce){#page-resumo .fat-barra-restante{animation:none !important;}}
+
+/* Ajuste final AGI ↔ Estilo: busca integrada, datas e totais compactos, tubos -10%. */
+#page-resumo .rc-cal-topbar-2 { margin-top:-4px; }
+#page-resumo .rc-cal-topbar-2 .agb-busca {
+  flex:0 1 328px; width:min(100%,328px); max-width:328px;
+  height:32px; padding:0 7px 0 11px; gap:7px;
+}
+#page-resumo .rc-cal-topbar-2 .agb-busca-input { font-size:12px; }
+#page-resumo .agb-busca-divisor {
+  flex:none; width:1px; height:17px; margin:0 1px 0 3px;
+  background:color-mix(in srgb,var(--ink3) 28%,transparent);
+}
+#page-resumo .agb-busca .rc-ico-btn {
+  flex:none; width:26px; height:27px; min-width:26px;
+  padding:0; border:0; background:transparent; box-shadow:none;
+  color:var(--ink3); border-radius:6px;
+}
+#page-resumo .agb-busca .rc-ico-btn svg { width:16px; height:16px; }
+#page-resumo .agb-busca .rc-ico-btn:hover,
+#page-resumo .agb-busca .rc-ico-btn:focus-visible { color:var(--blue); }
+#page-resumo .agb-col-hd {padding:8px 11px;gap:3px;margin-bottom:9px;min-height:43px;}
+#page-resumo .agb-dow {font-size:12px;}
+#page-resumo .agb-dom {font-size:10.5px;}
+#page-resumo .agb-dh-in,#page-resumo .agb-dh-out {font-size:10.5px;padding:1px 6px;}
+#page-resumo .fat-barra-faixa {height:29px;} /* 32 × 0,9 = 28,8px */
+@media(max-width:760px){
+  #page-resumo .rc-cal-topbar-2 .agb-busca{flex:1 1 auto;width:100%;max-width:none;}
+  #page-resumo .fat-barra-faixa{height:26px;} /* 29 × 0,9 = 26,1px */
+}
+/* AGI — cabeçalhos da Agenda alinhados, simétricos e mais baixos (09/11/2026).
+   A mesma altura e o mesmo eixo central valem para Atrasados, Hoje e demais datas. */
+#page-resumo .agb-col-hd {
+  height: 43px;
+  min-height: 43px;
+  max-height: 43px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: stretch;
+  padding: 5px 12px;
+  gap: 0;
+  margin-bottom: 10px;
+  border-radius: 17px;
+}
+#page-resumo .agb-dh-main {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+#page-resumo .agb-col-hd-l {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+  line-height: 1;
+}
+#page-resumo .agb-dow { font-size: 12px; line-height: 1.15; letter-spacing: 0; }
+#page-resumo .agb-dom { font-size: 10.5px; line-height: 1.15; }
+#page-resumo .agb-dh-in,
+#page-resumo .agb-dh-out {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  min-height: 22px;
+  line-height: 1;
+  font-size: 10.5px;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+@media(max-width:760px) {
+  #page-resumo .agb-col-hd {height:41px;min-height:41px;max-height:41px;padding:5px 10px;}
+}
+/* AGI · alinhamento final da Agenda com a Estilo (cartões, títulos e controles). */
+#page-resumo .agb-card{height:64px;border-radius:14px;padding-top:8px;padding-bottom:8px;gap:5px;}
+#page-resumo .agb-card::before{background-size:16px 16px,auto;}
+#page-resumo .agb-card-acts{right:7px;gap:4px;}
+#page-resumo .agb-card-check,#page-resumo .agb-card-edit{width:24px;height:24px;border-radius:8px;}
+#page-resumo .agb-card-check svg{width:14px;height:14px;}
+#page-resumo .agb-card-edit svg{width:13px;height:13px;}
+#page-resumo .agb-col-hd{height:38px;min-height:38px;max-height:38px;box-sizing:border-box;}
+#page-resumo .agb-col-hd-l{align-items:baseline;}
+#page-resumo .agb-dow{font-size:13px;}
+#page-resumo .agb-dom{font-size:12.5px;}
+#page-resumo .agb-card-title,#page-resumo .agb-card-val{font-size:13px;}
+#page-resumo .agb-card-sub{font-size:11px;}
+/* Busca ligeiramente mais próxima das métricas; painéis com respiro próprio. */
+#page-resumo .rc-cal-topbar-2{margin-top:-9px;margin-bottom:11px;}
+#page-resumo .fat-paineis{margin-top:-7px;margin-bottom:22px;}
+/* Cartas ocultas: profundidade e alternância da Estilo, sem distorção 3D. */
+#page-resumo .agb-deck-rotativo{margin-bottom:16px;}
+#page-resumo .agb-deck-rotativo .agb-ev-ghost{transition:opacity .9s ease;}
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-1{transform:translateY(7px) scaleX(.955);opacity:.90;clip-path:inset(calc(100% - 7px) 0 0 0);}
+#page-resumo .agb-deck-rotativo .agb-ev-ghost-2{transform:translateY(13px) scaleX(.915);opacity:.74;clip-path:inset(calc(100% - 13px) 0 0 0);}
+#page-resumo .agb-deck-rotativo .agb-card{transition:transform .9s ease,opacity .9s ease,box-shadow .15s ease;}
+#page-resumo .agb-deck-rotativo.is-flipping .agb-card{opacity:.08;transform:scale(.88);animation:none;}
+#page-resumo .agb-deck-rotativo.is-flipping .agb-ev-ghost-1{opacity:.3;}
+#page-resumo .agb-deck-rotativo.is-flipping .agb-ev-ghost-2{opacity:.2;}
+@media(max-width:760px){#page-resumo .agb-card{height:68.5px;padding-top:9px;padding-bottom:9px;}#page-resumo .rc-cal-topbar-2{margin-top:-4px;}}
+@media(prefers-reduced-motion:reduce){#page-resumo .agb-deck-rotativo .agb-card{transition-duration:.9s!important;}}
+/* Recolha nunca deixa o cabeçalho do gráfico substituir o painel de filtros. */
+#cardFaturamentoMensal #resCtrls{display:flex!important;}
+
+
+/* AGI — valores compactos no mobile, sem cortar Silvio e demais categorias.
+   Desktop mantém o formato exato; title conserva o total para conferência. */
+.fat-valor-curto{display:none;}
+@media(max-width:760px){
+  #page-resumo .fat-valor-completo{display:none;}
+  #page-resumo .fat-valor-curto{display:inline;}
+  #page-resumo .fat-barra-linha{display:flex;min-width:0;width:100%;gap:7px;}
+  #page-resumo .fat-barra-faixa{
+    width:min(var(--tubo-largura,70%),calc(100% - 92px));
+    max-width:calc(100% - 92px);
+    flex:0 1 auto;
+  }
+  #page-resumo .fat-barra-valor{min-width:0;flex:0 0 auto;white-space:nowrap;font-size:10.5px;}
+  #page-resumo .fat-painel-cab-acoes{min-width:0;max-width:100%;}
+  #page-resumo .fat-painel-total{font-size:11px;white-space:nowrap;}
+}
+@media(max-width:380px){
+  #page-resumo .fat-barra-faixa{width:min(var(--tubo-largura,70%),calc(100% - 83px));max-width:calc(100% - 83px);}
+  #page-resumo .fat-barra-valor{font-size:10px;}
+}
+/* AGI — refinamento dos tubos e datas (09/11/2026).
+   Mantém a proporção por valor, mas garante espaço para ler o nome completo. */
+#page-resumo .fat-barra-nome {
+  color:#fff !important;
+  font-weight:800 !important;
+  text-shadow:0 1px 2px rgba(15,28,40,.75),0 0 4px rgba(15,28,40,.42) !important;
+  -webkit-font-smoothing:antialiased;
+}
+/* Valores numéricos: a cor da categoria fica levemente mais escura no fundo branco. */
+html:not([data-theme="dark"]) #page-resumo .fat-barra-valor {
+  color:color-mix(in srgb,var(--fat-cor) 76%,#172634 24%) !important;
+  font-weight:800 !important;
+}
+/* Cabeçalho da Agenda: dia da semana e número/data -1px. */
+#page-resumo .agb-dow {font-size:12px !important;}
+#page-resumo .agb-dom {font-size:11.5px !important;}
+@media(max-width:760px){
+  /* Reserva um mínimo legível de tubo, sem ultrapassar a largura restante do card.
+     O valor monetário abreviado continua inteiramente visível ao lado. */
+  #page-resumo .fat-barra-linha {min-width:0;gap:6px;}
+  #page-resumo .fat-barra-faixa {
+    width:clamp(145px,var(--tubo-largura,70%),calc(100% - 77px)) !important;
+    min-width:min(145px,calc(100% - 77px)) !important;
+    max-width:calc(100% - 77px) !important;
+    flex:0 1 auto !important;
+  }
+  #page-resumo .fat-barra-nome {left:9px;font-size:11px !important;max-width:calc(100% - 47px);}
+  #page-resumo .fat-barra-pct {right:5px;padding:1px 4px;}
+  #page-resumo .fat-barra-valor {flex:0 0 auto;min-width:0;font-weight:800 !important;}
+}
+@media(max-width:380px){
+  #page-resumo .fat-barra-faixa {
+    width:clamp(133px,var(--tubo-largura,70%),calc(100% - 70px)) !important;
+    min-width:min(133px,calc(100% - 70px)) !important;
+    max-width:calc(100% - 70px) !important;
+  }
+  #page-resumo .fat-barra-nome {font-size:10.5px !important;max-width:calc(100% - 43px);}
+}
+/* AGI — alinhamento exato da busca com o primeiro painel de resumo.
+   O Resumo usa quatro colunas e gap de 10px (8px até 1023px).
+   Não reposiciona a Agenda, cabeçalho nem painéis de faturamento. */
+@media (min-width:1024px){
+  #page-resumo .rc-cal-topbar-2 .agb-busca{
+    flex:0 0 calc((100% - 30px) / 4) !important;
+    width:calc((100% - 30px) / 4) !important;
+    max-width:calc((100% - 30px) / 4) !important;
+  }
+}
+@media (min-width:761px) and (max-width:1023px){
+  #page-resumo .rc-cal-topbar-2 .agb-busca{
+    flex:0 0 calc((100% - 24px) / 4) !important;
+    width:calc((100% - 24px) / 4) !important;
+    max-width:calc((100% - 24px) / 4) !important;
+  }
+}
+@media (max-width:760px){
+  /* Em celulares, os filtros integrados devem permanecer tocáveis. */
+  #page-resumo .rc-cal-topbar-2 .agb-busca{
+    flex:1 1 auto !important;
+    width:100% !important;
+    max-width:100% !important;
+  }
+}
+
+/* TEMA ÍNDIGO — substitui apenas a aparência do antigo tema escuro azul.
+   Mantém data-theme=dark e agi-theme=dark para preservar preferências e funcionamento. */
+html[data-theme="dark"] {
+  --pastel-blue:#ACADF2;
+  --dock-petroleo:#B5A9E8;
+  --pastel-purple:#D0B8F4;
+  --ink:#F4F1FF;
+  --ink2:#C8C2DD;
+  --ink3:#A39BBF;
+  --line:#403B5B;
+  --surface:#292641;
+  --surface2:#34304F;
+  --card:#292640;
+  --blue:#A5A0F4;
+  --blue2:#817BDA;
+  --blue-soft:rgba(165,160,244,.20);
+  --blue-mid:#514A83;
+  --purple:#C2A5F4;
+  --purple-soft:rgba(194,165,244,.20);
+  background:#1E1B32;
+}
+html[data-theme="dark"] body{background:#1E1B32;color:var(--ink)}
+html[data-theme="dark"] .header{background:#28243F}
+html[data-theme="dark"] .nav-tabs{background:rgba(34,30,57,.92);border-color:rgba(191,177,255,.13)}
+html[data-theme="dark"] .ntab.on{background:rgba(164,153,245,.16);color:#C8BFFF}
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .day-items,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .owner-pills{background:rgba(41,38,64,.94);border-color:rgba(204,193,255,.10)}
+html[data-theme="dark"] .pcard:hover,
+html[data-theme="dark"] .day-items .pcard:hover{background:#393454}
+html[data-theme="dark"] .day-items .pcard,
+html[data-theme="dark"] .day-items .swipe .pcard{background:rgba(41,38,64,.96);border-color:rgba(204,193,255,.10)}
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .icon-btn.round-action{background:rgba(157,145,213,.17);border-color:rgba(210,197,255,.13)}
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] .filt-toggle-btn,
+html[data-theme="dark"] .rf > summary{background:rgba(154,141,209,.15);color:var(--ink)}
+html[data-theme="dark"] .btn:hover,
+html[data-theme="dark"] .filt-toggle-btn:hover{background:rgba(154,141,209,.24)}
+html[data-theme="dark"] .btn-blue{background:rgba(134,124,225,.70);color:#FFF}
+html[data-theme="dark"] .btn-ink{color:#211C39}
+html[data-theme="dark"] .sk{background:linear-gradient(90deg,#27233E 25%,#3B365A 37%,#27233E 63%);background-size:400% 100%}
+html[data-theme="dark"] .subnav{background:#211E36}
+html[data-theme="dark"] .subnav-btn.on{background:#3B3657}
+html[data-theme="dark"] #searchResults .lc-ct::before,
+html[data-theme="dark"] #page-lancamentos .lc-ct::before{background:#9D90DA}
+html[data-theme="dark"] .agi-prev-date,
+html[data-theme="dark"] .agi-prev-range{background:rgba(145,131,226,.17);border-color:rgba(183,168,255,.25);color:#D0C4FF}
+html[data-theme="dark"] .lc-parcela-card .lc-parc{background:rgba(132,114,213,.25);color:#DBD0FF}
+html[data-theme="dark"] #page-resumo .fat-barra-pct{background:rgba(239,233,255,.79)!important;color:#514676!important}
+html[data-theme="dark"] .theme-btn-hdr{background:rgba(155,141,214,.20);border-color:rgba(219,207,255,.14)}
+
+
+/* INDIGO COMPLETO v2 — neutraliza estilos azuis antigos com maior especificidade.
+   Afeta EXCLUSIVAMENTE o tema dark; o tema claro e os dados não mudam. */
+html[data-theme="dark"] {
+  --ink:#F4F0FF; --ink2:#D4CDE8; --ink3:#ADA4C6;
+  --line:rgba(196,181,243,.18);
+  --card:#2A2642; --surface:#242037; --surface2:#373150;
+  --blue:#B8A9FF; --blue2:#8F7CDC;
+  --blue-soft:rgba(184,169,255,.17); --blue-mid:#615687;
+  --pastel-blue:#B7AEF5; --dock-petroleo:#BFB3F5;
+  --purple:#C6B2FF; --purple-soft:rgba(190,163,255,.18);
+  background:#1D1A30 !important;
+  color-scheme:dark;
+}
+html[data-theme="dark"] body {
+  background:#1D1A30 !important;
+  background-image:linear-gradient(180deg,#242039 0%,#1D1A30 100%) !important;
+  color:var(--ink);
+}
+html[data-theme="dark"] .header {background:#29243E !important;border-bottom-color:var(--line) !important;}
+html[data-theme="dark"] .nav-tabs{background:#28233E !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .ntab.on{background:#40385D !important;color:#ECE5FF !important;}
+html[data-theme="dark"] .month-nav,
+html[data-theme="dark"] .subnav {background:#39324F !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .subnav-btn.on{background:#51476E !important;color:var(--ink) !important;}
+/* Painéis antes presos aos gradientes AZUIS com !important. */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .mc,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .owner-pills,
+html[data-theme="dark"] .search-total,
+html[data-theme="dark"] .day-items .lc-ct,
+html[data-theme="dark"] .fat-painel,
+html[data-theme="dark"] #page-resumo #cardBoletos {
+  background:linear-gradient(180deg,#302B49 0%,#29253F 100%) !important;
+  border-color:rgba(201,184,255,.17) !important;
+  box-shadow:inset 0 1px 0 rgba(250,244,255,.07),0 9px 22px rgba(10,8,21,.28) !important;
+}
+/* Os cards de dia conservam a estrutura original e a bandeira de categoria. */
+html[data-theme="dark"] .agb-card,
+html[data-theme="dark"] .pcard,
+html[data-theme="dark"] .swipe .pcard,
+html[data-theme="dark"] .day-items .pcard,
+html[data-theme="dark"] .day-items .swipe .pcard,
+html[data-theme="dark"] .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,
+html[data-theme="dark"] .day-items .lc-ct .swipe .pcard.lc-ct-item {
+  background:linear-gradient(165deg,#3A3453 0%,#302B47 100%) !important;
+  border-color:rgba(197,181,244,.17) !important;
+}
+html[data-theme="dark"] .pcard:hover,
+html[data-theme="dark"] .day-items .pcard:hover,
+html[data-theme="dark"] .day-items .swipe .pcard:hover{
+  background:#443B60 !important;
+}
+html[data-theme="dark"] .agb-col-hd {background:#302B46 !important;border-color:rgba(205,193,250,.13) !important;}
+html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{background:#383050 !important;}
+html[data-theme="dark"] .agb-col.agb-pago .agb-col-hd{background:#293B3C !important;}
+html[data-theme="dark"] .agb-busca,
+html[data-theme="dark"] .agb-busca input,
+html[data-theme="dark"] .search-input,
+html[data-theme="dark"] .fbar input[type=text],
+html[data-theme="dark"] .fbar select,
+html[data-theme="dark"] .filt-panel select,
+html[data-theme="dark"] .filt-panel input {
+  background-color:#36304C !important;
+  color:var(--ink) !important;
+  border-color:var(--line) !important;
+}
+html[data-theme="dark"] input::placeholder{color:#B5AACD !important;opacity:1;}
+html[data-theme="dark"] .fat-painel-cab{background:#38324F !important;border-bottom-color:var(--line) !important;}
+html[data-theme="dark"] .fat-painel-total{color:#C7B8FF !important;}
+html[data-theme="dark"] .boletos-banner{background:rgba(160,140,226,.13) !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .lc-parcela-card {background:#332D49 !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .lc-parcela-card .lc-ct-dt{background:#3B3453 !important;}
+html[data-theme="dark"] .lc-parcela-card.venc .lc-ct-dt{background:#583443 !important;}
+html[data-theme="dark"] .lc-parcela-card.ok .lc-ct-dt{background:#2D4A40 !important;}
+html[data-theme="dark"] .lc-parcela-card.hoje .lc-ct-dt{background:#49416A !important;}
+html[data-theme="dark"] #searchResults .lc-ct::before,
+html[data-theme="dark"] #page-lancamentos .lc-ct::before{background:#AA9BEC !important;}
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .icon-btn.round-action,
+html[data-theme="dark"] .theme-btn-hdr,
+html[data-theme="dark"] .filt-toggle-btn,
+html[data-theme="dark"] .rf > summary {
+  background:rgba(179,159,241,.16) !important;
+  border-color:rgba(212,195,255,.16) !important;
+  color:var(--ink) !important;
+}
+html[data-theme="dark"] .sk{
+  background:linear-gradient(90deg,#29233E 25%,#433957 37%,#29233E 63%) !important;
+  background-size:400% 100% !important;
+}
+html[data-theme="dark"] tr:hover td{background:#39324F !important;}
+/* O indicador percentual permanece legível com fundo lavanda transparente. */
+html[data-theme="dark"] #page-resumo .fat-barra-pct{
+  background:rgba(237,229,255,.74) !important;color:#514474 !important;
+}
+/* Status pago, pendente e atrasado continuam com suas cores funcionais. */
+@media(max-width:760px){
+ html[data-theme="dark"] .fat-painel-cab{background:#38324F !important;}
+}
+
+/* 2026-11-09 — Agenda AGI: contorno e etiqueta fiéis aos cards Estilo.
+   Alteração isolada: não muda altura, ações, valores, agrupamento ou lógica. */
+:root {
+  --agi-agenda-seam: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cline x1='98' y1='0' x2='76' y2='100' stroke='white' stroke-opacity='.85' stroke-width='1.45' stroke-dasharray='2.6 3.8'/%3E%3C/svg%3E");
+}
+#page-resumo .agb-card {
+  border-radius: 18px;
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.9),
+              inset 0 -1px 1px rgba(0,0,0,.04),
+              0 1px 2px rgba(0,0,0,.08),
+              0 14px 20px -14px rgba(0,0,0,.28),
+              0 5px 7px -6px rgba(0,0,0,.16);
+}
+#page-resumo .agb-card::before {
+  background: var(--agi-agenda-seam) no-repeat 0 0 / 100% 100%,
+              var(--flag-icon) no-repeat 20px center / 19px 19px,
+              radial-gradient(110% 60% at 20% 0%, rgba(255,255,255,.14), transparent 65%),
+              linear-gradient(135deg,
+                color-mix(in srgb, white 6%, var(--flag-mid)),
+                color-mix(in srgb, black 10%, var(--flag-mid)));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3),
+              inset 0 -2px 4px rgba(0,0,0,.08);
+}
+#page-resumo .agb-card::after { display: none; }
+html[data-theme="dark"] #page-resumo .agb-card::before {
+  background: var(--agi-agenda-seam) no-repeat 0 0 / 100% 100%,
+              var(--flag-icon) no-repeat 20px center / 19px 19px,
+              radial-gradient(110% 60% at 20% 0%, rgba(255,255,255,.14), transparent 65%),
+              linear-gradient(135deg,
+                color-mix(in srgb, white 6%, var(--flag-mid)),
+                color-mix(in srgb, black 10%, var(--flag-mid)));
+}
+@media (max-width:760px) {
+  #page-resumo .agb-card { border-radius:18px; }
+}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -4467,32 +5500,17 @@ html, body { touch-action: pan-x pan-y; }
 <div class="page on" id="page-resumo">
   <div class="mrow" id="res-m"></div>
   <div id="recebHoje"></div>
-  <div class="card card-donut">
-    <div class="card-hd"><span id="frxTitulo">Faturamento</span><span class="sub"></span>
-      <div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar por tipo"></div>
-      <button type="button" class="frx-toggle" id="frxToggleBtn" onclick="frxToggleGrafico()" aria-pressed="false" title="Mostrar gráfico circular" aria-label="Mostrar gráfico circular">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 12a9 9 0 0 0-9-9v9z"/></svg>
-      </button></div>
-    <div class="fr-filterrow">
-      <div class="frx-base" id="frBasisToggle"></div>
-      <div class="fr-total" id="frTotal">
-        <div class="fr-total-label" id="frTotalLabel">Total previsto</div>
-        <div class="fr-total-value mono" id="frTotalValue">R$ 0,00</div>
-        <div class="fr-total-sub" id="frTotalSub"></div>
-      </div>
-    </div>
-    <div class="sb3d-body">
-      <div id="frxStage"></div>
-      <div class="sb3d-legends">
-        <div class="sb3d-legend-block">
-          <div class="sb3d-legend-title">Proprietário</div>
-          <ul class="sb3d-legend" id="frxLegendDono"></ul>
-        </div>
-        <div class="sb3d-legend-block">
-          <div class="sb3d-legend-title">Tipo</div>
-          <ul class="sb3d-legend" id="frxLegendTipo"></ul>
-        </div>
-      </div>
+  <!-- Faturamento: dois painéis simultâneos, com execução sólida e saldo hachurado. -->
+  <div class="fat-paineis">
+    <div class="fat-paineis-grid">
+      <section class="fat-painel" aria-labelledby="fatTipoTitulo">
+        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
+        <div class="fat-painel-lista" id="fatTipoBarras"></div>
+      </section>
+      <section class="fat-painel" aria-labelledby="fatDonoTitulo">
+        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
+        <div class="fat-painel-lista" id="fatDonoBarras"></div>
+      </section>
     </div>
   </div>
   <div class="card" id="cardBoletos">
@@ -4507,6 +5525,8 @@ html, body { touch-action: pan-x pan-y; }
          para gerar um novo. -->
     <div id="resBoletos"></div>
   </div>
+  <div class="card" id="cardFaturamentoMensal">
+    <div class="card-hd" id="hdMes"><span>Faturamento mensal</span>
   <div class="res-ctrls" id="resCtrls">
     <div id="resResumoPill"></div>
     <div class="rf-bar" id="resumoFilters"></div>
@@ -4521,8 +5541,7 @@ html, body { touch-action: pan-x pan-y; }
       <option value="1">Acumulado</option>
     </select>
   </div>
-  <div class="card">
-    <div class="card-hd" id="hdMes">Faturamento mensal</div>
+    </div>
     <div class="cw-scroll"><div class="cw" style="height:260px"><canvas id="cMes" role="img" aria-label="mensal"></canvas></div></div>
   </div>
   <div class="card">
@@ -5115,7 +6134,7 @@ html, body { touch-action: pan-x pan-y; }
 <div class="overlay" id="mSearch">
   <div class="modal modal-busca">
     <div class="mhd"><span id="searchModalTit">Buscar lançamento</span> <button class="mcl" onclick="closeSearch()">✕</button></div>
-    <input id="searchInput" class="search-input" type="text" placeholder="Placa, cliente, proprietário, observação, nº do cartão…" autocomplete="off" oninput="runSearch()">
+    <input id="searchInput" class="search-input" type="text" placeholder="Placa, cliente, proprietário, observação, nº do cartão…" autocomplete="off" oninput="onSearchInputChanged()">
     <!-- Filtros: só a busca de lançamento (openSearch) usa — os outros
          reaproveitamentos do #mSearch (dia da projeção, dia do fluxo,
          categoria do faturamento, duplicados) já chegam com o recorte
@@ -5734,6 +6753,17 @@ async function tentarBiometriaLogin(silencioso){
 // pra não misturar um filtro esquecido ligado com um recorte que já vem
 // pronto deles. runSearch() já lê os selects direto, então só falta
 // mostrar/esconder e colapsar como os outros painéis de filtro.
+// Busca: digitação recolhe os filtros, deixando os contratos como foco.
+// O usuário pode reabri-los quando quiser, sem perder os valores escolhidos.
+function onSearchInputChanged(){
+  const panel=document.getElementById('srFiltPanel');
+  const btn=document.getElementById('srFiltToggleBtn');
+  if(panel)panel.classList.add('collapsed');
+  if(btn){btn.classList.remove('expanded');btn.textContent='⚙ Filtros';}
+  const results=document.getElementById('searchResults');
+  if(results)results.scrollTop=0;
+  runSearch();
+}
 function toggleSearchFilters(){
   const panel=document.getElementById('srFiltPanel');
   const btn=document.getElementById('srFiltToggleBtn');
@@ -5741,7 +6771,7 @@ function toggleSearchFilters(){
   const isCollapsed=panel.classList.contains('collapsed');
   panel.classList.toggle('collapsed',!isCollapsed);
   btn.classList.toggle('expanded',isCollapsed);
-  btn.textContent=isCollapsed?'▲ Filtros':'▼ Filtros';
+  btn.textContent=isCollapsed?'▲ Ocultar filtros':'⚙ Filtros';
 }
 // Zera os filtros e mostra/esconde o bloco pra caber com quem abriu o
 // #mSearch: true pra busca de lançamento (openSearch), false pras outras
@@ -5757,7 +6787,7 @@ function setSearchFiltersVisiveis(v){
   // qualquer btn.style.display via JS — por isso a classe (seletor por id
   // tem mais especificidade que a regra de classe, mesmo os dois com
   // !important) em vez de mexer no style inline.
-  if(btn){ btn.classList.remove('expanded'); btn.textContent='▼ Filtros'; btn.classList.toggle('sr-hide',!v); }
+  if(btn){ btn.classList.remove('expanded'); btn.textContent='⚙ Filtros'; btn.classList.toggle('sr-hide',!v); btn.style.display=v?'':'none'; }
 }
 function toggleFilterPanel(panelId){
   const panel=document.getElementById(panelId);
@@ -7857,7 +8887,7 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
     </button>`;
   // renderAgendaBoardHtml só bota lançamento vencido na coluna Atrasados
   // (dia==='atrasados') — os dias normais (dia<td()) nunca acontecem, já
-  // que "futuros" já vem filtrado por prev_pgto>=hoje. Card pago nunca é
+  // que "futuros" já vem filtrado pela data de exibição >= hoje. Card pago nunca é
   // "atrasado" (já foi resolvido) nem pulsa (não é urgente).
   const atrasado=!pago&&dia==='atrasados';
   const hoje=!pago&&dia===td();
@@ -7881,7 +8911,7 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
   // .cal-ok do Calendário), só pra confirmar visualmente que aquele card já
   // está resolvido (o board inteiro é "coisa a fazer" por padrão; este é o
   // único tipo de card aqui que não é).
-  const atrasoTxt=atrasado?agbAtrasoTxt(grp.recs.map(r=>r.prev_pgto).filter(Boolean).sort()[0],td())
+  const atrasoTxt=atrasado?agbAtrasoTxt(grp.recs.map(r=>agbDataLiquidacao(r)).filter(Boolean).sort()[0],td())
     :pago?'✓ Recebido':null;
   // animation-delay ancorado no relógio, não no instante em que o card
   // montou: sem isso dois cards atrasados pulsam fora de fase (um claro,
@@ -7933,9 +8963,12 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
     <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${badgeHtml}${stackBadge}</div>
   </div>`;
   if(!hiddenCount)return cardHtml;
-  return `<div class="agb-baralho-wrap">
-    <div class="agb-ev-ghost agb-ev-ghost-1"></div>
-    <div class="agb-ev-ghost agb-ev-ghost-2"></div>
+  // Uma carta oculta = uma camada atrás; duas ou mais = até duas camadas.
+  // Nunca mostrar duas cartas fantasma quando existe só um lançamento oculto.
+  const fantasmas=`<div class="agb-ev-ghost agb-ev-ghost-1" aria-hidden="true"></div>`+
+    (hiddenCount>1?`<div class="agb-ev-ghost agb-ev-ghost-2" aria-hidden="true"></div>`:'');
+  return `<div class="agb-baralho-wrap${hiddenCount===1?' agb-baralho-um':''}">
+    ${fantasmas}
     ${cardHtml}
   </div>`;
 }
@@ -7944,7 +8977,12 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
 // agbCardHtml) — toca no selo +N (ou no cabeçalho da coluna) pra abrir. Igual
 // à Agenda Mensal do Sistema Estilo/AutoGest, que também agrupa no PC (antes
 // só valia no mobile; o CSS que forçava tudo aberto no PC foi removido).
-const AGB_COL_LIMITE=3;
+// Alternância do baralho no mesmo ritmo da Estilo: 10s + transição suave.
+// O registro real da parcela é preservado: a troca refaz somente o cartão de topo,
+// com os controles correspondentes ao lançamento que está sendo exibido.
+const AGB_DECKS = new Map();
+let AGB_DECK_SEQ = 0;
+const AGB_COL_LIMITE=2;
 function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   const grupos=agruparPorCliente(itens);
   // [agenda-dia-a-dia-pago] Numa coluna paga, saldo é 0 em todo mundo — o
@@ -7954,7 +8992,18 @@ function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   const temResto=grupos.length>AGB_COL_LIMITE;
   const visiveis=grupos.slice(0,AGB_COL_LIMITE);
   const resto=temResto?grupos.slice(AGB_COL_LIMITE):[];
-  const cardsHtml=visiveis.map((g,i)=>agbCardHtml(g,dia,(temResto&&i===visiveis.length-1)?resto.length:0,pago)).join('');
+  // Primeiro cartão fixo. Segundo cartão é o topo do baralho e alterna
+  // por todos os lançamentos escondidos, como na Agenda da Estilo.
+  let deckId='';
+  if(temResto){
+    deckId='agb-deck-'+(++AGB_DECK_SEQ);
+    AGB_DECKS.set(deckId,{itens:[grupos[1],...resto],dia,pago,indice:0,ocultos:resto.length});
+  }
+  const cardsHtml=visiveis.map((g,i)=>{
+    const isTopo=temResto&&i===visiveis.length-1;
+    const html=agbCardHtml(g,dia,isTopo?resto.length:0,pago);
+    return isTopo?html.replace('class="agb-baralho-wrap',`class="agb-baralho-wrap agb-deck-rotativo`).replace('class="agb-baralho-wrap agb-deck-rotativo',`data-agb-deck="${deckId}" class="agb-baralho-wrap agb-deck-rotativo`):html;
+  }).join('');
   const moreHtml=resto.length?`<div class="agb-col-more">${resto.map(g=>agbCardHtml(g,dia,0,pago)).join('')}</div>`:'';
   const hdClick=resto.length?` onclick="toggleAgbDeck(this)" role="button" tabindex="0" title="Ver/ocultar os demais lançamentos do dia"`:'';
   // Cabeçalho de UMA linha só (pedido do usuário): data à esquerda com a
@@ -7996,6 +9045,37 @@ function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
     <div class="agb-col-body">${grupos.length?cardsHtml:'<div class="agb-empty">Sem lançamentos</div>'}${moreHtml}</div>
   </div>`;
 }
+// Ciclo da Estilo: a cada 10 segundos o segundo cartão mostra uma das
+// entradas ocultas, desvanecendo por 900 ms. Nunca recria o painel inteiro.
+(function iniciarAlternanciaAgendaAGI(){
+  if(window.__agiDeckInterval) return;
+  window.__agiDeckInterval=setInterval(function(){
+    if(document.hidden) return;
+    const lista=document.querySelectorAll('#recebHoje .agb-deck-rotativo');
+    lista.forEach(function(el){
+      if(el.closest('.agb-col-open')) return;
+      const chave=el.getAttribute('data-agb-deck');
+      const deck=AGB_DECKS.get(chave);
+      if(!deck||deck.itens.length<2||el.classList.contains('is-flipping'))return;
+      el.classList.add('is-flipping');
+      setTimeout(function(){
+        if(!el.isConnected)return;
+        const atual=AGB_DECKS.get(chave);
+        if(!atual)return;
+        atual.indice=(atual.indice+1)%atual.itens.length;
+        const html=agbCardHtml(atual.itens[atual.indice],atual.dia,atual.ocultos,atual.pago);
+        const tmp=document.createElement('template');
+        tmp.innerHTML=html.trim();
+        const novo=tmp.content.firstElementChild;
+        if(!novo)return;
+        novo.classList.add('agb-deck-rotativo','is-flipping');
+        novo.setAttribute('data-agb-deck',chave);
+        el.replaceWith(novo);
+        requestAnimationFrame(function(){requestAnimationFrame(function(){novo.classList.remove('is-flipping');});});
+      },900);
+    });
+  },10000);
+})();
 // Abre/fecha o baralho de cards extras da coluna (só existe efeito no
 // mobile — no PC o CSS já mostra tudo aberto e esconde o baralho).
 function toggleAgbDeck(el){
@@ -8009,14 +9089,39 @@ function toggleAgbDeck(el){
 // Mesma janela de 90 dias já usada na "Projeção de recebimentos" do
 // Resumo — evita um board infinito com parcelas de contratos longos lá
 // na frente, mantendo o mesmo horizonte que o resto da dashboard já usa.
+// [AGI-BOLETO-D+1-AGENDA] Exclusivamente na Agenda, um boleto pendente
+// aparece UM DIA CALENDÁRIO após a data prevista lançada. Ex.: 05/11 ->
+// 06/11 (e NÃO 05/12). A data prev_pgto no cadastro/banco, contratos,
+// faturamento, cobrança e relatórios NÃO é alterada. O cálculo em UTC evita
+// desvios de fuso e funciona nas viradas de mês/ano.
+function agbDataLiquidacao(r){
+  const data=String(r&&r.prev_pgto||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data)) return data;
+  if(!/boleto/i.test(String(r.forma||''))) return data;
+  const [ano,mes,dia]=data.split('-').map(Number);
+  const dt=new Date(Date.UTC(ano,mes-1,dia+1));
+  if(!Number.isFinite(dt.getTime())) return data;
+  return dt.toISOString().slice(0,10);
+}
+// Ações do board usam a MESMA data exibida nas colunas, evitando que um
+// clique em 'Baixar tudo' selecione lançamentos de outro dia.
+function agbCorrespondeDia(r,dia,hoje){
+  const data=agbDataLiquidacao(r);
+  return dia==='atrasados' ? Boolean(data&&data<hoje) : data===dia;
+}
 function renderAgendaBoardHtml(){
+  AGB_DECKS.clear(); AGB_DECK_SEQ=0;
   const hoje=td();
   const tF=addD(hoje,90);
   const base=allD().filter(r=>isPend(r)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&r.prev_pgto&&agbMatchQ(r));
-  const vencidos=base.filter(r=>r.prev_pgto<hoje);
-  const futuros=base.filter(r=>r.prev_pgto>=hoje&&r.prev_pgto<=tF);
+  // Atrasados é um acumulado histórico: TODOS os saldos ainda abertos com
+  // liquidação anterior a hoje, inclusive lançamentos de meses/anos anteriores
+  // (ex.: Kablan). O mês selecionado no cabeçalho NÃO restringe esta lista.
+  // Para boletos, atraso começa no dia posterior à data de liquidação D+1.
+  const vencidos=base.filter(r=>agbDataLiquidacao(r)<hoje);
+  const futuros=base.filter(r=>agbDataLiquidacao(r)>=hoje&&agbDataLiquidacao(r)<=tF);
   const porDia={};
-  futuros.forEach(r=>{(porDia[r.prev_pgto]=porDia[r.prev_pgto]||[]).push(r);});
+  futuros.forEach(r=>{const dia=agbDataLiquidacao(r);(porDia[dia]=porDia[dia]||[]).push(r);});
   const dias=Object.keys(porDia).sort();
   // [agenda-dia-a-dia-pago] O que já foi baixado, um dia por coluna — pedido
   // do usuário: "eu quero que apareça tudo que já foi baixado também, dia a
@@ -8087,10 +9192,10 @@ function renderRecCalGridHtml(){
   const hoje=td();
   const mes=curMes;
   const [y,m]=mes.split('-').map(Number);
-  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&(r.prev_pgto||'').startsWith(mes));
+  const rows=allD().filter(r=>(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&(isPago(r)?(r.prev_pgto||''):agbDataLiquidacao(r)).startsWith(mes));
   const porDia={};
   rows.forEach(r=>{
-    const dia=(r.prev_pgto||'').slice(0,10); if(!dia)return;
+    const dia=(isPago(r)?r.prev_pgto:agbDataLiquidacao(r))||''; if(!dia)return;
     (porDia[dia]=porDia[dia]||[]).push(r);
   });
 
@@ -8231,7 +9336,7 @@ function _baixarLoteConfirmado(alvos,label,dataPag,nota){
 function baixarTudoCliente(dia,cliente){
   const atrasados=dia==='atrasados';
   const hoje=td();
-  const alvos=allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)&&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  const alvos=allD().filter(r=>agbCorrespondeDia(r,dia,hoje)&&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
   if(!alvos.length) return;
   const quando=atrasados?'em atraso':`em ${fDM(dia)}`;
   if(!confirm(`Confirmar a baixa de ${alvos.length} lançamento(s) de ${cliente} ${quando} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
@@ -8240,7 +9345,7 @@ function baixarTudoCliente(dia,cliente){
 function baixarTudoDia(dia){
   const atrasados=dia==='atrasados';
   const hoje=td();
-  const alvos=allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
+  const alvos=allD().filter(r=>agbCorrespondeDia(r,dia,hoje)&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
   if(!alvos.length) return;
   const quando=atrasados?'em atraso':`de ${fDM(dia)}`;
   if(!confirm(`Confirmar a baixa de TODOS os ${alvos.length} lançamento(s) pendentes ${quando} — total ${fR(alvos.reduce((a,r)=>a+fN(r.saldo),0))}?`)) return;
@@ -8268,7 +9373,7 @@ const agbChaveRec = r => (r && r.id!=null) ? ('id'+String(r.id)) : ('ix'+allD().
 function _agbAlvosCliente(dia,cliente){
   const atrasados=dia==='atrasados';
   const hoje=td();
-  return allD().filter(r=>(atrasados?(r.prev_pgto||'')<hoje:(r.prev_pgto||'').slice(0,10)===dia)
+  return allD().filter(r=>agbCorrespondeDia(r,dia,hoje)
     &&(r.cliente||'—')===cliente&&(!selDono||r.dono===selDono)&&(!selTipoCal||r.tipo===selTipoCal)&&!isPago(r));
 }
 
@@ -8420,8 +9525,11 @@ function renderRecebHoje(){
     <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda…" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
     ${selAgbQ?`<button type="button" class="agb-busca-clear" title="Limpar busca" onclick="setAgbQ('')">✕</button>`:''}
+    <span class="agb-busca-divisor" aria-hidden="true"></span>
+    ${tipoIcoHtml}
+    ${toggleHtml}
   </div>`;
-  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml:'<span class="agb-busca-sp"></span>'}${tipoIcoHtml}${toggleHtml}</div>
+  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml:'<span class="agb-busca-sp"></span>'+tipoIcoHtml+toggleHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-cal">
@@ -8785,7 +9893,8 @@ function renderBoletosPainel(rows){
   // Boleto a emitir vencendo em 20 dias ou menos (ou já vencido): abre a
   // lista sozinho na primeira vez que aparece, pra não passar batido.
   const temUrgente=afazerG.some(g=>diasAteVenc(g.prev_pgto)<=20);
-  if(!bolAutoInit&&temUrgente){bolExpandido=true;bolFiltro='afazer';bolAutoInit=true;}
+  // A lista permanece recolhida mesmo havendo boletos urgentes; o título sinaliza as pendências.
+  if(!bolAutoInit)bolAutoInit=true;
 
   // [ESTILO LEDGER] Duas linhas tipo extrato, iguais às do painel de Boletos
   // do Dashboard do Sistema Estilo — o próprio nome de cada linha já diz o
@@ -8800,7 +9909,7 @@ function renderBoletosPainel(rows){
         onclick="event.stopPropagation();verBoletosFiltro('afazer')" title="Ver só os boletos a emitir">
       <div class="bol-lic">${icRelogio}</div>
       <div class="bol-ltxt">
-        <div class="bol-ltit">Boletos a emitir</div>
+        <div class="bol-ltit${afazer>0?' bol-ltit-pendente':''}">Boletos a emitir</div>
         <div class="bol-lsub">${afazer>0?plural(afazer):'nenhum pendente'}</div>
       </div>
       <div class="bol-lval">${fRH(totFazer)}</div>
@@ -9060,6 +10169,7 @@ function frxItemsFor(dim){
   allD().forEach(r=>{
     if(r.dono==='Indefinido'||(selDono&&r.dono!==selDono))return;
     if(!isVenc(r)||!(r.prev_pgto<iniMes))return;
+    if(!FR_ORDER.every(d=>d===dim||!FRT[d].size||FRT[d].has(r[d])))return;
     let k=(r[dim]||'').trim()||'—';
     if(!nomes.has(k))k='Outros';
     antigo[k]=(antigo[k]||0)+fN(r.saldo);
@@ -9267,7 +10377,7 @@ function frxMostrarResumo(dim,key,evt){
   const titulo=document.createElement('strong');titulo.textContent=key;
   const subtitulo=document.createElement('div');subtitulo.className='frx-hover-sub';
   subtitulo.textContent=(dim==='dono'?'Proprietário':'Tipo')+' · '+data.rows.length+' lançamento'+(data.rows.length===1?'':'s');
-  const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Vencido',data.vencido]];
+  const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Atrasado neste mês',data.vencido],['Atrasado de meses anteriores',frxItemsFor(dim).find(i=>i.key===key)?.antigo||0]];
   frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor])=>{
     const linha=document.createElement('div');linha.className='frx-hover-line';
     const a=document.createElement('span');a.textContent=nome;
@@ -9319,14 +10429,217 @@ function frxLigarDetalhes(){
   document.addEventListener('scroll',frxEsconderResumo,true);
 }
 
+// Exibição abreviada apenas nas telas estreitas; números reais não são arredondados nos cálculos.
+function frValorCompacto(v){
+  const n=Number(v);
+  if(!Number.isFinite(n))return '—';
+  const a=Math.abs(n), sinal=n<0?'-':'';
+  if(a>=1000000)return sinal+'R$ '+(a/1000000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mi';
+  if(a>=1000)return sinal+'R$ '+(a/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+' mil';
+  return fR(n);
+}
+function frValorResponsivo(el,valor,prefixo=''){
+  const completo=prefixo+fR(valor),reduzido=prefixo+frValorCompacto(valor);
+  const normal=document.createElement('span');normal.className='fat-valor-completo';normal.textContent=completo;
+  const curto=document.createElement('span');curto.className='fat-valor-curto';curto.textContent=reduzido;
+  el.replaceChildren(normal,curto);
+  el.title=completo;
+}
+// Curva acumulada do mês (mesmo desenho do painel da Estilo): eixo X = dias do mês, eixo Y = acumulado em raiz
+// quadrada, curva suave, trecho recebido em verde sólido com degradê, trecho a receber tracejado e laranja com
+// listras em movimento, ponto azul = hoje. Tocar num ponto abre o balão com data + valor.
+function frCurva(rows,dim){
+  const NS='http://www.w3.org/2000/svg';
+  const mes=curMes,y0=+mes.slice(0,4),m0=+mes.slice(5,7),nd=new Date(y0,m0,0).getDate();
+  const por={};
+  rows.forEach(r=>{
+    const d=(r.prev_pgto||'').slice(0,10);
+    if(!d||d.slice(0,7)!==mes)return;
+    const v=Math.max(0,frValBase(r));if(v<=0.005)return;
+    const p=frBasis==='caixa'?0:Math.min(v,Math.max(0,fN(r.saldo)));
+    const g=por[d]||(por[d]={d,v:0,p:0});g.v+=v;g.p+=p;
+  });
+  const gs=Object.keys(por).sort().map(k=>por[k]);
+  if(!gs.length)return null;
+  const VERDE='var(--green)',LARANJA='#e08a1e',AZUL='var(--blue)';
+  const W=340,H=76,padL=24,padR=24,yTop=19,yBase=53,plotW=W-padL-padR,plotH=yBase-yTop;
+  const span=Math.max(1,nd-1),xOf=i=>padL+(i/span)*plotW,f1=n=>Math.round(n*10)/10;
+  let cum=0;gs.forEach(g=>{g.i=(+g.d.slice(8,10))-1;g.x=xOf(g.i);cum+=g.v;g.cum=cum;g.est=g.p<=0.005?'pago':(g.p>=g.v-0.005?'aberto':'parcial');});
+  const maxC=Math.max(cum,1),yOf=c=>yBase-(Math.sqrt(Math.max(c,0))/Math.sqrt(maxC))*plotH;
+  gs.forEach(g=>{g.y=yOf(g.cum);});
+  const pts=[{x:xOf(0),y:yBase}].concat(gs.map(g=>({x:g.x,y:g.y,g})));
+  const ult=pts[pts.length-1],xFim=xOf(nd-1);
+  const segs=[];
+  for(let i=1;i<pts.length;i++)segs.push({a:pts[i-1],b:pts[i]});
+  if(ult.x<xFim-0.5)segs.push({a:ult,b:{x:xFim,y:ult.y}});
+  // tangentes monotônicas (Fritsch-Carlson): suave, sem overshoot
+  const vx=[segs[0].a.x],vy=[segs[0].a.y];segs.forEach(sg=>{vx.push(sg.b.x);vy.push(sg.b.y);});
+  const dk=[],mt=[];
+  for(let q=0;q<vx.length-1;q++)dk.push((vy[q+1]-vy[q])/Math.max(0.0001,vx[q+1]-vx[q]));
+  for(let q=0;q<vx.length;q++){
+    if(q===0)mt.push(dk[0]);else if(q===vx.length-1)mt.push(dk[dk.length-1]);
+    else mt.push(dk[q-1]*dk[q]<=0?0:(dk[q-1]+dk[q])/2);
+  }
+  for(let q=0;q<dk.length;q++){
+    if(Math.abs(dk[q])<1e-9){mt[q]=0;mt[q+1]=0;continue;}
+    const al=mt[q]/dk[q],be=mt[q+1]/dk[q],hh=al*al+be*be;
+    if(hh>9){const ta=3/Math.sqrt(hh);mt[q]=ta*al*dk[q];mt[q+1]=ta*be*dk[q];}
+  }
+  segs.forEach((sg,k)=>{
+    const dx=sg.b.x-sg.a.x;
+    sg.dC='C'+f1(sg.a.x+dx/3)+' '+f1(sg.a.y+mt[k]*dx/3)+' '+f1(sg.b.x-dx/3)+' '+f1(sg.b.y-mt[k+1]*dx/3)+' '+f1(sg.b.x)+' '+f1(sg.b.y);
+    const ref=(sg.b.g)||(sg.a.g);
+    sg.f=(sg.b&&!sg.b.g&&sg.a&&sg.a.g)?((sg.a.g.p||0)>0.005?0:1):(ref&&ref.v>0.005?Math.max(0,Math.min(1,(ref.v-ref.p)/ref.v)):1);
+  });
+  const uid='cv'+dim;
+  const h=(tag,at,kids)=>{const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);(kids||[]).forEach(c=>c&&e.appendChild(c));return e;};
+  const stop=(o,cor,op)=>h('stop',{offset:o,style:'stop-color:'+cor+';stop-opacity:'+op});
+  const reduzir=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pat=h('pattern',{id:uid+'Str',patternUnits:'userSpaceOnUse',width:11,height:11},[
+    h('path',{d:'M-8.25 11L11 -8.25 M-8.25 22L22 -8.25',fill:'none',style:'stroke:'+LARANJA+';stroke-opacity:.53',['stroke-width']:5.2}),
+    reduzir?null:h('animateTransform',{attributeName:'patternTransform',type:'translate',from:'0 0',to:'11 0',dur:'1.5s',repeatCount:'indefinite'})
+  ]);
+  const defs=h('defs',{},[
+    h('linearGradient',{id:uid+'G',gradientUnits:'userSpaceOnUse',x1:0,y1:yTop,x2:0,y2:yBase},[stop('0%',VERDE,.31),stop('100%',VERDE,.015)]),
+    h('linearGradient',{id:uid+'T',gradientUnits:'userSpaceOnUse',x1:0,y1:yTop,x2:0,y2:yBase},[stop('0%',LARANJA,.29),stop('100%',LARANJA,.015)]),
+    pat,
+    h('linearGradient',{id:uid+'F',gradientUnits:'userSpaceOnUse',x1:0,y1:yTop,x2:0,y2:yBase},[stop('0%','#fff',.72),stop('100%','#fff',.03)]),
+    h('linearGradient',{id:uid+'FH',gradientUnits:'userSpaceOnUse',x1:0,y1:0,x2:W,y2:0},[stop('0%','#fff',.5),stop('35%','#fff',1),stop('65%','#fff',1),stop('100%','#fff',.5)]),
+    h('mask',{id:uid+'MH',maskUnits:'userSpaceOnUse',x:0,y:0,width:W,height:H},[h('rect',{x:0,y:0,width:W,height:H,fill:'url(#'+uid+'FH)'})]),
+    h('mask',{id:uid+'M',maskUnits:'userSpaceOnUse',x:0,y:0,width:W,height:H},[h('rect',{x:0,y:0,width:W,height:H,fill:'url(#'+uid+'F)',mask:'url(#'+uid+'MH)'})])
+  ]);
+  const els=[defs];
+  segs.forEach((sg,i)=>{
+    const parcial=sg.f>0.001&&sg.f<0.999;
+    if(parcial){
+      const xi=sg.a.x+(sg.b.x-sg.a.x)*sg.f;
+      defs.appendChild(h('clipPath',{id:uid+'P'+i,clipPathUnits:'userSpaceOnUse'},[h('rect',{x:f1(xi),y:0,width:Math.max(0.01,f1(sg.b.x-xi)),height:H})]));
+      defs.appendChild(h('clipPath',{id:uid+'Q'+i,clipPathUnits:'userSpaceOnUse'},[h('rect',{x:f1(sg.a.x-1),y:0,width:Math.max(0.01,f1(xi-sg.a.x+1)),height:H})]));
+    }
+  });
+  segs.forEach((sg,i)=>{
+    const d='M'+f1(sg.a.x)+' '+f1(sg.a.y)+' '+sg.dC+' L'+f1(sg.b.x)+' '+yBase+' L'+f1(sg.a.x)+' '+yBase+' Z';
+    const parcial=sg.f>0.001&&sg.f<0.999,soPend=sg.f<=0.001;
+    const clip=parcial?'url(#'+uid+'P'+i+')':null;
+    els.push(h('path',{d,fill:'url(#'+uid+(soPend?'T':'G')+')',stroke:'none'}));
+    if(parcial)els.push(h('path',{d,fill:'url(#'+uid+'T)','clip-path':clip,stroke:'none'}));
+    if(sg.f<0.999){const a={d,fill:'url(#'+uid+'Str)',stroke:'none',mask:'url(#'+uid+'M)'};if(clip)a['clip-path']=clip;els.push(h('path',a));}
+  });
+  segs.forEach((sg,i)=>{
+    const dL='M'+f1(sg.a.x)+' '+f1(sg.a.y)+' '+sg.dC,parcial=sg.f>0.001&&sg.f<0.999,soPend=sg.f<=0.001;
+    const base={fill:'none','stroke-width':1.4,'stroke-linecap':'round'};
+    els.push(h('path',Object.assign({d:dL,style:'stroke:'+(soPend?LARANJA:VERDE)},base,soPend?{'stroke-dasharray':'3 2.5'}:{},parcial?{'clip-path':'url(#'+uid+'Q'+i+')'}:{})));
+    if(parcial)els.push(h('path',Object.assign({d:dL,style:'stroke:'+LARANJA,'clip-path':'url(#'+uid+'P'+i+')','stroke-dasharray':'3 2.5'},base)));
+  });
+  // hoje
+  const hojeISO=td();
+  if(hojeISO.slice(0,7)===mes){
+    const hx=xOf((+hojeISO.slice(8,10))-1);let hy=ult.y;
+    for(const sg of segs){if(hx>=sg.a.x&&hx<=sg.b.x){const t=(hx-sg.a.x)/Math.max(0.0001,sg.b.x-sg.a.x);hy=sg.a.y+(sg.b.y-sg.a.y)*t;break;}}
+    els.push(h('line',{x1:f1(hx),y1:8,x2:f1(hx),y2:yBase,style:'stroke:'+AZUL+';stroke-width:1','stroke-dasharray':'1 2.5'}));
+    els.push(h('circle',{cx:f1(hx),cy:f1(hy),r:3.4,style:'fill:'+AZUL+';stroke:var(--card);stroke-width:1.2'}));
+  }
+  const abv=v=>{const a=Math.abs(v||0);if(a>=1e6)return (a/1e6).toFixed(1).replace('.',',').replace(',0','')+'M';if(a>=1000)return (a/1000).toFixed(1).replace('.',',').replace(',0','')+'k';return String(Math.round(a));};
+  const ddmm=k=>k.slice(8,10)+'/'+k.slice(5,7);
+  let lastX=-1e9;gs.forEach(g=>{g.mostra=(g.x-lastX)>=43;if(g.mostra)lastX=g.x;});
+  const wrap=document.createElement('div');wrap.className='fat-curva-wrap';
+  const tip=document.createElement('div');tip.className='fat-curva-tip';tip.hidden=true;
+  let sel=null;
+  gs.forEach(g=>{
+    const cor=g.est==='pago'?VERDE:LARANJA,xl=Math.min(Math.max(g.x,28),W-28);
+    els.push(h('circle',{cx:f1(g.x),cy:f1(g.y),r:2.8,style:'fill:'+cor+';stroke:var(--card);stroke-width:1.2'}));
+    if(g.est==='parcial'){
+      const fr=g.v>0?Math.min(1,Math.max(0,(g.v-g.p)/g.v)):0,rr=2.4,ang=fr*2*Math.PI;
+      els.push(h('path',{d:'M'+f1(g.x)+' '+f1(g.y)+' L'+f1(g.x)+' '+f1(g.y-rr)+' A'+rr+' '+rr+' 0 '+(fr>0.5?1:0)+' 1 '+f1(g.x+rr*Math.sin(ang))+' '+f1(g.y-rr*Math.cos(ang))+' Z',style:'fill:'+VERDE}));
+    }
+    if(g.mostra){
+      const t1=h('text',{x:f1(xl),y:f1(g.y-8),'text-anchor':'middle',style:'font-size:9px;font-weight:700;fill:'+cor});t1.textContent=abv(g.v);
+      const t2=h('text',{x:f1(xl),y:yBase+15,'text-anchor':'middle',style:'font-size:9px;font-weight:500;fill:var(--ink3)'});t2.textContent=ddmm(g.d);
+      els.push(t1,t2);
+    }
+    const hit=h('circle',{cx:f1(g.x),cy:f1(g.y),r:13,style:'fill:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent'});
+    hit.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(sel===g.d){sel=null;tip.hidden=true;return;}
+      sel=g.d;tip.replaceChildren(document.createTextNode(ddmm(g.d)+' · '+fR(g.v)));
+      if(g.est==='parcial'){const sm=document.createElement('small');sm.textContent='recebido '+fR(g.v-g.p)+' · falta '+fR(g.p);tip.appendChild(sm);}
+      tip.hidden=false;
+      const pc=(g.x/W)*100;tip.style.left=tip.style.right=tip.style.transform='';
+      if(pc<24)tip.style.left='0';else if(pc>76)tip.style.right='0';else{tip.style.left=pc+'%';tip.style.transform='translateX(-50%)';}
+    });
+    els.push(hit);
+  });
+  const svg=h('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Curva acumulada do mês'},els);
+  wrap.append(tip,svg);
+  const tot=gs.reduce((a,g)=>a+g.v,0),pend=gs.reduce((a,g)=>a+g.p,0),rec=tot-pend;
+  const rod=document.createElement('div');rod.className='fat-curva-rodape';
+  const a=document.createElement('span');a.className='rec';if(rec>0.005)a.textContent='Recebido: '+fR(rec);
+  const b=document.createElement('span');b.className='pend';if(pend>0.005)b.textContent='A receber: '+fR(pend);
+  rod.append(a,b);
+  const box=document.createElement('div');box.className='fat-curva';
+  box.append(wrap);if(rec>0.005||pend>0.005)box.append(rod);
+  return box;
+}
+
 function frRenderData(){
-  frxEnsureChart();
-  frxLigarDetalhes();
-  frxEsconderResumo();
-  frxChart.update({ tipo:frxItemsFor('tipo'), dono:frxItemsFor('dono') });
-  frxChart.renderLegend('tipo', document.getElementById('frxLegendTipo'), {title:'Tipo'});
-  frxChart.renderLegend('dono', document.getElementById('frxLegendDono'), {title:'Proprietário'});
-  frxUpdateHub();
+  // Os dois painéis usam os mesmos lançamentos do mês e filtros cruzados já existentes.
+  for(const [dim,target,totalTarget] of [['tipo','fatTipoBarras','fatTipoTotal'],['dono','fatDonoBarras','fatDonoTotal']]){
+    const lista=document.getElementById(target),total=document.getElementById(totalTarget);
+    if(!lista)continue;
+    const itens=frxItemsFor(dim);
+    const montante=itens.reduce((acc,it)=>acc+Math.max(0,it.value),0);
+    if(total)frValorResponsivo(total,montante,'Total: ');
+    lista.replaceChildren();
+    if(!itens.length){const vazio=document.createElement('p');vazio.className='fat-painel-vazio';vazio.textContent='Nenhum lançamento neste período.';lista.appendChild(vazio);continue;}
+    const maiorBarra=Math.max(...itens.map(x=>Math.max(0,x.value)),0.01);
+    const curva=frCurva(frRowsForRing(dim),dim);if(curva)lista.appendChild(curva);
+    itens.forEach((it,idx)=>{
+      const pago=Math.max(0,Math.min(it.value,it.pago));
+      const falta=Math.max(0,it.value-pago);
+      const proporcao=it.value>0?100*pago/it.value:0;
+      const pct=montante>0?Math.round(it.value/montante*100):0;
+      const linha=document.createElement('button');linha.type='button';linha.className='fat-barra-linha';
+      const descricaoAcessivel=it.key+' · Efetivado: '+fR(pago)+' · A realizar: '+fR(falta)+' · Atrasado neste mês: '+fR(it.atraso||0)+' · Atrasado de meses anteriores: '+fR(it.antigo||0)+' — clique para visualizar os lançamentos';
+      linha.setAttribute('aria-label',descricaoAcessivel);
+      const nome=document.createElement('span');nome.className='fat-barra-nome';nome.textContent=it.key;
+      const faixa=document.createElement('span');faixa.className='fat-barra-faixa';
+      // Paleta fechada da Estilo: vinho, verde sálvia, turquesa, cinza e malva.
+      const paletaTipo=['#a67d87','#80a49b','#69a69d','#92999d','#9b829f','#728fa6'];
+      const paletaDono=['#547e9b','#7fa68a','#917aa6','#87949c','#70a6a0','#ad8a80'];
+      const cor=(dim==='tipo'?paletaTipo:paletaDono)[idx%(dim==='tipo'?paletaTipo.length:paletaDono.length)];
+      faixa.style.setProperty('--fat-cor',cor);
+      linha.style.setProperty('--fat-cor',cor);
+      faixa.style.setProperty('--tubo-largura',Math.max(26,Math.min(82,82*Math.max(0,it.value)/maiorBarra))+'%');
+      // O atraso deste mês ocupa parte da faixa pendente, sem alterar o total.
+      // Débitos de meses anteriores aparecem como indicador separado, sem
+      // contaminar os totalizadores do mês selecionado.
+      const atrasoMes=Math.max(0,Math.min(falta,it.atraso||0));
+      const atrasoAntigo=Math.max(0,it.antigo||0);
+      const pendNormal=Math.max(0,falta-atrasoMes);
+      const cheio=document.createElement('span');cheio.className='fat-barra-cheio';cheio.style.width=proporcao+'%';
+      const pend=document.createElement('span');pend.className='fat-barra-restante';pend.style.width=(it.value>0?100*pendNormal/it.value:0)+'%';
+      const atraso=document.createElement('span');atraso.className='fat-barra-atraso-mes';atraso.style.width=(it.value>0?100*atrasoMes/it.value:0)+'%';
+      faixa.append(cheio,pend,atraso,nome);
+      if(atrasoAntigo>0.005){
+        // Marca discreta dentro do tubo: não aumenta a linha nem altera seu comprimento.
+        const marca=document.createElement('span');marca.className='fat-barra-atraso-antigo';
+        marca.title='Atrasado de meses anteriores: '+fR(atrasoAntigo);
+        faixa.appendChild(marca);
+      }
+      const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
+      const valor=document.createElement('span');valor.className='fat-barra-valor';frValorResponsivo(valor,it.value);
+      linha.append(faixa,valor);
+      // Prévia APENAS enquanto o cursor está dentro da área real do tubo.
+      // O espaço vazio e o valor à direita não acionam nem mantêm a janela.
+      faixa.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')frxMostrarResumo(dim,it.key,e);});
+      faixa.addEventListener('pointermove',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')frxMostrarResumo(dim,it.key,e);});
+      faixa.addEventListener('pointerleave',frxEsconderResumo);
+      linha.addEventListener('focus',()=>{const r=linha.getBoundingClientRect();frxMostrarResumo(dim,it.key,{clientX:r.left+15,clientY:r.bottom});});
+      linha.addEventListener('blur',frxEsconderResumo);
+      linha.addEventListener('click',()=>{frxEsconderResumo();mostrarLancCategoria(dim,it.key);});
+      lista.appendChild(linha);
+    });
+  }
   frUpdateTotal();
 }
 
@@ -9365,7 +10678,9 @@ function buildFatRingFilters(){
 }
 
 function renderFatRings(){
-  if(!document.getElementById('frxStage'))return;
+  // Painéis em barras substituíram o antigo gráfico #frxStage.
+  // Não interromper a renderização apenas porque o gráfico antigo foi removido.
+  if(!document.getElementById('fatTipoBarras')&&!document.getElementById('fatDonoBarras'))return;
   if(!frFiltersBuilt){buildFatRingFilters(); frFiltersBuilt=true;}
   frRenderData();
 }
@@ -9471,7 +10786,7 @@ function renderResumo(){
   let recA=mShown.map(k=>recM[k]||0), pendA=mShown.map(k=>pendM[k]||0), atrsA=mShown.map(k=>atrsM[k]||0);
   if(resAcum){recA=cumArr(recA);pendA=cumArr(pendA);atrsA=cumArr(atrsA);}
   const hdMes=document.getElementById('hdMes');
-  if(hdMes) hdMes.textContent='Faturamento mensal'+acumSfx;
+  if(hdMes){const titulo=hdMes.querySelector(':scope > span'); if(titulo) titulo.textContent='Faturamento mensal'+acumSfx;}
   const temAtrsMes=atrsA.some(v=>v>0);
   // Respiro entre os segmentos empilhados: borda na cor do fundo do
   // card só no topo de cada segmento, separando visualmente
@@ -9502,7 +10817,7 @@ function renderResumo(){
     const col=DC['Silvio']||'#1f5fa8';
     return [{type:'line',label:'Silvio · Locação',data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:1,tension:.35,pointRadius:1,pointHoverRadius:3,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc'}];
   })():[];
-  mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:[...dsMes,...dsDonoLocMes]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:18}},plugins:{legend:{display:true,position:'top',align:'start',labels:{usePointStyle:true,pointStyle:'circle',boxWidth:5,boxHeight:5,padding:9,font:{size:10}}},barLabels:{display:true,size:window.innerWidth<=760?12:11,fmt:v=>Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const barItems=items.filter(it=>it.dataset.type!=='line');return barItems.length>1?'Total: '+fR(barItems.reduce((a,it)=>a+(it.raw||0),0)):'';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
+  mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:[...dsMes,...dsDonoLocMes]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:10}},plugins:{legend:{display:false},barLabels:{display:true,size:window.innerWidth<=760?12:11,fmt:v=>Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const barItems=items.filter(it=>it.dataset.type!=='line');return barItems.length>1?'Total: '+fR(barItems.reduce((a,it)=>a+(it.raw||0),0)):'';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   // Os painéis de barra mostram previsto E recebido juntos, então não seguem
   // o seletor previsto/recebido (que continua valendo para os gráficos).
   const hd=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
@@ -11297,8 +12612,8 @@ function lcContratoHtml(g,fecharBusca,opt){
         <div class="pcard-body">
           <div class="pcard-tags">
             ${tipTag(r.tipo)}
-            ${pi?`<span class="lc-parc" title="Parcela ${pi.atual} de ${pi.total}">Parcela ${pi.atual}/${pi.total}</span>`:''}
-            ${formas.length>1?`<span class="tag tag-forma">${fFormaLabel(r.forma)}</span>`:''}
+            <!-- Parcela e vencimento são exibidos no cabeçalho da data, não no corpo. -->
+            ${r.forma?`<span class="tag tag-forma">${fFormaLabel(r.forma)}</span>`:''}
             ${donos.length>1?`<span style="font-size:11px;color:var(--ink3)">${esc(r.dono||'—')}</span>`:''}
             ${r.data_pagamento?`<span class="tag pcard-pago-tag" title="Pago em ${fD(r.data_pagamento)}">✓ pago ${fDM(r.data_pagamento)}</span>`:''}
             ${fora?`<span class="tag lc-fora-tag">${opt.foraLabel||'fora do filtro'}</span>`:''}
@@ -11312,10 +12627,10 @@ function lcContratoHtml(g,fecharBusca,opt){
       </div>
     </div>`;
   };
-  // Vários vencimentos: um divisor por data (com o subtotal dela) separa as
-  // linhas — é ali que se lê "este contrato cobra tanto em tal dia".
+  // Sempre apresentar o vencimento como título, mesmo se só existir uma
+  // data. Identificadores de parcela passam para esse título.
   let corpo;
-  if(multiData){
+  if(true){
     corpo=datas.map(d=>{
       const its=itens.filter(({r})=>(r.prev_pgto||'')===d);
       const tot=its.reduce((a,{r})=>a+liq(r),0);
@@ -11323,10 +12638,12 @@ function lcContratoHtml(g,fecharBusca,opt){
       const parD=parContratoAjustavel(its);
       const pagosD=its.filter(({r})=>fN(r.valor_pago)>0).map(({i})=>i);
       const lbl=d?(d===hoje?'hoje · ':'')+fDM(d):'sem data';
-      return `<div class="lc-ct-dt${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}">
-        <span class="lc-ct-dt-l">🗓 Vence <b>${lbl}</b>${opt.anchorDia!=null&&opt.anchorDia===d?'<i class="lc-ct-dt-here">neste dia</i>':''}</span>
+      const parcelas=[...new Set(its.map(({r})=>{const p=agbParcelaInfo(r);return p?`${p.atual}/${p.total}`:null;}).filter(Boolean))];
+      const cabParcelas=parcelas.length?`<span class="lc-ct-parcelas">${parcelas.map(p=>`<span class="lc-parc" title="Parcela ${p.replace('/',' de ')}">Parcela ${p}</span>`).join('')}</span>`:'';
+      return `<section class="lc-parcela-card${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}${its.length===1?' unica':''}" aria-label="${parcelas.length?'Parcela '+parcelas.join(', '):'Pagamento'} — ${d?fDM(d):'sem data'}"><div class="lc-ct-dt${okD?' ok':vencD?' venc':(d===hoje?' hoje':'')}">
+        <span class="lc-ct-dt-l"><span class="agi-prev-lbl">Previsão de pagamento</span><b>${lbl}</b>${cabParcelas}${opt.anchorDia!=null&&opt.anchorDia===d?'<i class="lc-ct-dt-here">neste dia</i>':''}</span>
         <span class="lc-ct-dt-r">${parD?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${parD.loc.i},${parD.com.i})">✎ Ajustar total</button>`:''}${pagosD.length?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosD.join(',')}])">↺ Reverter</button>`:''}<span>${fR(tot)}</span></span>
-      </div>`+`<div class="lc-ct-itens">${its.map(linha).join('')}</div>`;
+      </div>`+`<div class="lc-ct-itens">${its.map(linha).join('')}</div></section>`;
     }).join('');
   }else{
     corpo=`<div class="lc-ct-itens">${itens.map(linha).join('')}</div>`;
@@ -11339,8 +12656,8 @@ function lcContratoHtml(g,fecharBusca,opt){
   ].filter(Boolean).join(' · ');
   const venc0=datas.filter(Boolean);
   const metaVenc=multiData
-    ?`<span>Vencimentos <b style="font-weight:700">${fDM(venc0[0])}</b> → <b style="font-weight:700">${fDM(venc0[venc0.length-1])}</b> · ${datas.length} datas</span>`
-    :`<span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r0.prev_pgto)}</b></span>`;
+    ?`<span class="agi-prev-range"><span class="agi-prev-lbl">Previsões de pagamento</span><strong>${venc0.length?fDM(venc0[0]):'Sem data'} → ${venc0.length?fDM(venc0[venc0.length-1]):'Sem data'}</strong><small>${datas.length} datas</small></span>`
+    :`<span class="agi-prev-date${todosPagos?' paid':algumVenc?' late':hojeCard?' today':''}"><span class="agi-prev-lbl">Previsão de pagamento</span><strong>${r0.prev_pgto?fDM(r0.prev_pgto):'Sem data'}</strong></span>`;
   const idAttr=opt.id?` id="${opt.id}"`:'';
   return `<div${idAttr} class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}" data-dia="${r0.prev_pgto||''}">
     <div class="lc-ct-hd">
@@ -11355,15 +12672,14 @@ function lcContratoHtml(g,fecharBusca,opt){
       <div class="pcard-tags">
         <span class="ddot" style="background:${col}"></span>
         <span style="font-size:11.5px;color:var(--ink3)">${esc(donos.join(' · '))}</span>
-        ${formas.slice(0,2).map(f=>`<span class="tag tag-forma">${fFormaLabel(f)}</span>`).join('')}${formas.length>2?`<span class="tag tag-forma">+${formas.length-2}</span>`:''}
-        <span class="itens-cnt">${itens.length} lançamentos${nParc?` · ${nParc} parcela${nParc===1?'':'s'}`:''}</span>
+        <span class="itens-cnt">${itens.length} lançamentos · ${datas.length} vencimento${datas.length===1?'':'s'}</span>
       </div>
       <div class="pcard-meta">
         ${ehContrato?`<span>🗓 ${fDM(r0.saida)} → ${fDM(r0.retorno)}</span>`:''}
-        ${metaVenc}
+        ${multiData?'':metaVenc}
       </div>
     </div>
-    ${corpo}
+    <div class="lc-parcelas-grid">${corpo}</div>
     ${aviso}
     <div class="lc-ct-foot">
       <span class="lc-ct-foot-l">${ehBoleto?'Total do boleto':(ehContrato?'Total do contrato':'Total parcelado')}${nFora?`<small class="lc-ct-fora-nota">inclui ${nFora} ${opt.foraLabel||'fora do filtro'}</small>`:''}${par?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();ajustarTotalContrato(${par.loc.i},${par.com.i})">✎ Ajustar total</button>`:''}${(!multiData&&pagosIdx.length)?`<button type="button" class="lc-ct-ajust" onclick="event.stopPropagation();reverterPagamentoLote([${pagosIdx.join(',')}])">↺ Reverter pagamento</button>`:''}</span>
@@ -11431,7 +12747,7 @@ function lcCardHtml(r,gi,fecharBusca){
         </div>`:''}
         <div class="pcard-meta">
           <span>🗓 ${fDM(r.saida)} → ${fDM(r.retorno)}</span>
-          <span>Vencimento <b style="color:var(--red);font-weight:700">${fDM(r.prev_pgto)}</b></span>
+          <span class="agi-prev-date${pago?' paid':venc?' late':hojeCard?' today':''}" title="Previsão de pagamento"><span class="agi-prev-lbl">Previsão de pagamento</span><strong>${r.prev_pgto?fDM(r.prev_pgto):'Sem data'}</strong></span>
         </div>
       </div>
       <div class="pcard-right">
@@ -11467,9 +12783,17 @@ function lancListHtml(items,fecharBusca){
 // excluir individualmente não muda).
 // Valores líquidos (pago/pendente) de todos os itens de uma lista de
 // grupos — usado pra montar o subtotal que abre cada mês.
-function totaisGrupos(grupos){
+function totaisGrupos(grupos,mesKey){
+  // O cartão mostra o contrato inteiro, inclusive parcelas de outros meses.
+  // O subtotal mensal, porém, deve usar SOMENTE lançamentos cujo vencimento
+  // pertence ao mês do cabeçalho e que efetivamente passaram pelos filtros.
   let pago=0,pend=0,n=0;
-  grupos.forEach(g=>g.itens.forEach(({r})=>{pago+=fN(r.valor_pago);if(isPend(r))pend+=fN(r.saldo);n++;}));
+  grupos.forEach(g=>g.itens.forEach(({r})=>{
+    if(mesKey!==undefined&&(r.prev_pgto||'').slice(0,7)!==mesKey)return;
+    pago+=fN(r.valor_pago);
+    if(isPend(r))pend+=fN(r.saldo);
+    n++;
+  }));
   return{pago,pend,liq:pago+pend,n};
 }
 function buscaGroupedHtml(grupos,fecharBusca){
@@ -11478,16 +12802,16 @@ function buscaGroupedHtml(grupos,fecharBusca){
   // pedaço no bloco "futuro", outro no bloco "passado/vencido") — cada
   // aparição soma só os itens que vêm logo abaixo dela, senão o mesmo
   // total apareceria duplicado nos dois cabeçalhos.
-  let mesCorrente=undefined;
+  const mesesExibidos=new Set();
   return grupos.map((g,idx)=>{
     const mesKey=(g.ref||'').slice(0,7);
     let mesHtml='';
-    if(mesKey!==mesCorrente){
-      mesCorrente=mesKey;
+    if(!mesesExibidos.has(mesKey)){
+      mesesExibidos.add(mesKey);
       const lbl=mesKey?MN[parseInt(mesKey.slice(5,7),10)-1]+'/'+mesKey.slice(2,4):'Sem vencimento';
-      let fim=idx+1;
-      while(fim<grupos.length&&(grupos[fim].ref||'').slice(0,7)===mesKey)fim++;
-      const t=totaisGrupos(grupos.slice(idx,fim));
+      // Soma o mês de vencimento dos lançamentos, não o contrato inteiro.
+      // Grupos com parcelas em vários meses continuam visualmente unidos.
+      const t=totaisGrupos(grupos,mesKey);
       mesHtml=`<div class="search-total srow-mes-tot">
         <div class="st-main"><span>${lbl} · ${t.n} lançamento${t.n===1?'':'s'}</span><span class="st-val">${fR(t.liq)}</span></div>
         <div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div>
@@ -11904,7 +13228,7 @@ function pastelAmber(){return isDark()?'#F4C78C':'#c08a4a';}
 // o fundo é acinzentado e os botões são brancos).
 function applyThemeChrome(){
   const dark=isDark();
-  const m=document.getElementById('metaTheme'); if(m)m.content=dark?'#131d31':'#E3E4E7';
+  const m=document.getElementById('metaTheme'); if(m)m.content=dark?'#202039':'#E3E4E7';
   const ico=dark
     ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>'
     :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5 6.6 6.6 0 0 0 20.5 13.2Z"/></svg>';
@@ -13991,5 +15315,52 @@ iniciarApp();
 </div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- AGI: sincroniza a busca da agenda à largura REAL do primeiro cartão Previsto.
+     Mede as caixas renderizadas para não depender de gaps/breakpoints aproximados. -->
+<script>
+(function(){
+  'use strict';
+  let agiBuscaRaf=0;
+  function ajustarBuscaPrevisto(){
+    const page=document.getElementById('page-resumo');
+    const primeira=page && page.querySelector('#res-m .mc:not(.mc-mob-only)');
+    const barra=page && page.querySelector('.rc-cal-topbar-2 .agb-busca');
+    if(!primeira || !barra) return;
+    if(window.matchMedia('(max-width:760px)').matches){
+      barra.style.removeProperty('width');
+      barra.style.removeProperty('max-width');
+      barra.style.removeProperty('flex');
+      barra.style.removeProperty('margin-left');
+      return;
+    }
+    const card=primeira.getBoundingClientRect();
+    const container=barra.parentElement.getBoundingClientRect();
+    if(card.width<100 || !container.width) return;
+    const deslocamento=Math.max(0,card.left-container.left);
+    const largura=Math.min(card.width,container.width-deslocamento);
+    barra.style.setProperty('width', largura+'px','important');
+    barra.style.setProperty('max-width',largura+'px','important');
+    barra.style.setProperty('flex','0 0 '+largura+'px','important');
+    barra.style.setProperty('margin-left',deslocamento+'px','important');
+  }
+  function agendar(){
+    if(agiBuscaRaf) return;
+    agiBuscaRaf=requestAnimationFrame(function(){agiBuscaRaf=0;ajustarBuscaPrevisto();});
+  }
+  const page=document.getElementById('page-resumo');
+  if(!page) return;
+  const observador=new MutationObserver(agendar);
+  observador.observe(page,{childList:true,subtree:true});
+  if(typeof ResizeObserver!=='undefined'){
+    const ro=new ResizeObserver(agendar);
+    ro.observe(page);
+    const metrics=page.querySelector('#res-m');
+    if(metrics) ro.observe(metrics);
+  }
+  window.addEventListener('resize',agendar,{passive:true});
+  agendar();
+})();
+</script>
 </body>
 </html>
