@@ -4681,6 +4681,17 @@ html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct {
 html[data-theme="dark"] .fat-barra-pct {background:rgba(20,30,44,.88);color:#eef2fa;}
 
 
+
+/* FATURAMENTO — gráfico de curva acumulada acima dos tubos (mesmo desenho da Estilo, 10/11/2026). */
+#page-resumo .fat-curva { margin:0 0 6px; }
+#page-resumo .fat-curva-wrap { position:relative; }
+#page-resumo .fat-curva svg { display:block; width:100%; max-width:520px; margin:0 auto; overflow:visible; }
+#page-resumo .fat-curva-tip { position:absolute; top:-2px; background:var(--card); border:1px solid var(--line); border-radius:9px; padding:3px 9px; font-size:11px; font-weight:700; line-height:1.25; white-space:nowrap; color:var(--ink); box-shadow:0 2px 10px rgba(0,0,0,.12); z-index:5; pointer-events:none; }
+#page-resumo .fat-curva-tip small { display:block; font-size:10.5px; font-weight:500; color:var(--ink3); }
+#page-resumo .fat-curva-rodape { display:flex; justify-content:space-between; gap:8px; font-size:12px; font-weight:700; margin-top:2px; font-variant-numeric:tabular-nums; }
+#page-resumo .fat-curva-rodape .rec { color:var(--green); }
+#page-resumo .fat-curva-rodape .pend { color:#e08a1e; }
+
 /* FATURAMENTO — tubos no padrão Estilo (09/11/2026): rótulos dentro da
    faixa, larguras proporcionais, efetivado sólido e pendente hachurado. */
 #page-resumo .fat-paineis { margin-top: -9px; margin-bottom: 28px; }
@@ -5338,6 +5349,21 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
 @media (max-width:760px) {
   #page-resumo .agb-card { border-radius:18px; }
 }
+
+/* FATURAMENTO — tubos IDÊNTICOS aos da Estilo (10/11/2026): altura 26px no celular / 29px no PC, nome+% dentro, largura proporcional
+   ao valor (o maior vai até sobrar só o valor; mínimo = o que o nome precisa), valor completo logo depois da ponta do tubo,
+   ✓ verde quando tudo foi recebido e laranja no que ainda falta receber. */
+#page-resumo .fat-painel-lista { gap:7px !important; }
+#page-resumo .fat-painel-lista .fat-barra-linha { display:flex !important; align-items:center !important; gap:8px !important; min-height:0 !important; padding:0 !important; grid-template-columns:none !important; }
+#page-resumo .fat-painel-lista .fat-barra-faixa { flex:0 0 auto !important; width:var(--tubo-w,60%) !important; min-width:max-content !important; max-width:none !important; height:26px !important; box-sizing:border-box; }
+@media (min-width:768px){ #page-resumo .fat-painel-lista .fat-barra-faixa { height:29px !important; } }
+#page-resumo .fat-painel-lista .fat-barra-nome { max-width:none !important; white-space:nowrap; }
+#page-resumo .fat-painel-lista .fat-barra-valor { flex-shrink:0 !important; text-align:left; font-size:12px !important; font-weight:600 !important; color:var(--ink) !important; line-height:1.15; white-space:nowrap; text-shadow:none !important; }
+#page-resumo .fat-painel-lista .fat-barra-valor .v-ok { color:var(--green) !important; margin-right:4px; font-weight:800 !important; }
+#page-resumo .fat-painel-lista .fat-barra-valor .v-pend { color:#e08a1e !important; }
+#page-resumo .fat-painel-lista .fat-barra-valor .v-falta { font-size:10.5px; font-weight:600; color:#e08a1e !important; margin-top:1px; }
+#page-resumo .fat-painel-lista .fat-barra-nome { position:absolute !important; inset:0 auto 0 14px !important; display:flex; align-items:center; z-index:2; max-width:none !important; overflow:visible !important; text-overflow:clip !important; white-space:nowrap; font-size:12.5px !important; font-weight:700 !important; letter-spacing:.2px; color:#fff !important; text-shadow:0 1px 3px rgba(0,0,0,.55),0 0 1px rgba(0,0,0,.4) !important; }
+#page-resumo .fat-painel-lista .fat-barra-pct { position:absolute !important; top:50% !important; left:auto !important; right:12px !important; transform:translateY(-50%) !important; z-index:2; font-size:11.5px !important; font-weight:800 !important; color:#2c2f34 !important; background:rgba(255,255,255,.8) !important; box-shadow:0 1px 2px rgba(0,0,0,.10); padding:1px 8px !important; line-height:1.3; text-shadow:none !important; }
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -10434,6 +10460,143 @@ function frValorResponsivo(el,valor,prefixo=''){
   el.replaceChildren(normal,curto);
   el.title=completo;
 }
+// Curva acumulada do mês (mesmo desenho do painel da Estilo): eixo X = dias do mês, eixo Y = acumulado em raiz
+// quadrada, curva suave, trecho recebido em verde sólido com degradê, trecho a receber tracejado e laranja com
+// listras em movimento, ponto azul = hoje. Tocar num ponto abre o balão com data + valor.
+function frCurva(rows,dim){
+  const NS='http://www.w3.org/2000/svg';
+  const mes=curMes,y0=+mes.slice(0,4),m0=+mes.slice(5,7),nd=new Date(y0,m0,0).getDate();
+  const por={};
+  rows.forEach(r=>{
+    const d=(r.prev_pgto||'').slice(0,10);
+    if(!d||d.slice(0,7)!==mes)return;
+    const v=Math.max(0,frValBase(r));if(v<=0.005)return;
+    const p=frBasis==='caixa'?0:Math.min(v,Math.max(0,fN(r.saldo)));
+    const g=por[d]||(por[d]={d,v:0,p:0});g.v+=v;g.p+=p;
+  });
+  const gs=Object.keys(por).sort().map(k=>por[k]);
+  if(!gs.length)return null;
+  const VERDE='var(--green)',LARANJA='#e08a1e',AZUL='var(--blue)';
+  const W=340,H=76,padL=24,padR=24,yTop=19,yBase=53,plotW=W-padL-padR,plotH=yBase-yTop;
+  const span=Math.max(1,nd-1),xOf=i=>padL+(i/span)*plotW,f1=n=>Math.round(n*10)/10;
+  let cum=0;gs.forEach(g=>{g.i=(+g.d.slice(8,10))-1;g.x=xOf(g.i);cum+=g.v;g.cum=cum;g.est=g.p<=0.005?'pago':(g.p>=g.v-0.005?'aberto':'parcial');});
+  const maxC=Math.max(cum,1),yOf=c=>yBase-(Math.sqrt(Math.max(c,0))/Math.sqrt(maxC))*plotH;
+  gs.forEach(g=>{g.y=yOf(g.cum);});
+  const pts=[{x:xOf(0),y:yBase}].concat(gs.map(g=>({x:g.x,y:g.y,g})));
+  const ult=pts[pts.length-1],xFim=xOf(nd-1);
+  const segs=[];
+  for(let i=1;i<pts.length;i++)segs.push({a:pts[i-1],b:pts[i]});
+  if(ult.x<xFim-0.5)segs.push({a:ult,b:{x:xFim,y:ult.y}});
+  // tangentes monotônicas (Fritsch-Carlson): suave, sem overshoot
+  const vx=[segs[0].a.x],vy=[segs[0].a.y];segs.forEach(sg=>{vx.push(sg.b.x);vy.push(sg.b.y);});
+  const dk=[],mt=[];
+  for(let q=0;q<vx.length-1;q++)dk.push((vy[q+1]-vy[q])/Math.max(0.0001,vx[q+1]-vx[q]));
+  for(let q=0;q<vx.length;q++){
+    if(q===0)mt.push(dk[0]);else if(q===vx.length-1)mt.push(dk[dk.length-1]);
+    else mt.push(dk[q-1]*dk[q]<=0?0:(dk[q-1]+dk[q])/2);
+  }
+  for(let q=0;q<dk.length;q++){
+    if(Math.abs(dk[q])<1e-9){mt[q]=0;mt[q+1]=0;continue;}
+    const al=mt[q]/dk[q],be=mt[q+1]/dk[q],hh=al*al+be*be;
+    if(hh>9){const ta=3/Math.sqrt(hh);mt[q]=ta*al*dk[q];mt[q+1]=ta*be*dk[q];}
+  }
+  segs.forEach((sg,k)=>{
+    const dx=sg.b.x-sg.a.x;
+    sg.dC='C'+f1(sg.a.x+dx/3)+' '+f1(sg.a.y+mt[k]*dx/3)+' '+f1(sg.b.x-dx/3)+' '+f1(sg.b.y-mt[k+1]*dx/3)+' '+f1(sg.b.x)+' '+f1(sg.b.y);
+    const ref=(sg.b.g)||(sg.a.g);
+    sg.f=(sg.b&&!sg.b.g&&sg.a&&sg.a.g)?((sg.a.g.p||0)>0.005?0:1):(ref&&ref.v>0.005?Math.max(0,Math.min(1,(ref.v-ref.p)/ref.v)):1);
+  });
+  const uid='cv'+dim;
+  const h=(tag,at,kids)=>{const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);(kids||[]).forEach(c=>c&&e.appendChild(c));return e;};
+  const stop=(o,cor,op)=>h('stop',{offset:o,style:'stop-color:'+cor+';stop-opacity:'+op});
+  const reduzir=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pat=h('pattern',{id:uid+'Str',patternUnits:'userSpaceOnUse',width:11,height:11},[
+    h('path',{d:'M-8.25 11L11 -8.25 M-8.25 22L22 -8.25',fill:'none',style:'stroke:'+LARANJA+';stroke-opacity:.53',['stroke-width']:5.2}),
+    reduzir?null:h('animateTransform',{attributeName:'patternTransform',type:'translate',from:'0 0',to:'11 0',dur:'1.5s',repeatCount:'indefinite'})
+  ]);
+  const defs=h('defs',{},[
+    h('linearGradient',{id:uid+'G',gradientUnits:'userSpaceOnUse',x1:0,y1:yTop,x2:0,y2:yBase},[stop('0%',VERDE,.31),stop('100%',VERDE,.015)]),
+    h('linearGradient',{id:uid+'T',gradientUnits:'userSpaceOnUse',x1:0,y1:yTop,x2:0,y2:yBase},[stop('0%',LARANJA,.29),stop('100%',LARANJA,.015)]),
+    pat,
+    h('linearGradient',{id:uid+'F',gradientUnits:'userSpaceOnUse',x1:0,y1:yTop,x2:0,y2:yBase},[stop('0%','#fff',.72),stop('100%','#fff',.03)]),
+    h('linearGradient',{id:uid+'FH',gradientUnits:'userSpaceOnUse',x1:0,y1:0,x2:W,y2:0},[stop('0%','#fff',.5),stop('35%','#fff',1),stop('65%','#fff',1),stop('100%','#fff',.5)]),
+    h('mask',{id:uid+'MH',maskUnits:'userSpaceOnUse',x:0,y:0,width:W,height:H},[h('rect',{x:0,y:0,width:W,height:H,fill:'url(#'+uid+'FH)'})]),
+    h('mask',{id:uid+'M',maskUnits:'userSpaceOnUse',x:0,y:0,width:W,height:H},[h('rect',{x:0,y:0,width:W,height:H,fill:'url(#'+uid+'F)',mask:'url(#'+uid+'MH)'})])
+  ]);
+  const els=[defs];
+  segs.forEach((sg,i)=>{
+    const parcial=sg.f>0.001&&sg.f<0.999;
+    if(parcial){
+      const xi=sg.a.x+(sg.b.x-sg.a.x)*sg.f;
+      defs.appendChild(h('clipPath',{id:uid+'P'+i,clipPathUnits:'userSpaceOnUse'},[h('rect',{x:f1(xi),y:0,width:Math.max(0.01,f1(sg.b.x-xi)),height:H})]));
+      defs.appendChild(h('clipPath',{id:uid+'Q'+i,clipPathUnits:'userSpaceOnUse'},[h('rect',{x:f1(sg.a.x-1),y:0,width:Math.max(0.01,f1(xi-sg.a.x+1)),height:H})]));
+    }
+  });
+  segs.forEach((sg,i)=>{
+    const d='M'+f1(sg.a.x)+' '+f1(sg.a.y)+' '+sg.dC+' L'+f1(sg.b.x)+' '+yBase+' L'+f1(sg.a.x)+' '+yBase+' Z';
+    const parcial=sg.f>0.001&&sg.f<0.999,soPend=sg.f<=0.001;
+    const clip=parcial?'url(#'+uid+'P'+i+')':null;
+    els.push(h('path',{d,fill:'url(#'+uid+(soPend?'T':'G')+')',stroke:'none'}));
+    if(parcial)els.push(h('path',{d,fill:'url(#'+uid+'T)','clip-path':clip,stroke:'none'}));
+    if(sg.f<0.999){const a={d,fill:'url(#'+uid+'Str)',stroke:'none',mask:'url(#'+uid+'M)'};if(clip)a['clip-path']=clip;els.push(h('path',a));}
+  });
+  segs.forEach((sg,i)=>{
+    const dL='M'+f1(sg.a.x)+' '+f1(sg.a.y)+' '+sg.dC,parcial=sg.f>0.001&&sg.f<0.999,soPend=sg.f<=0.001;
+    const base={fill:'none','stroke-width':1.4,'stroke-linecap':'round'};
+    els.push(h('path',Object.assign({d:dL,style:'stroke:'+(soPend?LARANJA:VERDE)},base,soPend?{'stroke-dasharray':'3 2.5'}:{},parcial?{'clip-path':'url(#'+uid+'Q'+i+')'}:{})));
+    if(parcial)els.push(h('path',Object.assign({d:dL,style:'stroke:'+LARANJA,'clip-path':'url(#'+uid+'P'+i+')','stroke-dasharray':'3 2.5'},base)));
+  });
+  // hoje
+  const hojeISO=td();
+  if(hojeISO.slice(0,7)===mes){
+    const hx=xOf((+hojeISO.slice(8,10))-1);let hy=ult.y;
+    for(const sg of segs){if(hx>=sg.a.x&&hx<=sg.b.x){const t=(hx-sg.a.x)/Math.max(0.0001,sg.b.x-sg.a.x);hy=sg.a.y+(sg.b.y-sg.a.y)*t;break;}}
+    els.push(h('line',{x1:f1(hx),y1:8,x2:f1(hx),y2:yBase,style:'stroke:'+AZUL+';stroke-width:1','stroke-dasharray':'1 2.5'}));
+    els.push(h('circle',{cx:f1(hx),cy:f1(hy),r:3.4,style:'fill:'+AZUL+';stroke:var(--card);stroke-width:1.2'}));
+  }
+  const abv=v=>{const a=Math.abs(v||0);if(a>=1e6)return (a/1e6).toFixed(1).replace('.',',').replace(',0','')+'M';if(a>=1000)return (a/1000).toFixed(1).replace('.',',').replace(',0','')+'k';return String(Math.round(a));};
+  const ddmm=k=>k.slice(8,10)+'/'+k.slice(5,7);
+  let lastX=-1e9;gs.forEach(g=>{g.mostra=(g.x-lastX)>=43;if(g.mostra)lastX=g.x;});
+  const wrap=document.createElement('div');wrap.className='fat-curva-wrap';
+  const tip=document.createElement('div');tip.className='fat-curva-tip';tip.hidden=true;
+  let sel=null;
+  gs.forEach(g=>{
+    const cor=g.est==='pago'?VERDE:LARANJA,xl=Math.min(Math.max(g.x,28),W-28);
+    els.push(h('circle',{cx:f1(g.x),cy:f1(g.y),r:2.8,style:'fill:'+cor+';stroke:var(--card);stroke-width:1.2'}));
+    if(g.est==='parcial'){
+      const fr=g.v>0?Math.min(1,Math.max(0,(g.v-g.p)/g.v)):0,rr=2.4,ang=fr*2*Math.PI;
+      els.push(h('path',{d:'M'+f1(g.x)+' '+f1(g.y)+' L'+f1(g.x)+' '+f1(g.y-rr)+' A'+rr+' '+rr+' 0 '+(fr>0.5?1:0)+' 1 '+f1(g.x+rr*Math.sin(ang))+' '+f1(g.y-rr*Math.cos(ang))+' Z',style:'fill:'+VERDE}));
+    }
+    if(g.mostra){
+      const t1=h('text',{x:f1(xl),y:f1(g.y-8),'text-anchor':'middle',style:'font-size:9px;font-weight:700;fill:'+cor});t1.textContent=abv(g.v);
+      const t2=h('text',{x:f1(xl),y:yBase+15,'text-anchor':'middle',style:'font-size:9px;font-weight:500;fill:var(--ink3)'});t2.textContent=ddmm(g.d);
+      els.push(t1,t2);
+    }
+    const hit=h('circle',{cx:f1(g.x),cy:f1(g.y),r:13,style:'fill:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent'});
+    hit.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(sel===g.d){sel=null;tip.hidden=true;return;}
+      sel=g.d;tip.replaceChildren(document.createTextNode(ddmm(g.d)+' · '+fR(g.v)));
+      if(g.est==='parcial'){const sm=document.createElement('small');sm.textContent='recebido '+fR(g.v-g.p)+' · falta '+fR(g.p);tip.appendChild(sm);}
+      tip.hidden=false;
+      const pc=(g.x/W)*100;tip.style.left=tip.style.right=tip.style.transform='';
+      if(pc<24)tip.style.left='0';else if(pc>76)tip.style.right='0';else{tip.style.left=pc+'%';tip.style.transform='translateX(-50%)';}
+    });
+    els.push(hit);
+  });
+  const svg=h('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'Curva acumulada do mês'},els);
+  wrap.append(tip,svg);
+  const tot=gs.reduce((a,g)=>a+g.v,0),pend=gs.reduce((a,g)=>a+g.p,0),rec=tot-pend;
+  const rod=document.createElement('div');rod.className='fat-curva-rodape';
+  const a=document.createElement('span');a.className='rec';if(rec>0.005)a.textContent='Recebido: '+fR(rec);
+  const b=document.createElement('span');b.className='pend';if(pend>0.005)b.textContent='A receber: '+fR(pend);
+  rod.append(a,b);
+  const box=document.createElement('div');box.className='fat-curva';
+  box.append(wrap);if(rec>0.005||pend>0.005)box.append(rod);
+  return box;
+}
+
+let frxCanvas=null;
 function frRenderData(){
   // Os dois painéis usam os mesmos lançamentos do mês e filtros cruzados já existentes.
   for(const [dim,target,totalTarget] of [['tipo','fatTipoBarras','fatTipoTotal'],['dono','fatDonoBarras','fatDonoTotal']]){
@@ -10441,10 +10604,14 @@ function frRenderData(){
     if(!lista)continue;
     const itens=frxItemsFor(dim);
     const montante=itens.reduce((acc,it)=>acc+Math.max(0,it.value),0);
-    if(total)frValorResponsivo(total,montante,'Total: ');
+    if(total){total.innerHTML='Total: '+fRH(montante);total.title='Total: '+fR(montante);}
     lista.replaceChildren();
     if(!itens.length){const vazio=document.createElement('p');vazio.className='fat-painel-vazio';vazio.textContent='Nenhum lançamento neste período.';lista.appendChild(vazio);continue;}
     const maiorBarra=Math.max(...itens.map(x=>Math.max(0,x.value)),0.01);
+    // Reserva à direita = largura do maior valor (medido) + espaçamento (+ ✓ quando houver): o tubo maior termina onde sobra só o valor.
+    const _cv=frxCanvas||(frxCanvas=document.createElement('canvas').getContext('2d'));_cv.font='600 12px system-ui,-apple-system,sans-serif';
+    const _resPx=Math.ceil(Math.max(...itens.map(x=>_cv.measureText(fR(x.value)).width))+8+16);
+    const curva=frCurva(frRowsForRing(dim),dim);if(curva)lista.appendChild(curva);
     itens.forEach((it,idx)=>{
       const pago=Math.max(0,Math.min(it.value,it.pago));
       const falta=Math.max(0,it.value-pago);
@@ -10461,7 +10628,10 @@ function frRenderData(){
       const cor=(dim==='tipo'?paletaTipo:paletaDono)[idx%(dim==='tipo'?paletaTipo.length:paletaDono.length)];
       faixa.style.setProperty('--fat-cor',cor);
       linha.style.setProperty('--fat-cor',cor);
-      faixa.style.setProperty('--tubo-largura',Math.max(26,Math.min(82,82*Math.max(0,it.value)/maiorBarra))+'%');
+      _cv.font='700 12.5px system-ui,-apple-system,sans-serif';const _nw=_cv.measureText(it.key).width+it.key.length*0.2;
+      _cv.font='800 11.5px system-ui,-apple-system,sans-serif';const _pw=_cv.measureText(pct+'%').width+16;
+      const _need=Math.ceil(14+_nw+10+_pw+12);
+      faixa.style.setProperty('--tubo-w','min(max('+_need+'px, calc((100% - '+_resPx+'px) * '+(Math.max(0,it.value)/maiorBarra).toFixed(4)+')), calc(100% - '+_resPx+'px))');
       // O atraso deste mês ocupa parte da faixa pendente, sem alterar o total.
       // Débitos de meses anteriores aparecem como indicador separado, sem
       // contaminar os totalizadores do mês selecionado.
@@ -10479,7 +10649,16 @@ function frRenderData(){
         faixa.appendChild(marca);
       }
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
-      const valor=document.createElement('span');valor.className='fat-barra-valor';frValorResponsivo(valor,it.value);
+      const valor=document.createElement('span');valor.className='fat-barra-valor';
+      {
+        const temP=falta>0.005,escP=temP&&Math.abs(falta-it.value)>0.005;
+        const l1=document.createElement('div');
+        if(!temP){const ok=document.createElement('span');ok.className='v-ok';ok.textContent='\u2713';l1.appendChild(ok);}
+        const num=document.createElement('span');if(temP&&!escP)num.className='v-pend';num.innerHTML=fRH(it.value);l1.appendChild(num);
+        valor.appendChild(l1);
+        if(escP){const l2=document.createElement('div');l2.className='v-falta';l2.textContent=fR(falta);valor.appendChild(l2);}
+        valor.title=fR(it.value);
+      }
       linha.append(faixa,valor);
       // Prévia APENAS enquanto o cursor está dentro da área real do tubo.
       // O espaço vazio e o valor à direita não acionam nem mantêm a janela.
