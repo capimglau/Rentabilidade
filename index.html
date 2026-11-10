@@ -5369,6 +5369,41 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
   #res-m .mc:hover { transform:none !important; box-shadow:none !important; }
   #res-m #mc-loc-cycle { border-left:1px solid var(--line) !important; }
 }
+
+/* AGI / Estilo — paridade visual dos tubos da Dashboard (10/11/2026). */
+/* Mesma estrutura A2 da Estilo: brilho interno, sombra de contorno,
+   preenchimento em gradiente e listras 8px em 1,5s, só no pendente. */
+@keyframes agiA2EstiloOndas { to { background-position:8px 0; } }
+#page-resumo .fat-painel-lista { gap:13px !important; }
+#page-resumo .fat-painel-lista .fat-barra-linha {gap:8px !important; align-items:center !important;}
+#page-resumo .fat-painel-lista .fat-barra-faixa {
+  height:26px !important; border-radius:999px !important;
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fat-cor) 32%,transparent),inset 0 1px 0 rgba(255,255,255,.35) !important;
+  background:color-mix(in srgb,var(--fat-cor) 66%,white) !important;
+}
+@media(min-width:768px){#page-resumo .fat-painel-lista .fat-barra-faixa{height:29px !important;}}
+#page-resumo .fat-painel-lista .fat-barra-cheio {
+  background:linear-gradient(180deg,color-mix(in srgb,var(--fat-cor) 90%,#fff) 0%,var(--fat-cor) 45%,color-mix(in srgb,var(--fat-cor) 84%,#000) 100%) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+}
+#page-resumo .fat-painel-lista .fat-barra-restante {
+  background-color:color-mix(in srgb,var(--fat-cor) 66%,white) !important;
+  background-image:linear-gradient(135deg,rgba(255,255,255,.58) 25%,rgba(0,0,0,.08) 25% 50%,rgba(255,255,255,.58) 50% 75%,rgba(0,0,0,.08) 75%) !important;
+  background-size:8px 8px !important;
+  animation:agiA2EstiloOndas 1.5s linear infinite !important;
+}
+#page-resumo .fat-painel-lista .fat-barra-sombra {
+  position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(90deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.15) 45%,rgba(0,0,0,0) 82%);
+}
+#page-resumo .fat-painel-lista .fat-barra-nome {font-size:12.5px !important;font-weight:700 !important;letter-spacing:.2px !important;}
+#page-resumo .fat-painel-lista .fat-barra-pct {font-size:11.5px !important;font-weight:800 !important;border-radius:999px !important;}
+#page-resumo .fat-painel-lista .fat-barra-valor {font-size:12px !important;font-weight:600 !important;color:var(--ink) !important;}
+#page-resumo .fat-painel-lista .fat-barra-valor .fat-valor-principal{display:block;white-space:nowrap;}
+#page-resumo .fat-painel-lista .fat-barra-valor .fat-valor-pendente{display:block;margin-top:1px;font-size:10.5px;font-weight:600;color:#d18a35;}
+#page-resumo .fat-painel-lista .fat-valor-ok{color:#4d9967;font-weight:800;margin-right:4px;}
+@media(max-width:760px){#page-resumo .fat-painel-lista .fat-barra-nome{font-size:12.5px !important;}}
+@media(prefers-reduced-motion:reduce){#page-resumo .fat-painel-lista .fat-barra-restante{animation:none !important;}}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -10614,7 +10649,7 @@ function frRenderData(){
     if(!itens.length){const vazio=document.createElement('p');vazio.className='fat-painel-vazio';vazio.textContent='Nenhum lançamento neste período.';lista.appendChild(vazio);continue;}
     const maiorBarra=Math.max(...itens.map(x=>Math.max(0,x.value)),0.01);
     // Reserva à direita = largura do maior valor (medido) + espaçamento (+ ✓ quando houver): o tubo maior termina onde sobra só o valor.
-    const _cv=frxCanvas||(frxCanvas=document.createElement('canvas').getContext('2d'));_cv.font='600 12px system-ui,-apple-system,sans-serif';
+    const _cv=frxCanvas||(frxCanvas=document.createElement('canvas').getContext('2d'));_cv.font='600 12px IBM Plex Sans,system-ui,sans-serif';
     const _resPx=Math.ceil(Math.max(...itens.map(x=>_cv.measureText(fR(x.value)).width))+8+16);
     itens.forEach((it,idx)=>{
       const pago=Math.max(0,Math.min(it.value,it.pago));
@@ -10632,8 +10667,8 @@ function frRenderData(){
       const cor=(dim==='tipo'?paletaTipo:paletaDono)[idx%(dim==='tipo'?paletaTipo.length:paletaDono.length)];
       faixa.style.setProperty('--fat-cor',cor);
       linha.style.setProperty('--fat-cor',cor);
-      _cv.font='700 12.5px system-ui,-apple-system,sans-serif';const _nw=_cv.measureText(it.key).width+it.key.length*0.2;
-      _cv.font='800 11.5px system-ui,-apple-system,sans-serif';const _pw=_cv.measureText(pct+'%').width+16;
+      _cv.font='700 12.5px IBM Plex Sans,system-ui,sans-serif';const _nw=_cv.measureText(it.key).width+it.key.length*0.2;
+      _cv.font='800 11.5px IBM Plex Sans,system-ui,sans-serif';const _pw=_cv.measureText(pct+'%').width+16;
       const _need=Math.ceil(14+_nw+10+_pw+12);
       faixa.style.setProperty('--tubo-w','min(max('+_need+'px, calc((100% - '+_resPx+'px) * '+(Math.max(0,it.value)/maiorBarra).toFixed(4)+')), calc(100% - '+_resPx+'px))');
       // O atraso deste mês ocupa parte da faixa pendente, sem alterar o total.
@@ -10645,7 +10680,8 @@ function frRenderData(){
       const cheio=document.createElement('span');cheio.className='fat-barra-cheio';cheio.style.width=proporcao+'%';
       const pend=document.createElement('span');pend.className='fat-barra-restante';pend.style.width=(it.value>0?100*pendNormal/it.value:0)+'%';
       const atraso=document.createElement('span');atraso.className='fat-barra-atraso-mes';atraso.style.width=(it.value>0?100*atrasoMes/it.value:0)+'%';
-      faixa.append(cheio,pend,atraso,nome);
+      const sombra=document.createElement('span');sombra.className='fat-barra-sombra';
+      faixa.append(cheio,pend,atraso,sombra,nome);
       if(atrasoAntigo>0.005){
         // Marca discreta dentro do tubo: não aumenta a linha nem altera seu comprimento.
         const marca=document.createElement('span');marca.className='fat-barra-atraso-antigo';
@@ -10654,7 +10690,15 @@ function frRenderData(){
       }
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
       const valor=document.createElement('span');valor.className='fat-barra-valor';
-      valor.innerHTML=fRH(it.value);valor.title=fR(it.value);
+      // Valor externo no padrão Estilo: total e, quando parcial, saldo pendente abaixo.
+      // Não altera montantes, atrasos, filtros nem comportamento do clique.
+      const principal=document.createElement('span');principal.className='fat-valor-principal';
+      if(falta<=0.005){const ok=document.createElement('span');ok.className='fat-valor-ok';ok.textContent='✓';principal.appendChild(ok);}
+      if(falta>0.005 && pago<=0.005){principal.style.color='#d18a35';}
+      const numeroValor=document.createElement('span');numeroValor.innerHTML=fRH(it.value);principal.appendChild(numeroValor);
+      valor.appendChild(principal);
+      if(falta>0.005 && pago>0.005){const pendValor=document.createElement('span');pendValor.className='fat-valor-pendente';pendValor.innerHTML=fRH(falta);valor.appendChild(pendValor);}
+      valor.title='Total: '+fR(it.value)+' · Recebido: '+fR(pago)+' · A receber: '+fR(falta);
       linha.append(faixa,valor);
       // Prévia APENAS enquanto o cursor está dentro da área real do tubo.
       // O espaço vazio e o valor à direita não acionam nem mantêm a janela.
