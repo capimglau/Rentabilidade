@@ -5389,15 +5389,23 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
   height:29px !important; border-radius:999px !important; overflow:hidden !important;
   background-color:color-mix(in srgb,var(--fat-cor) 72%,white) !important;
 }
-#page-resumo .fat-painel-lista .fat-barra-cheio,
+/* O trecho efetivado é preenchido por inteiro, sem listras. O saldo a
+   realizar fica claro e recebe apenas um filete interno fino — não uma
+   sequência de faixas grossas. */
+#page-resumo .fat-painel-lista .fat-barra-cheio {
+  background:var(--fat-cor) !important;
+  animation:none !important;
+}
 #page-resumo .fat-painel-lista .fat-barra-restante,
 #page-resumo .fat-painel-lista .fat-barra-atraso-mes {
-  background-color:color-mix(in srgb,var(--fat-cor) 72%,white) !important;
-  background-image:repeating-linear-gradient(135deg,
-    color-mix(in srgb,var(--fat-cor) 48%,white) 0 5px,
-    color-mix(in srgb,var(--fat-cor) 82%,white) 5px 10px) !important;
-  background-size:11px 11px !important;
-  animation:agi-tubo-listrado 1.5s linear infinite !important;
+  background-color:color-mix(in srgb,var(--fat-cor) 22%,white) !important;
+  background-image:linear-gradient(to bottom,
+    transparent 0,transparent calc(50% - .5px),
+    color-mix(in srgb,var(--fat-cor) 62%,white) calc(50% - .5px),
+    color-mix(in srgb,var(--fat-cor) 62%,white) calc(50% + .5px),
+    transparent calc(50% + .5px),transparent 100%) !important;
+  background-size:100% 100% !important;
+  animation:none !important;
 }
 @keyframes agi-tubo-listrado { to { background-position:11px 0; } }
 #page-resumo .fat-painel-lista .fat-barra-nome {
@@ -5415,14 +5423,20 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
 }
 #page-resumo .fat-painel-lista .fat-barra-valor .v-ok { color:var(--green) !important; margin-right:4px; }
 @media(max-width:760px) {
-  #page-resumo .fat-painel-combinado .fat-paineis-grid { grid-template-columns:1fr; }
-  #page-resumo .fat-painel-coluna + .fat-painel-coluna { border-left:0; border-top:1px solid var(--line); }
-  #page-resumo .fat-painel-coluna .fat-painel-cab { padding:11px 12px; }
-  #page-resumo .fat-painel-coluna .fat-painel-lista { padding:13px 12px 16px; gap:9px !important; }
-  #page-resumo .fat-painel-lista .fat-barra-faixa { height:26px !important; }
-  #page-resumo .fat-painel-lista .fat-barra-nome { left:10px !important; font-size:11px !important; }
-  #page-resumo .fat-painel-lista .fat-barra-pct { right:6px !important; font-size:10.5px !important; }
-  #page-resumo .fat-painel-lista .fat-barra-valor { font-size:11px !important; }
+  /* No celular os dois resumos permanecem lado a lado dentro de um único
+     painel, como no modelo Sistema Estilo — sem empilhar um painel abaixo
+     do outro. */
+  #page-resumo .fat-painel-combinado .fat-paineis-grid { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+  #page-resumo .fat-painel-coluna + .fat-painel-coluna { border-left:1px solid var(--line); border-top:0; }
+  #page-resumo .fat-painel-coluna .fat-painel-cab { min-height:46px; padding:9px 8px; }
+  #page-resumo .fat-painel-coluna .fat-painel-cab h2 { font-size:11px; line-height:1.2; }
+  #page-resumo .fat-painel-coluna .fat-painel-total { font-size:10px; }
+  #page-resumo .fat-painel-coluna .fat-painel-lista { padding:10px 8px 12px; gap:8px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-linha { gap:4px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-faixa { height:23px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-nome { left:7px !important; font-size:9.5px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-pct { right:5px !important; font-size:9px !important; padding:1px 5px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-valor { font-size:9.5px !important; }
 }
 @media(prefers-reduced-motion:reduce) {
   #page-resumo .fat-painel-lista .fat-barra-cheio,
