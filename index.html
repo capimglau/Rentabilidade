@@ -5364,6 +5364,72 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
 #page-resumo .fat-painel-lista .fat-barra-valor .v-falta { font-size:10.5px; font-weight:600; color:#e08a1e !important; margin-top:1px; }
 #page-resumo .fat-painel-lista .fat-barra-nome { position:absolute !important; inset:0 auto 0 14px !important; display:flex; align-items:center; z-index:2; max-width:none !important; overflow:visible !important; text-overflow:clip !important; white-space:nowrap; font-size:12.5px !important; font-weight:700 !important; letter-spacing:.2px; color:#fff !important; text-shadow:0 1px 3px rgba(0,0,0,.55),0 0 1px rgba(0,0,0,.4) !important; }
 #page-resumo .fat-painel-lista .fat-barra-pct { position:absolute !important; top:50% !important; left:auto !important; right:12px !important; transform:translateY(-50%) !important; z-index:2; font-size:11.5px !important; font-weight:800 !important; color:#2c2f34 !important; background:rgba(255,255,255,.8) !important; box-shadow:0 1px 2px rgba(0,0,0,.10); padding:1px 8px !important; line-height:1.3; text-shadow:none !important; }
+
+/* AJUSTE 10/11/2026 — tubos no padrão visual da referência Estilo.
+   Um único painel externo reúne Tipo e Proprietário; os subtotais continuam
+   separados. Somente tubos + percentuais + valores totais, sem curva/gráfico. */
+#page-resumo .fat-painel-combinado {
+  display:block; overflow:hidden; border-radius:22px; background:var(--card);
+  border:1px solid rgba(90,100,115,.10);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.35),0 10px 18px -14px rgba(0,0,0,.28),0 2px 14px rgba(0,0,0,.10);
+}
+#page-resumo .fat-painel-combinado .fat-paineis-grid {
+  display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0;
+}
+#page-resumo .fat-painel-coluna { min-width:0; display:flex; flex-direction:column; }
+#page-resumo .fat-painel-coluna + .fat-painel-coluna { border-left:1px solid var(--line); }
+#page-resumo .fat-painel-coluna .fat-painel-cab {
+  min-height:55px; border-radius:0; padding:13px 16px;
+}
+#page-resumo .fat-painel-coluna .fat-painel-lista {
+  flex:1; padding:15px 16px 18px; gap:10px !important;
+}
+/* Tubos com listras diagonais contínuas, como os da referência. */
+#page-resumo .fat-painel-lista .fat-barra-faixa {
+  height:29px !important; border-radius:999px !important; overflow:hidden !important;
+  background-color:color-mix(in srgb,var(--fat-cor) 72%,white) !important;
+}
+#page-resumo .fat-painel-lista .fat-barra-cheio,
+#page-resumo .fat-painel-lista .fat-barra-restante,
+#page-resumo .fat-painel-lista .fat-barra-atraso-mes {
+  background-color:color-mix(in srgb,var(--fat-cor) 72%,white) !important;
+  background-image:repeating-linear-gradient(135deg,
+    color-mix(in srgb,var(--fat-cor) 48%,white) 0 5px,
+    color-mix(in srgb,var(--fat-cor) 82%,white) 5px 10px) !important;
+  background-size:11px 11px !important;
+  animation:agi-tubo-listrado 1.5s linear infinite !important;
+}
+@keyframes agi-tubo-listrado { to { background-position:11px 0; } }
+#page-resumo .fat-painel-lista .fat-barra-nome {
+  left:14px !important; font-size:12px !important; font-weight:800 !important;
+  text-shadow:0 1px 2px rgba(15,28,40,.55),0 0 3px rgba(15,28,40,.3) !important;
+}
+#page-resumo .fat-painel-lista .fat-barra-pct {
+  right:10px !important; background:rgba(255,255,255,.82) !important;
+  color:#30343a !important; font-size:11px !important; font-weight:800 !important;
+  text-shadow:none !important; padding:1px 8px !important;
+}
+#page-resumo .fat-painel-lista .fat-barra-valor {
+  color:color-mix(in srgb,var(--fat-cor) 78%,#172634 22%) !important;
+  font-size:12px !important; font-weight:800 !important; line-height:1.15; white-space:nowrap;
+}
+#page-resumo .fat-painel-lista .fat-barra-valor .v-ok { color:var(--green) !important; margin-right:4px; }
+@media(max-width:760px) {
+  #page-resumo .fat-painel-combinado .fat-paineis-grid { grid-template-columns:1fr; }
+  #page-resumo .fat-painel-coluna + .fat-painel-coluna { border-left:0; border-top:1px solid var(--line); }
+  #page-resumo .fat-painel-coluna .fat-painel-cab { padding:11px 12px; }
+  #page-resumo .fat-painel-coluna .fat-painel-lista { padding:13px 12px 16px; gap:9px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-faixa { height:26px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-nome { left:10px !important; font-size:11px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-pct { right:6px !important; font-size:10.5px !important; }
+  #page-resumo .fat-painel-lista .fat-barra-valor { font-size:11px !important; }
+}
+@media(prefers-reduced-motion:reduce) {
+  #page-resumo .fat-painel-lista .fat-barra-cheio,
+  #page-resumo .fat-painel-lista .fat-barra-restante,
+  #page-resumo .fat-painel-lista .fat-barra-atraso-mes { animation:none !important; }
+}
+
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -5515,17 +5581,19 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
 <div class="page on" id="page-resumo">
   <div class="mrow" id="res-m"></div>
   <div id="recebHoje"></div>
-  <!-- Faturamento: dois painéis simultâneos, com execução sólida e saldo hachurado. -->
+  <!-- Painel único: Tipo e Proprietário reunidos, mantendo filtros e totais independentes. -->
   <div class="fat-paineis">
-    <div class="fat-paineis-grid">
-      <section class="fat-painel" aria-labelledby="fatTipoTitulo">
-        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
-        <div class="fat-painel-lista" id="fatTipoBarras"></div>
-      </section>
-      <section class="fat-painel" aria-labelledby="fatDonoTitulo">
-        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
-        <div class="fat-painel-lista" id="fatDonoBarras"></div>
-      </section>
+    <div class="fat-painel fat-painel-combinado">
+      <div class="fat-paineis-grid">
+        <section class="fat-painel-coluna" aria-labelledby="fatTipoTitulo">
+          <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
+          <div class="fat-painel-lista" id="fatTipoBarras"></div>
+        </section>
+        <section class="fat-painel-coluna" aria-labelledby="fatDonoTitulo">
+          <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
+          <div class="fat-painel-lista" id="fatDonoBarras"></div>
+        </section>
+      </div>
     </div>
   </div>
   <div class="card" id="cardBoletos">
@@ -10611,7 +10679,6 @@ function frRenderData(){
     // Reserva à direita = largura do maior valor (medido) + espaçamento (+ ✓ quando houver): o tubo maior termina onde sobra só o valor.
     const _cv=frxCanvas||(frxCanvas=document.createElement('canvas').getContext('2d'));_cv.font='600 12px system-ui,-apple-system,sans-serif';
     const _resPx=Math.ceil(Math.max(...itens.map(x=>_cv.measureText(fR(x.value)).width))+8+16);
-    const curva=frCurva(frRowsForRing(dim),dim);if(curva)lista.appendChild(curva);
     itens.forEach((it,idx)=>{
       const pago=Math.max(0,Math.min(it.value,it.pago));
       const falta=Math.max(0,it.value-pago);
@@ -10656,7 +10723,6 @@ function frRenderData(){
         if(!temP){const ok=document.createElement('span');ok.className='v-ok';ok.textContent='\u2713';l1.appendChild(ok);}
         const num=document.createElement('span');if(temP&&!escP)num.className='v-pend';num.innerHTML=fRH(it.value);l1.appendChild(num);
         valor.appendChild(l1);
-        if(escP){const l2=document.createElement('div');l2.className='v-falta';l2.textContent=fR(falta);valor.appendChild(l2);}
         valor.title=fR(it.value);
       }
       linha.append(faixa,valor);
