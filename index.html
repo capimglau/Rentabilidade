@@ -5358,50 +5358,17 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
 #page-resumo .fat-painel-lista .fat-barra-faixa { flex:0 0 auto !important; width:var(--tubo-w,60%) !important; min-width:max-content !important; max-width:none !important; height:26px !important; box-sizing:border-box; }
 @media (min-width:768px){ #page-resumo .fat-painel-lista .fat-barra-faixa { height:29px !important; } }
 #page-resumo .fat-painel-lista .fat-barra-nome { max-width:none !important; white-space:nowrap; }
-#page-resumo .fat-painel-lista .fat-barra-valor { flex-shrink:0 !important; text-align:left; font-size:12px !important; font-weight:600 !important; color:var(--ink) !important; line-height:1.15; white-space:nowrap; text-shadow:none !important; }
-#page-resumo .fat-painel-lista .fat-barra-valor .v-ok { color:var(--green) !important; margin-right:4px; font-weight:800 !important; }
-#page-resumo .fat-painel-lista .fat-barra-valor .v-pend { color:#e08a1e !important; }
-#page-resumo .fat-painel-lista .fat-barra-valor .v-falta { font-size:10.5px; font-weight:600; color:#e08a1e !important; margin-top:1px; }
+#page-resumo .fat-painel-lista .fat-barra-valor { flex-shrink:0 !important; text-align:left; font-size:12px !important; font-weight:600 !important; color:var(--fat-cor) !important; line-height:1.15; white-space:nowrap; text-shadow:none !important; }
 #page-resumo .fat-painel-lista .fat-barra-nome { position:absolute !important; inset:0 auto 0 14px !important; display:flex; align-items:center; z-index:2; max-width:none !important; overflow:visible !important; text-overflow:clip !important; white-space:nowrap; font-size:12.5px !important; font-weight:700 !important; letter-spacing:.2px; color:#fff !important; text-shadow:0 1px 3px rgba(0,0,0,.55),0 0 1px rgba(0,0,0,.4) !important; }
 #page-resumo .fat-painel-lista .fat-barra-pct { position:absolute !important; top:50% !important; left:auto !important; right:12px !important; transform:translateY(-50%) !important; z-index:2; font-size:11.5px !important; font-weight:800 !important; color:#2c2f34 !important; background:rgba(255,255,255,.8) !important; box-shadow:0 1px 2px rgba(0,0,0,.10); padding:1px 8px !important; line-height:1.3; text-shadow:none !important; }
 
-/* Painéis de Previsto e Proprietário: no desktop mantêm a disposição original;
-   somente no celular viram um único painel dividido por uma linha vertical.
-   Os tubos internos preservam integralmente o desenho e o dimensionamento
-   que já tinham antes deste ajuste. */
-#page-resumo .fat-painel-combinado {
-  display:block; overflow:visible; border:0; border-radius:0;
-  background:transparent; box-shadow:none;
+/* Início (celular): Previsto + proprietário viram UM cartão dividido por uma linha fina, igual ao par de painéis do topo da Estilo. */
+@media (max-width:760px){
+  #res-m { grid-template-columns:1fr 1fr !important; gap:0 !important; background:var(--card); border:1px solid rgba(255,255,255,.8); border-radius:22px; box-shadow:var(--card-shadow); }
+  #res-m .mc { background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; transform:none !important; }
+  #res-m .mc:hover { transform:none !important; box-shadow:none !important; }
+  #res-m #mc-loc-cycle { border-left:1px solid var(--line) !important; }
 }
-#page-resumo .fat-painel-combinado .fat-paineis-grid {
-  display:grid; grid-template-columns:minmax(0,1fr); gap:16px;
-}
-#page-resumo .fat-painel-coluna {
-  min-width:0; display:flex; flex-direction:column;
-  background:var(--card); border:1px solid var(--line);
-  border-radius:19px; overflow:hidden; box-shadow:var(--card-shadow);
-}
-#page-resumo .fat-painel-coluna + .fat-painel-coluna { border-left:1px solid var(--line); }
-@media(max-width:760px) {
-  #page-resumo .fat-painel-combinado {
-    overflow:hidden; border-radius:19px; background:var(--card);
-    border:1px solid var(--line); box-shadow:var(--card-shadow);
-  }
-  #page-resumo .fat-painel-combinado .fat-paineis-grid {
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0;
-  }
-  #page-resumo .fat-painel-coluna {
-    border:0; border-radius:0; box-shadow:none; background:transparent;
-  }
-  #page-resumo .fat-painel-coluna + .fat-painel-coluna {
-    border-left:1px solid var(--line);
-  }
-  #page-resumo .fat-painel-coluna .fat-painel-cab { padding:12px 9px; }
-  #page-resumo .fat-painel-coluna .fat-painel-cab h2 { font-size:11px; line-height:1.2; }
-  #page-resumo .fat-painel-coluna .fat-painel-lista { padding:14px 9px 16px; }
-}
-
-
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -5553,19 +5520,17 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
 <div class="page on" id="page-resumo">
   <div class="mrow" id="res-m"></div>
   <div id="recebHoje"></div>
-  <!-- Painel único: Tipo e Proprietário reunidos, mantendo filtros e totais independentes. -->
+  <!-- Faturamento: dois painéis simultâneos, com execução sólida e saldo hachurado. -->
   <div class="fat-paineis">
-    <div class="fat-painel fat-painel-combinado">
-      <div class="fat-paineis-grid">
-        <section class="fat-painel-coluna" aria-labelledby="fatTipoTitulo">
-          <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
-          <div class="fat-painel-lista" id="fatTipoBarras"></div>
-        </section>
-        <section class="fat-painel-coluna" aria-labelledby="fatDonoTitulo">
-          <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
-          <div class="fat-painel-lista" id="fatDonoBarras"></div>
-        </section>
-      </div>
+    <div class="fat-paineis-grid">
+      <section class="fat-painel" aria-labelledby="fatTipoTitulo">
+        <header class="fat-painel-cab"><h2 id="fatTipoTitulo">Faturamento por Tipo</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatTipoTotal"></span><div class="frx-base" id="frBasisToggle"></div></div></header>
+        <div class="fat-painel-lista" id="fatTipoBarras"></div>
+      </section>
+      <section class="fat-painel" aria-labelledby="fatDonoTitulo">
+        <header class="fat-painel-cab"><h2 id="fatDonoTitulo">Faturamento por Proprietário</h2><div class="fat-painel-cab-acoes"><span class="fat-painel-total" id="fatDonoTotal"></span><div class="rf-bar rf-flat frx-tipo-filtro" id="fatRingFilters" title="Filtrar faturamento"></div></div></header>
+        <div class="fat-painel-lista" id="fatDonoBarras"></div>
+      </section>
     </div>
   </div>
   <div class="card" id="cardBoletos">
@@ -10689,14 +10654,7 @@ function frRenderData(){
       }
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
       const valor=document.createElement('span');valor.className='fat-barra-valor';
-      {
-        const temP=falta>0.005,escP=temP&&Math.abs(falta-it.value)>0.005;
-        const l1=document.createElement('div');
-        if(!temP){const ok=document.createElement('span');ok.className='v-ok';ok.textContent='\u2713';l1.appendChild(ok);}
-        const num=document.createElement('span');if(temP&&!escP)num.className='v-pend';num.innerHTML=fRH(it.value);l1.appendChild(num);
-        valor.appendChild(l1);
-        valor.title=fR(it.value);
-      }
+      valor.innerHTML=fRH(it.value);valor.title=fR(it.value);
       linha.append(faixa,valor);
       // Prévia APENAS enquanto o cursor está dentro da área real do tubo.
       // O espaço vazio e o valor à direita não acionam nem mantêm a janela.
