@@ -5512,6 +5512,41 @@ html body .swipe-act.pay{background:#248a3d}
 html body .swipe-act.partial{background:#c93400}
 html body .swipe-act.edit{background:#636366}
 html body .swipe-act.del{background:#d70015}
+
+/* AGI 11/11 — Trilho: correções de especificidade (grade de parcelas) + Busca no mesmo padrão */
+html body .lc-ct .lc-parcelas-grid{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:0!important}
+html body .lc-parcelas-grid>.lc-parcela-card{display:block!important;border-radius:0!important}
+html body .lc-ct-hd{margin-bottom:0!important}
+html body .lc-parcelas-grid .lc-parcela-card .lc-ct-dt{flex-wrap:nowrap!important;gap:8px!important}
+html body .lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l{flex:0 1 auto!important;gap:8px!important}
+html body .lc-parcelas-grid .lc-parcela-card .lc-ct-dt-r{gap:10px!important}
+html body .lc-parcelas-grid .lc-parcela-card .lc-parc{font-size:11px!important;padding:2px 8px!important;border-radius:99px!important}
+html body .lc-parcelas-grid .lc-parcela-card .pcard-tags{gap:8px!important}
+html body .lc-parcelas-grid .lc-parcela-card .pcard-tags .tag{font-size:12px!important;padding:2px 9px!important}
+html body .lc-parcelas-grid .lc-parcela-card .pcard-tags .tag.tag-forma{padding:0!important;font-size:13px!important}
+html body .lc-parcelas-grid .lc-parcela-card .pcard-parcial-sub{font-size:11px!important}
+html body .lc-parcelas-grid .lc-parcela-card .pcard-obs{font-size:12px!important}
+html body .search-total.srow-mes-tot{position:static!important;display:grid;grid-template-columns:38px minmax(0,1fr);column-gap:10px;row-gap:2px;align-items:center;background:transparent!important;border:0!important;border-radius:0!important;padding:4px 2px 6px!important;margin:22px 0 8px!important}
+html body .search-total.srow-mes-tot:first-child{margin-top:2px!important}
+html body .srow-mes-tot .day-tile{grid-row:1/3}
+html body .srow-mes-tot .st-main{font-size:15px;font-weight:600;color:var(--ink);align-items:center;gap:8px}
+html body .srow-mes-tot .st-main>span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body .srow-mes-tot .st-val{font-size:15px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .srow-mes-tot .st-sub{margin-top:0;font-size:13px;font-weight:500;gap:14px;justify-content:flex-start}
+html body #searchResults>.swipe{margin-bottom:9px}
+
+/* AGI 11/11 — Trilho v3: vence as regras antigas em cinza (moldura, faixa da data, fundo das parcelas) */
+html body #page-lancamentos #lancBody .day-items>.lc-ct.lc-ct,
+html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct.lc-ct{background:var(--card)!important;border:0!important;border-radius:18px!important;padding:0!important;box-shadow:0 4px 16px rgba(60,70,120,.07),0 1px 3px rgba(0,0,0,.03)!important}
+html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-hd{padding:16px 18px 8px!important;border:0!important;background:transparent!important}
+html body .lc-ct .lc-parcela-card.venc .lc-ct-dt,
+html body .lc-ct .lc-parcela-card.ok .lc-ct-dt,
+html body .lc-ct .lc-parcela-card.hoje .lc-ct-dt,
+html body .lc-ct .lc-parcela-card .lc-ct-dt{background:transparent!important;border:0!important}
+html body .lc-ct .lc-parcela-card .lc-ct-itens{background:transparent!important}
+html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding:12px 16px 12px 44px!important;border:0!important;border-bottom:0!important;background:var(--card)!important;border-radius:0!important;box-shadow:none!important;min-height:0!important}
+html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-foot{margin:0!important;padding:12px 16px 14px!important;background:transparent!important}
+html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-badge{background:none!important;color:var(--ink3)!important}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -12995,7 +13030,9 @@ function buscaGroupedHtml(grupos,fecharBusca){
       // Soma o mês de vencimento dos lançamentos, não o contrato inteiro.
       // Grupos com parcelas em vários meses continuam visualmente unidos.
       const t=totaisGrupos(grupos,mesKey);
+      const tlMes=mesKey?`<div class="day-tile" aria-hidden="true"><i>${String(MN[parseInt(mesKey.slice(5,7),10)-1]).toUpperCase().slice(0,3)}</i><b>${mesKey.slice(2,4)}</b></div>`:`<div class="day-tile sem" aria-hidden="true"><b>–</b></div>`;
       mesHtml=`<div class="search-total srow-mes-tot">
+        ${tlMes}
         <div class="st-main"><span>${lbl} · ${t.n} lançamento${t.n===1?'':'s'}</span><span class="st-val">${fR(t.liq)}</span></div>
         <div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div>
       </div>`;
