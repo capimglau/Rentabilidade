@@ -5183,6 +5183,7 @@ html:not([data-theme="dark"]) #page-resumo .fat-barra-valor {
 @media (max-width:760px){
   html body #mainDock.nav-tabs{
     left:calc(15.2px + 2.5vw); right:calc(15.2px + 2.5vw);
+    bottom:max(0px, calc(env(safe-area-inset-bottom, 20px) - 20.8px)); /* mesma folga do fundo que a Estilo */
     gap:0; padding:2.4px 6px 4.5px; border-radius:32px; overflow:visible;
     background:linear-gradient(180deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.88) 100%) !important;
     -webkit-backdrop-filter:blur(40px) saturate(200%) brightness(1.06);
