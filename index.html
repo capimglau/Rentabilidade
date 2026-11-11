@@ -5570,14 +5570,14 @@ html body .agb-busca-linha .agb-busca-input{flex:1;min-width:0;border:0;backgrou
 html body .agb-busca-linha .agb-busca-clear{flex:none;width:26px;height:26px;border:0;border-radius:50%;background:transparent;color:var(--ink3);font-size:13px;cursor:pointer}
 @media(min-width:761px){html body .agb-busca-linha{max-width:360px;margin-left:auto}}
 
-/* AGI — Agenda: lupa · funil · calendário à esquerda, sem fundo, todos no mesmo cinza, traço fino (padrão Apple) */
-html body .rc-cal-topbar-2{justify-content:flex-start!important;gap:0!important;height:33px;min-height:33px}
+/* AGI — Agenda: lupa · funil · calendário dentro de uma pílula (janela oval) à esquerda, ícones pequenos de traço fino, todos no mesmo cinza */
+html body .rc-cal-topbar-2{justify-content:flex-start!important;gap:0!important;height:34px;min-height:34px}
 html body .rc-cal-topbar-2 .agb-busca-sp{display:none!important}
-html body .rc-cal-topbar-2 .agb-busca-sp+.rc-ico-btn{margin-left:-10px}
-html body .rc-cal-topbar-2 .rc-ico-btn{width:40px!important;height:44px!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--ink3)!important}
-html body .rc-cal-topbar-2 .rc-ico-btn svg{width:20px!important;height:20px!important;stroke-width:1.5!important}
-html body .rc-cal-topbar-2 .rc-ico-btn:hover,html body .rc-cal-topbar-2 .rc-ico-btn.on,html body .rc-cal-topbar-2 .rc-ico-btn.filtrado{color:var(--ink2)!important}
-html body .rc-cal-topbar-2 .rc-tipo-ico.filtrado::after{top:10px;right:9px;background:var(--ink2)}
+html body .agb-pilula{display:inline-flex;align-items:center;height:34px;padding:0 6px;border-radius:999px;background:var(--card);box-shadow:0 0 0 .5px var(--line),0 1px 3px rgba(0,0,0,.05)}
+html body .agb-pilula .rc-ico-btn{width:34px!important;height:34px!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--ink3)!important}
+html body .agb-pilula .rc-ico-btn svg{width:16px!important;height:16px!important;stroke-width:1.5!important}
+html body .agb-pilula .rc-ico-btn:hover,html body .agb-pilula .rc-ico-btn.on,html body .agb-pilula .rc-ico-btn.filtrado{color:var(--ink2)!important}
+html body .agb-pilula .rc-tipo-ico.filtrado::after{top:7px;right:6px;width:6px;height:6px;background:var(--ink2)}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -9771,7 +9771,7 @@ function renderRecebHoje(){
     <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
     ${selAgbQ?`<button type="button" class="agb-busca-clear" title="Limpar busca" onclick="setAgbQ('')">✕</button>`:''}
   </div>`:'';
-  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2"><span class="agb-busca-sp"></span>${recebViewMode==='board'?buscaBtnHtml:''}${tipoIcoHtml}${toggleHtml}</div>${buscaCampoHtml}
+  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2"><span class="agb-busca-sp"></span><div class="agb-pilula">${recebViewMode==='board'?buscaBtnHtml:''}${tipoIcoHtml}${toggleHtml}</div></div>${buscaCampoHtml}
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-cal">
