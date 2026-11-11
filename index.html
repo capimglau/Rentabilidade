@@ -8761,10 +8761,7 @@ function agbAtrasoTxt(dataISO,hojeISO){
   if(!dataISO||!hojeISO||dataISO>=hojeISO)return null;
   const d=Math.round((new Date(hojeISO+'T12:00:00')-new Date(dataISO+'T12:00:00'))/86400000);
   if(d<=0)return null;
-  if(d===1)return 'há 1 dia';
-  if(d<30)return 'há '+d+' dias';
-  const m=Math.floor(d/30);
-  return m===1?'há 1 mês':'há '+m+' meses';
+  return d===1?'1 dia':d+' dias';
 }
 // Valor do chip de total do cabeçalho — centavos só quando existem de
 // verdade (",00" não informa nada e come 3 caracteres numa coluna estreita),
