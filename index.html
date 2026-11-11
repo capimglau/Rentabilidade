@@ -5569,6 +5569,15 @@ html body .agb-busca-linha .agb-busca-ic{width:16px;height:16px;flex:none;color:
 html body .agb-busca-linha .agb-busca-input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 15px/1 inherit;font-family:inherit;color:var(--ink)}
 html body .agb-busca-linha .agb-busca-clear{flex:none;width:26px;height:26px;border:0;border-radius:50%;background:transparent;color:var(--ink3);font-size:13px;cursor:pointer}
 @media(min-width:761px){html body .agb-busca-linha{max-width:360px;margin-left:auto}}
+
+/* AGI — Agenda: lupa · funil · calendário à esquerda, sem fundo, todos no mesmo cinza, traço fino (padrão Apple) */
+html body .rc-cal-topbar-2{justify-content:flex-start!important;gap:0!important;height:33px;min-height:33px}
+html body .rc-cal-topbar-2 .agb-busca-sp{display:none!important}
+html body .rc-cal-topbar-2 .agb-busca-sp+.rc-ico-btn{margin-left:-10px}
+html body .rc-cal-topbar-2 .rc-ico-btn{width:40px!important;height:44px!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--ink3)!important}
+html body .rc-cal-topbar-2 .rc-ico-btn svg{width:20px!important;height:20px!important;stroke-width:1.5!important}
+html body .rc-cal-topbar-2 .rc-ico-btn:hover,html body .rc-cal-topbar-2 .rc-ico-btn.on,html body .rc-cal-topbar-2 .rc-ico-btn.filtrado{color:var(--ink2)!important}
+html body .rc-cal-topbar-2 .rc-tipo-ico.filtrado::after{top:10px;right:9px;background:var(--ink2)}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
