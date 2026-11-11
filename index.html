@@ -5175,6 +5175,90 @@ html:not([data-theme="dark"]) #page-resumo .fat-barra-valor {
   #page-resumo .rc-cal-topbar-2 .agb-busca .agb-busca-divisor{margin:0 !important;}
 }
 
+/* AGI — Dock mobile idêntico ao da Estilo (tema claro = barra "Apple Music"/iOS 26):
+   cápsula de vidro com aro branco + hairline, reflexo especular no topo, brilho interno,
+   sombras em camadas, 5% mais estreito; aba ativa = cápsula de vidro com aro, ícone/rótulo
+   em #1f6f60; inativos quase pretos (#1c1c1e), traço 2px. Medidas: botão 55,4×51,3px,
+   ícone 22,1px, rótulo 9,2px/600. Só mobile; o desktop não muda. */
+@media (max-width:760px){
+  html body #mainDock.nav-tabs{
+    left:calc(15.2px + 2.5vw); right:calc(15.2px + 2.5vw);
+    gap:0; padding:2.4px 6px 4.5px; border-radius:32px; overflow:visible;
+    background:linear-gradient(180deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.88) 100%) !important;
+    -webkit-backdrop-filter:blur(40px) saturate(200%) brightness(1.06);
+    backdrop-filter:blur(40px) saturate(200%) brightness(1.06);
+    border:1px solid rgba(255,255,255,.92) !important;
+    box-shadow:
+      0 0 0 .5px rgba(0,0,0,.10),
+      inset 0 1.5px 0 rgba(255,255,255,1),
+      inset 0 -1px 0 rgba(255,255,255,.55),
+      inset 0 0 14px rgba(255,255,255,.38),
+      0 10px 32px rgba(0,0,0,.14),
+      0 2px 8px rgba(0,0,0,.08) !important;
+  }
+  /* linha especular no topo + brilho convexo interno (mesmos da Estilo) */
+  #mainDock.nav-tabs::before{
+    content:'';position:absolute;top:0;left:10%;right:10%;height:1px;z-index:10;pointer-events:none;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.95) 25%,rgba(255,255,255,.95) 75%,transparent 100%);
+  }
+  #mainDock.nav-tabs::after{
+    content:'';position:absolute;top:0;left:0;right:0;height:55%;z-index:0;pointer-events:none;
+    border-radius:32px 32px 0 0;
+    background:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,.18) 60%,rgba(255,255,255,0) 100%);
+  }
+  html body #mainDock .ntab{
+    position:relative;z-index:1;flex:1 1 0;width:55.4px;height:51.3px;
+    padding:4px;gap:3px;border-radius:999px;
+    color:#1c1c1e;background:transparent;
+    -webkit-tap-highlight-color:transparent;
+    transition:all .18s cubic-bezier(.25,.46,.45,.94);
+  }
+  html body #mainDock .ntab:active{opacity:.55;transform:scale(.93);}
+  html body #mainDock .ntab .nt-ico svg{width:22.1px;height:22.1px;stroke-width:2;}
+  html body #mainDock .ntab .nt-short{font-size:9.2px;font-weight:600;letter-spacing:-.01em;color:inherit;}
+  html body #mainDock .ntab.ntab-back{color:#1c1c1e !important;}
+  /* aba ativa: cápsula de vidro com aro branco e leve tom do destaque */
+  html body #mainDock .ntab.on{
+    color:#1f6f60;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.72) 0%,rgba(255,255,255,.30) 100%),
+      color-mix(in srgb,#1f6f60 11%,transparent);
+    border:1px solid rgba(255,255,255,.96);
+    box-shadow:
+      0 0 0 .5px rgba(0,0,0,.09),
+      inset 0 1.5px 0 rgba(255,255,255,1),
+      inset 0 -2px 5px rgba(0,0,0,.07),
+      0 2px 8px rgba(0,0,0,.10);
+  }
+  /* tema escuro: aro cinza-claro visível + sombra difusa (igual ao escuro da Estilo) */
+  html[data-theme="dark"] body #mainDock.nav-tabs,
+  html[data-theme="dark"] #mainDock.nav-tabs{
+    border:1px solid rgba(255,255,255,.14) !important;
+    box-shadow:
+      0 1px 0 0 rgba(255,255,255,.06) inset,
+      0 -1px 0 0 rgba(255,255,255,.06) inset,
+      0 0 20px 0 rgba(255,255,255,.04) inset,
+      0 8px 30px rgba(0,0,0,.65),
+      0 0 12px rgba(0,0,0,.40) !important;
+  }
+  html[data-theme="dark"] #mainDock.nav-tabs::before{
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 25%,rgba(255,255,255,.18) 75%,transparent 100%);
+  }
+  html[data-theme="dark"] #mainDock.nav-tabs::after{
+    background:linear-gradient(180deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.02) 60%,rgba(255,255,255,0) 100%);
+  }
+  html[data-theme="dark"] body #mainDock .ntab,
+  html[data-theme="dark"] body #mainDock .ntab.ntab-back{color:#D9DFE8 !important;}
+  html[data-theme="dark"] body #mainDock .ntab.on{
+    color:#D9DFE8 !important;
+    background:
+      radial-gradient(ellipse at 38% 28%,rgba(255,255,255,.26) 0%,rgba(255,255,255,.06) 38%,transparent 68%),
+      rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);
+    box-shadow:0 1.5px 0 rgba(255,255,255,.26) inset,0 -1px 0 rgba(0,0,0,.10) inset,0 6px 24px rgba(0,0,0,.18);
+  }
+}
+
 /* TEMA ÍNDIGO — substitui apenas a aparência do antigo tema escuro azul.
    Mantém data-theme=dark e agi-theme=dark para preservar preferências e funcionamento. */
 html[data-theme="dark"] {
@@ -9594,7 +9678,7 @@ function renderRecebHoje(){
   // Calendário (CSS .rc-mode-cal .agb-busca).
   const buscaHtml=`<div class="agb-busca">
     <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda…" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
+    <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
     ${selAgbQ?`<button type="button" class="agb-busca-clear" title="Limpar busca" onclick="setAgbQ('')">✕</button>`:''}
     <span class="agb-busca-divisor" aria-hidden="true"></span>
     ${tipoIcoHtml}
