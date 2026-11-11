@@ -5573,7 +5573,8 @@ html body .agb-busca-linha .agb-busca-clear{flex:none;width:26px;height:26px;bor
 /* AGI — Agenda: lupa · funil · calendário dentro de uma pílula (janela oval) à esquerda, ícones pequenos de traço fino, todos no mesmo cinza */
 html body .rc-cal-topbar-2{justify-content:flex-start!important;gap:0!important;height:34px;min-height:34px}
 html body .rc-cal-topbar-2 .agb-busca-sp{display:none!important}
-html body .agb-pilula{display:inline-flex;align-items:center;height:34px;padding:0 6px;border-radius:999px;background:var(--card);box-shadow:0 0 0 .5px var(--line),0 1px 3px rgba(0,0,0,.05)}
+html body .agb-pilula{display:inline-flex;align-items:center;height:34px;padding:0 6px;border-radius:999px;box-sizing:border-box;overflow:hidden;background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border:.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 .5px rgba(0,0,0,.05)}
+html[data-theme="dark"] body .agb-pilula{background:rgba(40,44,54,.55);border-color:rgba(255,255,255,.14);box-shadow:0 0 0 .5px rgba(0,0,0,.35)}
 html body .agb-pilula .rc-ico-btn{width:34px!important;height:34px!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--ink3)!important}
 html body .agb-pilula .rc-ico-btn svg{width:16px!important;height:16px!important;stroke-width:1.5!important}
 html body .agb-pilula .rc-ico-btn:hover,html body .agb-pilula .rc-ico-btn.on,html body .agb-pilula .rc-ico-btn.filtrado{color:var(--ink2)!important}
