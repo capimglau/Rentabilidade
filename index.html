@@ -5415,6 +5415,25 @@ html[data-theme="dark"] #page-resumo .agb-card::before{
 #page-lancamentos .lc-ct .swipe.lc-ct-sw:last-child .pcard.lc-ct-item{border-bottom:0 !important;}
 #page-lancamentos .lc-ct-foot{border-top:1px solid var(--line) !important;margin-top:6px;padding-top:10px;}
 #page-lancamentos .lc-ct-tot{font-size:16.5px;font-variant-numeric:tabular-nums;}
+
+/* AGI — Lançamentos: mais espaço entre contratos diferentes e moldura do contrato em CINZA (era azul). */
+#page-lancamentos #lancBody .day-items{gap:28px;}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct{
+  background:#eceef1 !important;border:1px solid #c8cbd2 !important;
+  box-shadow:0 2px 10px rgba(30,34,44,.08),inset 0 1px 0 rgba(255,255,255,.6) !important;
+}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct::before{background:#8b919c !important;}
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct-hd{border-bottom-color:rgba(90,96,110,.2) !important;}
+html:not([data-theme="dark"]) #page-lancamentos .lc-ct-foot{border-top-color:rgba(90,96,110,.22) !important;}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card{border-color:#d3d6dc;}
+html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.hoje .lc-ct-dt{background:#e8e9ed;}
+html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct{
+  background:linear-gradient(145deg,#2a2e37,#2e323b) !important;border:1px solid #4a505b !important;
+  box-shadow:0 5px 19px rgba(0,0,0,.22) !important;
+}
+html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct::before{background:#8e95a2 !important;}
+#page-lancamentos .lc-ct-badge:not(.parc){color:#4b5260;background:rgba(90,96,110,.13);}
+html[data-theme="dark"] #page-lancamentos .lc-ct-badge:not(.parc){color:#c9ced8;background:rgba(255,255,255,.08);}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
