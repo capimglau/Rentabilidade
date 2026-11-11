@@ -5561,6 +5561,14 @@ html body #searchResults>.lc-ct.lc-ct{margin-bottom:16px!important}
 html body #searchResults .lc-ct-hd .placa{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
 html body #searchResults .lc-ct-hd .pcard-meta{display:none!important}
 html body #searchResults .lc-ct .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding-top:14px!important;padding-bottom:14px!important}
+
+/* AGI 11/11 — Agenda: busca virou ícone (lupa · funil · calendário juntos, PC e celular) */
+html body .rc-cal-topbar-2{justify-content:flex-end!important;gap:4px!important}
+html body .agb-busca-linha{display:flex;align-items:center;gap:8px;height:38px;padding:0 6px 0 12px;margin:2px 0 12px;border-radius:12px;background:var(--card);box-shadow:0 0 0 .5px var(--line),0 1px 3px rgba(0,0,0,.05)}
+html body .agb-busca-linha .agb-busca-ic{width:16px;height:16px;flex:none;color:var(--ink3)}
+html body .agb-busca-linha .agb-busca-input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 15px/1 inherit;font-family:inherit;color:var(--ink)}
+html body .agb-busca-linha .agb-busca-clear{flex:none;width:26px;height:26px;border:0;border-radius:50%;background:transparent;color:var(--ink3);font-size:13px;cursor:pointer}
+@media(min-width:761px){html body .agb-busca-linha{max-width:360px;margin-left:auto}}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -7617,6 +7625,14 @@ function setTipoCal(t){
 let selAgbQ = '';
 function setAgbQ(v){
   selAgbQ=v;
+  renderRecebHoje();
+}
+// Busca da Agenda como ícone (igual ao funil e ao calendário): toca pra abrir o
+// campo logo abaixo; tocar de novo fecha e limpa o filtro.
+let agbBuscaAberta=false, agbFocarBusca=false;
+function toggleAgbBusca(){
+  if(agbBuscaAberta||selAgbQ){agbBuscaAberta=false;selAgbQ='';}
+  else{agbBuscaAberta=true;agbFocarBusca=true;}
   renderRecebHoje();
 }
 function agbMatchQ(r){
@@ -9719,7 +9735,7 @@ function renderRecebHoje(){
   // <input> em si é recriado do zero junto com o resto.
   const wrapAnt=el.querySelector('.agb-wrap');
   const scrollAnt=wrapAnt?wrapAnt.scrollLeft:0;
-  const buscaFoco=document.activeElement&&document.activeElement.id==='agbBuscaInput';
+  const buscaFoco=(document.activeElement&&document.activeElement.id==='agbBuscaInput')||agbFocarBusca;
   const buscaCursor=buscaFoco?document.activeElement.selectionStart:null;
   // Agenda (board por dia) é o padrão; o calendário Seg-Sex do mês continua
   // disponível como vista secundária, alternando pelo ícone no topo.
@@ -9738,15 +9754,15 @@ function renderRecebHoje(){
   // Busca da Agenda: filtra por qualquer campo do lançamento (ver
   // agbMatchQ) — só faz sentido no modo board, então some no modo
   // Calendário (CSS .rc-mode-cal .agb-busca).
-  const buscaHtml=`<div class="agb-busca">
-    <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
+  const icLupa='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+  const buscaAtiva=!!(agbBuscaAberta||selAgbQ);
+  const buscaBtnHtml=`<button type="button" class="rc-ico-btn${buscaAtiva?' on':''}" onclick="toggleAgbBusca()" title="Buscar" aria-label="Buscar" aria-expanded="${buscaAtiva?'true':'false'}">${icLupa}</button>`;
+  const buscaCampoHtml=(recebViewMode==='board'&&buscaAtiva)?`<div class="agb-busca-linha">
+    <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
     ${selAgbQ?`<button type="button" class="agb-busca-clear" title="Limpar busca" onclick="setAgbQ('')">✕</button>`:''}
-    <span class="agb-busca-divisor" aria-hidden="true"></span>
-    ${tipoIcoHtml}
-    ${toggleHtml}
-  </div>`;
-  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml:'<span class="agb-busca-sp"></span>'+tipoIcoHtml+toggleHtml}</div>
+  </div>`:'';
+  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2"><span class="agb-busca-sp"></span>${recebViewMode==='board'?buscaBtnHtml:''}${tipoIcoHtml}${toggleHtml}</div>${buscaCampoHtml}
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-cal">
@@ -9756,6 +9772,7 @@ function renderRecebHoje(){
   if(buscaFoco){
     const inp=document.getElementById('agbBuscaInput');
     if(inp){ inp.focus(); if(buscaCursor!=null) inp.setSelectionRange(buscaCursor,buscaCursor); }
+    agbFocarBusca=false;
   }
   agbPosicionaHoje(scrollAnt);
   agbAjustaAlturaAtiva();
