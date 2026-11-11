@@ -5434,6 +5434,84 @@ html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct{
 html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct::before{background:#8e95a2 !important;}
 #page-lancamentos .lc-ct-badge:not(.parc){color:#4b5260;background:rgba(90,96,110,.13);}
 html[data-theme="dark"] #page-lancamentos .lc-ct-badge:not(.parc){color:#c9ced8;background:rgba(255,255,255,.08);}
+
+/* ══ AGI 11/11 — "Trilho": cartão do mesmo contrato + cabeçalho do dia no padrão iOS ══ */
+html body{--trail:color-mix(in srgb,var(--ink3) 30%,transparent)}
+/* Dia: quadradinho de data + dia da semana + resumo */
+html body .day-header{gap:10px;padding:8px 2px 6px;margin-bottom:8px}
+html body .day-group{margin-bottom:26px}
+html body .day-tile{width:38px;height:38px;flex:none;border-radius:10px;background:var(--card);box-shadow:0 0 0 .5px var(--line),0 1px 3px rgba(0,0,0,.07);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+html body .day-tile i{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.05em;color:#d70015}
+html body .day-tile b{font-size:17px;font-weight:600;margin-top:2px;color:var(--ink);letter-spacing:-.02em}
+html body .day-tile.hoje{background:var(--blue)}
+html body .day-tile.hoje i,html body .day-tile.hoje b{color:#fff}
+html body .day-tile.venc b{color:var(--red)}
+html body .day-tile.sem b{color:var(--ink3)}
+html body .day-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+html body .day-weekday{width:auto;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ink);text-transform:none}
+html body .day-weekday.hoje{color:var(--blue)}
+html body .day-weekday.venc{color:var(--red)}
+html body .day-title{font-size:13px;font-weight:400;letter-spacing:0;color:var(--ink3);min-width:0}
+html body .day-total{font-size:15px;font-weight:600}
+html body .day-count{display:none}
+/* Cartão do contrato */
+html body .lc-ct{background:var(--card)!important;border:0!important;border-radius:18px!important;padding:0!important;margin-bottom:9px!important;overflow:hidden;box-shadow:0 4px 16px rgba(60,70,120,.07),0 1px 3px rgba(0,0,0,.03)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html body .lc-ct::before{display:none!important}
+html body .lc-ct-hd{padding:16px 18px 10px!important;border:0!important;gap:8px!important}
+html body .lc-ct-vinc{flex-wrap:nowrap;gap:8px}
+html body .lc-ct-badge{background:none!important;padding:0!important;color:var(--ink3)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.06em;gap:6px}
+html body .lc-ct-stat{margin-left:auto;font-size:12px}
+html body .lc-ct-hd .placa{font:600 12px ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.06em}
+html body .lc-ct-hd .pcard-name{font-size:17px!important;font-weight:600!important;letter-spacing:-.01em}
+html body .lc-ct-hd .itens-cnt{background:none!important;padding:0!important;color:var(--ink3)!important;font-size:13px!important;font-weight:500}
+html body .lc-ct-hd .pcard-tags span[style*="font-size"]{font-size:13px!important}
+html body .lc-ct-hd .agi-prev-date{display:none!important}
+html body .lc-ct-hd .pcard-meta{font-size:13px;color:var(--ink3)}
+html body .lc-ct .lc-parcelas-grid{display:flex;flex-direction:column;gap:0}
+html body .lc-parcela-card{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;margin:0!important;padding:0!important}
+/* Linha da data (marco do trilho) */
+html body .lc-parcela-card .lc-ct-dt{position:relative;background:transparent!important;border:0!important;border-radius:0!important;margin:0!important;padding:14px 16px 4px 44px!important;display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+html body .lc-parcela-card .lc-ct-dt::before{content:"";position:absolute;left:23.25px;top:0;bottom:0;width:1.5px;background:var(--trail)}
+html body .lc-parcela-card:first-child .lc-ct-dt::before{top:24px}
+html body .lc-parcela-card .lc-ct-dt::after{content:"";position:absolute;left:18px;top:24px;margin-top:-6px;width:12px;height:12px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+html body .lc-parcela-card .lc-ct-dt.venc::after{background:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+html body .lc-parcela-card .lc-ct-dt.ok::after{background:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+html body .lc-parcela-card .lc-ct-dt-l{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0}
+html body .lc-parcela-card .lc-ct-dt-l .agi-prev-lbl{display:none!important}
+html body .lc-parcela-card .lc-ct-dt-l b{font-size:13px!important;font-weight:600!important;letter-spacing:0!important;color:var(--ink)!important}
+html body .lc-parcela-card .lc-ct-dt.venc .lc-ct-dt-l b{color:var(--red)!important}
+html body .lc-parcela-card .lc-ct-dt.ok .lc-ct-dt-l b{color:var(--green)!important}
+html body .lc-ct-dt-here{margin:0!important;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 9px;border-radius:99px}
+html body .lc-parcela-card .lc-parc{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--blue-soft);color:var(--blue)}
+html body .lc-parcela-card .lc-ct-dt-r{margin-left:auto;display:flex;align-items:center;gap:10px;width:auto}
+html body .lc-parcela-card .lc-ct-dt-r>span:last-child{font-size:13px!important;font-weight:500!important;letter-spacing:0!important;color:var(--ink3)!important;font-variant-numeric:tabular-nums}
+html body .lc-ct-1d .lc-ct-dt-r>span:last-child{display:none}
+html body .lc-ct-ajust{border:0!important;background:none!important;padding:0!important;color:var(--blue)!important;font-size:13px!important;font-weight:500!important}
+/* Lançamentos (cada um mantém o próprio swipe) */
+html body .lc-parcela-card .lc-ct-itens{display:flex;flex-direction:column;padding:0!important;gap:0!important}
+html body .lc-parcela-card .swipe.lc-ct-sw{border-radius:0!important;margin:0!important;box-shadow:none!important;border:0!important}
+html body .lc-parcela-card .swipe+.swipe{border-top:0!important}
+html body .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding:12px 16px 12px 44px!important;min-height:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;background:var(--card)!important;align-items:center}
+html body .lc-parcela-card .pcard.lc-ct-item::before{display:block!important;content:""!important;left:19.5px!important;top:50%!important;bottom:auto!important;width:9px!important;height:9px!important;margin-top:-4.5px;border-radius:50%;box-sizing:border-box;background:var(--card)!important;border:2px solid var(--lc-cor,var(--blue));z-index:1}
+html body .lc-parcela-card .pcard.lc-ct-item.venc::before{border-color:var(--red)}
+html body .lc-parcela-card .pcard.lc-ct-item.done::before{border-color:var(--green)}
+html body .lc-parcela-card .pcard.lc-ct-item::after{content:"";position:absolute;left:23.25px;top:0;bottom:0;width:1.5px;background:var(--trail)}
+html body .lc-parcela-card:last-child .swipe:last-child .pcard.lc-ct-item::after{bottom:50%}
+html body .lc-parcela-card .pcard.lc-ct-item.done{color:var(--ink3)}
+html body .lc-parcela-card .pcard-tags .tag{font-size:12px;font-weight:600}
+html body .lc-parcela-card .pcard-tags .tag-forma{background:none!important;padding:0!important;color:var(--ink3)!important;font-size:13px;font-weight:500}
+html body .lc-parcela-card .lc-ct-v{font-size:15px!important;font-weight:500!important;letter-spacing:0!important;font-variant-numeric:tabular-nums}
+/* Rodapé */
+html body .lc-ct .lc-ct-foot{margin:0!important;padding:12px 16px 14px!important;border-top:.5px solid var(--line)!important}
+html body .lc-ct-foot-l{font-size:13px!important;font-weight:500!important;color:var(--ink3)!important;gap:4px}
+html body .lc-ct-tot{font-size:17px!important;font-weight:600!important;letter-spacing:-.01em}
+html body .lc-ct-aviso{margin:4px 16px 12px}
+/* Ações do swipe: tamanho e cores iOS */
+html body .swipe-act{width:64px;font-size:11px;font-weight:600;gap:4px}
+html body .swipe-act.pay{background:#248a3d}
+html body .swipe-act.partial{background:#c93400}
+html body .swipe-act.edit{background:#636366}
+html body .swipe-act.del{background:#d70015}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -8206,11 +8284,19 @@ function dayHeaderHtml(dia,n,totalHtml){
   const isHoje=dia===hoje, isVencDia=!semData&&dia<hoje;
   const titCls=isHoje?'hoje':isVencDia?'venc':'';
   const tag=isHoje?`<span class="day-tag hoje">HOJE</span>`:isVencDia?`<span class="day-tag venc">ATRASADO</span>`:'';
+  const WDF=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const MESA=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  const dataTxt=semData?'':dia.slice(8)+'/'+dia.slice(5,7)+'/'+dia.slice(2,4);
+  const tile=semData
+    ?`<div class="day-tile sem" aria-hidden="true"><b>–</b></div>`
+    :`<div class="day-tile${isHoje?' hoje':isVencDia?' venc':''}" aria-hidden="true"><i>${MESA[+dia.slice(5,7)-1]}</i><b>${dia.slice(8)}</b></div>`;
   return `<div class="day-header" onclick="toggleDay(this)">
-      <div class="day-weekday">${semData?'':WD[new Date(dia+'T12:00:00').getDay()]}</div>
-      <div class="day-title ${titCls}">${semData?'Sem data':dia.slice(8)+'/'+dia.slice(5,7)+'/'+dia.slice(2,4)}</div>
+      ${tile}
+      <div class="day-info">
+        <div class="day-weekday ${titCls}">${semData?'Sem data':WDF[new Date(dia+'T12:00:00').getDay()]}</div>
+        <div class="day-title">${semData?'':dataTxt+' · '}${n} lançamento${n===1?'':'s'}</div>
+      </div>
       ${tag}
-      <span class="day-count">${n}</span>
       ${totalHtml}
       <span class="day-chevron">›</span>
     </div>`;
@@ -12756,10 +12842,10 @@ function lcContratoHtml(g,fecharBusca,opt){
     ?`<span class="agi-prev-range"><span class="agi-prev-lbl">Previsões de pagamento</span><strong>${venc0.length?fDM(venc0[0]):'Sem data'} → ${venc0.length?fDM(venc0[venc0.length-1]):'Sem data'}</strong><small>${datas.length} datas</small></span>`
     :`<span class="agi-prev-date${todosPagos?' paid':algumVenc?' late':hojeCard?' today':''}"><span class="agi-prev-lbl">Previsão de pagamento</span><strong>${r0.prev_pgto?fDM(r0.prev_pgto):'Sem data'}</strong></span>`;
   const idAttr=opt.id?` id="${opt.id}"`:'';
-  return `<div${idAttr} class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}" data-dia="${r0.prev_pgto||''}">
+  return `<div${idAttr} class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}${multiData?'':' lc-ct-1d'}" data-dia="${r0.prev_pgto||''}">
     <div class="lc-ct-hd">
       <div class="lc-ct-vinc">
-        <span class="lc-ct-badge${ehContrato?'':' parc'}">${ehContrato?'🔗 Mesmo contrato':'💳 Compra parcelada'}</span>
+        <span class="lc-ct-badge${ehContrato?'':' parc'}">${ehContrato?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Mesmo contrato':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>Compra parcelada'}</span>
         ${resumo?`<span class="lc-ct-stat">${resumo}</span>`:''}
       </div>
       <div class="pcard-top">
@@ -13257,7 +13343,7 @@ function fecharLinha(wrap){
   if(openRow===wrap)openRow=null;
 }
 function openRowEl(wrap,pw){closeRow(wrap);wrap.classList.add('open');swSet(wrap,-pw);openRow=wrap;}
-function panelW(wrap){const n=wrap.querySelectorAll('.swipe-act').length;return (n||1)*76;}
+function panelW(wrap){const n=wrap.querySelectorAll('.swipe-act').length;return (n||1)*64;}
 function swDo(gi,pay){closeRow();if(pay===1)abrirParcial(gi,true);else if(pay===2)abrirParcial(gi);else if(pay===3)reverterPagamento(gi);else if(pay===4)excluirLancamento(gi);else openEdit(gi);}
 function swXY(e){const t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0]);return t?{x:t.clientX,y:t.clientY}:{x:e.clientX,y:e.clientY};}
 function swStart(e){
