@@ -5547,6 +5547,20 @@ html body .lc-ct .lc-parcela-card .lc-ct-itens{background:transparent!important}
 html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding:12px 16px 12px 44px!important;border:0!important;border-bottom:0!important;background:var(--card)!important;border-radius:0!important;box-shadow:none!important;min-height:0!important}
 html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-foot{margin:0!important;padding:12px 16px 14px!important;background:transparent!important}
 html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-badge{background:none!important;color:var(--ink3)!important}
+
+/* AGI 11/11 — Busca: fundo do sistema, botão de fechar fora do notch, mais respiro, datas como em Lançamentos */
+html body #mSearch .modal.modal-busca{background:var(--surface)!important;padding-top:max(16px,calc(env(safe-area-inset-top) + 8px))!important}
+html body #mSearch .modal-busca>.mhd{position:relative;z-index:3}
+html body .search-total.srow-mes-tot{display:flex!important;grid-template-columns:none!important;align-items:center;gap:10px;margin:26px 0 10px!important}
+html body .search-total.srow-mes-tot:first-child{margin-top:4px!important}
+html body .srow-mes-tot .day-tile{grid-row:auto}
+html body .srow-mes-tot .day-total{margin-left:auto;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .srow-mes-tot .st-sub{display:flex;gap:12px;margin-top:3px;font-size:12px;font-weight:500;justify-content:flex-start}
+html body #searchResults>.swipe{margin-bottom:16px;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(60,70,120,.07),0 1px 3px rgba(0,0,0,.03)}
+html body #searchResults>.lc-ct.lc-ct{margin-bottom:16px!important}
+html body #searchResults .lc-ct-hd .placa{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
+html body #searchResults .lc-ct-hd .pcard-meta{display:none!important}
+html body #searchResults .lc-ct .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding-top:14px!important;padding-bottom:14px!important}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
@@ -13031,10 +13045,12 @@ function buscaGroupedHtml(grupos,fecharBusca){
       // Grupos com parcelas em vários meses continuam visualmente unidos.
       const t=totaisGrupos(grupos,mesKey);
       const tlMes=mesKey?`<div class="day-tile" aria-hidden="true"><i>${String(MN[parseInt(mesKey.slice(5,7),10)-1]).toUpperCase().slice(0,3)}</i><b>${mesKey.slice(2,4)}</b></div>`:`<div class="day-tile sem" aria-hidden="true"><b>–</b></div>`;
+      const MESF=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      const nomeMes=mesKey?MESF[parseInt(mesKey.slice(5,7),10)-1]+' de 20'+mesKey.slice(2,4):'Sem vencimento';
       mesHtml=`<div class="search-total srow-mes-tot">
         ${tlMes}
-        <div class="st-main"><span>${lbl} · ${t.n} lançamento${t.n===1?'':'s'}</span><span class="st-val">${fR(t.liq)}</span></div>
-        <div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div>
+        <div class="day-info"><div class="day-weekday">${nomeMes}</div><div class="day-title">${t.n} lançamento${t.n===1?'':'s'}</div><div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div></div>
+        <span class="day-total liq">${fR(t.liq)}</span>
       </div>`;
     }
     // [lanc-cartao-contrato] Mesmo agrupamento/design de Lançamentos — reusa
