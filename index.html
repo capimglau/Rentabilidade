@@ -5159,25 +5159,20 @@ html:not([data-theme="dark"]) #page-resumo .fat-barra-valor {
   }
 }
 
-/* AGI — mobile: busca com metade da largura, centralizada, e filtros (tipo + visão)
-   fora da pílula, no mesmo grupo centralizado na tela. No desktop nada muda. */
-.agb-filtros-mob{display:none;}
+/* AGI — mobile: busca alinhada à esquerda (como antes), terminando no meio da tela,
+   com funil e visão dentro dela, sem fundo. No desktop nada muda. */
 @media (max-width:760px){
-  #page-resumo .rc-cal-topbar.rc-cal-topbar-2{justify-content:center !important;gap:8px !important;}
+  #page-resumo .rc-cal-topbar.rc-cal-topbar-2{justify-content:flex-start !important;}
   #page-resumo .rc-cal-topbar.rc-cal-topbar-2 .agb-busca{
     flex:0 0 50% !important;width:50% !important;max-width:50% !important;
+    padding:0 5px 0 10px !important;gap:5px !important;
   }
-  #page-resumo .rc-cal-topbar-2 .agb-busca .agb-busca-divisor,
-  #page-resumo .rc-cal-topbar-2 .agb-busca .rc-ico-btn{display:none !important;}
-  #page-resumo .rc-cal-topbar-2 .agb-busca-sp{display:none !important;}
-  #page-resumo .agb-filtros-mob{display:flex;align-items:center;justify-content:center;gap:6px;flex:none;}
-  #page-resumo .agb-filtros-mob .rc-ico-btn{
-    width:33px;height:33px;border-radius:50%;
-    background:var(--card);border:1px solid var(--line);box-shadow:none;color:var(--ink3);
+  #page-resumo .rc-cal-topbar-2 .agb-busca .rc-ico-btn{
+    width:24px !important;min-width:24px !important;height:27px !important;
+    background:transparent !important;box-shadow:none !important;border:0 !important;
   }
-  #page-resumo .agb-filtros-mob .rc-ico-btn.on,
-  #page-resumo .agb-filtros-mob .rc-tipo-ico.filtrado{color:var(--blue);}
-  #page-resumo .agb-filtros-mob .rc-ico-btn svg{width:16px;height:16px;}
+  #page-resumo .rc-cal-topbar-2 .agb-busca .rc-ico-btn svg{width:15px !important;height:15px !important;}
+  #page-resumo .rc-cal-topbar-2 .agb-busca .agb-busca-divisor{margin:0 !important;}
 }
 
 /* TEMA ÍNDIGO — substitui apenas a aparência do antigo tema escuro azul.
@@ -9605,8 +9600,7 @@ function renderRecebHoje(){
     ${tipoIcoHtml}
     ${toggleHtml}
   </div>`;
-  const filtrosMobHtml=`<div class="agb-filtros-mob">${tipoIcoHtml}${toggleHtml}</div>`;
-  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml+filtrosMobHtml:'<span class="agb-busca-sp"></span>'+tipoIcoHtml+toggleHtml}</div>
+  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml:'<span class="agb-busca-sp"></span>'+tipoIcoHtml+toggleHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-cal">
