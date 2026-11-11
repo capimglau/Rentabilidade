@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>AGI Locadora</title>
 <meta name="theme-color" content="#E3E4E7" id="metaTheme">
-<script>try{var t=localStorage.getItem('agi-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('metaTheme').content='#131c2c';}}catch(e){}</script>
+<script>try{var t=localStorage.getItem('agi-theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('metaTheme').content='#202039';}}catch(e){}</script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -5159,108 +5159,159 @@ html:not([data-theme="dark"]) #page-resumo .fat-barra-valor {
   }
 }
 
-/* AGI — mobile: busca alinhada à esquerda (como antes), terminando no meio da tela,
-   com funil e visão dentro dela, sem fundo. No desktop nada muda. */
-@media (max-width:760px){
-  #page-resumo .rc-cal-topbar.rc-cal-topbar-2{justify-content:flex-start !important;}
-  #page-resumo .rc-cal-topbar.rc-cal-topbar-2 .agb-busca{
-    flex:0 0 50% !important;width:50% !important;max-width:50% !important;
-    padding:0 5px 0 10px !important;gap:5px !important;
-  }
-  #page-resumo .rc-cal-topbar-2 .agb-busca .rc-ico-btn{
-    width:24px !important;min-width:24px !important;height:27px !important;
-    background:transparent !important;box-shadow:none !important;border:0 !important;
-  }
-  #page-resumo .rc-cal-topbar-2 .agb-busca .rc-ico-btn svg{width:15px !important;height:15px !important;}
-  #page-resumo .rc-cal-topbar-2 .agb-busca .agb-busca-divisor{margin:0 !important;}
+/* TEMA ÍNDIGO — substitui apenas a aparência do antigo tema escuro azul.
+   Mantém data-theme=dark e agi-theme=dark para preservar preferências e funcionamento. */
+html[data-theme="dark"] {
+  --pastel-blue:#ACADF2;
+  --dock-petroleo:#B5A9E8;
+  --pastel-purple:#D0B8F4;
+  --ink:#F4F1FF;
+  --ink2:#C8C2DD;
+  --ink3:#A39BBF;
+  --line:#403B5B;
+  --surface:#292641;
+  --surface2:#34304F;
+  --card:#292640;
+  --blue:#A5A0F4;
+  --blue2:#817BDA;
+  --blue-soft:rgba(165,160,244,.20);
+  --blue-mid:#514A83;
+  --purple:#C2A5F4;
+  --purple-soft:rgba(194,165,244,.20);
+  background:#1E1B32;
 }
+html[data-theme="dark"] body{background:#1E1B32;color:var(--ink)}
+html[data-theme="dark"] .header{background:#28243F}
+html[data-theme="dark"] .nav-tabs{background:rgba(34,30,57,.92);border-color:rgba(191,177,255,.13)}
+html[data-theme="dark"] .ntab.on{background:rgba(164,153,245,.16);color:#C8BFFF}
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .day-items,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .owner-pills{background:rgba(41,38,64,.94);border-color:rgba(204,193,255,.10)}
+html[data-theme="dark"] .pcard:hover,
+html[data-theme="dark"] .day-items .pcard:hover{background:#393454}
+html[data-theme="dark"] .day-items .pcard,
+html[data-theme="dark"] .day-items .swipe .pcard{background:rgba(41,38,64,.96);border-color:rgba(204,193,255,.10)}
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .icon-btn.round-action{background:rgba(157,145,213,.17);border-color:rgba(210,197,255,.13)}
+html[data-theme="dark"] .btn,
+html[data-theme="dark"] .filt-toggle-btn,
+html[data-theme="dark"] .rf > summary{background:rgba(154,141,209,.15);color:var(--ink)}
+html[data-theme="dark"] .btn:hover,
+html[data-theme="dark"] .filt-toggle-btn:hover{background:rgba(154,141,209,.24)}
+html[data-theme="dark"] .btn-blue{background:rgba(134,124,225,.70);color:#FFF}
+html[data-theme="dark"] .btn-ink{color:#211C39}
+html[data-theme="dark"] .sk{background:linear-gradient(90deg,#27233E 25%,#3B365A 37%,#27233E 63%);background-size:400% 100%}
+html[data-theme="dark"] .subnav{background:#211E36}
+html[data-theme="dark"] .subnav-btn.on{background:#3B3657}
+html[data-theme="dark"] #searchResults .lc-ct::before,
+html[data-theme="dark"] #page-lancamentos .lc-ct::before{background:#9D90DA}
+html[data-theme="dark"] .agi-prev-date,
+html[data-theme="dark"] .agi-prev-range{background:rgba(145,131,226,.17);border-color:rgba(183,168,255,.25);color:#D0C4FF}
+html[data-theme="dark"] .lc-parcela-card .lc-parc{background:rgba(132,114,213,.25);color:#DBD0FF}
+html[data-theme="dark"] #page-resumo .fat-barra-pct{background:rgba(239,233,255,.79)!important;color:#514676!important}
+html[data-theme="dark"] .theme-btn-hdr{background:rgba(155,141,214,.20);border-color:rgba(219,207,255,.14)}
 
-/* AGI — Dock mobile idêntico ao da Estilo (tema claro = barra "Apple Music"/iOS 26):
-   cápsula de vidro com aro branco + hairline, reflexo especular no topo, brilho interno,
-   sombras em camadas, 5% mais estreito; aba ativa = cápsula de vidro com aro, ícone/rótulo
-   em #1f6f60; inativos quase pretos (#1c1c1e), traço 2px. Medidas: botão 55,4×51,3px,
-   ícone 22,1px, rótulo 9,2px/600. Só mobile; o desktop não muda. */
-@media (max-width:760px){
-  html body #mainDock.nav-tabs{
-    left:calc(15.2px + 2.5vw); right:calc(15.2px + 2.5vw);
-    bottom:max(0px, calc(env(safe-area-inset-bottom, 20px) - 20.8px)); /* mesma folga do fundo que a Estilo */
-    gap:0; padding:2.4px 6px 4.5px; border-radius:32px; overflow:visible;
-    background:linear-gradient(180deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.88) 100%) !important;
-    -webkit-backdrop-filter:blur(40px) saturate(200%) brightness(1.06);
-    backdrop-filter:blur(40px) saturate(200%) brightness(1.06);
-    border:1px solid rgba(255,255,255,.92) !important;
-    box-shadow:
-      0 0 0 .5px rgba(0,0,0,.10),
-      inset 0 1.5px 0 rgba(255,255,255,1),
-      inset 0 -1px 0 rgba(255,255,255,.55),
-      inset 0 0 14px rgba(255,255,255,.38),
-      0 10px 32px rgba(0,0,0,.14),
-      0 2px 8px rgba(0,0,0,.08) !important;
-  }
-  /* linha especular no topo + brilho convexo interno (mesmos da Estilo) */
-  #mainDock.nav-tabs::before{
-    content:'';position:absolute;top:0;left:10%;right:10%;height:1px;z-index:10;pointer-events:none;
-    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.95) 25%,rgba(255,255,255,.95) 75%,transparent 100%);
-  }
-  #mainDock.nav-tabs::after{
-    content:'';position:absolute;top:0;left:0;right:0;height:55%;z-index:0;pointer-events:none;
-    border-radius:32px 32px 0 0;
-    background:linear-gradient(180deg,rgba(255,255,255,.38) 0%,rgba(255,255,255,.18) 60%,rgba(255,255,255,0) 100%);
-  }
-  html body #mainDock .ntab{
-    position:relative;z-index:1;flex:1 1 0;width:55.4px;height:51.3px;
-    padding:4px;gap:3px;border-radius:999px;
-    color:#1c1c1e;background:transparent;
-    -webkit-tap-highlight-color:transparent;
-    transition:all .18s cubic-bezier(.25,.46,.45,.94);
-  }
-  html body #mainDock .ntab:active{opacity:.55;transform:scale(.93);}
-  html body #mainDock .ntab .nt-ico svg{width:22.1px;height:22.1px;stroke-width:2;}
-  html body #mainDock .ntab .nt-short{font-size:9.2px;font-weight:600;letter-spacing:-.01em;color:inherit;}
-  html body #mainDock .ntab.ntab-back{color:#1c1c1e !important;}
-  /* aba ativa: cápsula de vidro com aro branco e leve tom do destaque */
-  html body #mainDock .ntab.on{
-    color:#1f6f60;
-    background:
-      linear-gradient(180deg,rgba(255,255,255,.72) 0%,rgba(255,255,255,.30) 100%),
-      color-mix(in srgb,#1f6f60 11%,transparent);
-    border:1px solid rgba(255,255,255,.96);
-    box-shadow:
-      0 0 0 .5px rgba(0,0,0,.09),
-      inset 0 1.5px 0 rgba(255,255,255,1),
-      inset 0 -2px 5px rgba(0,0,0,.07),
-      0 2px 8px rgba(0,0,0,.10);
-  }
-  /* tema escuro: aro cinza-claro visível + sombra difusa (igual ao escuro da Estilo) */
-  html[data-theme="dark"] body #mainDock.nav-tabs,
-  html[data-theme="dark"] #mainDock.nav-tabs{
-    background:rgba(27,37,56,.92) !important;
-    -webkit-backdrop-filter:blur(64px) saturate(200%) brightness(.90);
-    backdrop-filter:blur(64px) saturate(200%) brightness(.90);
-    border:1px solid rgba(255,255,255,.14) !important;
-    box-shadow:
-      0 1px 0 0 rgba(255,255,255,.06) inset,
-      0 -1px 0 0 rgba(255,255,255,.06) inset,
-      0 0 20px 0 rgba(255,255,255,.04) inset,
-      0 8px 30px rgba(0,0,0,.65),
-      0 0 12px rgba(0,0,0,.40) !important;
-  }
-  html[data-theme="dark"] #mainDock.nav-tabs::before{
-    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 25%,rgba(255,255,255,.18) 75%,transparent 100%);
-  }
-  html[data-theme="dark"] #mainDock.nav-tabs::after{
-    background:linear-gradient(180deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.02) 60%,rgba(255,255,255,0) 100%);
-  }
-  html[data-theme="dark"] body #mainDock .ntab,
-  html[data-theme="dark"] body #mainDock .ntab.ntab-back{color:#D9DFE8 !important;}
-  html[data-theme="dark"] body #mainDock .ntab.on{
-    color:#D9DFE8 !important;
-    background:
-      radial-gradient(ellipse at 38% 28%,rgba(255,255,255,.26) 0%,rgba(255,255,255,.06) 38%,transparent 68%),
-      rgba(255,255,255,.08);
-    border:1px solid rgba(255,255,255,.18);
-    box-shadow:0 1.5px 0 rgba(255,255,255,.26) inset,0 -1px 0 rgba(0,0,0,.10) inset,0 6px 24px rgba(0,0,0,.18);
-  }
+
+/* INDIGO COMPLETO v2 — neutraliza estilos azuis antigos com maior especificidade.
+   Afeta EXCLUSIVAMENTE o tema dark; o tema claro e os dados não mudam. */
+html[data-theme="dark"] {
+  --ink:#F4F0FF; --ink2:#D4CDE8; --ink3:#ADA4C6;
+  --line:rgba(196,181,243,.18);
+  --card:#2A2642; --surface:#242037; --surface2:#373150;
+  --blue:#B8A9FF; --blue2:#8F7CDC;
+  --blue-soft:rgba(184,169,255,.17); --blue-mid:#615687;
+  --pastel-blue:#B7AEF5; --dock-petroleo:#BFB3F5;
+  --purple:#C6B2FF; --purple-soft:rgba(190,163,255,.18);
+  background:#1D1A30 !important;
+  color-scheme:dark;
+}
+html[data-theme="dark"] body {
+  background:#1D1A30 !important;
+  background-image:linear-gradient(180deg,#242039 0%,#1D1A30 100%) !important;
+  color:var(--ink);
+}
+html[data-theme="dark"] .header {background:#29243E !important;border-bottom-color:var(--line) !important;}
+html[data-theme="dark"] .nav-tabs{background:#28233E !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .ntab.on{background:#40385D !important;color:#ECE5FF !important;}
+html[data-theme="dark"] .month-nav,
+html[data-theme="dark"] .subnav {background:#39324F !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .subnav-btn.on{background:#51476E !important;color:var(--ink) !important;}
+/* Painéis antes presos aos gradientes AZUIS com !important. */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .mc,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .owner-pills,
+html[data-theme="dark"] .search-total,
+html[data-theme="dark"] .day-items .lc-ct,
+html[data-theme="dark"] .fat-painel,
+html[data-theme="dark"] #page-resumo #cardBoletos {
+  background:linear-gradient(180deg,#302B49 0%,#29253F 100%) !important;
+  border-color:rgba(201,184,255,.17) !important;
+  box-shadow:inset 0 1px 0 rgba(250,244,255,.07),0 9px 22px rgba(10,8,21,.28) !important;
+}
+/* Os cards de dia conservam a estrutura original e a bandeira de categoria. */
+html[data-theme="dark"] .agb-card,
+html[data-theme="dark"] .pcard,
+html[data-theme="dark"] .swipe .pcard,
+html[data-theme="dark"] .day-items .pcard,
+html[data-theme="dark"] .day-items .swipe .pcard,
+html[data-theme="dark"] .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,
+html[data-theme="dark"] .day-items .lc-ct .swipe .pcard.lc-ct-item {
+  background:linear-gradient(165deg,#3A3453 0%,#302B47 100%) !important;
+  border-color:rgba(197,181,244,.17) !important;
+}
+html[data-theme="dark"] .pcard:hover,
+html[data-theme="dark"] .day-items .pcard:hover,
+html[data-theme="dark"] .day-items .swipe .pcard:hover{
+  background:#443B60 !important;
+}
+html[data-theme="dark"] .agb-col-hd {background:#302B46 !important;border-color:rgba(205,193,250,.13) !important;}
+html[data-theme="dark"] .agb-col.agb-hoje .agb-col-hd{background:#383050 !important;}
+html[data-theme="dark"] .agb-col.agb-pago .agb-col-hd{background:#293B3C !important;}
+html[data-theme="dark"] .agb-busca,
+html[data-theme="dark"] .agb-busca input,
+html[data-theme="dark"] .search-input,
+html[data-theme="dark"] .fbar input[type=text],
+html[data-theme="dark"] .fbar select,
+html[data-theme="dark"] .filt-panel select,
+html[data-theme="dark"] .filt-panel input {
+  background-color:#36304C !important;
+  color:var(--ink) !important;
+  border-color:var(--line) !important;
+}
+html[data-theme="dark"] input::placeholder{color:#B5AACD !important;opacity:1;}
+html[data-theme="dark"] .fat-painel-cab{background:#38324F !important;border-bottom-color:var(--line) !important;}
+html[data-theme="dark"] .fat-painel-total{color:#C7B8FF !important;}
+html[data-theme="dark"] .boletos-banner{background:rgba(160,140,226,.13) !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .lc-parcela-card {background:#332D49 !important;border-color:var(--line) !important;}
+html[data-theme="dark"] .lc-parcela-card .lc-ct-dt{background:#3B3453 !important;}
+html[data-theme="dark"] .lc-parcela-card.venc .lc-ct-dt{background:#583443 !important;}
+html[data-theme="dark"] .lc-parcela-card.ok .lc-ct-dt{background:#2D4A40 !important;}
+html[data-theme="dark"] .lc-parcela-card.hoje .lc-ct-dt{background:#49416A !important;}
+html[data-theme="dark"] #searchResults .lc-ct::before,
+html[data-theme="dark"] #page-lancamentos .lc-ct::before{background:#AA9BEC !important;}
+html[data-theme="dark"] .icon-btn,
+html[data-theme="dark"] .icon-btn.round-action,
+html[data-theme="dark"] .theme-btn-hdr,
+html[data-theme="dark"] .filt-toggle-btn,
+html[data-theme="dark"] .rf > summary {
+  background:rgba(179,159,241,.16) !important;
+  border-color:rgba(212,195,255,.16) !important;
+  color:var(--ink) !important;
+}
+html[data-theme="dark"] .sk{
+  background:linear-gradient(90deg,#29233E 25%,#433957 37%,#29233E 63%) !important;
+  background-size:400% 100% !important;
+}
+html[data-theme="dark"] tr:hover td{background:#39324F !important;}
+/* O indicador percentual permanece legível com fundo lavanda transparente. */
+html[data-theme="dark"] #page-resumo .fat-barra-pct{
+  background:rgba(237,229,255,.74) !important;color:#514474 !important;
+}
+/* Status pago, pendente e atrasado continuam com suas cores funcionais. */
+@media(max-width:760px){
+ html[data-theme="dark"] .fat-painel-cab{background:#38324F !important;}
 }
 
 /* 2026-11-09 — Agenda AGI: contorno e etiqueta fiéis aos cards Estilo.
@@ -5307,290 +5358,48 @@ html[data-theme="dark"] #page-resumo .agb-card::before {
 #page-resumo .fat-painel-lista .fat-barra-faixa { flex:0 0 auto !important; width:var(--tubo-w,60%) !important; min-width:max-content !important; max-width:none !important; height:26px !important; box-sizing:border-box; }
 @media (min-width:768px){ #page-resumo .fat-painel-lista .fat-barra-faixa { height:29px !important; } }
 #page-resumo .fat-painel-lista .fat-barra-nome { max-width:none !important; white-space:nowrap; }
-#page-resumo .fat-painel-lista .fat-barra-valor { flex-shrink:0 !important; text-align:left; font-size:12px !important; font-weight:600 !important; color:var(--fat-cor) !important; line-height:1.15; white-space:nowrap; text-shadow:none !important; }
+#page-resumo .fat-painel-lista .fat-barra-valor { flex-shrink:0 !important; text-align:left; font-size:12px !important; font-weight:600 !important; color:var(--ink) !important; line-height:1.15; white-space:nowrap; text-shadow:none !important; }
+#page-resumo .fat-painel-lista .fat-barra-valor .v-ok { color:var(--green) !important; margin-right:4px; font-weight:800 !important; }
+#page-resumo .fat-painel-lista .fat-barra-valor .v-pend { color:#e08a1e !important; }
+#page-resumo .fat-painel-lista .fat-barra-valor .v-falta { font-size:10.5px; font-weight:600; color:#e08a1e !important; margin-top:1px; }
 #page-resumo .fat-painel-lista .fat-barra-nome { position:absolute !important; inset:0 auto 0 14px !important; display:flex; align-items:center; z-index:2; max-width:none !important; overflow:visible !important; text-overflow:clip !important; white-space:nowrap; font-size:12.5px !important; font-weight:700 !important; letter-spacing:.2px; color:#fff !important; text-shadow:0 1px 3px rgba(0,0,0,.55),0 0 1px rgba(0,0,0,.4) !important; }
 #page-resumo .fat-painel-lista .fat-barra-pct { position:absolute !important; top:50% !important; left:auto !important; right:12px !important; transform:translateY(-50%) !important; z-index:2; font-size:11.5px !important; font-weight:800 !important; color:#2c2f34 !important; background:rgba(255,255,255,.8) !important; box-shadow:0 1px 2px rgba(0,0,0,.10); padding:1px 8px !important; line-height:1.3; text-shadow:none !important; }
-
-/* Início (celular): Previsto + proprietário viram UM cartão dividido por uma linha fina, igual ao par de painéis do topo da Estilo. */
-@media (max-width:760px){
-  #res-m { grid-template-columns:1fr 1fr !important; gap:0 !important; background:var(--card); border:1px solid rgba(255,255,255,.8); border-radius:22px; box-shadow:var(--card-shadow); }
-  #res-m .mc { background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; transform:none !important; }
-  #res-m .mc:hover { transform:none !important; box-shadow:none !important; }
-  #res-m #mc-loc-cycle { border-left:1px solid var(--line) !important; }
-}
-
-/* AGI / Estilo — paridade visual dos tubos da Dashboard (10/11/2026). */
-/* Mesma estrutura A2 da Estilo: brilho interno, sombra de contorno,
-   preenchimento em gradiente e listras 8px em 1,5s, só no pendente. */
-@keyframes agiA2EstiloOndas { to { background-position:8px 0; } }
-#page-resumo .fat-painel-lista { gap:13px !important; }
-#page-resumo .fat-painel-lista .fat-barra-linha {gap:8px !important; align-items:center !important;}
-#page-resumo .fat-painel-lista .fat-barra-faixa {
-  height:26px !important; border-radius:999px !important;
-  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--fat-cor) 32%,transparent),inset 0 1px 0 rgba(255,255,255,.35) !important;
-  background:color-mix(in srgb,var(--fat-cor) 66%,white) !important;
-}
-@media(min-width:768px){#page-resumo .fat-painel-lista .fat-barra-faixa{height:29px !important;}}
-#page-resumo .fat-painel-lista .fat-barra-cheio {
-  background:linear-gradient(180deg,color-mix(in srgb,var(--fat-cor) 90%,#fff) 0%,var(--fat-cor) 45%,color-mix(in srgb,var(--fat-cor) 84%,#000) 100%) !important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
-}
-#page-resumo .fat-painel-lista .fat-barra-restante {
-  background-color:color-mix(in srgb,var(--fat-cor) 66%,white) !important;
-  background-image:linear-gradient(135deg,rgba(255,255,255,.58) 25%,rgba(0,0,0,.08) 25% 50%,rgba(255,255,255,.58) 50% 75%,rgba(0,0,0,.08) 75%) !important;
-  background-size:8px 8px !important;
-  animation:agiA2EstiloOndas 1.5s linear infinite !important;
-}
-#page-resumo .fat-painel-lista .fat-barra-sombra {
-  position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;
-  background:linear-gradient(90deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.15) 45%,rgba(0,0,0,0) 82%);
-}
-#page-resumo .fat-painel-lista .fat-barra-nome {font-size:12.5px !important;font-weight:700 !important;letter-spacing:.2px !important;}
-#page-resumo .fat-painel-lista .fat-barra-pct {font-size:11.5px !important;font-weight:800 !important;border-radius:999px !important;}
-#page-resumo .fat-painel-lista .fat-barra-valor {font-size:12px !important;font-weight:600 !important;color:var(--ink) !important;}
-#page-resumo .fat-painel-lista .fat-barra-valor .fat-valor-principal{display:block;white-space:nowrap;}
-#page-resumo .fat-painel-lista .fat-barra-valor .fat-valor-pendente{display:block;margin-top:1px;font-size:10.5px;font-weight:600;color:#d18a35;}
-#page-resumo .fat-painel-lista .fat-valor-ok{color:#4d9967;font-weight:800;margin-right:4px;}
-@media(max-width:760px){#page-resumo .fat-painel-lista .fat-barra-nome{font-size:12.5px !important;}}
-@media(prefers-reduced-motion:reduce){#page-resumo .fat-painel-lista .fat-barra-restante{animation:none !important;}}
-
-/* AGI — tema escuro: sem contorno branco no Dock, nos cards da Agenda e no painel do topo.
-   O realce branco de cima (inset) e o aro branco eram pensados para o tema claro. */
-html[data-theme="dark"] #page-resumo .agb-card{
-  box-shadow:inset 0 -1px 1px rgba(0,0,0,.18),0 1px 2px rgba(0,0,0,.30),0 14px 20px -14px rgba(0,0,0,.55),0 5px 7px -6px rgba(0,0,0,.35) !important;
-}
-html[data-theme="dark"] #page-resumo .agb-card::before{
-  box-shadow:inset 0 -2px 4px rgba(0,0,0,.18) !important;
-}
-@media (max-width:760px){
-  html[data-theme="dark"] #res-m{border-color:var(--line) !important;}
-  html[data-theme="dark"] body #mainDock.nav-tabs,
-  html[data-theme="dark"] #mainDock.nav-tabs{
-    border:1px solid rgba(255,255,255,.05) !important;
-    box-shadow:0 8px 30px rgba(0,0,0,.55),0 0 12px rgba(0,0,0,.30) !important;
-  }
-  html[data-theme="dark"] #mainDock.nav-tabs::before{display:none;}
-  html[data-theme="dark"] #mainDock.nav-tabs::after{background:linear-gradient(180deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,0) 100%);}
-  html[data-theme="dark"] body #mainDock .ntab.on{
-    border:1px solid rgba(255,255,255,.06);
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
-  }
-}
-
-/* AGI — Lançamentos em formato EXTRATO (sem filtros: eles já existem na tela).
-   Só CSS, só em #page-lancamentos: o agrupamento por contrato, o swipe e os cliques
-   continuam exatamente como são. Cada contrato = um bloco; itens do contrato juntos
-   dentro dele, como linhas separadas por fio fino. Some o que repetia: período,
-   "Previsão de pagamento" (já está no cabeçalho do dia) e o "Saldo" quando nada foi pago. */
-#page-lancamentos .day-items{display:flex;flex-direction:column;gap:10px;}
-#page-lancamentos .day-items > .swipe,
-#page-lancamentos .day-items > .lc-ct,
-#page-lancamentos .day-items > .lc-ct-stub{margin:0 !important;}
-#page-lancamentos .day-items > .swipe .pcard.lc-card,
-#page-lancamentos .day-items > .lc-ct{
-  background:var(--card) !important;border:0 !important;border-radius:18px !important;
-  -webkit-backdrop-filter:none !important;backdrop-filter:none !important;
-  box-shadow:0 1px 2px rgba(20,30,50,.07),0 8px 18px -14px rgba(20,30,50,.25) !important;
-}
-#page-lancamentos .pcard.lc-card{padding:12px 14px !important;}
-#page-lancamentos .pcard-meta{display:none !important;}
-#page-lancamentos .pcard-top{gap:8px;align-items:baseline;}
-#page-lancamentos .pcard-top .placa{background:none !important;border:0 !important;padding:0 !important;font-size:11px;letter-spacing:.07em;color:var(--ink3) !important;box-shadow:none !important;}
-#page-lancamentos .pcard-top .pcard-name{font-size:15px;font-weight:650;}
-#page-lancamentos .pcard-tags{gap:6px;margin-top:3px;}
-#page-lancamentos .pcard-tags .tag-forma{background:none !important;padding:0 !important;color:var(--ink3) !important;font-weight:600;border:0 !important;}
-#page-lancamentos .pcard-value{font-size:15.5px;font-weight:700;font-variant-numeric:tabular-nums;}
-/* "Saldo R$ X" repetido (nada pago ainda): o valor ao lado já diz */
-#page-lancamentos .pcard-right .pcard-parcial-sub[style*="var(--red)"],
-#page-lancamentos .lc-ct-foot-r .pcard-parcial-sub[style*="var(--red)"]{display:none !important;}
-/* contrato: cabeçalho enxuto, itens como linhas de extrato */
-#page-lancamentos .lc-ct{padding:14px 14px 10px 18px;}
-#page-lancamentos .lc-ct-hd{gap:5px;padding-bottom:6px;}
-#page-lancamentos .lc-ct-hd .agi-prev-date,
-#page-lancamentos .lc-ct-hd .agi-prev-range{display:none !important;}
-#page-lancamentos .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item{
-  background:transparent !important;border:0 !important;border-radius:0 !important;
-  border-bottom:1px solid var(--line) !important;box-shadow:none !important;padding:10px 4px 10px 12px !important;
-}
-#page-lancamentos .lc-ct .swipe.lc-ct-sw:last-child .pcard.lc-ct-item{border-bottom:0 !important;}
-#page-lancamentos .lc-ct-foot{border-top:1px solid var(--line) !important;margin-top:6px;padding-top:10px;}
-#page-lancamentos .lc-ct-tot{font-size:16.5px;font-variant-numeric:tabular-nums;}
-
-/* AGI — Lançamentos: mais espaço entre contratos diferentes e moldura do contrato em CINZA (era azul). */
-#page-lancamentos #lancBody .day-items{gap:28px;}
-html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct{
-  background:#eceef1 !important;border:1px solid #c8cbd2 !important;
-  box-shadow:0 2px 10px rgba(30,34,44,.08),inset 0 1px 0 rgba(255,255,255,.6) !important;
-}
-html:not([data-theme="dark"]) #page-lancamentos #lancBody .day-items > .lc-ct::before{background:#8b919c !important;}
-html:not([data-theme="dark"]) #page-lancamentos .lc-ct-hd{border-bottom-color:rgba(90,96,110,.2) !important;}
-html:not([data-theme="dark"]) #page-lancamentos .lc-ct-foot{border-top-color:rgba(90,96,110,.22) !important;}
-html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card{border-color:#d3d6dc;}
-html:not([data-theme="dark"]) #page-lancamentos #lancBody .lc-parcela-card.hoje .lc-ct-dt{background:#e8e9ed;}
-html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct{
-  background:linear-gradient(145deg,#2a2e37,#2e323b) !important;border:1px solid #4a505b !important;
-  box-shadow:0 5px 19px rgba(0,0,0,.22) !important;
-}
-html[data-theme="dark"] #page-lancamentos #lancBody .day-items > .lc-ct::before{background:#8e95a2 !important;}
-#page-lancamentos .lc-ct-badge:not(.parc){color:#4b5260;background:rgba(90,96,110,.13);}
-html[data-theme="dark"] #page-lancamentos .lc-ct-badge:not(.parc){color:#c9ced8;background:rgba(255,255,255,.08);}
-
-/* ══ AGI 11/11 — "Trilho": cartão do mesmo contrato + cabeçalho do dia no padrão iOS ══ */
-html body{--trail:color-mix(in srgb,var(--ink3) 30%,transparent)}
-/* Dia: quadradinho de data + dia da semana + resumo */
-html body .day-header{gap:10px;padding:8px 2px 6px;margin-bottom:8px}
-html body .day-group{margin-bottom:26px}
-html body .day-tile{width:38px;height:38px;flex:none;border-radius:10px;background:var(--card);box-shadow:0 0 0 .5px var(--line),0 1px 3px rgba(0,0,0,.07);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
-html body .day-tile i{font-style:normal;font-size:9px;font-weight:700;letter-spacing:.05em;color:#d70015}
-html body .day-tile b{font-size:17px;font-weight:600;margin-top:2px;color:var(--ink);letter-spacing:-.02em}
-html body .day-tile.hoje{background:var(--blue)}
-html body .day-tile.hoje i,html body .day-tile.hoje b{color:#fff}
-html body .day-tile.venc b{color:var(--red)}
-html body .day-tile.sem b{color:var(--ink3)}
-html body .day-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
-html body .day-weekday{width:auto;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--ink);text-transform:none}
-html body .day-weekday.hoje{color:var(--blue)}
-html body .day-weekday.venc{color:var(--red)}
-html body .day-title{font-size:13px;font-weight:400;letter-spacing:0;color:var(--ink3);min-width:0}
-html body .day-total{font-size:15px;font-weight:600}
-html body .day-count{display:none}
-/* Cartão do contrato */
-html body .lc-ct{background:var(--card)!important;border:0!important;border-radius:18px!important;padding:0!important;margin-bottom:9px!important;overflow:hidden;box-shadow:0 4px 16px rgba(60,70,120,.07),0 1px 3px rgba(0,0,0,.03)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-html body .lc-ct::before{display:none!important}
-html body .lc-ct-hd{padding:16px 18px 10px!important;border:0!important;gap:8px!important}
-html body .lc-ct-vinc{flex-wrap:nowrap;gap:8px}
-html body .lc-ct-badge{background:none!important;padding:0!important;color:var(--ink3)!important;font-size:11px!important;font-weight:600!important;letter-spacing:.06em;gap:6px}
-html body .lc-ct-stat{margin-left:auto;font-size:12px}
-html body .lc-ct-hd .placa{font:600 12px ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.06em}
-html body .lc-ct-hd .pcard-name{font-size:17px!important;font-weight:600!important;letter-spacing:-.01em}
-html body .lc-ct-hd .itens-cnt{background:none!important;padding:0!important;color:var(--ink3)!important;font-size:13px!important;font-weight:500}
-html body .lc-ct-hd .pcard-tags span[style*="font-size"]{font-size:13px!important}
-html body .lc-ct-hd .agi-prev-date{display:none!important}
-html body .lc-ct-hd .pcard-meta{font-size:13px;color:var(--ink3)}
-html body .lc-ct .lc-parcelas-grid{display:flex;flex-direction:column;gap:0}
-html body .lc-parcela-card{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;margin:0!important;padding:0!important}
-/* Linha da data (marco do trilho) */
-html body .lc-parcela-card .lc-ct-dt{position:relative;background:transparent!important;border:0!important;border-radius:0!important;margin:0!important;padding:14px 16px 4px 44px!important;display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
-html body .lc-parcela-card .lc-ct-dt::before{content:"";position:absolute;left:23.25px;top:0;bottom:0;width:1.5px;background:var(--trail)}
-html body .lc-parcela-card:first-child .lc-ct-dt::before{top:24px}
-html body .lc-parcela-card .lc-ct-dt::after{content:"";position:absolute;left:18px;top:24px;margin-top:-6px;width:12px;height:12px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
-html body .lc-parcela-card .lc-ct-dt.venc::after{background:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
-html body .lc-parcela-card .lc-ct-dt.ok::after{background:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
-html body .lc-parcela-card .lc-ct-dt-l{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0}
-html body .lc-parcela-card .lc-ct-dt-l .agi-prev-lbl{display:none!important}
-html body .lc-parcela-card .lc-ct-dt-l b{font-size:13px!important;font-weight:600!important;letter-spacing:0!important;color:var(--ink)!important}
-html body .lc-parcela-card .lc-ct-dt.venc .lc-ct-dt-l b{color:var(--red)!important}
-html body .lc-parcela-card .lc-ct-dt.ok .lc-ct-dt-l b{color:var(--green)!important}
-html body .lc-ct-dt-here{margin:0!important;font-size:11px;font-weight:600;letter-spacing:0;text-transform:none;padding:2px 9px;border-radius:99px}
-html body .lc-parcela-card .lc-parc{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--blue-soft);color:var(--blue)}
-html body .lc-parcela-card .lc-ct-dt-r{margin-left:auto;display:flex;align-items:center;gap:10px;width:auto}
-html body .lc-parcela-card .lc-ct-dt-r>span:last-child{font-size:13px!important;font-weight:500!important;letter-spacing:0!important;color:var(--ink3)!important;font-variant-numeric:tabular-nums}
-html body .lc-ct-1d .lc-ct-dt-r>span:last-child{display:none}
-html body .lc-ct-ajust{border:0!important;background:none!important;padding:0!important;color:var(--blue)!important;font-size:13px!important;font-weight:500!important}
-/* Lançamentos (cada um mantém o próprio swipe) */
-html body .lc-parcela-card .lc-ct-itens{display:flex;flex-direction:column;padding:0!important;gap:0!important}
-html body .lc-parcela-card .swipe.lc-ct-sw{border-radius:0!important;margin:0!important;box-shadow:none!important;border:0!important}
-html body .lc-parcela-card .swipe+.swipe{border-top:0!important}
-html body .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding:12px 16px 12px 44px!important;min-height:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;background:var(--card)!important;align-items:center}
-html body .lc-parcela-card .pcard.lc-ct-item::before{display:block!important;content:""!important;left:19.5px!important;top:50%!important;bottom:auto!important;width:9px!important;height:9px!important;margin-top:-4.5px;border-radius:50%;box-sizing:border-box;background:var(--card)!important;border:2px solid var(--lc-cor,var(--blue));z-index:1}
-html body .lc-parcela-card .pcard.lc-ct-item.venc::before{border-color:var(--red)}
-html body .lc-parcela-card .pcard.lc-ct-item.done::before{border-color:var(--green)}
-html body .lc-parcela-card .pcard.lc-ct-item::after{content:"";position:absolute;left:23.25px;top:0;bottom:0;width:1.5px;background:var(--trail)}
-html body .lc-parcela-card:last-child .swipe:last-child .pcard.lc-ct-item::after{bottom:50%}
-html body .lc-parcela-card .pcard.lc-ct-item.done{color:var(--ink3)}
-html body .lc-parcela-card .pcard-tags .tag{font-size:12px;font-weight:600}
-html body .lc-parcela-card .pcard-tags .tag-forma{background:none!important;padding:0!important;color:var(--ink3)!important;font-size:13px;font-weight:500}
-html body .lc-parcela-card .lc-ct-v{font-size:15px!important;font-weight:500!important;letter-spacing:0!important;font-variant-numeric:tabular-nums}
-/* Rodapé */
-html body .lc-ct .lc-ct-foot{margin:0!important;padding:12px 16px 14px!important;border-top:.5px solid var(--line)!important}
-html body .lc-ct-foot-l{font-size:13px!important;font-weight:500!important;color:var(--ink3)!important;gap:4px}
-html body .lc-ct-tot{font-size:17px!important;font-weight:600!important;letter-spacing:-.01em}
-html body .lc-ct-aviso{margin:4px 16px 12px}
-/* Ações do swipe: tamanho e cores iOS */
-html body .swipe-act{width:64px;font-size:11px;font-weight:600;gap:4px}
-html body .swipe-act.pay{background:#248a3d}
-html body .swipe-act.partial{background:#c93400}
-html body .swipe-act.edit{background:#636366}
-html body .swipe-act.del{background:#d70015}
-
-/* AGI 11/11 — Trilho: correções de especificidade (grade de parcelas) + Busca no mesmo padrão */
-html body .lc-ct .lc-parcelas-grid{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:0!important}
-html body .lc-parcelas-grid>.lc-parcela-card{display:block!important;border-radius:0!important}
-html body .lc-ct-hd{margin-bottom:0!important}
-html body .lc-parcelas-grid .lc-parcela-card .lc-ct-dt{flex-wrap:nowrap!important;gap:8px!important}
-html body .lc-parcelas-grid .lc-parcela-card .lc-ct-dt-l{flex:0 1 auto!important;gap:8px!important}
-html body .lc-parcelas-grid .lc-parcela-card .lc-ct-dt-r{gap:10px!important}
-html body .lc-parcelas-grid .lc-parcela-card .lc-parc{font-size:11px!important;padding:2px 8px!important;border-radius:99px!important}
-html body .lc-parcelas-grid .lc-parcela-card .pcard-tags{gap:8px!important}
-html body .lc-parcelas-grid .lc-parcela-card .pcard-tags .tag{font-size:12px!important;padding:2px 9px!important}
-html body .lc-parcelas-grid .lc-parcela-card .pcard-tags .tag.tag-forma{padding:0!important;font-size:13px!important}
-html body .lc-parcelas-grid .lc-parcela-card .pcard-parcial-sub{font-size:11px!important}
-html body .lc-parcelas-grid .lc-parcela-card .pcard-obs{font-size:12px!important}
-html body .search-total.srow-mes-tot{position:static!important;display:grid;grid-template-columns:38px minmax(0,1fr);column-gap:10px;row-gap:2px;align-items:center;background:transparent!important;border:0!important;border-radius:0!important;padding:4px 2px 6px!important;margin:22px 0 8px!important}
-html body .search-total.srow-mes-tot:first-child{margin-top:2px!important}
-html body .srow-mes-tot .day-tile{grid-row:1/3}
-html body .srow-mes-tot .st-main{font-size:15px;font-weight:600;color:var(--ink);align-items:center;gap:8px}
-html body .srow-mes-tot .st-main>span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-html body .srow-mes-tot .st-val{font-size:15px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
-html body .srow-mes-tot .st-sub{margin-top:0;font-size:13px;font-weight:500;gap:14px;justify-content:flex-start}
-html body #searchResults>.swipe{margin-bottom:9px}
-
-/* AGI 11/11 — Trilho v3: vence as regras antigas em cinza (moldura, faixa da data, fundo das parcelas) */
-html body #page-lancamentos #lancBody .day-items>.lc-ct.lc-ct,
-html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct.lc-ct{background:var(--card)!important;border:0!important;border-radius:18px!important;padding:0!important;box-shadow:0 4px 16px rgba(60,70,120,.07),0 1px 3px rgba(0,0,0,.03)!important}
-html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-hd{padding:16px 18px 8px!important;border:0!important;background:transparent!important}
-html body .lc-ct .lc-parcela-card.venc .lc-ct-dt,
-html body .lc-ct .lc-parcela-card.ok .lc-ct-dt,
-html body .lc-ct .lc-parcela-card.hoje .lc-ct-dt,
-html body .lc-ct .lc-parcela-card .lc-ct-dt{background:transparent!important;border:0!important}
-html body .lc-ct .lc-parcela-card .lc-ct-itens{background:transparent!important}
-html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding:12px 16px 12px 44px!important;border:0!important;border-bottom:0!important;background:var(--card)!important;border-radius:0!important;box-shadow:none!important;min-height:0!important}
-html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-foot{margin:0!important;padding:12px 16px 14px!important;background:transparent!important}
-html body :is(#page-lancamentos,#searchResults,.day-items) .lc-ct .lc-ct-badge{background:none!important;color:var(--ink3)!important}
-
-/* AGI 11/11 — Busca: fundo do sistema, botão de fechar fora do notch, mais respiro, datas como em Lançamentos */
-html body #mSearch .modal.modal-busca{background:var(--surface)!important;padding-top:max(16px,calc(env(safe-area-inset-top) + 8px))!important}
-html body #mSearch .modal-busca>.mhd{position:relative;z-index:3}
-html body .search-total.srow-mes-tot{display:flex!important;grid-template-columns:none!important;align-items:center;gap:10px;margin:26px 0 10px!important}
-html body .search-total.srow-mes-tot:first-child{margin-top:4px!important}
-html body .srow-mes-tot .day-tile{grid-row:auto}
-html body .srow-mes-tot .day-total{margin-left:auto;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-html body .srow-mes-tot .st-sub{display:flex;gap:12px;margin-top:3px;font-size:12px;font-weight:500;justify-content:flex-start}
-html body #searchResults>.swipe{margin-bottom:16px;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px rgba(60,70,120,.07),0 1px 3px rgba(0,0,0,.03)}
-html body #searchResults>.lc-ct.lc-ct{margin-bottom:16px!important}
-html body #searchResults .lc-ct-hd .placa{background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
-html body #searchResults .lc-ct-hd .pcard-meta{display:none!important}
-html body #searchResults .lc-ct .lc-parcela-card .swipe.lc-ct-sw .pcard.lc-ct-item{padding-top:14px!important;padding-bottom:14px!important}
-
-/* AGI 11/11 — Agenda: busca virou ícone (lupa · funil · calendário juntos, PC e celular) */
-html body .rc-cal-topbar-2{justify-content:flex-end!important;gap:4px!important}
-html body .agb-busca-linha{display:flex;align-items:center;gap:8px;height:38px;padding:0 6px 0 12px;margin:2px 0 12px;border-radius:12px;background:var(--card);box-shadow:0 0 0 .5px var(--line),0 1px 3px rgba(0,0,0,.05)}
-html body .agb-busca-linha .agb-busca-ic{width:16px;height:16px;flex:none;color:var(--ink3)}
-html body .agb-busca-linha .agb-busca-input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 15px/1 inherit;font-family:inherit;color:var(--ink)}
-html body .agb-busca-linha .agb-busca-clear{flex:none;width:26px;height:26px;border:0;border-radius:50%;background:transparent;color:var(--ink3);font-size:13px;cursor:pointer}
-@media(min-width:761px){html body .agb-busca-linha{max-width:360px;margin-left:auto}}
-
-/* AGI — Agenda: lupa · funil · calendário dentro de uma pílula (janela oval) à esquerda, ícones pequenos de traço fino, todos no mesmo cinza */
-html body .rc-cal-topbar-2{justify-content:flex-start!important;gap:0!important;height:34px;min-height:34px}
-html body .rc-cal-topbar-2 .agb-busca-sp{display:none!important}
-html body .agb-pilula{display:inline-flex;align-items:center;height:34px;padding:0 6px;border-radius:999px;box-sizing:border-box;overflow:hidden;background:rgba(255,255,255,.28);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border:.5px solid rgba(255,255,255,.6);box-shadow:0 0 0 .5px rgba(0,0,0,.05)}
-html[data-theme="dark"] body .agb-pilula{background:rgba(40,44,54,.32);border-color:rgba(255,255,255,.12);box-shadow:0 0 0 .5px rgba(0,0,0,.35)}
-html body .agb-pilula .rc-ico-btn{width:34px!important;height:34px!important;border-radius:0!important;background:none!important;box-shadow:none!important;color:var(--ink3)!important}
-html body .agb-pilula .rc-ico-btn svg{width:16px!important;height:16px!important;stroke-width:1.5!important}
-html body .agb-pilula .rc-ico-btn:hover,html body .agb-pilula .rc-ico-btn.on,html body .agb-pilula .rc-ico-btn.filtrado{color:var(--ink2)!important}
-html body .agb-pilula .rc-tipo-ico.filtrado::after{top:7px;right:6px;width:6px;height:6px;background:var(--ink2)}
-/* AGI — texto de % dentro dos tubos um pouco mais claro */
-#page-resumo .fat-painel-lista .fat-barra-pct{color:#555b63 !important}
-html[data-theme="dark"] #page-resumo .fat-painel-lista .fat-barra-pct{color:#566b7f !important}
-/* AGI — Agenda: saldo do dia (cabeçalho) e dias de atraso (cartão) só com o valor colorido, sem fundo de aviso */
-html body .agb-dh-in,html body .agb-dh-in-pago,html body .agb-ev-atraso,html[data-theme="dark"] body .agb-dh-in,html[data-theme="dark"] body .agb-ev-atraso{background:none!important;border:0!important;box-shadow:none!important;padding-left:0!important;padding-right:0!important}
-html[data-theme="dark"] body .agb-ev-atraso{color:#FF8A80!important}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
 ['gesturestart','gesturechange','gestureend'].forEach(function(ev){document.addEventListener(ev,function(e){e.preventDefault();},{passive:false});});
 (function(){var t=0,al=null;document.addEventListener('touchend',function(e){var n=Date.now();if(n-t<300&&e.target===al&&e.cancelable)e.preventDefault();t=n;al=e.target;},{passive:false});})();
 </script>
+<style id="agi-liquid-glass-leve">
+/* [liquid-glass-leve] Fundo com manchas de cor bem suaves + cabeçalhos de data da Agenda em vidro leve.
+   Só tema claro; bordas finas e translúcidas. REVERSÃO: apague este bloco inteiro. */
+html:not([data-theme="dark"]) body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(60% 34% at 10% 6%,rgba(201,154,70,.16),transparent 70%),
+    radial-gradient(55% 36% at 94% 28%,rgba(95,140,125,.15),transparent 70%),
+    radial-gradient(60% 38% at 18% 68%,rgba(110,140,215,.15),transparent 72%),
+    radial-gradient(50% 32% at 88% 94%,rgba(201,154,70,.12),transparent 70%);
+}
+html:not([data-theme="dark"]) #page-resumo .agb-col .agb-col-hd,
+html:not([data-theme="dark"]) .agb-col .agb-col-hd{
+  position:sticky;overflow:hidden;isolation:isolate;
+  background:linear-gradient(135deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.34) 55%,rgba(255,255,255,.48) 100%) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(170%);backdrop-filter:blur(14px) saturate(170%);
+  border:0.5px solid rgba(255,255,255,.55) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 0 14px rgba(255,255,255,.18),0 6px 16px -10px rgba(20,20,40,.22) !important;
+}
+html:not([data-theme="dark"]) #page-resumo .agb-col.agb-hoje .agb-col-hd,html:not([data-theme="dark"]) .agb-col.agb-hoje .agb-col-hd{
+  background:linear-gradient(135deg,rgba(255,255,255,.58) 0%,rgba(255,255,255,.30) 55%,rgba(255,255,255,.44) 100%),color-mix(in srgb,var(--blue) 9%,transparent) !important;
+}
+html:not([data-theme="dark"]) #page-resumo .agb-col.agb-pago .agb-col-hd,html:not([data-theme="dark"]) .agb-col.agb-pago .agb-col-hd{
+  background:linear-gradient(135deg,rgba(255,255,255,.58) 0%,rgba(255,255,255,.30) 55%,rgba(255,255,255,.44) 100%),color-mix(in srgb,var(--green) 9%,transparent) !important;
+}
+html:not([data-theme="dark"]) .agb-col .agb-col-hd::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;
+  background:radial-gradient(120% 140% at 8% -40%,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 55%);
+}
+</style>
 </head>
 <body>
 
@@ -7643,14 +7452,6 @@ function setAgbQ(v){
   selAgbQ=v;
   renderRecebHoje();
 }
-// Busca da Agenda como ícone (igual ao funil e ao calendário): toca pra abrir o
-// campo logo abaixo; tocar de novo fecha e limpa o filtro.
-let agbBuscaAberta=false, agbFocarBusca=false;
-function toggleAgbBusca(){
-  if(agbBuscaAberta||selAgbQ){agbBuscaAberta=false;selAgbQ='';}
-  else{agbBuscaAberta=true;agbFocarBusca=true;}
-  renderRecebHoje();
-}
 function agbMatchQ(r){
   if(!selAgbQ.trim())return true;
   const q=semAcento(selAgbQ).toLowerCase();
@@ -8365,19 +8166,11 @@ function dayHeaderHtml(dia,n,totalHtml){
   const isHoje=dia===hoje, isVencDia=!semData&&dia<hoje;
   const titCls=isHoje?'hoje':isVencDia?'venc':'';
   const tag=isHoje?`<span class="day-tag hoje">HOJE</span>`:isVencDia?`<span class="day-tag venc">ATRASADO</span>`:'';
-  const WDF=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
-  const MESA=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-  const dataTxt=semData?'':dia.slice(8)+'/'+dia.slice(5,7)+'/'+dia.slice(2,4);
-  const tile=semData
-    ?`<div class="day-tile sem" aria-hidden="true"><b>–</b></div>`
-    :`<div class="day-tile${isHoje?' hoje':isVencDia?' venc':''}" aria-hidden="true"><i>${MESA[+dia.slice(5,7)-1]}</i><b>${dia.slice(8)}</b></div>`;
   return `<div class="day-header" onclick="toggleDay(this)">
-      ${tile}
-      <div class="day-info">
-        <div class="day-weekday ${titCls}">${semData?'Sem data':WDF[new Date(dia+'T12:00:00').getDay()]}</div>
-        <div class="day-title">${semData?'':dataTxt+' · '}${n} lançamento${n===1?'':'s'}</div>
-      </div>
+      <div class="day-weekday">${semData?'':WD[new Date(dia+'T12:00:00').getDay()]}</div>
+      <div class="day-title ${titCls}">${semData?'Sem data':dia.slice(8)+'/'+dia.slice(5,7)+'/'+dia.slice(2,4)}</div>
       ${tag}
+      <span class="day-count">${n}</span>
       ${totalHtml}
       <span class="day-chevron">›</span>
     </div>`;
@@ -8986,7 +8779,10 @@ function agbAtrasoTxt(dataISO,hojeISO){
   if(!dataISO||!hojeISO||dataISO>=hojeISO)return null;
   const d=Math.round((new Date(hojeISO+'T12:00:00')-new Date(dataISO+'T12:00:00'))/86400000);
   if(d<=0)return null;
-  return d===1?'1 dia':d+' dias';
+  if(d===1)return 'há 1 dia';
+  if(d<30)return 'há '+d+' dias';
+  const m=Math.floor(d/30);
+  return m===1?'há 1 mês':'há '+m+' meses';
 }
 // Valor do chip de total do cabeçalho — centavos só quando existem de
 // verdade (",00" não informa nada e come 3 caracteres numa coluna estreita),
@@ -9751,7 +9547,7 @@ function renderRecebHoje(){
   // <input> em si é recriado do zero junto com o resto.
   const wrapAnt=el.querySelector('.agb-wrap');
   const scrollAnt=wrapAnt?wrapAnt.scrollLeft:0;
-  const buscaFoco=(document.activeElement&&document.activeElement.id==='agbBuscaInput')||agbFocarBusca;
+  const buscaFoco=document.activeElement&&document.activeElement.id==='agbBuscaInput';
   const buscaCursor=buscaFoco?document.activeElement.selectionStart:null;
   // Agenda (board por dia) é o padrão; o calendário Seg-Sex do mês continua
   // disponível como vista secundária, alternando pelo ícone no topo.
@@ -9770,15 +9566,15 @@ function renderRecebHoje(){
   // Busca da Agenda: filtra por qualquer campo do lançamento (ver
   // agbMatchQ) — só faz sentido no modo board, então some no modo
   // Calendário (CSS .rc-mode-cal .agb-busca).
-  const icLupa='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
-  const buscaAtiva=!!(agbBuscaAberta||selAgbQ);
-  const buscaBtnHtml=`<button type="button" class="rc-ico-btn${buscaAtiva?' on':''}" onclick="toggleAgbBusca()" title="Buscar" aria-label="Buscar" aria-expanded="${buscaAtiva?'true':'false'}">${icLupa}</button>`;
-  const buscaCampoHtml=(recebViewMode==='board'&&buscaAtiva)?`<div class="agb-busca-linha">
-    <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
+  const buscaHtml=`<div class="agb-busca">
+    <svg class="agb-busca-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="agbBuscaInput" class="agb-busca-input" placeholder="Buscar na agenda…" autocomplete="off" value="${escHtml(selAgbQ)}" oninput="setAgbQ(this.value)">
     ${selAgbQ?`<button type="button" class="agb-busca-clear" title="Limpar busca" onclick="setAgbQ('')">✕</button>`:''}
-  </div>`:'';
-  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2"><span class="agb-busca-sp"></span><div class="agb-pilula">${recebViewMode==='board'?buscaBtnHtml:''}${tipoIcoHtml}${toggleHtml}</div></div>${buscaCampoHtml}
+    <span class="agb-busca-divisor" aria-hidden="true"></span>
+    ${tipoIcoHtml}
+    ${toggleHtml}
+  </div>`;
+  el.innerHTML=`<div class="rc-cal-topbar rc-cal-topbar-2">${recebViewMode==='board'?buscaHtml:'<span class="agb-busca-sp"></span>'+tipoIcoHtml+toggleHtml}</div>
     <div class="rc-side-by-side rc-mode-${recebViewMode}">
       <div class="rc-block rc-block-board">${renderAgendaBoardHtml()}</div>
       <div class="rc-block rc-block-cal">
@@ -9788,7 +9584,6 @@ function renderRecebHoje(){
   if(buscaFoco){
     const inp=document.getElementById('agbBuscaInput');
     if(inp){ inp.focus(); if(buscaCursor!=null) inp.setSelectionRange(buscaCursor,buscaCursor); }
-    agbFocarBusca=false;
   }
   agbPosicionaHoje(scrollAnt);
   agbAjustaAlturaAtiva();
@@ -10844,8 +10639,9 @@ function frRenderData(){
     if(!itens.length){const vazio=document.createElement('p');vazio.className='fat-painel-vazio';vazio.textContent='Nenhum lançamento neste período.';lista.appendChild(vazio);continue;}
     const maiorBarra=Math.max(...itens.map(x=>Math.max(0,x.value)),0.01);
     // Reserva à direita = largura do maior valor (medido) + espaçamento (+ ✓ quando houver): o tubo maior termina onde sobra só o valor.
-    const _cv=frxCanvas||(frxCanvas=document.createElement('canvas').getContext('2d'));_cv.font='600 12px IBM Plex Sans,system-ui,sans-serif';
+    const _cv=frxCanvas||(frxCanvas=document.createElement('canvas').getContext('2d'));_cv.font='600 12px system-ui,-apple-system,sans-serif';
     const _resPx=Math.ceil(Math.max(...itens.map(x=>_cv.measureText(fR(x.value)).width))+8+16);
+    const curva=frCurva(frRowsForRing(dim),dim);if(curva)lista.appendChild(curva);
     itens.forEach((it,idx)=>{
       const pago=Math.max(0,Math.min(it.value,it.pago));
       const falta=Math.max(0,it.value-pago);
@@ -10862,8 +10658,8 @@ function frRenderData(){
       const cor=(dim==='tipo'?paletaTipo:paletaDono)[idx%(dim==='tipo'?paletaTipo.length:paletaDono.length)];
       faixa.style.setProperty('--fat-cor',cor);
       linha.style.setProperty('--fat-cor',cor);
-      _cv.font='700 12.5px IBM Plex Sans,system-ui,sans-serif';const _nw=_cv.measureText(it.key).width+it.key.length*0.2;
-      _cv.font='800 11.5px IBM Plex Sans,system-ui,sans-serif';const _pw=_cv.measureText(pct+'%').width+16;
+      _cv.font='700 12.5px system-ui,-apple-system,sans-serif';const _nw=_cv.measureText(it.key).width+it.key.length*0.2;
+      _cv.font='800 11.5px system-ui,-apple-system,sans-serif';const _pw=_cv.measureText(pct+'%').width+16;
       const _need=Math.ceil(14+_nw+10+_pw+12);
       faixa.style.setProperty('--tubo-w','min(max('+_need+'px, calc((100% - '+_resPx+'px) * '+(Math.max(0,it.value)/maiorBarra).toFixed(4)+')), calc(100% - '+_resPx+'px))');
       // O atraso deste mês ocupa parte da faixa pendente, sem alterar o total.
@@ -10875,8 +10671,7 @@ function frRenderData(){
       const cheio=document.createElement('span');cheio.className='fat-barra-cheio';cheio.style.width=proporcao+'%';
       const pend=document.createElement('span');pend.className='fat-barra-restante';pend.style.width=(it.value>0?100*pendNormal/it.value:0)+'%';
       const atraso=document.createElement('span');atraso.className='fat-barra-atraso-mes';atraso.style.width=(it.value>0?100*atrasoMes/it.value:0)+'%';
-      const sombra=document.createElement('span');sombra.className='fat-barra-sombra';
-      faixa.append(cheio,pend,atraso,sombra,nome);
+      faixa.append(cheio,pend,atraso,nome);
       if(atrasoAntigo>0.005){
         // Marca discreta dentro do tubo: não aumenta a linha nem altera seu comprimento.
         const marca=document.createElement('span');marca.className='fat-barra-atraso-antigo';
@@ -10885,14 +10680,15 @@ function frRenderData(){
       }
       const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';faixa.appendChild(numero);
       const valor=document.createElement('span');valor.className='fat-barra-valor';
-      // Valor externo no padrão Estilo: total e, quando parcial, saldo pendente abaixo.
-      // Não altera montantes, atrasos, filtros nem comportamento do clique.
-      const principal=document.createElement('span');principal.className='fat-valor-principal';
-      if(falta<=0.005){const ok=document.createElement('span');ok.className='fat-valor-ok';ok.textContent='✓';principal.appendChild(ok);}
-      if(falta>0.005 && pago<=0.005){principal.style.color='#d18a35';}
-      const numeroValor=document.createElement('span');numeroValor.innerHTML=fRH(it.value);principal.appendChild(numeroValor);
-      valor.appendChild(principal);
-      valor.title='Total: '+fR(it.value)+' · Recebido: '+fR(pago)+' · A receber: '+fR(falta);
+      {
+        const temP=falta>0.005,escP=temP&&Math.abs(falta-it.value)>0.005;
+        const l1=document.createElement('div');
+        if(!temP){const ok=document.createElement('span');ok.className='v-ok';ok.textContent='\u2713';l1.appendChild(ok);}
+        const num=document.createElement('span');if(temP&&!escP)num.className='v-pend';num.innerHTML=fRH(it.value);l1.appendChild(num);
+        valor.appendChild(l1);
+        if(escP){const l2=document.createElement('div');l2.className='v-falta';l2.textContent=fR(falta);valor.appendChild(l2);}
+        valor.title=fR(it.value);
+      }
       linha.append(faixa,valor);
       // Prévia APENAS enquanto o cursor está dentro da área real do tubo.
       // O espaço vazio e o valor à direita não acionam nem mantêm a janela.
@@ -12924,10 +12720,10 @@ function lcContratoHtml(g,fecharBusca,opt){
     ?`<span class="agi-prev-range"><span class="agi-prev-lbl">Previsões de pagamento</span><strong>${venc0.length?fDM(venc0[0]):'Sem data'} → ${venc0.length?fDM(venc0[venc0.length-1]):'Sem data'}</strong><small>${datas.length} datas</small></span>`
     :`<span class="agi-prev-date${todosPagos?' paid':algumVenc?' late':hojeCard?' today':''}"><span class="agi-prev-lbl">Previsão de pagamento</span><strong>${r0.prev_pgto?fDM(r0.prev_pgto):'Sem data'}</strong></span>`;
   const idAttr=opt.id?` id="${opt.id}"`:'';
-  return `<div${idAttr} class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}${multiData?'':' lc-ct-1d'}" data-dia="${r0.prev_pgto||''}">
+  return `<div${idAttr} class="lc-ct${todosPagos?' done':''}${algumVenc?' venc':''}${hojeCard?' hoje-card':''}" data-dia="${r0.prev_pgto||''}">
     <div class="lc-ct-hd">
       <div class="lc-ct-vinc">
-        <span class="lc-ct-badge${ehContrato?'':' parc'}">${ehContrato?'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Mesmo contrato':'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>Compra parcelada'}</span>
+        <span class="lc-ct-badge${ehContrato?'':' parc'}">${ehContrato?'🔗 Mesmo contrato':'💳 Compra parcelada'}</span>
         ${resumo?`<span class="lc-ct-stat">${resumo}</span>`:''}
       </div>
       <div class="pcard-top">
@@ -13077,13 +12873,9 @@ function buscaGroupedHtml(grupos,fecharBusca){
       // Soma o mês de vencimento dos lançamentos, não o contrato inteiro.
       // Grupos com parcelas em vários meses continuam visualmente unidos.
       const t=totaisGrupos(grupos,mesKey);
-      const tlMes=mesKey?`<div class="day-tile" aria-hidden="true"><i>${String(MN[parseInt(mesKey.slice(5,7),10)-1]).toUpperCase().slice(0,3)}</i><b>${mesKey.slice(2,4)}</b></div>`:`<div class="day-tile sem" aria-hidden="true"><b>–</b></div>`;
-      const MESF=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-      const nomeMes=mesKey?MESF[parseInt(mesKey.slice(5,7),10)-1]+' de 20'+mesKey.slice(2,4):'Sem vencimento';
       mesHtml=`<div class="search-total srow-mes-tot">
-        ${tlMes}
-        <div class="day-info"><div class="day-weekday">${nomeMes}</div><div class="day-title">${t.n} lançamento${t.n===1?'':'s'}</div><div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div></div>
-        <span class="day-total liq">${fR(t.liq)}</span>
+        <div class="st-main"><span>${lbl} · ${t.n} lançamento${t.n===1?'':'s'}</span><span class="st-val">${fR(t.liq)}</span></div>
+        <div class="st-sub"><span class="st-pago">Pago ${fR(t.pago)}</span><span class="st-pend">Pendente ${fR(t.pend)}</span></div>
       </div>`;
     }
     // [lanc-cartao-contrato] Mesmo agrupamento/design de Lançamentos — reusa
@@ -13429,7 +13221,7 @@ function fecharLinha(wrap){
   if(openRow===wrap)openRow=null;
 }
 function openRowEl(wrap,pw){closeRow(wrap);wrap.classList.add('open');swSet(wrap,-pw);openRow=wrap;}
-function panelW(wrap){const n=wrap.querySelectorAll('.swipe-act').length;return (n||1)*64;}
+function panelW(wrap){const n=wrap.querySelectorAll('.swipe-act').length;return (n||1)*76;}
 function swDo(gi,pay){closeRow();if(pay===1)abrirParcial(gi,true);else if(pay===2)abrirParcial(gi);else if(pay===3)reverterPagamento(gi);else if(pay===4)excluirLancamento(gi);else openEdit(gi);}
 function swXY(e){const t=(e.touches&&e.touches[0])||(e.changedTouches&&e.changedTouches[0]);return t?{x:t.clientX,y:t.clientY}:{x:e.clientX,y:e.clientY};}
 function swStart(e){
@@ -13497,7 +13289,7 @@ function pastelAmber(){return isDark()?'#F4C78C':'#c08a4a';}
 // o fundo é acinzentado e os botões são brancos).
 function applyThemeChrome(){
   const dark=isDark();
-  const m=document.getElementById('metaTheme'); if(m)m.content=dark?'#131c2c':'#E3E4E7';
+  const m=document.getElementById('metaTheme'); if(m)m.content=dark?'#202039':'#E3E4E7';
   const ico=dark
     ?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg>'
     :'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5 6.6 6.6 0 0 0 20.5 13.2Z"/></svg>';
