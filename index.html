@@ -5596,6 +5596,23 @@ html[data-theme="dark"] body .agb-ev-atraso{color:#FF8A80!important}
 html[data-theme="dark"] #page-resumo .agb-col.agb-hoje .agb-col-hd{ background:color-mix(in srgb,color-mix(in srgb,var(--blue) 14%,var(--card)) 84%,transparent); }
 #page-resumo .agb-col.agb-pago .agb-col-hd{ background:color-mix(in srgb,color-mix(in srgb,var(--green) 8%,var(--card)) 84%,transparent); }
 html[data-theme="dark"] #page-resumo .agb-col.agb-pago .agb-col-hd{ background:color-mix(in srgb,color-mix(in srgb,var(--green) 14%,var(--card)) 84%,transparent); }
+
+/* ═══ [azul-estilo-final] Tema escuro idêntico ao Azul atual da Estilo. Fica no FIM
+   da folha pra vencer o bloco [estilo-paineis] (cards em gradiente com borda, fundo
+   #1a2640→#131d31) e as regras do dock acima. REVERSÃO: apague este bloco. ═══ */
+html[data-theme="dark"]{--card:#283a55;--surface:#283a55;--surface2:#2f4260;--line:#2f4059;--ink3:#9fafc4;--dock-petroleo:#bfcbe0;background:#141c2a}
+html[data-theme="dark"] body{background-color:#141c2a;background-image:linear-gradient(180deg,#1c2638 0%,#141c2a 100%);background-attachment:fixed;background-repeat:no-repeat}
+html[data-theme="dark"] .header{background:rgba(28,38,56,.92) !important;border-bottom:.5px solid rgba(255,255,255,.04) !important;box-shadow:none !important}
+html[data-theme="dark"] .card,html[data-theme="dark"] .mc,html[data-theme="dark"] .modal,html[data-theme="dark"] .owner-pills,
+html[data-theme="dark"] .search-total,html[data-theme="dark"] .day-items .lc-ct{background:#283a55 !important;border:1px solid transparent !important;box-shadow:none !important;-webkit-backdrop-filter:none;backdrop-filter:none}
+html[data-theme="dark"] .pcard,html[data-theme="dark"] .swipe .pcard,html[data-theme="dark"] .day-items .pcard,html[data-theme="dark"] .day-items .swipe .pcard,
+html[data-theme="dark"] .lc-ct .swipe.lc-ct-sw .pcard.lc-ct-item,html[data-theme="dark"] .day-items .lc-ct .swipe .pcard.lc-ct-item{background:#2d4160 !important;border:1px solid transparent !important;box-shadow:none !important}
+html[data-theme="dark"] .pcard:hover,html[data-theme="dark"] .day-items .pcard:hover{background:#314766 !important}
+html[data-theme="dark"] body #mainDock.nav-tabs,html[data-theme="dark"] #mainDock.nav-tabs{background:#223049 !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;border:1px solid rgba(255,255,255,.08) !important;box-shadow:0 10px 30px rgba(0,0,0,.35) !important}
+html[data-theme="dark"] #mainDock.nav-tabs::before{display:none}
+html[data-theme="dark"] #mainDock.nav-tabs::after{background:none}
+html[data-theme="dark"] body #mainDock .ntab,html[data-theme="dark"] body #mainDock .ntab.ntab-back{color:#bfcbe0 !important}
+html[data-theme="dark"] body #mainDock .ntab.on{color:#fff !important;background:linear-gradient(160deg,#3c5f9c,#2a4571) !important;border:1px solid rgba(255,255,255,.10);box-shadow:none}
 </style>
 <script>
 /* O Safari do iPhone ignora user-scalable=no; bloqueia a pinça e o toque duplo à mão. */
