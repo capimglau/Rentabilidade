@@ -5593,9 +5593,8 @@ html body .agb-pilula .rc-tipo-ico.filtrado::after{top:7px;right:6px;width:6px;h
 /* AGI — texto de % dentro dos tubos um pouco mais claro */
 #page-resumo .fat-painel-lista .fat-barra-pct{color:#555b63 !important}
 html[data-theme="dark"] #page-resumo .fat-painel-lista .fat-barra-pct{color:#566b7f !important}
-/* AGI — Agenda: saldo do dia (cabeçalho) e dias de atraso (cartão) só com o valor colorido, sem fundo de aviso */
-html body .agb-dh-in,html body .agb-dh-in-pago,html body .agb-ev-atraso,html[data-theme="dark"] body .agb-dh-in,html[data-theme="dark"] body .agb-ev-atraso{background:none!important;border:0!important;box-shadow:none!important;padding-left:0!important;padding-right:0!important}
-html[data-theme="dark"] body .agb-ev-atraso{color:#FF8A80!important}
+/* AGI — Agenda: saldo do dia (cabeçalho) só com o valor colorido, sem fundo de aviso. Os dias de atraso do cartão (.agb-ev-atraso) voltam a ter o fundo, igual à Estilo (.agk2-ev-atraso). */
+html body .agb-dh-in,html body .agb-dh-in-pago,html[data-theme="dark"] body .agb-dh-in{background:none!important;border:0!important;box-shadow:none!important;padding-left:0!important;padding-right:0!important}
 
 /* Barra do dia da Agenda com transparência leve (+ desfoque suave pro conteúdo que rola por baixo). */
 #page-resumo .agb-col-hd{
@@ -9322,7 +9321,7 @@ function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
   return `<div class="agb-col ${cls}${pago?' agb-pago':''}">
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
-        <div class="agb-col-hd-l"><span class="agb-dow">${dowHtml}</span>${cls.includes('agb-hoje')?`<svg class="agb-agenda-calendar" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>`:''}${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
+        <div class="agb-col-hd-l">${cls.includes('agb-hoje')?`<svg class="agb-agenda-calendar" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>`:''}<span class="agb-dow">${dowHtml}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
         ${total>0.005?(pago
           ? `<span class="agb-dh-in agb-dh-in-pago" title="Total recebido neste dia">${agbMoedaCurta(total,'+')}</span>`
           : `<span class="agb-dh-in" role="button" tabindex="0" onclick="event.stopPropagation();baixarTudoDia('${dia}')" onkeydown="if(event.key==='Enter'){event.stopPropagation();baixarTudoDia('${dia}')}" title="Baixar todos os lançamentos do dia">${agbMoedaCurta(total,'+')}</span>`
@@ -15772,10 +15771,10 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 }
 #page-resumo .mc-label{display:flex;align-items:center;gap:6px;}
 #page-resumo .agb-agenda-calendar{
-  width:16px;height:16px;flex:0 0 16px;display:inline-block;
-  color:var(--ink3);vertical-align:middle;
+  width:17px;height:17px;flex:0 0 17px;display:inline-block;margin-right:2px;
+  color:#9F967F;vertical-align:middle;
 }
-#page-resumo .agb-col.agb-hoje .agb-agenda-calendar{color:var(--blue);}
+#page-resumo .agb-col.agb-hoje .agb-agenda-calendar{color:#9F967F;}
 
 
 /* Filtro do painel por proprietário: ícone maior, sem botão/fundo e centrado no cabeçalho. */
