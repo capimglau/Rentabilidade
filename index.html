@@ -10923,9 +10923,9 @@ function frRenderData(){
       }
       if(pct>0){const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';numero.title='Falta '+pct+'% deste valor';faixa.appendChild(numero);}
       const valor=document.createElement('span');valor.className='fat-barra-valor';
-      // Cor do texto monetário segue a competência escolhida no seletor:
-      // Previsto = neutro; Recebido = verde; A receber = âmbar.
-      const corCompetencia=frBasis==='caixa'?'var(--pastel-green)':frBasis==='pend'?'var(--pastel-amber)':'var(--ink)';
+      // Prioridade: lançamento totalmente pago fica verde mesmo em Previsto.
+      // Nos demais: Previsto = neutro; Recebido = verde; A receber = âmbar.
+      const corCompetencia=falta<=0.005?'var(--pastel-green)':frBasis==='caixa'?'var(--pastel-green)':frBasis==='pend'?'var(--pastel-amber)':'var(--ink)';
       valor.style.setProperty('color',corCompetencia,'important');
       // Valor externo no padrão Estilo: total e, quando parcial, saldo pendente abaixo.
       // Não altera montantes, atrasos, filtros nem comportamento do clique.
