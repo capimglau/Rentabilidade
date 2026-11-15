@@ -9019,6 +9019,19 @@ function agbFlagColor(tipo){
   return {mid:t.d,ink:t.d,icon};
 }
 // Selo de atraso do cartão — mesma redação do _agk2Atraso da Estilo.
+// Nome curto da empresa/cliente nos cards da Agenda: sempre o 1º e o 2º nome
+// (ex.: "Associação Brasileira de Cimento" -> "Associação Brasileira"). Se o 2º
+// termo for partícula (da, de, do, das, dos, e), inclui o seguinte pra não
+// cortar no meio ("Cristiano da Silva"). O nome inteiro continua no title.
+function agbNome2(nome){
+  const t=String(nome||'').trim().replace(/\s+/g,' ');
+  if(!t||t==='—') return t;
+  const w=t.split(' ');
+  if(w.length<=2) return t;
+  let n=2;
+  if(/^(da|de|do|das|dos|e)$/i.test(w[1])&&w.length>2) n=3;
+  return w.slice(0,n).join(' ').replace(/[.,;:]+$/,'');
+}
 function agbAtrasoTxt(dataISO,hojeISO){
   if(!dataISO||!hojeISO||dataISO>=hojeISO)return null;
   const d=Math.round((new Date(hojeISO+'T12:00:00')-new Date(dataISO+'T12:00:00'))/86400000);
@@ -9245,7 +9258,7 @@ function agbCardHtml(grp,dia,hiddenCount,pago){
       onkeydown="if(event.key==='Enter'){event.stopPropagation();${onclick}}"
       title="${pago?(n===1?'Toque para ver/editar este lançamento já recebido':`${n} lançamentos já recebidos`):`Toque para ${n>1?`ver os ${n} lançamentos e escolher o que baixar`:'registrar o recebimento'}${parc?` — parcela ${parc.atual} de ${parc.total} do mesmo lançamento`:''} — o tique baixa tudo`}">
     ${temAcao?`<div class="agb-card-acts">${editBtn}${checkBtn}</div>`:''}
-    <div class="agb-ev-l1"><p class="agb-card-title">${esc(grp.cliente||'—')}</p><span class="agb-card-val${pago?' agb-card-val-pago':''}">${fRH(valorMostrado)}</span></div>
+    <div class="agb-ev-l1"><p class="agb-card-title" title="${esc(grp.cliente||'')}">${esc(agbNome2(grp.cliente||'—'))}</p><span class="agb-card-val${pago?' agb-card-val-pago':''}">${fRH(valorMostrado)}</span></div>
     <div class="agb-ev-l2"><div class="agb-card-sub">${tipo?`<span class="agb-ev-cat">${esc(tipo)}</span>`:''}${detalhe?`<span class="agb-ev-det">${tipo?' · ':''}${detalhe}</span>`:''}</div>${badgeHtml}${stackBadge}</div>
   </div>`;
   if(!hiddenCount)return cardHtml;
@@ -15684,8 +15697,8 @@ iniciarApp();
    suave; escuro = azul. Dias hoje/pago/atrasados mantêm o tingimento próprio.
    REVERSÃO: apague este bloco inteiro. */
 /* Cores dos cabeçalhos (faixa da data, títulos dos painéis e barra de filtros) — troque só aqui */
-:root{ --agi-hd:#f2f2f7; --agi-hl:rgba(60,60,67,.14); --agi-hx:inset 0 1px 0 #fff,0 5px 10px -6px rgba(0,0,0,.28); }
-html[data-theme="dark"]{ --agi-hd:#2c2c2e; --agi-hl:rgba(84,84,88,.55); --agi-hx:inset 0 1px 0 rgba(255,255,255,.09),0 5px 10px -6px rgba(0,0,0,.7); }
+:root{ --agi-hd:#f5f5f3; --agi-pill:#f2f2f7; --agi-hl:rgba(60,60,67,.14); --agi-hx:inset 0 1px 0 #fff,0 5px 10px -6px rgba(0,0,0,.28); }
+html[data-theme="dark"]{ --agi-hd:#2c2c2e; --agi-pill:#2c2c2e; --agi-hl:rgba(84,84,88,.55); --agi-hx:inset 0 1px 0 rgba(255,255,255,.09),0 5px 10px -6px rgba(0,0,0,.7); }
 #page-resumo .agb-col{
   background:rgba(255,255,255,.35); border:0; box-shadow:none;
   border-radius:22px; overflow:clip;
@@ -15743,7 +15756,7 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 #page-resumo .rc-cal-topbar-2{ min-height:38px; align-items:center; }
 #page-resumo .agb-pilula{
   height:38px !important; border:0 !important; border-radius:19px !important; box-shadow:var(--agi-hx) !important;
-  padding:0 14px !important; background:var(--agi-hd) !important;
+  padding:0 14px !important; background:var(--agi-pill) !important;
   -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
 }
 /* Relevo suave (opção A) também nos títulos dos painéis */
@@ -15772,9 +15785,11 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 #page-resumo .mc-label{display:flex;align-items:center;gap:6px;}
 /* Mesmo ícone de calendário do filtro, no início do cabeçalho de cada coluna, proporcional ao texto (12px → ícone 14px). */
 #page-resumo .agb-col > .agb-col-hd .agb-agenda-calendar{
-  width:14px;height:14px;flex:0 0 14px;display:inline-block;margin:0;
-  color:var(--ink3);vertical-align:middle;
-  align-self:center !important; position:relative; top:-.5px;
+  width:13px;height:13px;flex:0 0 13px;display:inline-block;margin:0;
+  color:var(--ink3);
+  /* Alinha pela linha de base do texto (o resto do cabeçalho usa baseline) e desce 2px:
+     o ícone fica centralizado na altura das letras maiúsculas (SEG). */
+  align-self:baseline !important; transform:translateY(2px);
 }
 
 
