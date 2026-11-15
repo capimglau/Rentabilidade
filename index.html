@@ -15665,7 +15665,7 @@ iniciarApp();
 </body>
 <style id="cabecalhos-padrao-refinado">
 /* AGI idêntica ao AutoGest: (1) Agenda — o dia é um painel único, quase transparente e sem
-   borda, com a faixa da data colada no topo (ponta a ponta, 46px) e os cards logo abaixo;
+   borda, com a faixa da data colada no topo (ponta a ponta, 38px) e os cards logo abaixo;
    (2) títulos dos painéis na mesma altura, fonte e fundo. Fundo: claro = branco-quente
    suave; escuro = azul. Dias hoje/pago/atrasados mantêm o tingimento próprio.
    REVERSÃO: apague este bloco inteiro. */
@@ -15675,7 +15675,7 @@ iniciarApp();
 }
 html[data-theme="dark"] #page-resumo .agb-col{ background:rgba(255,255,255,.02); }
 #page-resumo .agb-col > .agb-col-hd{
-  height:46px !important; min-height:46px !important; max-height:46px !important;
+  height:38px !important; min-height:38px !important; max-height:38px !important;
   box-sizing:border-box !important; margin:0 0 10px !important; padding:0 18px !important;
   gap:0 !important; width:100%; border-radius:0 !important; border:0 !important;
   border-bottom:1px solid rgba(157,148,128,.20) !important;
@@ -15688,7 +15688,7 @@ html[data-theme="dark"] #page-resumo .agb-col > .agb-col-hd{
 #page-resumo .agb-col > .agb-col-hd .agb-dh-main{ width:100%; height:100%; flex-wrap:nowrap; }
 #page-resumo .agb-col > .agb-col-hd .agb-dow{ font-size:12px; font-weight:700; line-height:1.15; }
 #page-resumo .agb-col > .agb-col-hd .agb-dom{ font-size:11.5px; font-weight:600; line-height:1.15; }
-#page-resumo .agb-col > .agb-col-body{ padding-left:6px; padding-right:6px; }
+#page-resumo .agb-col > .agb-col-body{ padding-left:1px; padding-right:1px; }
 /* Títulos dos painéis (só os que não têm filtros/botões dentro) */
 .card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd){
   height:38px !important; min-height:38px !important; max-height:38px !important; box-sizing:border-box;
@@ -15701,11 +15701,26 @@ html[data-theme="dark"] #page-resumo .agb-col > .agb-col-hd{
 }
 .card > .card-hd:first-child:not(:has(select,input,button)) > .sub{ font-size:11.5px; color:#938B78; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
 html[data-theme="dark"] .card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd){
-  background:#2f4468; border-bottom-color:rgba(170,195,235,.12);
+  background:#293e60; border-bottom-color:rgba(170,195,235,.10);
 }
 @media (max-width:760px){
   #page-resumo > .card:nth-child(n+4) > .card-hd:first-child:not(:has(select,input,button)){ margin:-18px -18px 14px !important; padding:0 18px !important; }
 }
+/* Painéis "Faturamento por Tipo/Proprietário": cabeçalho idêntico ao da Estilo (38px, 12px, mesmo fundo) */
+#page-resumo .fat-painel-cab{
+  height:38px !important; min-height:38px !important; max-height:38px !important; box-sizing:border-box !important;
+  padding:0 16px !important; gap:8px !important; flex-wrap:nowrap !important; align-items:center !important;
+  border-radius:19px 19px 0 0; border-bottom:1px solid rgba(157,148,128,.20) !important;
+  background:linear-gradient(180deg,#fbf9f4 0%,#f4f1e9 100%) !important;
+}
+html[data-theme="dark"] #page-resumo .fat-painel-cab{ background:#293e60 !important; border-bottom-color:rgba(170,195,235,.10) !important; }
+#page-resumo .fat-painel-cab h2{ font-size:12px !important; font-weight:700; line-height:1.15; flex:1 1 auto !important; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#page-resumo .fat-painel-cab-acoes{ gap:8px !important; flex:0 0 auto !important; align-items:center; max-height:38px; }
+#page-resumo .fat-painel-total{ font-size:12px !important; font-weight:700; line-height:1.15; }
+html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
+#page-resumo .fat-painel-cab .frx-base-chip{ height:26px; padding:0 10px !important; font-size:11.5px !important; }
+#page-resumo .fat-painel-cab .rf-bar{ height:26px !important; min-height:0 !important; margin:0 !important; padding:0 !important; }
+#page-resumo .fat-painel-cab .rf-bar button, #page-resumo .fat-painel-cab .rf-bar .rf-btn{ height:26px !important; min-height:0 !important; padding-block:0 !important; }
 </style>
 
 </html>
