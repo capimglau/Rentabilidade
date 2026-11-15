@@ -10668,10 +10668,13 @@ function frxMostrarResumo(dim,key,evt){
   const subtitulo=document.createElement('div');subtitulo.className='frx-hover-sub';
   subtitulo.textContent=(dim==='dono'?'Proprietário':'Tipo')+' · '+data.rows.length+' lançamento'+(data.rows.length===1?'':'s');
   const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Atrasado neste mês',data.vencido],['Atrasado de meses anteriores',frxItemsFor(dim).find(i=>i.key===key)?.antigo||0]];
-  frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor])=>{
+  frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor],idx)=>{
     const linha=document.createElement('div');linha.className='frx-hover-line';
     const a=document.createElement('span');a.textContent=nome;
     const b=document.createElement('b');b.textContent=fR(valor);
+    // Cores por competência/status, sem herdar a cor da categoria ou do proprietário.
+    const classe=idx===1?'recebido':idx===2?'pendente':(idx===3||idx===4)?'atrasado':'total';
+    linha.classList.add('frx-comp-'+classe);
     linha.append(a,b);return linha;
   }));
   frxInfoBox.hidden=false;
@@ -10929,7 +10932,6 @@ function frRenderData(){
       // Não altera montantes, atrasos, filtros nem comportamento do clique.
       const principal=document.createElement('span');principal.className='fat-valor-principal';
       if(falta<=0.005){const ok=document.createElement('span');ok.className='fat-valor-ok';ok.textContent='✓';principal.appendChild(ok);}
-      if(falta>0.005 && pago<=0.005){principal.style.color='#d18a35';}
       const numeroValor=document.createElement('span');numeroValor.innerHTML=fRH(it.value);principal.appendChild(numeroValor);
       valor.appendChild(principal);
       valor.title='Total: '+fR(it.value)+' · Recebido: '+fR(pago)+' · A receber: '+fR(falta);
@@ -15767,6 +15769,18 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
   color:var(--ink3);vertical-align:middle;
 }
 #page-resumo .agb-col.agb-hoje .agb-agenda-calendar{color:var(--blue);}
+
+
+/* Padronização por competência nos detalhes dos tubos:
+   recebido = verde; saldo pendente = âmbar; atrasos = vermelho; total = neutro.
+   A cor não depende da categoria nem do proprietário. */
+.frx-hover-line.frx-comp-total{color:var(--ink2);}
+.frx-hover-line.frx-comp-recebido,
+.frx-hover-line.frx-comp-recebido b{color:var(--pastel-green);}
+.frx-hover-line.frx-comp-pendente,
+.frx-hover-line.frx-comp-pendente b{color:var(--pastel-amber);}
+.frx-hover-line.frx-comp-atrasado,
+.frx-hover-line.frx-comp-atrasado b{color:var(--pastel-red);}
 
 </style>
 
