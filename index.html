@@ -15670,8 +15670,8 @@ iniciarApp();
    suave; escuro = azul. Dias hoje/pago/atrasados mantêm o tingimento próprio.
    REVERSÃO: apague este bloco inteiro. */
 /* Cores dos cabeçalhos (faixa da data, títulos dos painéis e barra de filtros) — troque só aqui */
-:root{ --agi-hd:#f2f2f7; --agi-hl:rgba(60,60,67,.12); }
-html[data-theme="dark"]{ --agi-hd:#2c2c2e; --agi-hl:rgba(84,84,88,.45); }
+:root{ --agi-hd:#f2f2f7; --agi-hl:rgba(60,60,67,.14); --agi-hx:inset 0 1px 0 #fff,0 5px 10px -6px rgba(0,0,0,.28); }
+html[data-theme="dark"]{ --agi-hd:#2c2c2e; --agi-hl:rgba(84,84,88,.55); --agi-hx:inset 0 1px 0 rgba(255,255,255,.09),0 5px 10px -6px rgba(0,0,0,.7); }
 #page-resumo .agb-col{
   background:rgba(255,255,255,.35); border:0; box-shadow:none;
   border-radius:22px; overflow:clip;
@@ -15682,7 +15682,7 @@ html[data-theme="dark"] #page-resumo .agb-col{ background:rgba(255,255,255,.02);
   box-sizing:border-box !important; margin:0 0 10px !important; padding:0 18px !important;
   gap:0 !important; width:100%; border-radius:0 !important; border:0 !important;
   border-bottom:1px solid var(--agi-hl) !important;
-  background:var(--agi-hd); box-shadow:none !important;
+  background:var(--agi-hd); box-shadow:var(--agi-hx) !important; position:relative; z-index:1;
   flex-direction:row; align-items:center;
 }
 html[data-theme="dark"] #page-resumo .agb-col > .agb-col-hd{
@@ -15728,10 +15728,13 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
    mesmo fundo das faixas de cabeçalho. */
 #page-resumo .rc-cal-topbar-2{ min-height:38px; align-items:center; }
 #page-resumo .agb-pilula{
-  height:38px !important; border:0 !important; border-radius:19px !important; box-shadow:none !important;
+  height:38px !important; border:0 !important; border-radius:19px !important; box-shadow:var(--agi-hx) !important;
   padding:0 14px !important; background:var(--agi-hd) !important;
   -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
 }
+/* Relevo suave (opção A) também nos títulos dos painéis */
+.card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd),
+#page-resumo .fat-painel-cab{ box-shadow:var(--agi-hx) !important; position:relative; z-index:1; }
 </style>
 
 </html>
