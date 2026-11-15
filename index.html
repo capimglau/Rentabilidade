@@ -15735,6 +15735,17 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 /* Relevo suave (opção A) também nos títulos dos painéis */
 .card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd),
 #page-resumo .fat-painel-cab{ box-shadow:var(--agi-hx) !important; position:relative; z-index:1; }
+/* AGI — altura compacta e uniforme dos filtros e cabeçalhos (ícones preservados). */
+#page-resumo .agb-pilula,
+#page-resumo .agb-col > .agb-col-hd,
+#page-resumo .card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd),
+#page-resumo .fat-painel-cab{
+  height:36px !important;
+  min-height:36px !important;
+  max-height:36px !important;
+  box-sizing:border-box !important;
+}
+#page-resumo .rc-cal-topbar-2{min-height:36px !important; height:36px !important;}
 </style>
 
 </html>
