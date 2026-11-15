@@ -15663,4 +15663,37 @@ iniciarApp();
 })();
 </script>
 </body>
+<style id="cabecalhos-padrao-refinado">
+/* Mesmo refinamento do AutoGest: faixa da data da Agenda e títulos dos painéis com
+   mesma altura (38px), fonte e fundo (claro: branco-quente suave; escuro: azul #293e60).
+   Dias hoje/pago/atrasados mantêm o tingimento próprio. REVERSÃO: apague este bloco. */
+.agb-col-hd{
+  height:38px; min-height:38px; max-height:38px; box-sizing:border-box; padding:0 12px; gap:0;
+  flex-direction:row; align-items:center; border-radius:17px;
+  background:linear-gradient(180deg,#fbf9f4 0%,#f4f1e9 100%);
+  border:0; border-bottom:1px solid rgba(157,148,128,.20); box-shadow:none;
+}
+.agb-col-hd .agb-dh-main{ width:100%; height:100%; flex-wrap:nowrap; }
+.agb-col-hd .agb-dow{ font-size:12px; line-height:1.15; }
+.agb-col-hd .agb-dom{ font-size:11.5px; font-weight:600; line-height:1.15; }
+html[data-theme="dark"] .agb-col-hd{ background:#293e60; border-bottom-color:rgba(170,195,235,.10); }
+/* Títulos dos painéis (só os que não têm filtros/botões dentro) */
+.card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd){
+  height:38px !important; min-height:38px !important; max-height:38px !important; box-sizing:border-box;
+  margin:-20px -22px 16px !important; padding:0 22px !important; gap:8px;
+  flex-wrap:nowrap !important; align-items:center !important;
+  font-size:12px !important; font-weight:700; color:var(--ink);
+  border-radius:var(--rl) var(--rl) 0 0;
+  background:linear-gradient(180deg,#fbf9f4 0%,#f4f1e9 100%);
+  border-bottom:1px solid rgba(157,148,128,.20);
+}
+.card > .card-hd:first-child:not(:has(select,input,button)) > .sub{ font-size:11.5px; color:#938B78; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+html[data-theme="dark"] .card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd){
+  background:#2f4468; border-bottom-color:rgba(170,195,235,.12);
+}
+@media (max-width:760px){
+  #page-resumo > .card:nth-child(n+4) > .card-hd:first-child:not(:has(select,input,button)){ margin:-18px -18px 14px !important; padding:0 18px !important; }
+}
+</style>
+
 </html>
