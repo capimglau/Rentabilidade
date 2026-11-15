@@ -15664,19 +15664,31 @@ iniciarApp();
 </script>
 </body>
 <style id="cabecalhos-padrao-refinado">
-/* Mesmo refinamento do AutoGest: faixa da data da Agenda e títulos dos painéis com
-   mesma altura (38px), fonte e fundo (claro: branco-quente suave; escuro: azul #293e60).
-   Dias hoje/pago/atrasados mantêm o tingimento próprio. REVERSÃO: apague este bloco. */
-.agb-col-hd{
-  height:38px; min-height:38px; max-height:38px; box-sizing:border-box; padding:0 12px; gap:0;
-  flex-direction:row; align-items:center; border-radius:17px;
-  background:linear-gradient(180deg,#fbf9f4 0%,#f4f1e9 100%);
-  border:0; border-bottom:1px solid rgba(157,148,128,.20); box-shadow:none;
+/* AGI idêntica ao AutoGest: (1) Agenda — o dia é um painel único, quase transparente e sem
+   borda, com a faixa da data colada no topo (ponta a ponta, 46px) e os cards logo abaixo;
+   (2) títulos dos painéis na mesma altura, fonte e fundo. Fundo: claro = branco-quente
+   suave; escuro = azul. Dias hoje/pago/atrasados mantêm o tingimento próprio.
+   REVERSÃO: apague este bloco inteiro. */
+#page-resumo .agb-col{
+  background:rgba(255,255,255,.35); border:0; box-shadow:none;
+  border-radius:22px; overflow:clip;
 }
-.agb-col-hd .agb-dh-main{ width:100%; height:100%; flex-wrap:nowrap; }
-.agb-col-hd .agb-dow{ font-size:12px; line-height:1.15; }
-.agb-col-hd .agb-dom{ font-size:11.5px; font-weight:600; line-height:1.15; }
-html[data-theme="dark"] .agb-col-hd{ background:#293e60; border-bottom-color:rgba(170,195,235,.10); }
+html[data-theme="dark"] #page-resumo .agb-col{ background:rgba(255,255,255,.02); }
+#page-resumo .agb-col > .agb-col-hd{
+  height:46px !important; min-height:46px !important; max-height:46px !important;
+  box-sizing:border-box !important; margin:0 0 10px !important; padding:0 18px !important;
+  gap:0 !important; width:100%; border-radius:0 !important; border:0 !important;
+  border-bottom:1px solid rgba(157,148,128,.20) !important;
+  background:linear-gradient(180deg,#fbf9f4 0%,#f4f1e9 100%); box-shadow:none !important;
+  flex-direction:row; align-items:center;
+}
+html[data-theme="dark"] #page-resumo .agb-col > .agb-col-hd{
+  background:#293e60; border-bottom-color:rgba(170,195,235,.10) !important;
+}
+#page-resumo .agb-col > .agb-col-hd .agb-dh-main{ width:100%; height:100%; flex-wrap:nowrap; }
+#page-resumo .agb-col > .agb-col-hd .agb-dow{ font-size:12px; font-weight:700; line-height:1.15; }
+#page-resumo .agb-col > .agb-col-hd .agb-dom{ font-size:11.5px; font-weight:600; line-height:1.15; }
+#page-resumo .agb-col > .agb-col-body{ padding-left:6px; padding-right:6px; }
 /* Títulos dos painéis (só os que não têm filtros/botões dentro) */
 .card > .card-hd:first-child:not(:has(select,input,button)):not(.card-donut .card-hd):not(#cardFaturamentoMensal > .card-hd){
   height:38px !important; min-height:38px !important; max-height:38px !important; box-sizing:border-box;
