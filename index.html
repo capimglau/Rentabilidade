@@ -5104,11 +5104,9 @@ html[data-theme="dark"] #page-resumo .fat-barra-atraso-antigo{background:#e16b78
   text-shadow:0 1px 2px rgba(15,28,40,.75),0 0 4px rgba(15,28,40,.42) !important;
   -webkit-font-smoothing:antialiased;
 }
-/* Valores numéricos: a cor da categoria fica levemente mais escura no fundo branco. */
-html:not([data-theme="dark"]) #page-resumo .fat-barra-valor {
-  color:color-mix(in srgb,var(--fat-cor) 76%,#172634 24%) !important;
-  font-weight:800 !important;
-}
+/* A cor dos valores monetários é aplicada por competência no renderizador,
+   não pela cor individual do tubo/categoria. */
+html:not([data-theme="dark"]) #page-resumo .fat-barra-valor { font-weight:800 !important; }
 /* Cabeçalho da Agenda: dia da semana e número/data -1px. */
 #page-resumo .agb-dow {font-size:12px !important;}
 #page-resumo .agb-dom {font-size:11.5px !important;}
@@ -10924,11 +10922,15 @@ function frRenderData(){
         faixa.appendChild(marca);
       }
       if(pct>0){const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';numero.title='Falta '+pct+'% deste valor';faixa.appendChild(numero);}
-      const valor=document.createElement('span');
-      valor.className='fat-barra-valor '+(frBasis==='caixa'?'fat-base-recebido':frBasis==='pend'?'fat-base-pendente':'fat-base-previsto');
+      const valor=document.createElement('span');valor.className='fat-barra-valor';
+      // Cor do texto monetário segue a competência escolhida no seletor:
+      // Previsto = neutro; Recebido = verde; A receber = âmbar.
+      const corCompetencia=frBasis==='caixa'?'var(--pastel-green)':frBasis==='pend'?'var(--pastel-amber)':'var(--ink)';
+      valor.style.setProperty('color',corCompetencia,'important');
       // Valor externo no padrão Estilo: total e, quando parcial, saldo pendente abaixo.
       // Não altera montantes, atrasos, filtros nem comportamento do clique.
       const principal=document.createElement('span');principal.className='fat-valor-principal';
+      principal.style.setProperty('color',corCompetencia,'important');
       if(falta<=0.005){const ok=document.createElement('span');ok.className='fat-valor-ok';ok.textContent='✓';principal.appendChild(ok);}
       const numeroValor=document.createElement('span');numeroValor.innerHTML=fRH(it.value);principal.appendChild(numeroValor);
       valor.appendChild(principal);
@@ -15767,23 +15769,6 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
   color:var(--ink3);vertical-align:middle;
 }
 #page-resumo .agb-col.agb-hoje .agb-agenda-calendar{color:var(--blue);}
-
-
-/* Cor do valor externo dos tubos conforme a competência selecionada:
-   Previsto = neutro; Recebido = verde; A receber = âmbar.
-   Independe da cor atribuída à categoria ou ao proprietário. */
-#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-previsto,
-#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-previsto .fat-valor-principal{
-  color:var(--ink2) !important;
-}
-#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-recebido,
-#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-recebido .fat-valor-principal{
-  color:var(--pastel-green) !important;
-}
-#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-pendente,
-#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-pendente .fat-valor-principal{
-  color:var(--pastel-amber) !important;
-}
 
 </style>
 
