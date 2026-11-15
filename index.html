@@ -10668,13 +10668,10 @@ function frxMostrarResumo(dim,key,evt){
   const subtitulo=document.createElement('div');subtitulo.className='frx-hover-sub';
   subtitulo.textContent=(dim==='dono'?'Proprietário':'Tipo')+' · '+data.rows.length+' lançamento'+(data.rows.length===1?'':'s');
   const linhas=[['Total '+(frBasis==='comp'?'previsto':frBasis==='caixa'?'recebido':'a receber'),frSum(data.rows)],['Recebido',data.pago],['Saldo em aberto',data.saldo],['Atrasado neste mês',data.vencido],['Atrasado de meses anteriores',frxItemsFor(dim).find(i=>i.key===key)?.antigo||0]];
-  frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor],idx)=>{
+  frxInfoBox.replaceChildren(titulo,subtitulo,...linhas.map(([nome,valor])=>{
     const linha=document.createElement('div');linha.className='frx-hover-line';
     const a=document.createElement('span');a.textContent=nome;
     const b=document.createElement('b');b.textContent=fR(valor);
-    // Cores por competência/status, sem herdar a cor da categoria ou do proprietário.
-    const classe=idx===1?'recebido':idx===2?'pendente':(idx===3||idx===4)?'atrasado':'total';
-    linha.classList.add('frx-comp-'+classe);
     linha.append(a,b);return linha;
   }));
   frxInfoBox.hidden=false;
@@ -10927,7 +10924,8 @@ function frRenderData(){
         faixa.appendChild(marca);
       }
       if(pct>0){const numero=document.createElement('span');numero.className='fat-barra-pct';numero.textContent=pct+'%';numero.title='Falta '+pct+'% deste valor';faixa.appendChild(numero);}
-      const valor=document.createElement('span');valor.className='fat-barra-valor';
+      const valor=document.createElement('span');
+      valor.className='fat-barra-valor '+(frBasis==='caixa'?'fat-base-recebido':frBasis==='pend'?'fat-base-pendente':'fat-base-previsto');
       // Valor externo no padrão Estilo: total e, quando parcial, saldo pendente abaixo.
       // Não altera montantes, atrasos, filtros nem comportamento do clique.
       const principal=document.createElement('span');principal.className='fat-valor-principal';
@@ -15771,16 +15769,21 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 #page-resumo .agb-col.agb-hoje .agb-agenda-calendar{color:var(--blue);}
 
 
-/* Padronização por competência nos detalhes dos tubos:
-   recebido = verde; saldo pendente = âmbar; atrasos = vermelho; total = neutro.
-   A cor não depende da categoria nem do proprietário. */
-.frx-hover-line.frx-comp-total{color:var(--ink2);}
-.frx-hover-line.frx-comp-recebido,
-.frx-hover-line.frx-comp-recebido b{color:var(--pastel-green);}
-.frx-hover-line.frx-comp-pendente,
-.frx-hover-line.frx-comp-pendente b{color:var(--pastel-amber);}
-.frx-hover-line.frx-comp-atrasado,
-.frx-hover-line.frx-comp-atrasado b{color:var(--pastel-red);}
+/* Cor do valor externo dos tubos conforme a competência selecionada:
+   Previsto = neutro; Recebido = verde; A receber = âmbar.
+   Independe da cor atribuída à categoria ou ao proprietário. */
+#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-previsto,
+#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-previsto .fat-valor-principal{
+  color:var(--ink2) !important;
+}
+#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-recebido,
+#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-recebido .fat-valor-principal{
+  color:var(--pastel-green) !important;
+}
+#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-pendente,
+#page-resumo .fat-painel-lista .fat-barra-valor.fat-base-pendente .fat-valor-principal{
+  color:var(--pastel-amber) !important;
+}
 
 </style>
 
