@@ -9321,10 +9321,11 @@ function agbColHtml(cls,dow,dom,itens,dia,pago,pagosInfo){
     ? `<span class="agb-atrasados-seta agb-atrasados-seta-btn${pagosInfo.aberto?' on':''}" role="button" tabindex="0" aria-expanded="${pagosInfo.aberto?'true':'false'}" title="${pagosInfo.aberto?'Ocultar':'Ver'} os últimos ${pagosInfo.qtd} dia${pagosInfo.qtd>1?'s':''} já recebido${pagosInfo.qtd>1?'s':''}" onclick="event.stopPropagation();toggleAgbPagos()" onkeydown="if(event.key==='Enter'){event.stopPropagation();toggleAgbPagos()}">‹</span>`
     : (dia==='atrasados'?`<span class="agb-atrasados-seta" aria-hidden="true">‹</span>`:'');
   const dowHtml=(dia==='atrasados'||setaHtml)?`${setaHtml} ${dow}`:dow;
+  const calHeadIcon=cls.includes('agb-hoje')?'<svg class="agi-ref-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>':'';
   return `<div class="agb-col ${cls}${pago?' agb-pago':''}">
     <div class="agb-col-hd"${hdClick}>
       <div class="agb-dh-main">
-        <div class="agb-col-hd-l"><span class="agb-dow">${dowHtml}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
+        <div class="agb-col-hd-l">${calHeadIcon}<span class="agb-dow">${dowHtml}</span>${dom?`<span class="agb-dom">${dom}</span>`:''}</div>
         ${total>0.005?(pago
           ? `<span class="agb-dh-in agb-dh-in-pago" title="Total recebido neste dia">${agbMoedaCurta(total,'+')}</span>`
           : `<span class="agb-dh-in" role="button" tabindex="0" onclick="event.stopPropagation();baixarTudoDia('${dia}')" onkeydown="if(event.key==='Enter'){event.stopPropagation();baixarTudoDia('${dia}')}" title="Baixar todos os lançamentos do dia">${agbMoedaCurta(total,'+')}</span>`
@@ -11020,20 +11021,24 @@ function renderResumo(){
   const locSlides=mcLocCycleList.length
     ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label">${esc(o.dono)}</div><div class="mc-value">${fRH(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
     : `<div class="mc-cycle-slide on"><div class="mc-label">—</div><div class="mc-value">R$ 0,00</div><div class="mc-sub">Sem locação no mês</div></div>`;
+  // Ícones de cabeçalho alinhados ao padrão visual do Sistema Estilo.
+  const agiIconChart = '<svg class="agi-ref-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6" rx=".5"/><rect x="13" y="7" width="3" height="10" rx=".5"/><rect x="19" y="4" width="2" height="13" rx=".5"/></svg>';
+  const agiIconLayers = '<svg class="agi-ref-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg>';
+  const agiIconCalendar = '<svg class="agi-ref-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>';
   // "A receber" também alterna: total pendente do mês e, quando há algo
   // vencido, o quanto disso já passou do prazo — mesmo esquema do card de
   // proprietário, só que sempre 2 slides (nunca cycla se não há vencido).
-  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
+  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">${agiIconLayers} A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   // Mobile: Previsto, Recebido, A receber e (se houver) Atrasado alternam num card só.
   mcPrevCycleRoutes=['abrirCalendarioPrevisto()',"irLancMetric('pago')","irLancMetric('pend')"];
-  const prevSlides=`<div class="mc-cycle-slide on"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>`+
+  const prevSlides=`<div class="mc-cycle-slide on"><div class="mc-label">${agiIconChart} Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>`+
     `<div class="mc-cycle-slide"><div class="mc-label">Recebido</div><div class="mc-value" style="color:var(--green)">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>`+
-    `<div class="mc-cycle-slide"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
+    `<div class="mc-cycle-slide"><div class="mc-label">${agiIconLayers} A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   if(nVenc>0)mcPrevCycleRoutes.push("irLancMetric('pend')");
   document.getElementById('res-m').innerHTML=`
-    <div class="mc blue mc-desk-only" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
+    <div class="mc blue mc-desk-only" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">${agiIconChart} Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc blue mc-cycle mc-mob-only" id="mc-prev-cycle" role="button" tabindex="0" onclick="mcPrevCycleClick()" title="Toque pra ver Previsto, Recebido, A receber e Atrasado"><div class="mc-cycle-stage">${prevSlides}</div></div>
     <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="mcLocCycleClick()" onmouseenter="mcLocCyclePause()" onmouseleave="mcLocCycleResume()" title="Locação do mês por proprietário — clique pra passar pro próximo"><div class="mc-cycle-stage">${locSlides}</div></div>
     <div class="mc green mc-desk-only" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
@@ -15755,6 +15760,11 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
   box-sizing:border-box !important;
 }
 #page-resumo .rc-cal-topbar-2{min-height:36px !important; height:36px !important;}
+
+/* Ícones dos KPIs e cabeçalho da Agenda — réplica dos três símbolos destacados no exemplo do Sistema Estilo. */
+.agi-ref-icon{width:16px;height:16px;flex:0 0 16px;display:inline-block;vertical-align:middle;color:currentColor;}
+.mc-label{display:flex;align-items:center;gap:6px;}
+#page-resumo .agb-col-hd-l > .agi-ref-icon{width:16px;height:16px;flex:0 0 16px;color:var(--ink3);}
 </style>
 
 </html>
