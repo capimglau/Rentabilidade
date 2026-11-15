@@ -11018,22 +11018,22 @@ function renderResumo(){
   // "Locação · mês") — só o nome muda de card pra card, o valor e a
   // legenda "Locação · mês" ficam por baixo, dentro do próprio slide.
   const locSlides=mcLocCycleList.length
-    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label">${esc(o.dono)}</div><div class="mc-value">${fRH(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
+    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg> ${esc(o.dono)}</div><div class="mc-value">${fRH(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
     : `<div class="mc-cycle-slide on"><div class="mc-label">—</div><div class="mc-value">R$ 0,00</div><div class="mc-sub">Sem locação no mês</div></div>`;
   // "A receber" também alterna: total pendente do mês e, quando há algo
   // vencido, o quanto disso já passou do prazo — mesmo esquema do card de
   // proprietário, só que sempre 2 slides (nunca cycla se não há vencido).
-  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
+  const arecSlides=`<div class="mc-cycle-slide on"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg> A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   // Mobile: Previsto, Recebido, A receber e (se houver) Atrasado alternam num card só.
   mcPrevCycleRoutes=['abrirCalendarioPrevisto()',"irLancMetric('pago')","irLancMetric('pend')"];
-  const prevSlides=`<div class="mc-cycle-slide on"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>`+
+  const prevSlides=`<div class="mc-cycle-slide on"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6" rx=".5"/><rect x="13" y="7" width="3" height="10" rx=".5"/><rect x="19" y="4" width="2" height="13" rx=".5"/></svg> Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>`+
     `<div class="mc-cycle-slide"><div class="mc-label">Recebido</div><div class="mc-value" style="color:var(--green)">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>`+
-    `<div class="mc-cycle-slide"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
+    `<div class="mc-cycle-slide"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg> A receber</div><div class="mc-value">${fRH(totS)}</div><div class="mc-sub">${nPend} ${nPend===1?'pendente':'pendentes'}${nVenc>0?` · ${nVenc} ${nVenc===1?'atrasado':'atrasados'}`:''}</div></div>`+
     (nVenc>0?`<div class="mc-cycle-slide"><div class="mc-label">Atrasado</div><div class="mc-value" style="color:var(--red)">${fRH(totVenc)}</div><div class="mc-sub">${nVenc} em atraso</div></div>`:'');
   if(nVenc>0)mcPrevCycleRoutes.push("irLancMetric('pend')");
   document.getElementById('res-m').innerHTML=`
-    <div class="mc blue mc-desk-only" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label">Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
+    <div class="mc blue mc-desk-only" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6" rx=".5"/><rect x="13" y="7" width="3" height="10" rx=".5"/><rect x="19" y="4" width="2" height="13" rx=".5"/></svg> Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc blue mc-cycle mc-mob-only" id="mc-prev-cycle" role="button" tabindex="0" onclick="mcPrevCycleClick()" title="Toque pra ver Previsto, Recebido, A receber e Atrasado"><div class="mc-cycle-stage">${prevSlides}</div></div>
     <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="mcLocCycleClick()" onmouseenter="mcLocCyclePause()" onmouseleave="mcLocCycleResume()" title="Locação do mês por proprietário — clique pra passar pro próximo"><div class="mc-cycle-stage">${locSlides}</div></div>
     <div class="mc green mc-desk-only" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
@@ -11258,7 +11258,7 @@ function renderFluxo(){
   document.getElementById('fc-mes-label').textContent = `${MF[parseInt(cm)-1]} ${cy}`;
   document.getElementById('fc-summary').innerHTML = `
     <div class="mc green" style="flex:1;min-width:130px"><div class="mc-label">Total recebido</div><div class="mc-value">${fRH(totRec)}</div></div>
-    <div class="mc amber" style="flex:1;min-width:130px"><div class="mc-label">A receber</div><div class="mc-value">${fRH(totPend)}</div></div>
+    <div class="mc amber" style="flex:1;min-width:130px"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg> A receber</div><div class="mc-value">${fRH(totPend)}</div></div>
     <div class="mc blue" style="flex:1;min-width:130px"><div class="mc-label">Previsto (líquido)</div><div class="mc-value">${fRH(totRec+totPend)}</div></div>
   `;
 
@@ -15756,7 +15756,12 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 }
 #page-resumo .rc-cal-topbar-2{min-height:36px !important; height:36px !important;}
 
-/* Ícone de calendário no cabeçalho da data de hoje da Agenda */
+/* Ícones dos painéis superiores e calendário no cabeçalho da Agenda */
+#page-resumo .agi-panel-icon{
+  width:16px;height:16px;flex:0 0 16px;display:inline-block;
+  vertical-align:middle;color:var(--ink3);
+}
+#page-resumo .mc-label{display:flex;align-items:center;gap:6px;}
 #page-resumo .agb-agenda-calendar{
   width:16px;height:16px;flex:0 0 16px;display:inline-block;
   color:var(--ink3);vertical-align:middle;
