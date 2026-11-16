@@ -15917,4 +15917,64 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 #page-resumo .rc-cal-topbar-2{height:31.8px !important;min-height:31.8px !important;}
 </style>
 
+
+<script>
+/* Navegação pelo botão Voltar do navegador: páginas e janelas modais do AGI. */
+(()=>{
+  if(window.__agiBackNavigationInstalled) return;
+  window.__agiBackNavigationInstalled=true;
+  let tratandoVolta=false, ignorarFechamento=false, paginaAtual=()=>window.curPage||'resumo';
+  const overlays=()=>Array.from(document.querySelectorAll('.overlay.on'));
+  const stateAtual=()=>history.state||{};
+  try{history.replaceState({...stateAtual(),__agiApp:true,__agiPage:paginaAtual()},'',location.href);}catch(e){}
+
+  const goOriginal=window.go;
+  if(typeof goOriginal==='function'){
+    window.go=function(id){
+      if(!tratandoVolta){
+        const st=stateAtual();
+        if(st.__agiPage!==id || st.__agiOverlay){
+          try{history.pushState({__agiApp:true,__agiPage:id},'',location.href);}catch(e){}
+        }
+      }
+      return goOriginal.apply(this,arguments);
+    };
+  }
+
+  let abertos=overlays().map(el=>el.id);
+  const observer=new MutationObserver(()=>{
+    const atuais=overlays().map(el=>el.id);
+    const novos=atuais.filter(id=>!abertos.includes(id));
+    const fechados=abertos.filter(id=>!atuais.includes(id));
+    abertos=atuais;
+    if(ignorarFechamento) return;
+    if(novos.length){
+      const id=novos[novos.length-1];
+      try{history.pushState({__agiApp:true,__agiPage:paginaAtual(),__agiOverlay:id},'',location.href);}catch(e){}
+    }else if(fechados.length && !tratandoVolta){
+      const st=stateAtual();
+      if(st.__agiOverlay && fechados.includes(st.__agiOverlay)) history.back();
+    }
+  });
+  observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class']});
+
+  window.addEventListener('popstate',e=>{
+    const abertosAgora=overlays();
+    if(abertosAgora.length){
+      tratandoVolta=true;
+      // Fecha a janela mais recentemente aberta, sem afetar as demais.
+      abertosAgora[abertosAgora.length-1].classList.remove('on');
+      abertos=overlays().map(el=>el.id);
+      setTimeout(()=>{tratandoVolta=false;},0);
+      return;
+    }
+    const destino=e.state&&e.state.__agiPage;
+    if(destino && destino!==paginaAtual() && typeof goOriginal==='function'){
+      tratandoVolta=true;
+      goOriginal(destino);
+      setTimeout(()=>{tratandoVolta=false;},0);
+    }
+  });
+})();
+</script>
 </html>
