@@ -185,15 +185,9 @@ body::before {
      telas sem notch (desktop, a maioria dos Android) env() resolve pra
      0px — nada muda aí. */
   padding: env(safe-area-inset-top) 20px 0;
-  /* 58 -> 46px (pedido do usuário: "deixe o cabeçalho menos alto"). Cabe
-     folgado: o item mais alto da barra é o seletor de mês (.month-nav,
-     ~30px), e o logo caiu pra 24px.
-     height -> min-height: com o padding-top do notch acima, uma altura
-     FIXA espremeria o conteúdo pra caber nos mesmos 46px totais (o
-     box-sizing:border-box global conta o padding dentro da altura) — vira
-     min-height pra a caixa CRESCER com o padding extra, sem nunca ficar
-     menor que 46px de conteúdo. */
-  min-height: 46px;
+  /* Cabeçalho ligeiramente mais compacto, preservando dimensões dos ícones
+     e controles internos. min-height permite crescer quando houver safe-area. */
+  min-height: 43px;
   display: flex;
   align-items: center;
   gap: 0;
@@ -15911,6 +15905,14 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
   opacity:.72;
 }
 
+
+/* Ajuste fino solicitado: filtros da Agenda -7% adicionais, sem alterar SVGs;
+   painéis KPI do topo compactados somente no desktop. */
+@media (min-width:761px){
+  #page-resumo #res-m .mc{padding-top:8.5px !important;padding-bottom:8.5px !important;}
+}
+#page-resumo .agb-pilula{height:31.8px !important;min-height:31.8px !important;max-height:31.8px !important;}
+#page-resumo .rc-cal-topbar-2{height:31.8px !important;min-height:31.8px !important;}
 </style>
 
 </html>
