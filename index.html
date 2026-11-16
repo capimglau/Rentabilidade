@@ -10322,11 +10322,15 @@ function frAbbrevR(v){
 // Total de Locação do mês (previsto líquido), por proprietário — alimenta o
 // card giratório do Resumo. Mesmo critério de mês/valor do resto do Resumo
 // (prev_pgto no curMes, liq() = pago + saldo).
+function tipoEntraNoTotalDoProprietario(tipo){
+  const t=String(tipo||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return t.startsWith('loca') || t==='adiantamento';
+}
 function locPorDonoMes(){
   const sums={};
   allD().forEach(r=>{
     if((r.dono||'Indefinido')==='Indefinido')return;
-    if(!(r.tipo||'').toLowerCase().startsWith('loca'))return;
+    if(!tipoEntraNoTotalDoProprietario(r.tipo))return;
     if(!(r.prev_pgto||'').startsWith(curMes))return;
     sums[r.dono]=(sums[r.dono]||0)+liq(r);
   });
@@ -11036,7 +11040,7 @@ function renderResumo(){
   // "Locação · mês") — só o nome muda de card pra card, o valor e a
   // legenda "Locação · mês" ficam por baixo, dentro do próprio slide.
   const locSlides=mcLocCycleList.length
-    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg> ${esc(o.dono)}</div><div class="mc-value">${fRH(o.v)}</div><div class="mc-sub">Locação · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
+    ? mcLocCycleList.map((o,i)=>`<div class="mc-cycle-slide${i===mcLocCycleIdx?' on':''}"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg> ${esc(o.dono)}</div><div class="mc-value">${fRH(o.v)}</div><div class="mc-sub">Locação + Adiantamento · <span class="mes">${mLabel(curMes)}</span></div></div>`).join('')
     : `<div class="mc-cycle-slide on"><div class="mc-label">—</div><div class="mc-value">R$ 0,00</div><div class="mc-sub">Sem locação no mês</div></div>`;
   // "A receber" também alterna: total pendente do mês e, quando há algo
   // vencido, o quanto disso já passou do prazo — mesmo esquema do card de
@@ -11053,7 +11057,7 @@ function renderResumo(){
   document.getElementById('res-m').innerHTML=`
     <div class="mc blue mc-desk-only" role="button" tabindex="0" onclick="abrirCalendarioPrevisto()" title="Ver o previsto de cada dia do mês num calendário"><div class="mc-label"><svg class="agi-panel-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6" rx=".5"/><rect x="13" y="7" width="3" height="10" rx=".5"/><rect x="19" y="4" width="2" height="13" rx=".5"/></svg> Previsto · <span class="mes">${mLabel(curMes)}</span></div><div class="mc-value">${fRH(prevLiq)}</div><div class="mc-sub">${nL} lançamentos${deltaBadge}</div></div>
     <div class="mc blue mc-cycle mc-mob-only" id="mc-prev-cycle" role="button" tabindex="0" onclick="mcPrevCycleClick()" title="Toque pra ver Previsto, Recebido, A receber e Atrasado"><div class="mc-cycle-stage">${prevSlides}</div></div>
-    <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="mcLocCycleClick()" onmouseenter="mcLocCyclePause()" onmouseleave="mcLocCycleResume()" title="Locação do mês por proprietário — clique pra passar pro próximo"><div class="mc-cycle-stage">${locSlides}</div></div>
+    <div class="mc purple mc-cycle" id="mc-loc-cycle" role="button" tabindex="0" onclick="mcLocCycleClick()" onmouseenter="mcLocCyclePause()" onmouseleave="mcLocCycleResume()" title="Locação + Adiantamento do mês por proprietário — clique pra passar pro próximo"><div class="mc-cycle-stage">${locSlides}</div></div>
     <div class="mc green mc-desk-only" role="button" tabindex="0" onclick="irLancMetric('pago')" title="Ver só os recebidos"><div class="mc-label">Recebido</div><div class="mc-value">${fRH(totP)}</div><div class="mc-sub">${prevLiq>0?((totP/prevLiq)*100).toFixed(1):'0'}% do previsto</div></div>
     <div class="mc amber mc-cycle mc-desk-only" id="mc-arec-cycle" role="button" tabindex="0" onclick="irLancMetric('pend')" title="Ver só os pendentes"><div class="mc-cycle-stage">${arecSlides}</div></div>
   `;
@@ -11128,7 +11132,7 @@ function renderResumo(){
   // traço fino (era espessa e uma por proprietário; pedido do usuário
   // reduziu a UM só, pra não poluir o gráfico) sobreposta às barras de
   // Recebido/A vencer/Atrasado do total.
-  const locRowsMes=baseRows.filter(r=>r.tipo==='Locação'&&(r.dono==='Silvio'||r.dono==='Silvio 2'));
+  const locRowsMes=baseRows.filter(r=>tipoEntraNoTotalDoProprietario(r.tipo)&&(r.dono==='Silvio'||r.dono==='Silvio 2'));
   const valorLocMes=r=>resBase==='caixa'?fN(r.valor_pago):resBase==='pend'?(isPend(r)&&!isVenc(r)?fN(r.saldo):0):liq(r);
   const dsDonoLocMes=(!selDono||selDono==='Silvio'||selDono==='Silvio 2')&&locRowsMes.length?(()=>{
     const byM={};
@@ -11138,7 +11142,7 @@ function renderResumo(){
     // soma, senão deixa de mostrar a variação mês a mês pedida.
     const arr=mShown.map(k=>byM[k]||0);
     const col=DC['Silvio']||'#1f5fa8';
-    return [{type:'line',label:'Silvio · Locação',data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:1,tension:.35,pointRadius:1,pointHoverRadius:3,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc'}];
+    return [{type:'line',label:'Silvio · Locação + Adiantamento',data:arr,borderColor:col,backgroundColor:col,fill:false,borderWidth:1,tension:.35,pointRadius:1,pointHoverRadius:3,pointBackgroundColor:col,pointBorderColor:'#fff',pointBorderWidth:1,order:0,stack:'donoloc'}];
   })():[];
   mkC('cMes',{type:'bar',data:{labels:labelsT,datasets:[...dsMes,...dsDonoLocMes]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:10}},plugins:{legend:{display:false},barLabels:{display:true,size:window.innerWidth<=760?12:11,fmt:v=>Math.round(v/1000)+'k'},currentCol:{index:mShown.indexOf(curMes)},tooltip:{mode:'index',callbacks:{title:items=>items[0].label,label:ctx=>' '+ctx.dataset.label+': '+fR(ctx.raw),footer:items=>{const barItems=items.filter(it=>it.dataset.type!=='line');return barItems.length>1?'Total: '+fR(barItems.reduce((a,it)=>a+(it.raw||0),0)):'';}}}},scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{stacked:true,beginAtZero:true,grace:'12%',ticks:{callback:v=>Math.round(v/1000)+'k',maxTicksLimit:5},grid:{color:gridCol()},border:{display:false,dash:[4,4]}}}}});
   // Os painéis de barra mostram previsto E recebido juntos, então não seguem
@@ -12675,14 +12679,14 @@ function runSearch(){
   const donosMatch=q?[...new Set(all.map(r=>r.dono).filter(Boolean))].filter(d=>xlsNorm(d).includes(q)):[];
   let ownerHtml='';
   if(donosMatch.length){
-    const locRows=all.filter(r=>donosMatch.includes(r.dono)&&(r.tipo||'').toLowerCase().startsWith('loca')&&(r.prev_pgto||'').slice(0,7)===curMes);
+    const locRows=all.filter(r=>donosMatch.includes(r.dono)&&tipoEntraNoTotalDoProprietario(r.tipo)&&(r.prev_pgto||'').slice(0,7)===curMes);
     const locReceb=somaRecebido(locRows);                                     // recebido (líquido, inclui baixa parcial)
     const locReceber=locRows.reduce((a,r)=>a+(isPend(r)?fN(r.saldo):0),0);    // a receber (líquido)
     const locPrev=locReceb+locReceber;                                       // previsto = recebido + a receber
     const nome=donosMatch.length===1?donosMatch[0]:donosMatch.length+' proprietários';
     ownerHtml=`<div class="search-total" style="margin-bottom:8px">
       <div class="st-blk st-month">
-        <div class="st-main"><span>🚗 Locação · ${nome} · ${mesLabel}</span><span class="st-val">${fR(locPrev)}</span></div>
+        <div class="st-main"><span>🚗 Locação + Adiantamento · ${nome} · ${mesLabel}</span><span class="st-val">${fR(locPrev)}</span></div>
         <div class="st-sub"><span class="st-pago">Recebido ${fR(locReceb)}</span><span class="st-pend">A receber ${fR(locReceber)}</span></div>
       </div>
     </div>`;
@@ -13996,7 +14000,7 @@ function getTaxaForma(forma){
 // uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
 // contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
 // de itens é livre.
-const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Comissão','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Adiantamento','Outros'];
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Combustíveis','Multas','Pedágio','Franquia','Comissão','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Adiantamento','Outros'];
 // Só aparece em lançamentos antigos. Não entra na lista de criar, mas precisa
 // existir na edição para continuar selecionável em quem já tem esse tipo.
 const LANC_TIPOS_LEGADO=['Taxa Bruno'];
