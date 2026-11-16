@@ -6742,7 +6742,7 @@ const carimbaCriacao=r=>(r&&!r.created_at)?{...r,created_at:new Date().toISOStri
 async function dbInsert(rec){
   if(!SB) return carimbaCriacao(rec);
   const {data,error}=await SB.from('lancamentos').insert(_clean(rec)).select().single();
-  if(error){console.error(error);alert('Erro ao salvar no Supabase: '+error.message);return rec;}
+  if(error){console.error(error);throw new Error('Erro ao salvar no Supabase: '+error.message);}
   logAuditoria('criação','lancamentos',data.id,data);
   return data;
 }
@@ -12084,6 +12084,7 @@ async function addItensContrato(){
   const btn=document.getElementById('ed-submit');
   if(btn)btn.disabled=true;
   try{ await gravarComDesfazer(recs,(recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados')+' ao contrato'); }
+  catch(err){ console.error(err); msg.innerHTML=`<span style="color:var(--red)">${esc(msgErro(err))}</span>`; return; }
   finally{ if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados'} ao contrato!</span>`;
   resetItems('ed');
@@ -14503,7 +14504,7 @@ function coletaItens(pref,base){
     // Adiantamento é um lançamento financeiro independente de veículo:
     // não herda placa, proprietário ou período do contrato.
     const baseItem=tipo==='Adiantamento'
-      ? {...baseItem,placa:null,dono:null,saida:null,retorno:null}
+      ? {...base,placa:null,dono:null,saida:null,retorno:null}
       : base;
     const dp=itemGet(it,'dpago');
     const obsBase=itemGet(it,'obs')||'';
@@ -14597,6 +14598,10 @@ async function addN(){
   if(btn)btn.disabled=true;
   try{
     await gravarComDesfazer(recs,recs.length===1?'Lançamento adicionado':recs.length+' lançamentos adicionados');
+  } catch(err) {
+    console.error(err);
+    erro(esc(msgErro(err)));
+    return;
   } finally { if(btn)btn.disabled=false; }
   msg.innerHTML=`<span style="color:var(--green)">✓ ${recs.length===1?'Adicionado':recs.length+' lançamentos adicionados'}!</span>`;
   document.getElementById('novosCard').style.display='block';
