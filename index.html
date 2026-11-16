@@ -12077,8 +12077,9 @@ async function addItensContrato(){
   const s=document.getElementById('e-s').value||null;
   const rr=document.getElementById('e-r').value||null;
   const msg=document.getElementById('edMsg');
-  if(!p||!c){msg.innerHTML='<span style="color:var(--red)">O contrato precisa de placa e cliente.</span>';return;}
-  const {recs,erro}=coletaItens('ed',{placa:p,dono:d,saida:s,retorno:rr,cliente:c});
+  const soAdiantamento=itensSomenteAdiantamento('ed');
+  if((!soAdiantamento&&!p)||!c){msg.innerHTML=`<span style="color:var(--red)">${soAdiantamento?'Informe o cliente.':'O contrato precisa de placa e cliente.'}</span>`;return;}
+  const {recs,erro}=coletaItens('ed',{placa:p||null,dono:d||null,saida:s,retorno:rr,cliente:c});
   if(erro){msg.innerHTML=`<span style="color:var(--red)">${erro}</span>`;return;}
   const btn=document.getElementById('ed-submit');
   if(btn)btn.disabled=true;
@@ -12119,6 +12120,9 @@ async function saveEdit(){
     saida:document.getElementById('e-s').value||null,
     retorno:document.getElementById('e-r').value||null,
   };
+  if(novo.tipo==='Adiantamento'){
+    novo.placa=null;novo.dono=null;novo.saida=null;novo.retorno=null;
+  }
   const _pp=document.getElementById('e-pp').value||null;
   // Trava contra ano absurdo (ex: campo de data nativo salvando um ano
   // truncado tipo "0002" em vez de "2026") — sem isso o lançamento vira um
@@ -13991,7 +13995,7 @@ function getTaxaForma(forma){
 // uma avaria, uma multa...). Placa/proprietário/cliente/saída/retorno são do
 // contrato; tipo, forma, valor e previsão são de cada ITEM — e a quantidade
 // de itens é livre.
-const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Comissão','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Outros'];
+const LANC_TIPOS=['Locação','Avarias','Lavagem','Multas','Pedágio','Franquia','Comissão','Taxa Mario','Taxa Alfredo','Taxa Paulinho','Imposto','Adiantamento','Outros'];
 // Só aparece em lançamentos antigos. Não entra na lista de criar, mas precisa
 // existir na edição para continuar selecionável em quem já tem esse tipo.
 const LANC_TIPOS_LEGADO=['Taxa Bruno'];
@@ -14482,6 +14486,10 @@ function calcN(){calcItems('nf');}
 // o cartão à vista batiam na data certa, mas o parcelado jogava o valor
 // inteiro pro vencimento da ÚLTIMA parcela, sumindo com o previsto dos
 // meses anteriores.
+function itensSomenteAdiantamento(pref){
+  const preenchidos=itemEls(pref).filter(it=>!itemVazio(it));
+  return preenchidos.length>0&&preenchidos.every(it=>itemGet(it,'tipo')==='Adiantamento');
+}
 function coletaItens(pref,base){
   const its=itemEls(pref);
   const recs=[];
@@ -14492,6 +14500,11 @@ function coletaItens(pref,base){
     if(v<=0)return{erro:`Informe o valor do lançamento ${i+1}.`};
     const forma=itemForma(it);   // já com a bandeira: é dela que sai a taxa
     const tipo=itemGet(it,'tipo');
+    // Adiantamento é um lançamento financeiro independente de veículo:
+    // não herda placa, proprietário ou período do contrato.
+    const baseItem=tipo==='Adiantamento'
+      ? {...baseItem,placa:null,dono:null,saida:null,retorno:null}
+      : base;
     const dp=itemGet(it,'dpago');
     const obsBase=itemGet(it,'obs')||'';
     const taxa=getTaxaForma(forma);
@@ -14517,7 +14530,7 @@ function coletaItens(pref,base){
       const comPartes=comTot>0?dividirCentavos(comTot,n):[];
       dividirCentavos(vEf,n).forEach((bruto,k)=>{
         const ppK=addDUtil(dp,PREM.prazoParcela*(k+1));
-        recs.push({...base,
+        recs.push({...baseItem,
           tipo,forma,lanc_num:lancNum,
           valor:bruto,
           prev_pgto:ppK,
@@ -14525,7 +14538,7 @@ function coletaItens(pref,base){
           saldo:Math.round(bruto*(1-taxa)*100)/100,
           obs:(obsBase?`${obsBase} · Parcela ${k+1}/${n}`:`Parcela ${k+1}/${n}`)+comNota});
         if(comPartes[k]>0){
-          recs.push({...base,
+          recs.push({...baseItem,
             tipo:'Comissão',forma,lanc_num:comLancNum,
             valor:comPartes[k],
             prev_pgto:ppK,
@@ -14547,7 +14560,7 @@ function coletaItens(pref,base){
       if(anoPP<anoAtual-10||anoPP>anoAtual+10)return{erro:`Data de vencimento do lançamento ${i+1} com ano inválido (${ppRaw}) — confira a data.`};
     }
     const pp=ppRaw?proxUtil(ppRaw):null;
-    recs.push({...base,
+    recs.push({...baseItem,
       tipo,forma,lanc_num:lancNum,
       valor:vEf,
       prev_pgto:pp,
@@ -14555,7 +14568,7 @@ function coletaItens(pref,base){
       saldo:vEf*(1-taxa),
       obs:(obsBase||comNota)?`${obsBase}${comNota}`.replace(/^ · /,''):null});
     if(comTot>0){
-      recs.push({...base,
+      recs.push({...baseItem,
         tipo:'Comissão',forma,lanc_num:comLancNum,
         valor:comTot,
         prev_pgto:pp,
@@ -14575,8 +14588,9 @@ async function addN(){
   const rr=document.getElementById('nf-r').value||null;
   const msg=document.getElementById('nMsg');
   const erro=t=>{msg.innerHTML=`<span style="color:var(--red)">${t}</span>`;};
-  if(!p||!d||!c){erro('Preencha placa, proprietário e cliente.');return;}
-  const {recs,erro:e}=coletaItens('nf',{placa:p,dono:d,saida:s,retorno:rr,cliente:c});
+  const soAdiantamento=itensSomenteAdiantamento('nf');
+  if((!soAdiantamento&&(!p||!d))||!c){erro(soAdiantamento?'Preencha o cliente.':'Preencha placa, proprietário e cliente.');return;}
+  const {recs,erro:e}=coletaItens('nf',{placa:p||null,dono:d||null,saida:s,retorno:rr,cliente:c});
   if(e){erro(e);return;}
   if(s){const dup=allD().find(r=>r.placa===p&&r.saida===s);if(dup&&!confirm(`Já existe um lançamento para ${p} com saída ${s}.\nLançar mesmo assim?`))return;}
   const btn=document.getElementById('nf-submit');
@@ -15044,8 +15058,9 @@ async function confirmAI(){
   const c=document.getElementById('ai-c').value.trim();
   const s=document.getElementById('ai-s').value||null;
   const r=document.getElementById('ai-r').value||null;
-  if(!p||!c){alert('Placa e cliente obrigatórios.');return;}
-  const {recs,erro}=coletaItens('ai',{placa:p,dono:d||'Indefinido',saida:s,retorno:r,cliente:c});
+  const soAdiantamento=itensSomenteAdiantamento('ai');
+  if((!soAdiantamento&&!p)||!c){alert(soAdiantamento?'Cliente obrigatório.':'Placa e cliente obrigatórios.');return;}
+  const {recs,erro}=coletaItens('ai',{placa:p||null,dono:d||null,saida:s,retorno:r,cliente:c});
   if(erro){alert(erro);return;}
   if(s){const dup=allD().find(x=>x.placa===p&&x.saida===s);if(dup&&!confirm(`Já existe um lançamento para ${p} com saída ${s}.\nLançar mesmo assim?`))return;}
   closeCam();go('novo');
