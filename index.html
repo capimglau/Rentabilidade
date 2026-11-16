@@ -15906,10 +15906,12 @@ html:not([data-theme="dark"]) #page-resumo .fat-painel-total{ color:#938B78; }
 }
 
 
-/* Ajuste fino solicitado: filtros da Agenda -7% adicionais, sem alterar SVGs;
-   painéis KPI do topo compactados somente no desktop. */
+/* Painéis KPI do topo: redução adicional de aproximadamente 15% somente no PC.
+   Mantém tipografia, ícones e largura; compacta apenas o espaço vertical.
+   O stage dos cards alternados permanece com 50px para não cortar a legenda. */
 @media (min-width:761px){
-  #page-resumo #res-m .mc{padding-top:8.5px !important;padding-bottom:8.5px !important;}
+  #page-resumo #res-m .mc{padding-top:5.5px !important;padding-bottom:5.5px !important;}
+  #page-resumo #res-m .mc-cycle-stage{min-height:50px !important;}
 }
 #page-resumo .agb-pilula{height:31.8px !important;min-height:31.8px !important;max-height:31.8px !important;}
 #page-resumo .rc-cal-topbar-2{height:31.8px !important;min-height:31.8px !important;}
