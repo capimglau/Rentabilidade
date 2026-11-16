@@ -8018,7 +8018,7 @@ function addDUtil(d,n){return proxUtil(addD(d,n));}
 // ponto de gravação (addN, addFromCam, saveEdit, importação de planilha).
 async function fixWeekendVencimentos(){
   if(!SB) return;
-  const alvos=DATA.filter(r=>isPend(r)&&r.prev_pgto&&proxUtil(r.prev_pgto)!==r.prev_pgto);
+  const alvos=DATA.filter(r=>isPend(r)&&r.prev_pgto&&!/boleto/i.test(r.forma||'')&&proxUtil(r.prev_pgto)!==r.prev_pgto);
   if(!alvos.length) return;
   for(const r of alvos){
     r.prev_pgto=proxUtil(r.prev_pgto);
@@ -12140,7 +12140,7 @@ async function saveEdit(){
       return;
     }
   }
-  novo.prev_pgto=_pp?proxUtil(_pp):null;
+  novo.prev_pgto=_pp?(/boleto/i.test(novo.forma)?_pp:proxUtil(_pp)):null;
   const vDigitado=fN(document.getElementById('e-v').value);
   // Redivide o lançamento inteiro quando o usuário mexeu no VALOR TOTAL do
   // painel de parcelas, ou quando o número de parcelas mudou (Forma de 3x
@@ -14075,7 +14075,7 @@ function itemVazio(it){return !itemGet(it,'valor')&&!itemGet(it,'obs')&&!itemGet
 // de parcelasForma()/coletaItens(), que divide em vários lançamentos.
 function itemPrev(forma,retorno,dp){
   const fl=semAcento(forma);
-  if(fl.includes('boleto')) return dp ? proxUtil(dp) : (retorno?addDUtil(retorno,PREM.prazoBoleto):'');
+  if(fl.includes('boleto')) return dp || (retorno?addDUtil(retorno,PREM.prazoBoleto):'');
   if(!dp) return '';
   const k=transacaoDaForma(forma);
   if(k==='parc2'||k==='parc3') return addDUtil(dp,PREM.prazoParcela);
@@ -14318,10 +14318,24 @@ function calcItems(pref){
   const btn=document.getElementById(pref+'-submit');
   if(btn)btn.textContent=totalRecs>1?`✓ Salvar ${totalRecs} lançamentos`:'✓ Salvar';
 }
+function aplicarDatasOriginaisEd(pref,it){
+  if(pref!=='ed'||!it)return;
+  const origem=lancEditado();
+  if(!origem)return;
+  // Os itens acrescentados ao contrato repetem automaticamente as datas
+  // do lançamento aberto: pagamento-base, período e vencimento.
+  const dataBase=origem.data_pagamento||origem.prev_pgto||'';
+  if(dataBase)itemSet(it,'dpago',dataBase);
+  if(origem.prev_pgto){
+    itemSet(it,'prev',origem.prev_pgto);
+    it.dataset.prevManual='1';
+  }
+}
 function addItem(pref,focar){
   const box=document.getElementById(pref+'-itens');if(!box)return null;
   box.insertAdjacentHTML('beforeend',itemHTML(pref,ITENS_CFG[pref].full));
   const it=box.lastElementChild;
+  aplicarDatasOriginaisEd(pref,it);
   calcItems(pref);
   if(focar!==false)it.querySelector('[data-k="valor"]')?.focus();
   return it;
@@ -14342,6 +14356,8 @@ function resetItems(pref){
     const s=document.getElementById('nf-s'),r=document.getElementById('nf-r');
     if(s)s.value=td();
     if(r)r.value=td();
+  }else if(pref==='ed'){
+    aplicarDatasOriginaisEd('ed',box.firstElementChild);
   }
   calcItems(pref);
 }
@@ -14564,7 +14580,7 @@ function coletaItens(pref,base){
       const anoPP=+ppRaw.slice(0,4), anoAtual=new Date().getFullYear();
       if(anoPP<anoAtual-10||anoPP>anoAtual+10)return{erro:`Data de vencimento do lançamento ${i+1} com ano inválido (${ppRaw}) — confira a data.`};
     }
-    const pp=ppRaw?proxUtil(ppRaw):null;
+    const pp=ppRaw?(/boleto/i.test(forma)?ppRaw:proxUtil(ppRaw)):null;
     recs.push({...baseItem,
       tipo,forma,lanc_num:lancNum,
       valor:vEf,
